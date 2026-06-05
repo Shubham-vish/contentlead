@@ -40,6 +40,18 @@ curl -X POST http://127.0.0.1:$PORT/api/navigate \
 curl http://127.0.0.1:$PORT/api/navigation -H "Authorization: Bearer $TOKEN"
 ```
 
+### Origin Switching (Cloud ↔ Local Dev)
+```bash
+# Check current origin
+curl http://127.0.0.1:$PORT/api/app/origin -H "Authorization: Bearer $TOKEN"
+
+# Switch to local dev server
+curl -X POST http://127.0.0.1:$PORT/api/app/set-origin \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"origin": "local"}'
+# Shortcuts: "cloud" | "local" | "local-ip" | any full URL
+```
+
 ### Execute a Command
 ```bash
 curl -X POST http://127.0.0.1:$PORT/api/execute \
