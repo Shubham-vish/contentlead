@@ -1,0 +1,4827 @@
+{
+  "package": "@shubham-vish/remotion-templates",
+  "generatedAt": "2026-05-30T11:12:35.095Z",
+  "totalScenes": 159,
+  "categories": [
+    "chart",
+    "data-viz",
+    "motion-bg",
+    "text",
+    "layout",
+    "comparison",
+    "opener",
+    "structural",
+    "closer",
+    "effect",
+    "speaker"
+  ],
+  "scenes": [
+    {
+      "id": "LineChartScene",
+      "name": "Line Chart",
+      "category": "chart",
+      "subcategory": "trend",
+      "tags": [
+        "line",
+        "chart",
+        "trend",
+        "growth",
+        "time",
+        "graph",
+        "series",
+        "data",
+        "tracking",
+        "performance"
+      ],
+      "description": "Animated line graph with points appearing and line drawing between them. Shows a single metric changing over time. Great for growth stories.",
+      "inputSchema": "title, dataPoints: number[], xLabels: string[], yLabel, lineColor?",
+      "bestFor": [
+        "growth over time",
+        "trend analysis",
+        "performance tracking",
+        "revenue curves"
+      ],
+      "pairsWellWith": [
+        "PercentageGlowScene",
+        "StatsGridScene",
+        "KeyInsightScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "AreaChartScene",
+      "name": "Area Chart",
+      "category": "chart",
+      "subcategory": "trend",
+      "tags": [
+        "area",
+        "chart",
+        "filled",
+        "cumulative",
+        "volume",
+        "comparison",
+        "multi-series"
+      ],
+      "description": "Multiple filled area series stacked or overlapping. Shows cumulative volume or multi-metric comparison over time.",
+      "inputSchema": "title, xLabels: string[], series: {name, data[], color}[]",
+      "bestFor": [
+        "cumulative metrics",
+        "market share evolution",
+        "multi-channel comparison"
+      ],
+      "pairsWellWith": [
+        "TimeSeriesScene",
+        "StackedAreaScene",
+        "AnimatedBarScene"
+      ],
+      "suggestedDuration": 270,
+      "suggestedDurationSec": 9
+    },
+    {
+      "id": "AnimatedBarScene",
+      "name": "Bar Chart (Horizontal)",
+      "category": "chart",
+      "subcategory": "comparison",
+      "tags": [
+        "bar",
+        "chart",
+        "horizontal",
+        "comparison",
+        "scorecard",
+        "metrics",
+        "progress"
+      ],
+      "description": "Horizontal animated progress bars with spring physics and count-up numbers. Scorecard/dashboard style.",
+      "inputSchema": "title, metrics: {label, value, sublabel, color}[]",
+      "bestFor": [
+        "metric comparison",
+        "score dashboards",
+        "KPI displays"
+      ],
+      "pairsWellWith": [
+        "StatsGridScene",
+        "DonutChartScene",
+        "PercentageGlowScene"
+      ],
+      "suggestedDuration": 150,
+      "suggestedDurationSec": 5
+    },
+    {
+      "id": "DonutChartScene",
+      "name": "Donut Ring Chart",
+      "category": "chart",
+      "subcategory": "composition",
+      "tags": [
+        "donut",
+        "ring",
+        "pie",
+        "composition",
+        "breakdown",
+        "percentage",
+        "distribution"
+      ],
+      "description": "Multi-segment ring chart that fills progressively. Center shows count-up number. Legend items stagger in.",
+      "inputSchema": "title, centerLabel, segments: {label, value, color}[]",
+      "bestFor": [
+        "composition breakdowns",
+        "budget allocation",
+        "source distribution"
+      ],
+      "pairsWellWith": [
+        "PieChartScene",
+        "AnimatedBarScene",
+        "TreemapScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "PieChartScene",
+      "name": "Pie Chart",
+      "category": "chart",
+      "subcategory": "composition",
+      "tags": [
+        "pie",
+        "chart",
+        "slice",
+        "distribution",
+        "share",
+        "percentage"
+      ],
+      "description": "Classic animated pie with slices drawing in sequentially. Labels outside with connector lines.",
+      "inputSchema": "title, centerLabel, slices: {label, value, color}[]",
+      "bestFor": [
+        "market share",
+        "traffic sources",
+        "survey results"
+      ],
+      "pairsWellWith": [
+        "DonutChartScene",
+        "AnimatedBarScene",
+        "StatsGridScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "BarRaceScene",
+      "name": "Bar Race",
+      "category": "chart",
+      "subcategory": "ranking",
+      "tags": [
+        "bar",
+        "race",
+        "animated",
+        "ranking",
+        "leaderboard",
+        "competition",
+        "changing"
+      ],
+      "description": "Animated bar chart where bars reorder as values change over time rounds. Shows competitions/rankings evolving.",
+      "inputSchema": "title, rounds: {label, values: Record<string, number>}[], barColors?",
+      "bestFor": [
+        "changing rankings",
+        "competition views",
+        "platform growth race"
+      ],
+      "pairsWellWith": [
+        "TimeSeriesScene",
+        "StatsGridScene",
+        "AnimatedBarScene"
+      ],
+      "suggestedDuration": 300,
+      "suggestedDurationSec": 10
+    },
+    {
+      "id": "RadialBarScene",
+      "name": "Radial Bar Chart",
+      "category": "chart",
+      "subcategory": "comparison",
+      "tags": [
+        "radial",
+        "sunburst",
+        "circular",
+        "bar",
+        "category",
+        "comparison"
+      ],
+      "description": "Bars extend outward from a central circle like a sunburst. Great for multi-category comparison in circular layout.",
+      "inputSchema": "title, items: {label, value, color?}[], maxValue",
+      "bestFor": [
+        "channel performance",
+        "skill assessment",
+        "multi-metric radar"
+      ],
+      "pairsWellWith": [
+        "PolarAreaScene",
+        "DonutChartScene",
+        "BubbleChartScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "GaugeDialScene",
+      "name": "Gauge Dial",
+      "category": "chart",
+      "subcategory": "single-metric",
+      "tags": [
+        "gauge",
+        "dial",
+        "speedometer",
+        "meter",
+        "score",
+        "health",
+        "performance"
+      ],
+      "description": "Speedometer-style gauge with animated needle, colored zones, and count-up value.",
+      "inputSchema": "title, value, maxValue, label, sublabel, zones: {from, to, color}[]",
+      "bestFor": [
+        "health scores",
+        "performance ratings",
+        "goal completion"
+      ],
+      "pairsWellWith": [
+        "CircularProgressScene",
+        "PercentageGlowScene",
+        "BulletChartScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "HeatmapScene",
+      "name": "Heatmap",
+      "category": "chart",
+      "subcategory": "matrix",
+      "tags": [
+        "heatmap",
+        "grid",
+        "matrix",
+        "time",
+        "pattern",
+        "engagement",
+        "activity"
+      ],
+      "description": "Color-intensity grid where cells represent values. Row and column labels. Cells stagger in.",
+      "inputSchema": "title, rowLabels[], colLabels[], data: number[][]",
+      "bestFor": [
+        "posting time optimization",
+        "activity patterns",
+        "engagement matrix"
+      ],
+      "pairsWellWith": [
+        "AnimatedBarScene",
+        "StatsGridScene",
+        "SparklineGridScene"
+      ],
+      "suggestedDuration": 270,
+      "suggestedDurationSec": 9
+    },
+    {
+      "id": "BubbleChartScene",
+      "name": "Bubble Chart",
+      "category": "chart",
+      "subcategory": "scatter",
+      "tags": [
+        "bubble",
+        "chart",
+        "scatter",
+        "size",
+        "position",
+        "comparison",
+        "multi-variable"
+      ],
+      "description": "Positioned circles with labels. Size encodes value. Shows multi-variable relationships on XY plane.",
+      "inputSchema": "title, bubbles: {label, value, x, y, color?}[]",
+      "bestFor": [
+        "multi-variable comparison",
+        "market positioning",
+        "ecosystem mapping"
+      ],
+      "pairsWellWith": [
+        "ScatterPlotScene",
+        "RadialBarScene",
+        "TreemapScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "BulletChartScene",
+      "name": "Bullet Chart",
+      "category": "chart",
+      "subcategory": "progress",
+      "tags": [
+        "bullet",
+        "chart",
+        "target",
+        "actual",
+        "goal",
+        "progress",
+        "bar",
+        "benchmark"
+      ],
+      "description": "Horizontal bars showing actual vs target with a max range. Progress-against-goal visualization.",
+      "inputSchema": "title, bullets: {label, actual, target, max}[]",
+      "bestFor": [
+        "goal tracking",
+        "KPI vs target",
+        "benchmark comparison"
+      ],
+      "pairsWellWith": [
+        "GaugeDialScene",
+        "AnimatedBarScene",
+        "PercentageGlowScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "DumbbellChartScene",
+      "name": "Dumbbell Chart",
+      "category": "chart",
+      "subcategory": "range",
+      "tags": [
+        "dumbbell",
+        "range",
+        "before",
+        "after",
+        "change",
+        "gap",
+        "shift",
+        "comparison"
+      ],
+      "description": "Connected dot pairs showing before/after values. Visualizes change or gap between two data points per category.",
+      "inputSchema": "title, items: {label, before, after}[], beforeLabel, afterLabel, maxValue?",
+      "bestFor": [
+        "before/after analysis",
+        "change visualization",
+        "gap analysis"
+      ],
+      "pairsWellWith": [
+        "BeforeAfterScene",
+        "AnimatedBarScene",
+        "ComparisonCardsScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "GanttChartScene",
+      "name": "Gantt Chart",
+      "category": "chart",
+      "subcategory": "timeline",
+      "tags": [
+        "gantt",
+        "timeline",
+        "project",
+        "tasks",
+        "schedule",
+        "planning",
+        "phases"
+      ],
+      "description": "Horizontal bars on a time axis showing task duration and overlap. Project management style.",
+      "inputSchema": "title, tasks: {label, start, end, color?}[], timeLabels[], totalUnits",
+      "bestFor": [
+        "project timelines",
+        "phase planning",
+        "sprint visualization"
+      ],
+      "pairsWellWith": [
+        "MilestonePathScene",
+        "ProgressStepsScene",
+        "VerticalTimelineScene"
+      ],
+      "suggestedDuration": 270,
+      "suggestedDurationSec": 9
+    },
+    {
+      "id": "LollipopChartScene",
+      "name": "Lollipop Chart",
+      "category": "chart",
+      "subcategory": "comparison",
+      "tags": [
+        "lollipop",
+        "chart",
+        "dot",
+        "stem",
+        "metric",
+        "ranking",
+        "clean"
+      ],
+      "description": "Vertical stems with dots at top. Cleaner alternative to bar charts for comparing values across categories.",
+      "inputSchema": "title, items: {label, value, color?}[], maxValue?",
+      "bestFor": [
+        "clean metric comparison",
+        "ranked values",
+        "minimalist data display"
+      ],
+      "pairsWellWith": [
+        "AnimatedBarScene",
+        "RadialBarScene",
+        "StatsGridScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "PolarAreaScene",
+      "name": "Polar Area Chart",
+      "category": "chart",
+      "subcategory": "radial",
+      "tags": [
+        "polar",
+        "area",
+        "nightingale",
+        "rose",
+        "radial",
+        "wedge",
+        "angular"
+      ],
+      "description": "Wedge segments radiating from center with varying radii. Nightingale rose chart style.",
+      "inputSchema": "title, segments: {label, value, color}[]",
+      "bestFor": [
+        "category distribution",
+        "seasonal data",
+        "multi-axis comparison"
+      ],
+      "pairsWellWith": [
+        "RadialBarScene",
+        "DonutChartScene",
+        "PieChartScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "ScatterPlotScene",
+      "name": "Scatter Plot",
+      "category": "chart",
+      "subcategory": "scatter",
+      "tags": [
+        "scatter",
+        "plot",
+        "dots",
+        "correlation",
+        "relationship",
+        "xy",
+        "clusters"
+      ],
+      "description": "Animated dots appearing on XY plane. Multiple color categories with legend. Shows correlation and clusters.",
+      "inputSchema": "title, xLabel, yLabel, categories: {name, points: {x,y}[], color}[]",
+      "bestFor": [
+        "correlation analysis",
+        "cluster visualization",
+        "research data"
+      ],
+      "pairsWellWith": [
+        "BubbleChartScene",
+        "LineChartScene",
+        "StatsGridScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "StackedAreaScene",
+      "name": "Stacked Area Chart",
+      "category": "chart",
+      "subcategory": "composition",
+      "tags": [
+        "stacked",
+        "area",
+        "layers",
+        "cumulative",
+        "proportion",
+        "series",
+        "filled"
+      ],
+      "description": "Multiple filled area series stacked on top of each other. Shows part-to-whole over time.",
+      "inputSchema": "title, xLabels[], series: {name, data[], color}[]",
+      "bestFor": [
+        "composition over time",
+        "revenue streams",
+        "traffic channel evolution"
+      ],
+      "pairsWellWith": [
+        "AreaChartScene",
+        "TimeSeriesScene",
+        "StackedBarChartScene"
+      ],
+      "suggestedDuration": 270,
+      "suggestedDurationSec": 9
+    },
+    {
+      "id": "StackedBarChartScene",
+      "name": "Stacked Bar Chart",
+      "category": "chart",
+      "subcategory": "composition",
+      "tags": [
+        "stacked",
+        "bar",
+        "segments",
+        "breakdown",
+        "categories",
+        "grouped"
+      ],
+      "description": "Vertical bars with stacked colored segments. Shows composition breakdown per category.",
+      "inputSchema": "title, categories: {label, segments: {value, color, label}[]}[]",
+      "bestFor": [
+        "budget breakdown per dept",
+        "revenue by quarter/source",
+        "survey breakdowns"
+      ],
+      "pairsWellWith": [
+        "StackedAreaScene",
+        "DonutChartScene",
+        "AnimatedBarScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "SparklineGridScene",
+      "name": "Sparkline Grid",
+      "category": "chart",
+      "subcategory": "dashboard",
+      "tags": [
+        "sparkline",
+        "grid",
+        "mini",
+        "metrics",
+        "dashboard",
+        "multiple",
+        "trends"
+      ],
+      "description": "Grid of mini sparkline charts with labels and values. Dashboard-style multi-metric overview.",
+      "inputSchema": "title, metrics: {label, value, suffix?, data[], color?}[]",
+      "bestFor": [
+        "multi-metric dashboards",
+        "KPI overview",
+        "performance at a glance"
+      ],
+      "pairsWellWith": [
+        "MetricDashboardScene",
+        "StatsGridScene",
+        "AnimatedBarScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "TimeSeriesScene",
+      "name": "Time Series (Multi-Line)",
+      "category": "chart",
+      "subcategory": "trend",
+      "tags": [
+        "time",
+        "series",
+        "multi-line",
+        "comparison",
+        "trends",
+        "parallel",
+        "overlay"
+      ],
+      "description": "Multiple line series on the same axes for comparing trends. Legend with color-coded labels.",
+      "inputSchema": "title, yLabel, xLabels[], series: {name, data[], color}[]",
+      "bestFor": [
+        "multi-metric trend comparison",
+        "A/B/C test results",
+        "channel growth"
+      ],
+      "pairsWellWith": [
+        "LineChartScene",
+        "StackedAreaScene",
+        "AreaChartScene"
+      ],
+      "suggestedDuration": 270,
+      "suggestedDurationSec": 9
+    },
+    {
+      "id": "TreemapScene",
+      "name": "Treemap",
+      "category": "chart",
+      "subcategory": "composition",
+      "tags": [
+        "treemap",
+        "blocks",
+        "proportional",
+        "hierarchy",
+        "nested",
+        "rectangles"
+      ],
+      "description": "Proportionally sized rectangles with labels. Shows hierarchical data as nested rectangles.",
+      "inputSchema": "title, blocks: {label, value, color?}[]",
+      "bestFor": [
+        "portfolio allocation",
+        "disk usage",
+        "market cap visualization"
+      ],
+      "pairsWellWith": [
+        "DonutChartScene",
+        "PieChartScene",
+        "StackedBarChartScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "WaterfallChartScene",
+      "name": "Waterfall Chart",
+      "category": "chart",
+      "subcategory": "flow",
+      "tags": [
+        "waterfall",
+        "bridge",
+        "incremental",
+        "positive",
+        "negative",
+        "cumulative",
+        "financial"
+      ],
+      "description": "Floating bars showing incremental positive/negative steps leading to a total. Financial bridge chart.",
+      "inputSchema": "title, steps: {label, value, type?}[]",
+      "bestFor": [
+        "profit & loss bridges",
+        "cost breakdowns",
+        "incremental impact analysis"
+      ],
+      "pairsWellWith": [
+        "AnimatedBarScene",
+        "ContentFunnelScene",
+        "StatsGridScene"
+      ],
+      "suggestedDuration": 270,
+      "suggestedDurationSec": 9
+    },
+    {
+      "id": "GlowLineChartScene",
+      "name": "Glow Line Chart",
+      "category": "chart",
+      "subcategory": "trend",
+      "tags": [
+        "line",
+        "chart",
+        "glow",
+        "orange",
+        "navy",
+        "dark",
+        "dramatic",
+        "stat"
+      ],
+      "description": "Line chart with glowing orange trace on dark navy background. Big stat overlay. Dramatic style.",
+      "inputSchema": "title, stat, statLabel, data[], xLabels[]",
+      "bestFor": [
+        "research results",
+        "dramatic impact metrics",
+        "before/after data"
+      ],
+      "pairsWellWith": [
+        "SilhouetteCompareScene",
+        "ImpactTextScene",
+        "GradientQuoteScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "StockTickerScene",
+      "name": "Stock Ticker",
+      "category": "chart",
+      "subcategory": "live-data",
+      "tags": [
+        "stock",
+        "ticker",
+        "scrolling",
+        "live",
+        "market",
+        "crypto",
+        "price",
+        "change"
+      ],
+      "description": "Horizontally scrolling ticker tape showing items with values and change indicators (up/down arrows).",
+      "inputSchema": "items: {label, value, change, up: boolean}[], speed?",
+      "bestFor": [
+        "stock markets",
+        "crypto prices",
+        "live metric tickers"
+      ],
+      "pairsWellWith": [
+        "NumberTickerScene",
+        "StatsGridScene",
+        "LineChartScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "CircularProgressScene",
+      "name": "Circular Progress Ring",
+      "category": "data-viz",
+      "subcategory": "single-metric",
+      "tags": [
+        "circular",
+        "progress",
+        "ring",
+        "percentage",
+        "completion",
+        "animated",
+        "donut"
+      ],
+      "description": "Single animated circular progress ring with count-up percentage in center. Clean single-metric display.",
+      "inputSchema": "value, maxValue?, label, sublabel, color?",
+      "bestFor": [
+        "completion percentage",
+        "goal progress",
+        "single KPI highlight"
+      ],
+      "pairsWellWith": [
+        "PercentageGlowScene",
+        "GaugeDialScene",
+        "StatsGridScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "ContentFunnelScene",
+      "name": "Content Funnel",
+      "category": "data-viz",
+      "subcategory": "funnel",
+      "tags": [
+        "funnel",
+        "conversion",
+        "stages",
+        "pipeline",
+        "narrowing",
+        "marketing",
+        "sales"
+      ],
+      "description": "Tapering funnel stages from wide to narrow. Shows conversion/drop-off through pipeline stages.",
+      "inputSchema": "title, stages: {label, value, color}[]",
+      "bestFor": [
+        "conversion funnels",
+        "sales pipelines",
+        "user journey drop-off"
+      ],
+      "pairsWellWith": [
+        "ProcessFlowScene",
+        "AnimatedBarScene",
+        "PercentageGlowScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "HexagonGridScene",
+      "name": "Hexagon Grid",
+      "category": "data-viz",
+      "subcategory": "grid",
+      "tags": [
+        "hexagon",
+        "grid",
+        "honeycomb",
+        "cells",
+        "icon",
+        "labeled",
+        "features"
+      ],
+      "description": "Honeycomb-style hexagonal grid with icons and labels inside each cell. Staggers in.",
+      "inputSchema": "title, cells: {label, icon?, color?}[]",
+      "bestFor": [
+        "feature grids",
+        "capability maps",
+        "technology stacks"
+      ],
+      "pairsWellWith": [
+        "IconGridScene",
+        "MasonryRevealScene",
+        "ConnectedNodesScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "MetricDashboardScene",
+      "name": "Metric Dashboard",
+      "category": "data-viz",
+      "subcategory": "dashboard",
+      "tags": [
+        "dashboard",
+        "metrics",
+        "widgets",
+        "KPI",
+        "numbers",
+        "bars",
+        "spark",
+        "ring",
+        "overview"
+      ],
+      "description": "Multi-widget dashboard with mixed types: numbers, bars, sparklines, rings. Full dashboard feel.",
+      "inputSchema": "title, widgets: {type: 'number'|'bar'|'spark'|'ring', label, value, suffix?, data?, color?}[]",
+      "bestFor": [
+        "executive dashboards",
+        "analytics overview",
+        "multi-KPI displays"
+      ],
+      "pairsWellWith": [
+        "SparklineGridScene",
+        "StatsGridScene",
+        "NumberTickerScene"
+      ],
+      "suggestedDuration": 270,
+      "suggestedDurationSec": 9
+    },
+    {
+      "id": "NumberTickerScene",
+      "name": "Number Ticker",
+      "category": "data-viz",
+      "subcategory": "counter",
+      "tags": [
+        "number",
+        "ticker",
+        "counter",
+        "count-up",
+        "stat",
+        "odometer",
+        "rolling"
+      ],
+      "description": "Large rolling odometer-style number counters with labels. Multiple counters animate simultaneously.",
+      "inputSchema": "title?, counters: {label, target, suffix?, prefix?}[]",
+      "bestFor": [
+        "big stat reveals",
+        "milestone celebrations",
+        "impact numbers"
+      ],
+      "pairsWellWith": [
+        "StatsGridScene",
+        "PercentageGlowScene",
+        "CircularProgressScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "PercentageGlowScene",
+      "name": "Percentage Glow",
+      "category": "data-viz",
+      "subcategory": "single-metric",
+      "tags": [
+        "percentage",
+        "glow",
+        "big-number",
+        "spotlight",
+        "neon",
+        "emphasis",
+        "hero-stat"
+      ],
+      "description": "Giant glowing percentage number with label. Neon glow effect on dark background. Hero stat moment.",
+      "inputSchema": "targetValue, label, sublabel, suffix?",
+      "bestFor": [
+        "hero statistics",
+        "impressive percentages",
+        "key findings"
+      ],
+      "pairsWellWith": [
+        "StatsGridScene",
+        "CircularProgressScene",
+        "KeyInsightScene"
+      ],
+      "suggestedDuration": 150,
+      "suggestedDurationSec": 5
+    },
+    {
+      "id": "PulsingRadarScene",
+      "name": "Pulsing Radar Chart",
+      "category": "data-viz",
+      "subcategory": "radar",
+      "tags": [
+        "radar",
+        "pulsing",
+        "spider",
+        "web",
+        "skills",
+        "multi-axis",
+        "assessment"
+      ],
+      "description": "Animated radar/spider chart with pulsing data polygon. Shows multi-axis skill/metric assessment.",
+      "inputSchema": "title, points: {label, value}[], maxValue",
+      "bestFor": [
+        "skill assessments",
+        "multi-axis evaluation",
+        "competitive analysis"
+      ],
+      "pairsWellWith": [
+        "RadialBarScene",
+        "PolarAreaScene",
+        "AnimatedBarScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "StatsGridScene",
+      "name": "Stats Grid",
+      "category": "data-viz",
+      "subcategory": "grid",
+      "tags": [
+        "stats",
+        "grid",
+        "numbers",
+        "KPI",
+        "count-up",
+        "multiple",
+        "cards",
+        "dashboard"
+      ],
+      "description": "Grid of stat cards with count-up numbers, labels, and suffixes. Core data display scene.",
+      "inputSchema": "title, stats: {value, suffix, label}[]",
+      "bestFor": [
+        "multi-stat display",
+        "key metrics",
+        "performance summary"
+      ],
+      "pairsWellWith": [
+        "AnimatedBarScene",
+        "LineChartScene",
+        "PercentageGlowScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "TagCloudScene",
+      "name": "Tag Cloud",
+      "category": "data-viz",
+      "subcategory": "text-data",
+      "tags": [
+        "tag",
+        "cloud",
+        "word",
+        "frequency",
+        "weighted",
+        "keywords",
+        "topics"
+      ],
+      "description": "Animated word cloud where font size represents weight. Tags float and stagger in.",
+      "inputSchema": "title, tags: {text, weight}[]",
+      "bestFor": [
+        "keyword visualization",
+        "topic frequency",
+        "trending terms"
+      ],
+      "pairsWellWith": [
+        "HexagonGridScene",
+        "IconGridScene",
+        "StatsGridScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "ConnectedNodesScene",
+      "name": "Connected Nodes Graph",
+      "category": "data-viz",
+      "subcategory": "network",
+      "tags": [
+        "nodes",
+        "graph",
+        "network",
+        "connections",
+        "linked",
+        "relationships",
+        "web"
+      ],
+      "description": "Nodes with labels connected by animated edges. Shows relationships and network structure.",
+      "inputSchema": "title, nodes: {label, x, y}[], connections: {from, to}[]",
+      "bestFor": [
+        "relationship mapping",
+        "network diagrams",
+        "concept connections"
+      ],
+      "pairsWellWith": [
+        "ProcessFlowScene",
+        "OrbitingIconsScene",
+        "HexagonGridScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "NebulaCloudsScene",
+      "name": "Nebula Clouds",
+      "category": "motion-bg",
+      "subcategory": "space",
+      "tags": [
+        "nebula",
+        "clouds",
+        "space",
+        "dreamy",
+        "atmosphere",
+        "ambient",
+        "slow",
+        "cosmic"
+      ],
+      "description": "Morphing nebula clouds with twinkling stars. Deep-space atmosphere. Slow, cosmic feel.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "space themes",
+        "dreamy atmosphere",
+        "calm moments",
+        "meditation content"
+      ],
+      "pairsWellWith": [
+        "GalaxyScene",
+        "StarfieldWarpScene",
+        "ConstellationScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "StarfieldWarpScene",
+      "name": "Starfield Warp",
+      "category": "motion-bg",
+      "subcategory": "speed",
+      "tags": [
+        "starfield",
+        "warp",
+        "hyperspace",
+        "speed",
+        "acceleration",
+        "sci-fi",
+        "flying"
+      ],
+      "description": "Stars fly outward from center creating hyperspace/warp effect. Accelerates over time.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?, starCount?",
+      "bestFor": [
+        "speed/acceleration metaphor",
+        "sci-fi intros",
+        "transition between eras"
+      ],
+      "pairsWellWith": [
+        "NebulaCloudsScene",
+        "WarpTunnelScene",
+        "ImpactTextScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "GalaxyScene",
+      "name": "Galaxy Spiral",
+      "category": "motion-bg",
+      "subcategory": "space",
+      "tags": [
+        "galaxy",
+        "spiral",
+        "stars",
+        "rotation",
+        "cosmic",
+        "milky-way",
+        "deep-space"
+      ],
+      "description": "Slowly rotating galaxy spiral with layered stars. Majestic cosmic backdrop.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "cosmic themes",
+        "big-picture thinking",
+        "universe metaphors"
+      ],
+      "pairsWellWith": [
+        "NebulaCloudsScene",
+        "ConstellationScene",
+        "StarfieldWarpScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "ConstellationScene",
+      "name": "Constellation",
+      "category": "motion-bg",
+      "subcategory": "space",
+      "tags": [
+        "constellation",
+        "stars",
+        "lines",
+        "connected",
+        "night-sky",
+        "astrology"
+      ],
+      "description": "Star points with connecting lines forming constellation patterns. Night-sky feel.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "connection themes",
+        "pattern discovery",
+        "elegant backgrounds"
+      ],
+      "pairsWellWith": [
+        "NebulaCloudsScene",
+        "GalaxyScene",
+        "ConnectedNodesScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "MeteorShowerScene",
+      "name": "Meteor Shower",
+      "category": "motion-bg",
+      "subcategory": "space",
+      "tags": [
+        "meteor",
+        "shower",
+        "shooting-stars",
+        "falling",
+        "streaks",
+        "space",
+        "rain"
+      ],
+      "description": "Diagonal streaks of light raining across the screen like shooting stars. Fast-paced cosmic energy.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "fast-paced energy",
+        "multiple ideas arriving",
+        "cosmic drama"
+      ],
+      "pairsWellWith": [
+        "StarfieldWarpScene",
+        "ParticleExplosionScene",
+        "DiamondRainScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "ParticleExplosionScene",
+      "name": "Particle Explosion",
+      "category": "motion-bg",
+      "subcategory": "energy",
+      "tags": [
+        "explosion",
+        "particles",
+        "big-bang",
+        "burst",
+        "energy",
+        "dramatic",
+        "impact"
+      ],
+      "description": "Particles explode outward then gravity pulls them back. Big-bang energy.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "dramatic reveals",
+        "big announcements",
+        "launch moments"
+      ],
+      "pairsWellWith": [
+        "ImpactTextScene",
+        "CountdownRevealScene",
+        "ShatterGlassScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "ParticleVortexScene",
+      "name": "Particle Vortex",
+      "category": "motion-bg",
+      "subcategory": "energy",
+      "tags": [
+        "vortex",
+        "particles",
+        "swirl",
+        "tornado",
+        "spiral",
+        "converging",
+        "pull"
+      ],
+      "description": "Particles swirl in a vortex/tornado pattern. Converging energy toward center.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?, particleCount?",
+      "bestFor": [
+        "convergence themes",
+        "focus metaphors",
+        "data aggregation"
+      ],
+      "pairsWellWith": [
+        "GravityWellScene",
+        "SpiralScene",
+        "ParticleExplosionScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "ElectricArcScene",
+      "name": "Electric Arc",
+      "category": "motion-bg",
+      "subcategory": "energy",
+      "tags": [
+        "electric",
+        "arc",
+        "lightning",
+        "bolt",
+        "spark",
+        "energy",
+        "plasma",
+        "zap"
+      ],
+      "description": "Animated electric arcs/lightning bolts crackling across the screen. High-energy feel.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "high-energy moments",
+        "power metaphors",
+        "electrifying reveals"
+      ],
+      "pairsWellWith": [
+        "PlasmaFieldScene",
+        "NeuralPulseScene",
+        "ParticleExplosionScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "GlowingOrbsScene",
+      "name": "Glowing Orbs",
+      "category": "motion-bg",
+      "subcategory": "ambient",
+      "tags": [
+        "orbs",
+        "glowing",
+        "floating",
+        "bokeh",
+        "ambient",
+        "soft",
+        "calm",
+        "spheres"
+      ],
+      "description": "Softly glowing bokeh-style orbs floating and pulsing. Ambient, calm atmosphere.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "peaceful moments",
+        "mindfulness content",
+        "soft transitions"
+      ],
+      "pairsWellWith": [
+        "FireflyFieldScene",
+        "NebulaCloudsScene",
+        "LiquidBlobScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "FireflyFieldScene",
+      "name": "Firefly Field",
+      "category": "motion-bg",
+      "subcategory": "ambient",
+      "tags": [
+        "firefly",
+        "field",
+        "floating",
+        "dots",
+        "warm",
+        "evening",
+        "twinkle",
+        "nature"
+      ],
+      "description": "Tiny glowing dots drifting like fireflies on a warm evening. Organic, gentle movement.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "organic themes",
+        "gentle transitions",
+        "evening mood"
+      ],
+      "pairsWellWith": [
+        "GlowingOrbsScene",
+        "NebulaCloudsScene",
+        "RisingBubblesScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "GravityWellScene",
+      "name": "Gravity Well",
+      "category": "motion-bg",
+      "subcategory": "energy",
+      "tags": [
+        "gravity",
+        "well",
+        "pull",
+        "attraction",
+        "center",
+        "warping",
+        "funnel",
+        "physics"
+      ],
+      "description": "Particles pulled toward a central gravity point. Warping spacetime visual effect.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "attraction metaphors",
+        "central focus",
+        "gravity/importance themes"
+      ],
+      "pairsWellWith": [
+        "ParticleVortexScene",
+        "SpiralScene",
+        "ConcentricRingsScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "RisingBubblesScene",
+      "name": "Rising Bubbles",
+      "category": "motion-bg",
+      "subcategory": "ambient",
+      "tags": [
+        "bubbles",
+        "rising",
+        "floating",
+        "upward",
+        "circles",
+        "underwater",
+        "soft"
+      ],
+      "description": "Translucent bubbles rising from bottom to top. Underwater/champagne feel.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "growth metaphors",
+        "rising trends",
+        "celebration moments"
+      ],
+      "pairsWellWith": [
+        "GlowingOrbsScene",
+        "LiquidBlobScene",
+        "OceanWaveScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "BouncingDotsScene",
+      "name": "Bouncing Dots",
+      "category": "motion-bg",
+      "subcategory": "playful",
+      "tags": [
+        "bouncing",
+        "dots",
+        "physics",
+        "playful",
+        "fun",
+        "balls",
+        "kinetic"
+      ],
+      "description": "Colorful dots bouncing with physics collisions. Playful, energetic, kinetic feel.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?, dotCount?",
+      "bestFor": [
+        "playful transitions",
+        "fun/light content",
+        "energy/activity themes"
+      ],
+      "pairsWellWith": [
+        "PendulumWaveScene",
+        "BouncingDotsScene",
+        "ParticleExplosionScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "CircuitBoardScene",
+      "name": "Circuit Board",
+      "category": "motion-bg",
+      "subcategory": "tech",
+      "tags": [
+        "circuit",
+        "board",
+        "pcb",
+        "tech",
+        "electronics",
+        "traces",
+        "digital",
+        "hardware"
+      ],
+      "description": "Animated PCB-style circuit traces lighting up. Technology/hardware aesthetic.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "technology topics",
+        "hardware themes",
+        "engineering content"
+      ],
+      "pairsWellWith": [
+        "DataStreamScene",
+        "NeuralPulseScene",
+        "MatrixRainScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "DataStreamScene",
+      "name": "Data Stream",
+      "category": "motion-bg",
+      "subcategory": "tech",
+      "tags": [
+        "data",
+        "stream",
+        "flowing",
+        "binary",
+        "digital",
+        "network",
+        "transmission"
+      ],
+      "description": "Flowing streams of data particles moving in curved paths. Digital data flow aesthetic.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "data topics",
+        "streaming content",
+        "network/API themes"
+      ],
+      "pairsWellWith": [
+        "CircuitBoardScene",
+        "DigitalRainDropScene",
+        "NeuralPulseScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "DigitalRainDropScene",
+      "name": "Digital Rain Drop",
+      "category": "motion-bg",
+      "subcategory": "tech",
+      "tags": [
+        "digital",
+        "rain",
+        "matrix",
+        "code",
+        "binary",
+        "falling",
+        "green",
+        "hacker"
+      ],
+      "description": "Matrix-style falling digital characters. Hacker aesthetic with glowing trails.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "coding content",
+        "hacker aesthetic",
+        "digital transformation"
+      ],
+      "pairsWellWith": [
+        "CircuitBoardScene",
+        "MatrixRainScene",
+        "DataStreamScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "NeuralPulseScene",
+      "name": "Neural Pulse",
+      "category": "motion-bg",
+      "subcategory": "tech",
+      "tags": [
+        "neural",
+        "pulse",
+        "brain",
+        "ai",
+        "network",
+        "synapse",
+        "electricity",
+        "intelligence"
+      ],
+      "description": "Neural network-style nodes with pulses traveling along connections. AI/brain aesthetic.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "AI topics",
+        "brain/mind themes",
+        "neural network visualization"
+      ],
+      "pairsWellWith": [
+        "CircuitBoardScene",
+        "ConnectedNodesScene",
+        "DataStreamScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "HologramGridScene",
+      "name": "Hologram Grid",
+      "category": "motion-bg",
+      "subcategory": "tech",
+      "tags": [
+        "hologram",
+        "grid",
+        "3d",
+        "perspective",
+        "tron",
+        "futuristic",
+        "floor"
+      ],
+      "description": "Perspective grid floor with holographic lines. Tron-style futuristic ground plane.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "futuristic scenes",
+        "VR/AR themes",
+        "sci-fi technology"
+      ],
+      "pairsWellWith": [
+        "WarpTunnelScene",
+        "RotatingCubeScene",
+        "CrosshairScanScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "CrosshairScanScene",
+      "name": "Crosshair Scan",
+      "category": "motion-bg",
+      "subcategory": "tech",
+      "tags": [
+        "crosshair",
+        "scan",
+        "targeting",
+        "reticle",
+        "hud",
+        "focus",
+        "aim",
+        "tracking"
+      ],
+      "description": "Animated crosshair/reticle scanning across screen with HUD elements. Targeting/analysis aesthetic.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "analysis themes",
+        "targeting/focus content",
+        "military/tactical"
+      ],
+      "pairsWellWith": [
+        "HologramGridScene",
+        "PulsingRadarScene",
+        "CircuitBoardScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "PulseGridScene",
+      "name": "Pulse Grid",
+      "category": "motion-bg",
+      "subcategory": "tech",
+      "tags": [
+        "pulse",
+        "grid",
+        "dots",
+        "wave",
+        "ripple",
+        "matrix",
+        "responsive"
+      ],
+      "description": "Grid of dots with wave pulse rippling outward from center. Responsive/reactive feel.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?, gridSize?",
+      "bestFor": [
+        "pulse/wave themes",
+        "reactive content",
+        "grid-based visuals"
+      ],
+      "pairsWellWith": [
+        "ConcentricRingsScene",
+        "NeuralPulseScene",
+        "PulseRippleScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "GeometricMeshScene",
+      "name": "Geometric Mesh",
+      "category": "motion-bg",
+      "subcategory": "geometric",
+      "tags": [
+        "geometric",
+        "mesh",
+        "wireframe",
+        "triangles",
+        "polygons",
+        "abstract",
+        "low-poly"
+      ],
+      "description": "Animated wireframe mesh of triangles/polygons morphing. Low-poly aesthetic.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "abstract themes",
+        "modern design",
+        "tech/startup content"
+      ],
+      "pairsWellWith": [
+        "TriangleMosaicScene",
+        "HexWaveScene",
+        "ConcentricRingsScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "HexWaveScene",
+      "name": "Hex Wave",
+      "category": "motion-bg",
+      "subcategory": "geometric",
+      "tags": [
+        "hex",
+        "wave",
+        "hexagon",
+        "ripple",
+        "honeycomb",
+        "pattern",
+        "geometric"
+      ],
+      "description": "Hexagonal grid with wave patterns rippling through. Honeycomb-meets-ocean aesthetic.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "structured patterns",
+        "wave themes",
+        "geometric transitions"
+      ],
+      "pairsWellWith": [
+        "HexagonGridScene",
+        "GeometricMeshScene",
+        "PulseGridScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "ConcentricRingsScene",
+      "name": "Concentric Rings",
+      "category": "motion-bg",
+      "subcategory": "geometric",
+      "tags": [
+        "concentric",
+        "rings",
+        "circles",
+        "radiating",
+        "sonar",
+        "target",
+        "pulse"
+      ],
+      "description": "Expanding concentric circles radiating from center. Sonar/target/ripple aesthetic.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "impact themes",
+        "radiating influence",
+        "sonar/detection"
+      ],
+      "pairsWellWith": [
+        "PulseRippleScene",
+        "GravityWellScene",
+        "PulseGridScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "TriangleMosaicScene",
+      "name": "Triangle Mosaic",
+      "category": "motion-bg",
+      "subcategory": "geometric",
+      "tags": [
+        "triangle",
+        "mosaic",
+        "tessellation",
+        "geometric",
+        "pattern",
+        "kaleidoscope"
+      ],
+      "description": "Tessellating triangles with color shifts creating mosaic patterns. Low-poly art.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "artistic themes",
+        "design content",
+        "pattern-based visuals"
+      ],
+      "pairsWellWith": [
+        "GeometricMeshScene",
+        "KaleidoscopeScene",
+        "PrismRefractScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "KaleidoscopeScene",
+      "name": "Kaleidoscope",
+      "category": "motion-bg",
+      "subcategory": "geometric",
+      "tags": [
+        "kaleidoscope",
+        "symmetry",
+        "rotation",
+        "pattern",
+        "mirrored",
+        "fractals"
+      ],
+      "description": "Symmetrically mirrored rotating patterns creating kaleidoscope effect. Hypnotic movement.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "creative themes",
+        "hypnotic/mesmerizing moments",
+        "symmetry content"
+      ],
+      "pairsWellWith": [
+        "TriangleMosaicScene",
+        "SpiralScene",
+        "PrismRefractScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "DiamondRainScene",
+      "name": "Diamond Rain",
+      "category": "motion-bg",
+      "subcategory": "geometric",
+      "tags": [
+        "diamond",
+        "rain",
+        "falling",
+        "gems",
+        "sparkle",
+        "luxury",
+        "crystals"
+      ],
+      "description": "Diamond/gem shapes falling with sparkle trails. Luxury/premium aesthetic.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "premium content",
+        "luxury themes",
+        "value/wealth topics"
+      ],
+      "pairsWellWith": [
+        "SnowfallScene",
+        "MeteorShowerScene",
+        "PrismRefractScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "AuroraScene",
+      "name": "Aurora Borealis",
+      "category": "motion-bg",
+      "subcategory": "nature",
+      "tags": [
+        "aurora",
+        "borealis",
+        "northern-lights",
+        "waves",
+        "green",
+        "purple",
+        "nature"
+      ],
+      "description": "Undulating aurora borealis curtains with shifting colors. Majestic natural phenomenon.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "nature themes",
+        "beautiful backgrounds",
+        "inspirational moments"
+      ],
+      "pairsWellWith": [
+        "NebulaCloudsScene",
+        "GradientWaveScene",
+        "OceanWaveScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "OceanWaveScene",
+      "name": "Ocean Wave",
+      "category": "motion-bg",
+      "subcategory": "nature",
+      "tags": [
+        "ocean",
+        "wave",
+        "water",
+        "sea",
+        "flowing",
+        "blue",
+        "calm",
+        "fluid"
+      ],
+      "description": "Animated ocean waves with fluid motion. Calming blue water aesthetics.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "calm transitions",
+        "water themes",
+        "mindfulness content"
+      ],
+      "pairsWellWith": [
+        "FlowingLinesScene",
+        "LiquidBlobScene",
+        "AuroraScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "LiquidBlobScene",
+      "name": "Liquid Blob",
+      "category": "motion-bg",
+      "subcategory": "nature",
+      "tags": [
+        "liquid",
+        "blob",
+        "lava-lamp",
+        "morphing",
+        "organic",
+        "smooth",
+        "amorphous"
+      ],
+      "description": "Morphing liquid blobs like a lava lamp. Smooth organic shapes shifting colors.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "creative themes",
+        "organic visuals",
+        "calm background"
+      ],
+      "pairsWellWith": [
+        "GlowingOrbsScene",
+        "PlasmaFieldScene",
+        "GradientWaveScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "SmokeWispScene",
+      "name": "Smoke Wisp",
+      "category": "motion-bg",
+      "subcategory": "nature",
+      "tags": [
+        "smoke",
+        "wisp",
+        "fog",
+        "mist",
+        "ethereal",
+        "mysterious",
+        "flowing"
+      ],
+      "description": "Wispy smoke tendrils floating and curling. Mysterious, ethereal atmosphere.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "mysterious reveals",
+        "fog/uncertainty themes",
+        "elegant transitions"
+      ],
+      "pairsWellWith": [
+        "NebulaCloudsScene",
+        "LiquidBlobScene",
+        "AuroraScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "SnowfallScene",
+      "name": "Snowfall",
+      "category": "motion-bg",
+      "subcategory": "nature",
+      "tags": [
+        "snow",
+        "falling",
+        "winter",
+        "cold",
+        "flakes",
+        "peaceful",
+        "white"
+      ],
+      "description": "Gentle snowflakes falling with varying sizes and speeds. Peaceful winter atmosphere.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "winter themes",
+        "holiday content",
+        "peaceful background"
+      ],
+      "pairsWellWith": [
+        "DiamondRainScene",
+        "NebulaCloudsScene",
+        "FireflyFieldScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "PlasmaFieldScene",
+      "name": "Plasma Field",
+      "category": "motion-bg",
+      "subcategory": "energy",
+      "tags": [
+        "plasma",
+        "field",
+        "energy",
+        "electric",
+        "flowing",
+        "gradient",
+        "vivid"
+      ],
+      "description": "Vivid flowing plasma energy field with color gradients. High-energy abstract background.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "high-energy themes",
+        "vivid abstract backgrounds"
+      ],
+      "pairsWellWith": [
+        "ElectricArcScene",
+        "AuroraScene",
+        "NebulaCloudsScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "WarpTunnelScene",
+      "name": "Warp Tunnel",
+      "category": "motion-bg",
+      "subcategory": "speed",
+      "tags": [
+        "warp",
+        "tunnel",
+        "vortex",
+        "speed",
+        "hyperspace",
+        "tube",
+        "through"
+      ],
+      "description": "Flying through a glowing tunnel/tube. Warp-speed corridor effect.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "journey through content",
+        "time-travel themes",
+        "speed transitions"
+      ],
+      "pairsWellWith": [
+        "StarfieldWarpScene",
+        "ZoomThroughScene",
+        "HologramGridScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "DNAHelixScene",
+      "name": "DNA Helix",
+      "category": "motion-bg",
+      "subcategory": "science",
+      "tags": [
+        "dna",
+        "helix",
+        "double-helix",
+        "biology",
+        "science",
+        "genetics",
+        "rotating"
+      ],
+      "description": "Rotating 3D DNA double helix with glowing rungs. Science/biotech aesthetic.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "science themes",
+        "biology content",
+        "genetics/health topics"
+      ],
+      "pairsWellWith": [
+        "NeuralPulseScene",
+        "CircuitBoardScene",
+        "ConnectedNodesScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "TorusScene",
+      "name": "Torus",
+      "category": "motion-bg",
+      "subcategory": "3d",
+      "tags": [
+        "torus",
+        "donut",
+        "3d",
+        "rotating",
+        "wireframe",
+        "loop",
+        "infinity"
+      ],
+      "description": "Rotating wireframe torus (donut shape) with glowing edges. 3D loop aesthetic.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "3D themes",
+        "loop/cycle concepts",
+        "futuristic backgrounds"
+      ],
+      "pairsWellWith": [
+        "RotatingCubeScene",
+        "InfinityLoopScene",
+        "SpiralScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "RotatingCubeScene",
+      "name": "Rotating Cube",
+      "category": "motion-bg",
+      "subcategory": "3d",
+      "tags": [
+        "cube",
+        "3d",
+        "rotating",
+        "wireframe",
+        "box",
+        "perspective",
+        "dimension"
+      ],
+      "description": "Wireframe cube rotating in 3D space with glowing edges. Clean geometric 3D.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "3D concepts",
+        "thinking outside the box",
+        "dimension themes"
+      ],
+      "pairsWellWith": [
+        "TorusScene",
+        "HologramGridScene",
+        "GeometricMeshScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "SpiralScene",
+      "name": "Spiral",
+      "category": "motion-bg",
+      "subcategory": "geometric",
+      "tags": [
+        "spiral",
+        "golden",
+        "fibonacci",
+        "rotating",
+        "hypnotic",
+        "inward"
+      ],
+      "description": "Rotating spiral pattern drawing inward. Fibonacci/golden ratio aesthetic.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "mathematical themes",
+        "hypnotic moments",
+        "convergence"
+      ],
+      "pairsWellWith": [
+        "ParticleVortexScene",
+        "KaleidoscopeScene",
+        "TorusScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "InfinityLoopScene",
+      "name": "Infinity Loop",
+      "category": "motion-bg",
+      "subcategory": "geometric",
+      "tags": [
+        "infinity",
+        "loop",
+        "figure-eight",
+        "continuous",
+        "endless",
+        "eternal"
+      ],
+      "description": "Glowing figure-eight infinity symbol with particles tracing the path.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "infinity/continuity themes",
+        "loop concepts",
+        "eternal/persistent ideas"
+      ],
+      "pairsWellWith": [
+        "TorusScene",
+        "SpiralScene",
+        "ConcentricRingsScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "PrismRefractScene",
+      "name": "Prism Refraction",
+      "category": "motion-bg",
+      "subcategory": "light",
+      "tags": [
+        "prism",
+        "refraction",
+        "rainbow",
+        "light",
+        "spectrum",
+        "optics",
+        "split"
+      ],
+      "description": "Light beam splitting through a prism into rainbow spectrum. Pink Floyd-style optics.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "spectrum/diversity themes",
+        "analysis/breakdown",
+        "light themes"
+      ],
+      "pairsWellWith": [
+        "DiamondRainScene",
+        "KaleidoscopeScene",
+        "AuroraScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "LightTrailsScene",
+      "name": "Light Trails",
+      "category": "motion-bg",
+      "subcategory": "light",
+      "tags": [
+        "light",
+        "trails",
+        "streaks",
+        "neon",
+        "motion-blur",
+        "speed",
+        "city"
+      ],
+      "description": "Neon light trails streaking across like long-exposure city traffic. Speed and motion.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "speed themes",
+        "city/urban content",
+        "motion/progress"
+      ],
+      "pairsWellWith": [
+        "StarfieldWarpScene",
+        "WarpTunnelScene",
+        "ElectricArcScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "FlowingLinesScene",
+      "name": "Flowing Lines",
+      "category": "motion-bg",
+      "subcategory": "pattern",
+      "tags": [
+        "flowing",
+        "lines",
+        "curves",
+        "wave",
+        "parallel",
+        "smooth",
+        "elegant"
+      ],
+      "description": "Smooth parallel curves flowing and undulating. Elegant, minimal motion.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "elegant transitions",
+        "flowing content",
+        "minimal backgrounds"
+      ],
+      "pairsWellWith": [
+        "GradientWaveScene",
+        "OceanWaveScene",
+        "AuroraScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "WaveformScene",
+      "name": "Waveform",
+      "category": "motion-bg",
+      "subcategory": "pattern",
+      "tags": [
+        "waveform",
+        "audio",
+        "bars",
+        "equalizer",
+        "music",
+        "frequency",
+        "spectrum"
+      ],
+      "description": "Audio waveform/equalizer bars pulsing up and down. Music/audio visualization.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?, barCount?",
+      "bestFor": [
+        "audio content",
+        "music themes",
+        "podcast visuals"
+      ],
+      "pairsWellWith": [
+        "PendulumWaveScene",
+        "PulseGridScene",
+        "FlowingLinesScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "PendulumWaveScene",
+      "name": "Pendulum Wave",
+      "category": "motion-bg",
+      "subcategory": "pattern",
+      "tags": [
+        "pendulum",
+        "wave",
+        "physics",
+        "harmonic",
+        "oscillation",
+        "satisfying",
+        "sync"
+      ],
+      "description": "Row of pendulums swinging at slightly different frequencies creating wave patterns. Satisfying physics.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "physics themes",
+        "satisfying visuals",
+        "sync/harmony concepts"
+      ],
+      "pairsWellWith": [
+        "WaveformScene",
+        "BouncingDotsScene",
+        "WaveCollapseScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "WaveCollapseScene",
+      "name": "Wave Collapse",
+      "category": "motion-bg",
+      "subcategory": "pattern",
+      "tags": [
+        "wave",
+        "collapse",
+        "quantum",
+        "interference",
+        "pattern",
+        "ripple"
+      ],
+      "description": "Wave interference patterns collapsing and reforming. Quantum physics aesthetic.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "quantum themes",
+        "interference patterns",
+        "scientific content"
+      ],
+      "pairsWellWith": [
+        "PendulumWaveScene",
+        "PulseGridScene",
+        "ConcentricRingsScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "ShatterGlassScene",
+      "name": "Shatter Glass",
+      "category": "motion-bg",
+      "subcategory": "destruction",
+      "tags": [
+        "shatter",
+        "glass",
+        "break",
+        "fragments",
+        "explosion",
+        "crack",
+        "dramatic"
+      ],
+      "description": "Screen shatters into glass-like fragments that fly outward. Dramatic destruction effect.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "breaking barriers",
+        "disruption themes",
+        "dramatic transitions"
+      ],
+      "pairsWellWith": [
+        "ParticleExplosionScene",
+        "PixelDissolveScene",
+        "ImpactTextScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "PixelDissolveScene",
+      "name": "Pixel Dissolve",
+      "category": "motion-bg",
+      "subcategory": "destruction",
+      "tags": [
+        "pixel",
+        "dissolve",
+        "digital",
+        "break-apart",
+        "glitch",
+        "deconstruct"
+      ],
+      "description": "Screen dissolves into pixel fragments that scatter. Digital disintegration effect.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "digital transformation",
+        "transition moments",
+        "ending reveals"
+      ],
+      "pairsWellWith": [
+        "ShatterGlassScene",
+        "GlitchTextScene",
+        "ParticleExplosionScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "FloatingGlyphsScene",
+      "name": "Floating Glyphs",
+      "category": "motion-bg",
+      "subcategory": "symbols",
+      "tags": [
+        "glyphs",
+        "symbols",
+        "floating",
+        "characters",
+        "unicode",
+        "mystical",
+        "ancient"
+      ],
+      "description": "Unicode/mystical glyphs floating and rotating slowly. Ancient wisdom aesthetic.",
+      "inputSchema": "overlayTitle?, overlaySubtitle?, glyphs?",
+      "bestFor": [
+        "mystical themes",
+        "language/symbols content",
+        "ancient wisdom"
+      ],
+      "pairsWellWith": [
+        "ConstellationScene",
+        "NebulaCloudsScene",
+        "SpiralScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "PulseRippleScene",
+      "name": "Pulse Ripple",
+      "category": "motion-bg",
+      "subcategory": "pattern",
+      "tags": [
+        "pulse",
+        "ripple",
+        "icon",
+        "expanding",
+        "rings",
+        "center",
+        "emanate",
+        "radar"
+      ],
+      "description": "Central icon with expanding pulse rings emanating outward. Radar/impact ripple effect.",
+      "inputSchema": "centerIcon, overlayTitle?, overlaySubtitle?",
+      "bestFor": [
+        "impact moments",
+        "notification themes",
+        "center-focus content"
+      ],
+      "pairsWellWith": [
+        "ConcentricRingsScene",
+        "PulseGridScene",
+        "SpotlightRevealScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "TypewriterQuoteScene",
+      "name": "Typewriter Quote",
+      "category": "text",
+      "subcategory": "quote",
+      "tags": [
+        "typewriter",
+        "quote",
+        "typing",
+        "cursor",
+        "author",
+        "inspirational"
+      ],
+      "description": "Types out a quote character-by-character with blinking cursor. Author fades in after.",
+      "inputSchema": "quote, author",
+      "bestFor": [
+        "inspirational quotes",
+        "key messages",
+        "attributed statements"
+      ],
+      "pairsWellWith": [
+        "GradientQuoteScene",
+        "KeyInsightScene",
+        "CinematicOutroScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "KeyInsightScene",
+      "name": "Key Insight",
+      "category": "text",
+      "subcategory": "emphasis",
+      "tags": [
+        "key",
+        "insight",
+        "white",
+        "cyan",
+        "highlight",
+        "takeaway",
+        "important",
+        "callout"
+      ],
+      "description": "Two-tone text with white lead-in and cyan highlight phrase. Emphasizes the key insight.",
+      "inputSchema": "insightWhite, insightCyan",
+      "bestFor": [
+        "key takeaways",
+        "insight moments",
+        "emphasis callouts"
+      ],
+      "pairsWellWith": [
+        "TypewriterQuoteScene",
+        "PercentageGlowScene",
+        "StatsGridScene"
+      ],
+      "suggestedDuration": 150,
+      "suggestedDurationSec": 5
+    },
+    {
+      "id": "DualColorTextScene",
+      "name": "Dual Color Text",
+      "category": "text",
+      "subcategory": "emphasis",
+      "tags": [
+        "dual",
+        "color",
+        "contrast",
+        "white",
+        "cyan",
+        "statement",
+        "two-tone"
+      ],
+      "description": "Statements with white text and cyan-highlighted key words. Staggered fade-in per statement.",
+      "inputSchema": "title?, statements: {white, cyan}[]",
+      "bestFor": [
+        "contrasting concepts",
+        "keyword emphasis",
+        "principle statements"
+      ],
+      "pairsWellWith": [
+        "KeyInsightScene",
+        "WordByWordScene",
+        "TypewriterQuoteScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "GlitchTextScene",
+      "name": "Glitch Text",
+      "category": "text",
+      "subcategory": "effect",
+      "tags": [
+        "glitch",
+        "text",
+        "distortion",
+        "cyber",
+        "error",
+        "corruption",
+        "punk"
+      ],
+      "description": "Two lines of text with RGB offset glitch distortion. Cyberpunk aesthetic.",
+      "inputSchema": "textLine1, textLine2",
+      "bestFor": [
+        "cyberpunk themes",
+        "error/corruption concepts",
+        "edgy reveals"
+      ],
+      "pairsWellWith": [
+        "MatrixRainScene",
+        "DigitalRainDropScene",
+        "ShatterGlassScene"
+      ],
+      "suggestedDuration": 120,
+      "suggestedDurationSec": 4
+    },
+    {
+      "id": "WordByWordScene",
+      "name": "Word By Word",
+      "category": "text",
+      "subcategory": "reveal",
+      "tags": [
+        "word",
+        "reveal",
+        "sequential",
+        "kinetic",
+        "one-at-a-time",
+        "typography"
+      ],
+      "description": "Words appear one at a time with animated highlights. Kinetic typography effect.",
+      "inputSchema": "words: {text, highlight?}[], subtitle",
+      "bestFor": [
+        "kinetic text reveals",
+        "word-level emphasis",
+        "hook sentences"
+      ],
+      "pairsWellWith": [
+        "TypewriterQuoteScene",
+        "GlitchTextScene",
+        "KeyInsightScene"
+      ],
+      "suggestedDuration": 150,
+      "suggestedDurationSec": 5
+    },
+    {
+      "id": "TextMaskRevealScene",
+      "name": "Text Mask Reveal",
+      "category": "text",
+      "subcategory": "reveal",
+      "tags": [
+        "mask",
+        "reveal",
+        "wipe",
+        "dramatic",
+        "large",
+        "cinematic",
+        "unveil"
+      ],
+      "description": "Large text revealed through an animated mask/wipe effect. Cinematic text unveil.",
+      "inputSchema": "line1, line2, line3?",
+      "bestFor": [
+        "cinematic reveals",
+        "title cards",
+        "dramatic headlines"
+      ],
+      "pairsWellWith": [
+        "SpotlightRevealScene",
+        "GlitchTextScene",
+        "ImpactTextScene"
+      ],
+      "suggestedDuration": 150,
+      "suggestedDurationSec": 5
+    },
+    {
+      "id": "SpotlightRevealScene",
+      "name": "Spotlight Reveal",
+      "category": "text",
+      "subcategory": "reveal",
+      "tags": [
+        "spotlight",
+        "reveal",
+        "beam",
+        "light",
+        "focus",
+        "illumination",
+        "dramatic"
+      ],
+      "description": "Text revealed by a moving spotlight beam sweeping across. Theatrical unveil.",
+      "inputSchema": "revealText, subtitle?",
+      "bestFor": [
+        "dramatic reveals",
+        "surprise moments",
+        "featured announcements"
+      ],
+      "pairsWellWith": [
+        "TextMaskRevealScene",
+        "CountdownRevealScene",
+        "GlitchTextScene"
+      ],
+      "suggestedDuration": 150,
+      "suggestedDurationSec": 5
+    },
+    {
+      "id": "MatrixRainScene",
+      "name": "Matrix Rain Text",
+      "category": "text",
+      "subcategory": "themed",
+      "tags": [
+        "matrix",
+        "rain",
+        "green",
+        "code",
+        "hacker",
+        "title",
+        "digital"
+      ],
+      "description": "Matrix-style falling code rain with featured title text in foreground. Hacker aesthetic with readable text.",
+      "inputSchema": "titleWhite, titleCyan",
+      "bestFor": [
+        "coding/tech topics",
+        "hacker themes",
+        "digital content titles"
+      ],
+      "pairsWellWith": [
+        "DigitalRainDropScene",
+        "GlitchTextScene",
+        "CircuitBoardScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "GradientQuoteScene",
+      "name": "Gradient Quote Card",
+      "category": "text",
+      "subcategory": "quote",
+      "tags": [
+        "gradient",
+        "quote",
+        "highlight",
+        "box",
+        "key-phrase",
+        "emphasis",
+        "pink",
+        "purple"
+      ],
+      "description": "Quote on vibrant pink-purple-blue gradient. Key phrase gets a blue highlight box behind it.",
+      "inputSchema": "quote, highlightPhrase, attribution?",
+      "bestFor": [
+        "key takeaways",
+        "principle summaries",
+        "motivational statements"
+      ],
+      "pairsWellWith": [
+        "SystemPrincipleScene",
+        "ImpactTextScene",
+        "MountainPathScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "ImpactTextScene",
+      "name": "Impact Text",
+      "category": "text",
+      "subcategory": "dramatic",
+      "tags": [
+        "impact",
+        "bold",
+        "caps",
+        "dramatic",
+        "single",
+        "word",
+        "shock",
+        "red",
+        "failure"
+      ],
+      "description": "Full-screen bold ALL CAPS text on dark bg. Spring scale-in with glow. Maximum dramatic impact.",
+      "inputSchema": "text, textColor?, bgDark?",
+      "bestFor": [
+        "dramatic openers",
+        "single-word emphasis",
+        "emotional hooks"
+      ],
+      "pairsWellWith": [
+        "PillBadgeScene",
+        "GradientQuoteScene",
+        "CountdownRevealScene"
+      ],
+      "suggestedDuration": 90,
+      "suggestedDurationSec": 3
+    },
+    {
+      "id": "AnimatedChecklistScene",
+      "name": "Animated Checklist",
+      "category": "layout",
+      "subcategory": "list",
+      "tags": [
+        "checklist",
+        "list",
+        "checkmark",
+        "steps",
+        "todo",
+        "items",
+        "animated"
+      ],
+      "description": "Animated checklist with items appearing and getting checked off sequentially. Clean list layout.",
+      "inputSchema": "title, items: string[]",
+      "bestFor": [
+        "step-by-step guides",
+        "todo lists",
+        "requirement checklists"
+      ],
+      "pairsWellWith": [
+        "ProgressStepsScene",
+        "ProcessFlowScene",
+        "IconGridScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "CollageScene",
+      "name": "Photo Collage",
+      "category": "layout",
+      "subcategory": "gallery",
+      "tags": [
+        "collage",
+        "cards",
+        "gallery",
+        "mosaic",
+        "images",
+        "positioned",
+        "overlay"
+      ],
+      "description": "Positioned cards/images in a collage layout with staggered animations. Pinterest-style layout.",
+      "inputSchema": "cards: {x, y, ...rest}[]",
+      "bestFor": [
+        "portfolio displays",
+        "image galleries",
+        "social media showcases"
+      ],
+      "pairsWellWith": [
+        "MasonryRevealScene",
+        "SlidingPanelsScene",
+        "HorizontalScrollScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "FeatureSpotlightScene",
+      "name": "Feature Spotlight",
+      "category": "layout",
+      "subcategory": "spotlight",
+      "tags": [
+        "feature",
+        "spotlight",
+        "icon",
+        "metric",
+        "highlight",
+        "single",
+        "focus"
+      ],
+      "description": "Single feature highlighted with large icon, description, and key metric. Focused product feature.",
+      "inputSchema": "icon, title, description, metric, metricLabel",
+      "bestFor": [
+        "feature highlights",
+        "product capabilities",
+        "key benefit focus"
+      ],
+      "pairsWellWith": [
+        "IconGridScene",
+        "FlipCardScene",
+        "LayeredCardsScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "FlipCardScene",
+      "name": "Flip Card",
+      "category": "layout",
+      "subcategory": "reveal",
+      "tags": [
+        "flip",
+        "card",
+        "front",
+        "back",
+        "reveal",
+        "before",
+        "after",
+        "3d"
+      ],
+      "description": "Card that flips from front to back revealing hidden information. 3D flip animation.",
+      "inputSchema": "frontTitle, frontSubtitle, backTitle, backItems: string[]",
+      "bestFor": [
+        "reveal moments",
+        "Q&A format",
+        "myth vs reality"
+      ],
+      "pairsWellWith": [
+        "BeforeAfterScene",
+        "ComparisonCardsScene",
+        "SpotlightRevealScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "GoldilocksScene",
+      "name": "Goldilocks Scale",
+      "category": "layout",
+      "subcategory": "comparison",
+      "tags": [
+        "goldilocks",
+        "scale",
+        "too-much",
+        "too-little",
+        "just-right",
+        "spectrum",
+        "balance"
+      ],
+      "description": "Three-point scale with 'too little', 'just right', 'too much'. Goldilocks principle visual.",
+      "inputSchema": "title, leftLabel, centerLabel, rightLabel, items[]",
+      "bestFor": [
+        "balance themes",
+        "Goldilocks principle",
+        "spectrum displays"
+      ],
+      "pairsWellWith": [
+        "ComparisonCardsScene",
+        "SplitScreenScene",
+        "BeforeAfterScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "HorizontalScrollScene",
+      "name": "Horizontal Scroll Cards",
+      "category": "layout",
+      "subcategory": "carousel",
+      "tags": [
+        "horizontal",
+        "scroll",
+        "carousel",
+        "cards",
+        "sliding",
+        "series",
+        "gallery"
+      ],
+      "description": "Cards scroll horizontally across screen. Carousel-style content presentation.",
+      "inputSchema": "title, cards: {title, subtitle, content}[]",
+      "bestFor": [
+        "tips/tricks carousel",
+        "card series",
+        "feature gallery"
+      ],
+      "pairsWellWith": [
+        "SlidingPanelsScene",
+        "LayeredCardsScene",
+        "QuoteCarouselScene"
+      ],
+      "suggestedDuration": 270,
+      "suggestedDurationSec": 9
+    },
+    {
+      "id": "IconGridScene",
+      "name": "Icon Grid",
+      "category": "layout",
+      "subcategory": "grid",
+      "tags": [
+        "icon",
+        "grid",
+        "features",
+        "emoji",
+        "labeled",
+        "benefits",
+        "capabilities"
+      ],
+      "description": "Grid of items with icons/emojis and labels. Clean feature/benefit grid layout.",
+      "inputSchema": "title, items: {icon, title, description}[]",
+      "bestFor": [
+        "feature grids",
+        "benefit lists",
+        "capability overviews"
+      ],
+      "pairsWellWith": [
+        "MasonryRevealScene",
+        "HexagonGridScene",
+        "FeatureSpotlightScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "LayeredCardsScene",
+      "name": "Layered Cards Stack",
+      "category": "layout",
+      "subcategory": "stack",
+      "tags": [
+        "layered",
+        "cards",
+        "stack",
+        "depth",
+        "z-index",
+        "overlapping",
+        "fan"
+      ],
+      "description": "Cards stacked with depth/offset that fan out. Z-layered card reveal.",
+      "inputSchema": "title, cards: {title, description}[]",
+      "bestFor": [
+        "stacked information",
+        "layered concepts",
+        "progressive reveals"
+      ],
+      "pairsWellWith": [
+        "SlidingPanelsScene",
+        "FlipCardScene",
+        "HorizontalScrollScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "MasonryRevealScene",
+      "name": "Masonry Reveal",
+      "category": "layout",
+      "subcategory": "grid",
+      "tags": [
+        "masonry",
+        "reveal",
+        "cards",
+        "grid",
+        "waterfall",
+        "staggered",
+        "pinterest"
+      ],
+      "description": "Masonry (variable-height) grid cards staggering in. Pinterest-style waterfall layout.",
+      "inputSchema": "title, cards: {icon, title, description}[]",
+      "bestFor": [
+        "mixed-content grids",
+        "portfolio layouts",
+        "feature discovery"
+      ],
+      "pairsWellWith": [
+        "CollageScene",
+        "IconGridScene",
+        "HexagonGridScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "OrbitingIconsScene",
+      "name": "Orbiting Icons",
+      "category": "layout",
+      "subcategory": "circular",
+      "tags": [
+        "orbiting",
+        "icons",
+        "circular",
+        "rotating",
+        "ecosystem",
+        "center",
+        "satellite"
+      ],
+      "description": "Icons/labels orbiting around a center element. Shows ecosystem/satellite relationships.",
+      "inputSchema": "title, centerLabel, orbits: {label, icon?}[]",
+      "bestFor": [
+        "ecosystem diagrams",
+        "satellite concepts",
+        "hub-and-spoke models"
+      ],
+      "pairsWellWith": [
+        "ConnectedNodesScene",
+        "HexagonGridScene",
+        "ProcessFlowScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "ParallaxLayersScene",
+      "name": "Parallax Layers",
+      "category": "layout",
+      "subcategory": "depth",
+      "tags": [
+        "parallax",
+        "layers",
+        "depth",
+        "scrolling",
+        "3d",
+        "foreground",
+        "background"
+      ],
+      "description": "Text layers at different depths moving at different speeds. Parallax scrolling effect.",
+      "inputSchema": "bgText, midText, fgText, subtitle?",
+      "bestFor": [
+        "depth emphasis",
+        "layered concepts",
+        "visual hierarchy"
+      ],
+      "pairsWellWith": [
+        "ZoomThroughScene",
+        "SlidingPanelsScene",
+        "TextMaskRevealScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "PhoneMockupScene",
+      "name": "Phone Mockup",
+      "category": "layout",
+      "subcategory": "device",
+      "tags": [
+        "phone",
+        "mockup",
+        "mobile",
+        "device",
+        "app",
+        "ui",
+        "checklist",
+        "screen"
+      ],
+      "description": "Phone device frame with animated checklist UI inside. Shows mobile app/interface content.",
+      "inputSchema": "checklistItems: string[]",
+      "bestFor": [
+        "mobile app demos",
+        "phone UI showcases",
+        "app feature lists"
+      ],
+      "pairsWellWith": [
+        "AnimatedChecklistScene",
+        "FeatureSpotlightScene",
+        "IconGridScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "ProcessFlowScene",
+      "name": "Process Flow",
+      "category": "layout",
+      "subcategory": "flow",
+      "tags": [
+        "process",
+        "flow",
+        "steps",
+        "arrows",
+        "pipeline",
+        "workflow",
+        "sequence"
+      ],
+      "description": "Horizontal process steps connected by arrows. Workflow/pipeline visualization.",
+      "inputSchema": "title, steps: {label, icon?, sublabel?}[]",
+      "bestFor": [
+        "workflow diagrams",
+        "process explanations",
+        "step sequences"
+      ],
+      "pairsWellWith": [
+        "ProgressStepsScene",
+        "ContentFunnelScene",
+        "AnimatedChecklistScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "ProgressStepsScene",
+      "name": "Progress Steps",
+      "category": "layout",
+      "subcategory": "progress",
+      "tags": [
+        "progress",
+        "steps",
+        "active",
+        "stepper",
+        "numbered",
+        "current",
+        "timeline"
+      ],
+      "description": "Numbered step indicators with one highlighted as active. Progress stepper component.",
+      "inputSchema": "title, steps: {label, sublabel?}[], activeStep",
+      "bestFor": [
+        "current progress display",
+        "step-by-step position",
+        "tutorial stages"
+      ],
+      "pairsWellWith": [
+        "ProcessFlowScene",
+        "MilestonePathScene",
+        "AnimatedChecklistScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "ProgressiveSectionsScene",
+      "name": "Progressive Sections",
+      "category": "layout",
+      "subcategory": "list",
+      "tags": [
+        "progressive",
+        "sections",
+        "numbered",
+        "chapters",
+        "agenda",
+        "outline"
+      ],
+      "description": "Numbered sections that reveal progressively. Chapter listing / agenda style.",
+      "inputSchema": "title, sections: {num, title, description}[]",
+      "bestFor": [
+        "video agendas",
+        "chapter outlines",
+        "table of contents"
+      ],
+      "pairsWellWith": [
+        "SectionNumberScene",
+        "ProgressStepsScene",
+        "SlidingPanelsScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "SlidingPanelsScene",
+      "name": "Sliding Panels",
+      "category": "layout",
+      "subcategory": "panels",
+      "tags": [
+        "sliding",
+        "panels",
+        "numbered",
+        "cards",
+        "horizontal",
+        "reveal",
+        "tabs"
+      ],
+      "description": "Numbered panels that slide in horizontally one by one. Tab-style layout reveal.",
+      "inputSchema": "panels: {number, title, description, icon?}[]",
+      "bestFor": [
+        "multi-section reveals",
+        "numbered concepts",
+        "panel-based content"
+      ],
+      "pairsWellWith": [
+        "HorizontalScrollScene",
+        "LayeredCardsScene",
+        "ProgressiveSectionsScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "TwoColumnScene",
+      "name": "Two Column Layout",
+      "category": "layout",
+      "subcategory": "columns",
+      "tags": [
+        "two",
+        "column",
+        "split",
+        "left",
+        "right",
+        "items",
+        "comparison",
+        "lists"
+      ],
+      "description": "Two-column layout with headers and item lists per side. Side-by-side content presentation.",
+      "inputSchema": "title, leftHeader, rightHeader, leftItems: {icon?, text}[], rightItems: {icon?, text}[]",
+      "bestFor": [
+        "pros/cons",
+        "two-topic comparison",
+        "dual list display"
+      ],
+      "pairsWellWith": [
+        "SplitScreenScene",
+        "ComparisonCardsScene",
+        "BeforeAfterScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "QuoteCarouselScene",
+      "name": "Quote Carousel",
+      "category": "layout",
+      "subcategory": "carousel",
+      "tags": [
+        "quote",
+        "carousel",
+        "rotating",
+        "testimonials",
+        "cycling",
+        "multiple"
+      ],
+      "description": "Multiple quotes cycling through with fade transitions. Testimonial carousel.",
+      "inputSchema": "quotes: {text, author}[], cycleDuration?",
+      "bestFor": [
+        "multiple testimonials",
+        "quote collections",
+        "review showcases"
+      ],
+      "pairsWellWith": [
+        "TestimonialScene",
+        "TypewriterQuoteScene",
+        "HorizontalScrollScene"
+      ],
+      "suggestedDuration": 300,
+      "suggestedDurationSec": 10
+    },
+    {
+      "id": "ForcingFunctionsScene",
+      "name": "Forcing Functions Grid",
+      "category": "layout",
+      "subcategory": "icon-grid",
+      "tags": [
+        "forcing",
+        "functions",
+        "grid",
+        "icons",
+        "gear",
+        "buttons",
+        "framework",
+        "principles"
+      ],
+      "description": "Circular gear icons with blue rounded label buttons on pink-purple gradient. Grid layout.",
+      "inputSchema": "title, items: {icon, label}[]",
+      "bestFor": [
+        "framework visualization",
+        "principle grids",
+        "feature showcases"
+      ],
+      "pairsWellWith": [
+        "SystemPrincipleScene",
+        "IfThenScene",
+        "MountainPathScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "ChecklistSidebarScene",
+      "name": "Checklist Sidebar",
+      "category": "layout",
+      "subcategory": "sidebar",
+      "tags": [
+        "checklist",
+        "sidebar",
+        "categories",
+        "grouped",
+        "organized",
+        "panel",
+        "dark"
+      ],
+      "description": "Dark sidebar with grouped checklist categories. Items check off sequentially. Organized panel.",
+      "inputSchema": "sidebarTitle, categories: {title, items: string[]}[]",
+      "bestFor": [
+        "categorized checklists",
+        "organized requirements",
+        "grouped features"
+      ],
+      "pairsWellWith": [
+        "AnimatedChecklistScene",
+        "ProgressStepsScene",
+        "SystemPrincipleScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "IfThenScene",
+      "name": "If-Then Rules",
+      "category": "layout",
+      "subcategory": "logic",
+      "tags": [
+        "if",
+        "then",
+        "rules",
+        "logic",
+        "conditional",
+        "cause",
+        "effect",
+        "pairs"
+      ],
+      "description": "IF → THEN rule pairs displayed as connected cards. Cause and effect visualization.",
+      "inputSchema": "title, pairs: {ifText, thenText}[]",
+      "bestFor": [
+        "cause-effect rules",
+        "conditional logic",
+        "behavioral triggers"
+      ],
+      "pairsWellWith": [
+        "SystemPrincipleScene",
+        "ForcingFunctionsScene",
+        "ProcessFlowScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "ComparisonCardsScene",
+      "name": "Three Column Comparison",
+      "category": "comparison",
+      "subcategory": "cards",
+      "tags": [
+        "comparison",
+        "cards",
+        "three",
+        "column",
+        "tiers",
+        "plans",
+        "before",
+        "during",
+        "after"
+      ],
+      "description": "Three era/plan cards side by side. Center card highlighted with glow. Items stagger in.",
+      "inputSchema": "title, cards: {title, subtitle, items[], highlighted}[]",
+      "bestFor": [
+        "plan comparison",
+        "era timeline",
+        "pricing tiers",
+        "feature comparison"
+      ],
+      "pairsWellWith": [
+        "SplitScreenScene",
+        "BeforeAfterScene",
+        "StatsGridScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "SplitScreenScene",
+      "name": "Split Screen",
+      "category": "comparison",
+      "subcategory": "dual",
+      "tags": [
+        "split",
+        "screen",
+        "left",
+        "right",
+        "versus",
+        "vs",
+        "dual",
+        "contrast"
+      ],
+      "description": "Screen split vertically with different content on each side. Direct side-by-side comparison.",
+      "inputSchema": "leftHeader, leftItems[], leftColor, rightHeader, rightItems[], rightColor",
+      "bestFor": [
+        "versus comparisons",
+        "old vs new",
+        "option A vs B"
+      ],
+      "pairsWellWith": [
+        "ComparisonCardsScene",
+        "BeforeAfterScene",
+        "TwoColumnScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "BeforeAfterScene",
+      "name": "Before / After",
+      "category": "comparison",
+      "subcategory": "transformation",
+      "tags": [
+        "before",
+        "after",
+        "transformation",
+        "change",
+        "improvement",
+        "upgrade"
+      ],
+      "description": "Before and after panels showing transformation. Clear visual upgrade/change.",
+      "inputSchema": "beforeTitle, beforeItems[], afterTitle, afterItems[]",
+      "bestFor": [
+        "transformation stories",
+        "improvement showcases",
+        "upgrade comparisons"
+      ],
+      "pairsWellWith": [
+        "ComparisonCardsScene",
+        "SplitScreenScene",
+        "DumbbellChartScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "SilhouetteCompareScene",
+      "name": "Silhouette Group Comparison",
+      "category": "comparison",
+      "subcategory": "study-results",
+      "tags": [
+        "silhouette",
+        "comparison",
+        "study",
+        "research",
+        "group",
+        "ab-test",
+        "statistics",
+        "percentage"
+      ],
+      "description": "Two groups of silhouettes with bold stats. Curved arrow between. Shows A/B study results.",
+      "inputSchema": "title, leftLabel, leftStat, leftStatColor, rightLabel, rightStat, rightStatColor",
+      "bestFor": [
+        "research results",
+        "A/B test data",
+        "group comparisons",
+        "study visualizations"
+      ],
+      "pairsWellWith": [
+        "GlowLineChartScene",
+        "ImpactTextScene",
+        "SystemPrincipleScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "HookScene",
+      "name": "Hook / Opener",
+      "category": "opener",
+      "subcategory": "hook",
+      "tags": [
+        "hook",
+        "opener",
+        "intro",
+        "attention",
+        "title",
+        "first",
+        "grab"
+      ],
+      "description": "Video opener with white + cyan title text and subtitle. Grabs attention as first scene.",
+      "inputSchema": "titleWhite, titleCyan, subtitle",
+      "bestFor": [
+        "video openers",
+        "attention hooks",
+        "title cards"
+      ],
+      "pairsWellWith": [
+        "SectionNumberScene",
+        "WordByWordScene",
+        "GlitchTextScene"
+      ],
+      "suggestedDuration": 120,
+      "suggestedDurationSec": 4
+    },
+    {
+      "id": "SectionNumberScene",
+      "name": "Section Number",
+      "category": "structural",
+      "subcategory": "divider",
+      "tags": [
+        "section",
+        "number",
+        "chapter",
+        "divider",
+        "big-number",
+        "transition"
+      ],
+      "description": "Large section number with title. Chapter divider between video sections.",
+      "inputSchema": "number, title",
+      "bestFor": [
+        "chapter transitions",
+        "section dividers",
+        "numbered segments"
+      ],
+      "pairsWellWith": [
+        "HookScene",
+        "ProgressiveSectionsScene",
+        "ProgressStepsScene"
+      ],
+      "suggestedDuration": 90,
+      "suggestedDurationSec": 3
+    },
+    {
+      "id": "CountdownRevealScene",
+      "name": "Countdown Reveal",
+      "category": "structural",
+      "subcategory": "reveal",
+      "tags": [
+        "countdown",
+        "reveal",
+        "number",
+        "timer",
+        "dramatic",
+        "suspense",
+        "unveil"
+      ],
+      "description": "Countdown from N to 1 then reveals text. Builds suspense before a big reveal.",
+      "inputSchema": "countdownFrom, revealText, revealSubtext?",
+      "bestFor": [
+        "suspense building",
+        "top-N lists",
+        "dramatic reveals"
+      ],
+      "pairsWellWith": [
+        "ParticleExplosionScene",
+        "ImpactTextScene",
+        "SpotlightRevealScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "MilestonePathScene",
+      "name": "Milestone Path",
+      "category": "structural",
+      "subcategory": "journey",
+      "tags": [
+        "milestone",
+        "path",
+        "roadmap",
+        "journey",
+        "steps",
+        "timeline",
+        "progress"
+      ],
+      "description": "Connected milestone nodes along a path. Shows progress/journey through points.",
+      "inputSchema": "title, milestones: string[]",
+      "bestFor": [
+        "roadmaps",
+        "journey milestones",
+        "progress tracking"
+      ],
+      "pairsWellWith": [
+        "VerticalTimelineScene",
+        "ProgressStepsScene",
+        "MountainPathScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "VerticalTimelineScene",
+      "name": "Vertical Timeline",
+      "category": "structural",
+      "subcategory": "timeline",
+      "tags": [
+        "vertical",
+        "timeline",
+        "chronological",
+        "events",
+        "history",
+        "dates",
+        "milestones"
+      ],
+      "description": "Vertical timeline with alternating left/right milestone entries. Chronological event display.",
+      "inputSchema": "title, milestones: {date, title, description}[]",
+      "bestFor": [
+        "chronological events",
+        "company history",
+        "product evolution"
+      ],
+      "pairsWellWith": [
+        "MilestonePathScene",
+        "GanttChartScene",
+        "ProgressStepsScene"
+      ],
+      "suggestedDuration": 270,
+      "suggestedDurationSec": 9
+    },
+    {
+      "id": "GradientWaveScene",
+      "name": "Gradient Wave Title",
+      "category": "structural",
+      "subcategory": "title",
+      "tags": [
+        "gradient",
+        "wave",
+        "title",
+        "section",
+        "header",
+        "opening",
+        "animated-bg"
+      ],
+      "description": "Title text on animated gradient wave background. Section header with motion.",
+      "inputSchema": "titleWhite, titleCyan",
+      "bestFor": [
+        "section headers",
+        "topic intros",
+        "animated title cards"
+      ],
+      "pairsWellWith": [
+        "SectionNumberScene",
+        "HookScene",
+        "KeyInsightScene"
+      ],
+      "suggestedDuration": 150,
+      "suggestedDurationSec": 5
+    },
+    {
+      "id": "ZoomThroughScene",
+      "name": "Zoom Through Layers",
+      "category": "structural",
+      "subcategory": "transition",
+      "tags": [
+        "zoom",
+        "through",
+        "layers",
+        "depth",
+        "drill-down",
+        "flying",
+        "nested"
+      ],
+      "description": "Camera zooms through successive text layers revealing deeper content. Drill-down effect.",
+      "inputSchema": "layers: string[], finalText, finalSub",
+      "bestFor": [
+        "drilling into topics",
+        "layered concepts",
+        "depth reveals"
+      ],
+      "pairsWellWith": [
+        "ParallaxLayersScene",
+        "WarpTunnelScene",
+        "SlidingPanelsScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "TrustFormulaScene",
+      "name": "Trust Formula",
+      "category": "structural",
+      "subcategory": "framework",
+      "tags": [
+        "trust",
+        "formula",
+        "equation",
+        "framework",
+        "components",
+        "numbered",
+        "system"
+      ],
+      "description": "Visual equation/formula with numbered terms and header. Shows components that make up a concept.",
+      "inputSchema": "header, formulaLeft, formulaTerms: string[], formulaSections: {num, title, points[]}[]",
+      "bestFor": [
+        "framework breakdowns",
+        "formula explanations",
+        "system components"
+      ],
+      "pairsWellWith": [
+        "ProgressStepsScene",
+        "ProcessFlowScene",
+        "ComparisonCardsScene"
+      ],
+      "suggestedDuration": 270,
+      "suggestedDurationSec": 9
+    },
+    {
+      "id": "MountainPathScene",
+      "name": "Mountain Journey Path",
+      "category": "structural",
+      "subcategory": "journey",
+      "tags": [
+        "mountain",
+        "path",
+        "journey",
+        "steps",
+        "numbered",
+        "climb",
+        "goal",
+        "progress",
+        "flag"
+      ],
+      "description": "Mountain silhouette with glowing SVG path ascending. 5 numbered stops. Red flag at summit.",
+      "inputSchema": "title, steps: {label}[], gradientFrom?, gradientTo?",
+      "bestFor": [
+        "multi-step frameworks",
+        "journey visualization",
+        "goal roadmaps"
+      ],
+      "pairsWellWith": [
+        "SystemPrincipleScene",
+        "ProgressStepsScene",
+        "GradientQuoteScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "SystemPrincipleScene",
+      "name": "System Principle Card",
+      "category": "structural",
+      "subcategory": "principle",
+      "tags": [
+        "system",
+        "principle",
+        "numbered",
+        "card",
+        "rule",
+        "law",
+        "framework",
+        "concept"
+      ],
+      "description": "Numbered principle card with title and description. Clean single-principle display.",
+      "inputSchema": "number, title, description",
+      "bestFor": [
+        "numbered principles",
+        "system rules",
+        "framework concepts"
+      ],
+      "pairsWellWith": [
+        "MountainPathScene",
+        "ForcingFunctionsScene",
+        "GradientQuoteScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "CinematicOutroScene",
+      "name": "Cinematic Outro",
+      "category": "closer",
+      "subcategory": "outro",
+      "tags": [
+        "cinematic",
+        "outro",
+        "ending",
+        "credits",
+        "fade",
+        "final",
+        "subscribe"
+      ],
+      "description": "Cinematic fade-out ending with title, tagline, and call to action. Professional video closer.",
+      "inputSchema": "title, tagline, ctaText?",
+      "bestFor": [
+        "video endings",
+        "professional closers",
+        "subscribe CTAs"
+      ],
+      "pairsWellWith": [
+        "GrandFinaleScene",
+        "EndingScene",
+        "TypewriterQuoteScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "EndingScene",
+      "name": "Ending Questions",
+      "category": "closer",
+      "subcategory": "engagement",
+      "tags": [
+        "ending",
+        "questions",
+        "engagement",
+        "comment",
+        "discuss",
+        "audience"
+      ],
+      "description": "Discussion questions displayed as ending cards. Drives audience engagement and comments.",
+      "inputSchema": "questions: string[]",
+      "bestFor": [
+        "audience engagement",
+        "comment prompts",
+        "discussion starters"
+      ],
+      "pairsWellWith": [
+        "CinematicOutroScene",
+        "GrandFinaleScene",
+        "TestimonialScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "GrandFinaleScene",
+      "name": "Grand Finale",
+      "category": "closer",
+      "subcategory": "finale",
+      "tags": [
+        "grand",
+        "finale",
+        "keywords",
+        "explosion",
+        "celebration",
+        "ending",
+        "climax"
+      ],
+      "description": "Keywords explode outward in a grand finale celebration. Climactic ending with particle burst.",
+      "inputSchema": "keywords: string[], finalMessage?",
+      "bestFor": [
+        "video climax",
+        "celebration endings",
+        "keyword summary bursts"
+      ],
+      "pairsWellWith": [
+        "CinematicOutroScene",
+        "EndingScene",
+        "ParticleExplosionScene"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "TestimonialScene",
+      "name": "Testimonial Quote",
+      "category": "closer",
+      "subcategory": "testimonial",
+      "tags": [
+        "testimonial",
+        "quote",
+        "review",
+        "endorsement",
+        "customer",
+        "feedback",
+        "social-proof"
+      ],
+      "description": "Styled testimonial card with quote, author name, and role. Social proof display.",
+      "inputSchema": "quote, author, role?, avatarEmoji?",
+      "bestFor": [
+        "customer testimonials",
+        "reviews",
+        "social proof"
+      ],
+      "pairsWellWith": [
+        "QuoteCarouselScene",
+        "TypewriterQuoteScene",
+        "EndingScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "ViewerCircleScene",
+      "name": "Viewer Circle Stats",
+      "category": "closer",
+      "subcategory": "engagement",
+      "tags": [
+        "viewer",
+        "circle",
+        "audience",
+        "percentage",
+        "highlighted",
+        "community",
+        "stats"
+      ],
+      "description": "Circle of viewer avatars with highlighted subset showing a statistic. Community engagement visual.",
+      "inputSchema": "totalViewers, highlightedCount, scoreLabel, highlightLabel",
+      "bestFor": [
+        "audience stats",
+        "community engagement",
+        "subscriber milestones"
+      ],
+      "pairsWellWith": [
+        "StatsGridScene",
+        "PercentageGlowScene",
+        "EndingScene"
+      ],
+      "suggestedDuration": 210,
+      "suggestedDurationSec": 7
+    },
+    {
+      "id": "NeonBrainScene",
+      "name": "Neon Brain",
+      "category": "effect",
+      "subcategory": "illustration",
+      "tags": [
+        "neon",
+        "brain",
+        "mind",
+        "neural",
+        "thinking",
+        "cognitive",
+        "glow",
+        "insight"
+      ],
+      "description": "Glowing neon brain illustration with pulsing text. Cognitive/thinking visual metaphor.",
+      "inputSchema": "mainText, highlightText, highlightColor?",
+      "bestFor": [
+        "mind/thinking themes",
+        "cognitive insights",
+        "brain science"
+      ],
+      "pairsWellWith": [
+        "NeuralPulseScene",
+        "KeyInsightScene",
+        "ImpactTextScene"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "LowerThirdScene",
+      "name": "Lower Third",
+      "category": "effect",
+      "subcategory": "overlay",
+      "tags": [
+        "lower",
+        "third",
+        "name",
+        "title",
+        "bar",
+        "label",
+        "speaker",
+        "identification"
+      ],
+      "description": "Animated lower-third name/title bar. Standard broadcast-style speaker identification.",
+      "inputSchema": "name, title?, bgColor?",
+      "bestFor": [
+        "speaker identification",
+        "name cards",
+        "guest intros"
+      ],
+      "pairsWellWith": [
+        "TestimonialScene",
+        "HookScene",
+        "GradientQuoteScene"
+      ],
+      "suggestedDuration": 120,
+      "suggestedDurationSec": 4
+    },
+    {
+      "id": "PillBadgeScene",
+      "name": "Pill Badges",
+      "category": "effect",
+      "subcategory": "labels",
+      "tags": [
+        "pill",
+        "badge",
+        "tag",
+        "label",
+        "category",
+        "chip",
+        "colorful",
+        "hashtag"
+      ],
+      "description": "Colorful pill-shaped badges/tags appearing with spring animation. Category/tag display.",
+      "inputSchema": "badges: {text, color}[], subtitle?",
+      "bestFor": [
+        "tag clouds",
+        "category labels",
+        "skill badges"
+      ],
+      "pairsWellWith": [
+        "TagCloudScene",
+        "ImpactTextScene",
+        "IconGridScene"
+      ],
+      "suggestedDuration": 150,
+      "suggestedDurationSec": 5
+    },
+    {
+      "id": "KenBurns",
+      "name": "Ken Burns",
+      "category": "effect",
+      "subcategory": "camera",
+      "tags": [
+        "ken-burns",
+        "zoom",
+        "pan",
+        "slow-motion",
+        "establishing",
+        "b-roll",
+        "camera",
+        "image",
+        "video",
+        "cinematic",
+        "gentle",
+        "floating",
+        "3d",
+        "rotation",
+        "organic"
+      ],
+      "description": "Cinematic Ken Burns with organic floating feel. Smooth start→end camera interpolation plus Perlin noise micro-drift. Supports direction presets (zoom-in, pan-left, orbit, etc.), rotation, 3D perspective, multiple easing curves, and organic noise drift.",
+      "inputSchema": "src (file), isVideo?, startFrom?, endAt?, volume?, direction?, startZoom?, endZoom?, startPanX?, endPanX?, startPanY?, endPanY?, startRotation?, endRotation?, easing?, noiseIntensity?, noiseSeed?, perspective?",
+      "bestFor": [
+        "establishing shots",
+        "B-roll footage",
+        "photo slideshows",
+        "cinematic intros",
+        "subtle motion on screenshots"
+      ],
+      "pairsWellWith": [
+        "VideoSmartCamera",
+        "Spotlight",
+        "TextCallout",
+        "HookScene"
+      ],
+      "suggestedDuration": 120,
+      "suggestedDurationSec": 4
+    },
+    {
+      "id": "SmartCamera",
+      "name": "Smart Camera",
+      "category": "effect",
+      "subcategory": "camera",
+      "tags": [
+        "smart-camera",
+        "zoom",
+        "pan",
+        "perspective",
+        "keyframe",
+        "camera",
+        "image",
+        "cinematic",
+        "3d",
+        "tracking"
+      ],
+      "description": "Keyframe-driven virtual cinematography on a static image. Define camera keyframes (zoom, panX, panY, rotateX, rotateY) at specific frames and it smoothly interpolates between them with easing curves. Creates cinematic camera movements over screenshots, diagrams, or any still image.",
+      "inputSchema": "imageSrc (file), cameraKeyframes: {frame, zoom, panX, panY, rotateY, rotateX, easing, label, holdFrames}[], isStaticFile?, imageWidth?, imageHeight?",
+      "bestFor": [
+        "screenshot walkthroughs",
+        "diagram exploration",
+        "code review",
+        "tutorial annotations",
+        "product demos"
+      ],
+      "pairsWellWith": [
+        "ImageTextHighlight",
+        "EnhancedMarkerHighlight",
+        "KenBurns",
+        "TextCallout"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "HandheldCamera",
+      "name": "Handheld Camera",
+      "category": "effect",
+      "subcategory": "camera",
+      "tags": [
+        "handheld",
+        "realistic",
+        "floating",
+        "phone",
+        "recording",
+        "organic",
+        "noise",
+        "camera",
+        "image",
+        "video",
+        "natural",
+        "ken-burns",
+        "drift",
+        "3d"
+      ],
+      "description": "Floating organic camera motion with optional Ken Burns drift. Uses 4-layer Perlin noise for ultra-smooth motion. Supports directional drift (zoom in/out, pan), speed control, 3D perspective. Like a Steadicam operator — smooth, purposeful, always alive.",
+      "inputSchema": "imageSrc? (file), videoSrc? (file), isVideo?, startFrom?, endAt?, volume?, objectFit?, intensity? (0-1), speed?, baseZoom?, basePanX?, basePanY?, driftZoom?, driftPanX?, driftPanY?, driftRotation?, perspective?, seed?",
+      "bestFor": [
+        "making stills feel alive",
+        "b-roll from images",
+        "social media content",
+        "documentary feel",
+        "casual recording look"
+      ],
+      "pairsWellWith": [
+        "KenBurns",
+        "SmartCamera",
+        "TextCallout",
+        "Spotlight"
+      ],
+      "suggestedDuration": 150,
+      "suggestedDurationSec": 5
+    },
+    {
+      "id": "VideoSmartCamera",
+      "name": "Video Smart Camera",
+      "category": "effect",
+      "subcategory": "camera",
+      "tags": [
+        "video",
+        "smart-camera",
+        "zoom",
+        "pan",
+        "perspective",
+        "keyframe",
+        "camera",
+        "3d",
+        "highlight",
+        "tracking"
+      ],
+      "description": "Smart camera on actual video. Plays a real video file with keyframe-driven camera movements (zoom, pan, perspective) and optional highlight overlays synced to content. Same camera intelligence as SmartCamera but on live video instead of a still image.",
+      "inputSchema": "videoSrc (file), startFrom?, endAt?, volume?, objectFit?, cameraKeyframes?: {frame, zoom, panX, panY, rotateY, rotateX, easing, label, holdFrames}[], highlights?: {label, x, y, w, h, startTime, endTime?, color?, style?}[]",
+      "bestFor": [
+        "video walkthroughs",
+        "screen recordings with focus",
+        "reaction videos",
+        "tutorial videos",
+        "cinematic re-framing"
+      ],
+      "pairsWellWith": [
+        "SmartCamera",
+        "KenBurns",
+        "Spotlight",
+        "PictureInPicture"
+      ],
+      "suggestedDuration": 300,
+      "suggestedDurationSec": 10
+    },
+    {
+      "id": "Spotlight",
+      "name": "Spotlight",
+      "category": "effect",
+      "subcategory": "camera",
+      "tags": [
+        "spotlight",
+        "focus",
+        "highlight",
+        "dim",
+        "mask",
+        "circle",
+        "attention",
+        "video",
+        "image",
+        "camera"
+      ],
+      "description": "Video/image with spotlight focus effect. Dims the entire frame EXCEPT circular or rectangular spotlight areas. Spotlights can track multiple regions sequentially, creating a 'follow the spotlight' effect. Perfect for drawing attention to specific UI elements, faces, or details.",
+      "inputSchema": "src (file), isVideo?, startFrom?, endAt?, volume?, spotlights: {x, y, radius, shape?, startFrame, endFrame?, label?}[], dimAmount?, feather?",
+      "bestFor": [
+        "UI feature highlights",
+        "product demos",
+        "face focus",
+        "detail callouts",
+        "tutorial step focus"
+      ],
+      "pairsWellWith": [
+        "TextCallout",
+        "SmartCamera",
+        "KenBurns",
+        "ImageTextHighlight"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "PictureInPicture",
+      "name": "Picture in Picture",
+      "category": "layout",
+      "subcategory": "compositing",
+      "tags": [
+        "pip",
+        "picture-in-picture",
+        "facecam",
+        "overlay",
+        "inset",
+        "video",
+        "speaker",
+        "compositing",
+        "corner"
+      ],
+      "description": "Video with a PIP overlay. Main content fills the frame while a smaller inset shows a second source (video or image) in a rounded frame. PIP can be positioned in any corner with configurable size, border, and enter/exit animations. Classic 'speaker in corner' layout.",
+      "inputSchema": "mainVideoSrc (file), pipSrc (file), pipIsVideo?, pip: {position, size, borderRadius, borderColor, borderWidth, margin, enterFrame?, exitFrame?, pipAspectRatio?}, volume?",
+      "bestFor": [
+        "speaker facecam overlay",
+        "code + reaction",
+        "tutorial with presenter",
+        "gaming streams",
+        "dual-source compositing"
+      ],
+      "pairsWellWith": [
+        "VideoSmartCamera",
+        "KenBurns",
+        "SplitCompare",
+        "TextCallout"
+      ],
+      "suggestedDuration": 200,
+      "suggestedDurationSec": 6.7
+    },
+    {
+      "id": "SplitCompare",
+      "name": "Split Compare",
+      "category": "comparison",
+      "subcategory": "media-compare",
+      "tags": [
+        "split",
+        "compare",
+        "before-after",
+        "side-by-side",
+        "wipe",
+        "divider",
+        "video",
+        "image",
+        "A/B"
+      ],
+      "description": "Side-by-side or top/bottom split comparison of two video segments or images. Supports static 50/50 split or animated wipe reveal. Each side can be independently sourced (video or image) with labels. Great for before/after, A vs B, or two camera angles.",
+      "inputSchema": "left: {src, isVideo?, startFrom?, label?, labelColor?}, right: {src, isVideo?, startFrom?, label?, labelColor?}, direction?, mode?, wipeStartFrame?, dividerColor?, volume?",
+      "bestFor": [
+        "before/after comparisons",
+        "A vs B",
+        "two camera angles",
+        "version comparisons",
+        "side-by-side demos"
+      ],
+      "pairsWellWith": [
+        "PictureInPicture",
+        "Spotlight",
+        "KenBurns",
+        "TextCallout"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "TextCallout",
+      "name": "Text Callout",
+      "category": "effect",
+      "subcategory": "annotation",
+      "tags": [
+        "callout",
+        "annotation",
+        "arrow",
+        "label",
+        "pointer",
+        "overlay",
+        "video",
+        "image",
+        "text",
+        "highlight"
+      ],
+      "description": "Video/image with animated text callout overlays. Shows labels/annotations pointing to specific regions on screen with optional arrow/line and background pill. Multiple callouts can appear and disappear at timed intervals. Perfect for 'This is the manifest file →' style annotations.",
+      "inputSchema": "src (file), isVideo?, startFrom?, endAt?, volume?, callouts: {text, x, y, targetX, targetY, enterFrame, exitFrame?, bgColor?, textColor?, lineColor?, fontSize?}[]",
+      "bestFor": [
+        "code annotations",
+        "UI walkthroughs",
+        "product feature callouts",
+        "tutorial pointers",
+        "diagram explanations"
+      ],
+      "pairsWellWith": [
+        "Spotlight",
+        "SmartCamera",
+        "ImageTextHighlight",
+        "KenBurns"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "ImageTextHighlight",
+      "name": "Image Text Highlight",
+      "category": "effect",
+      "subcategory": "annotation",
+      "tags": [
+        "highlight",
+        "marker",
+        "text",
+        "image",
+        "annotation",
+        "highlighter",
+        "pen",
+        "word",
+        "screenshot",
+        "ocr"
+      ],
+      "description": "Marker-pen highlight over words in a screenshot/image. Overlays translucent highlight bands that look like someone drew over text with a real highlighter pen. Each word animates with a left→right swipe reveal, and previously highlighted words remain visible. Authentic hand-drawn marker feel. LEGACY — includes built-in camera. Use ImageHighlight for composable version.",
+      "inputSchema": "imageSrc (file), isStaticFile?, regions: {label, x, y, w, h, startFrame}[], highlightColor?, highlightOpacity?, readOpacity?, borderRadius?, imageWidth?, imageHeight?",
+      "bestFor": [
+        "screenshot annotations",
+        "code highlighting",
+        "text emphasis",
+        "document review",
+        "OCR-based highlighting"
+      ],
+      "pairsWellWith": [
+        "EnhancedMarkerHighlight",
+        "SmartCamera",
+        "Spotlight",
+        "TextCallout"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "ImageHighlight",
+      "name": "Image Highlight / Underline",
+      "category": "effect",
+      "subcategory": "annotation",
+      "tags": [
+        "highlight",
+        "marker",
+        "text",
+        "image",
+        "annotation",
+        "draw",
+        "manual",
+        "composable",
+        "overlay",
+        "pure",
+        "swipe",
+        "underline",
+        "fade",
+        "scale",
+        "color",
+        "opacity",
+        "speed",
+        "dim",
+        "focus",
+        "reading"
+      ],
+      "description": "Pure highlight or underline overlay on an image — NO built-in camera. Two modes: 'highlight' fills regions with translucent color; 'underline' draws a colored line at the bottom of each region and dims non-region areas to focus attention. Draw regions on the image and they animate sequentially. Compose with SmartCamera or PerspectiveZoom to add camera movement. The recommended highlight/underline scene for the editor.",
+      "inputSchema": "imageSrc (file), isStaticFile?, mode? ('highlight'|'underline'), regions: {label?, x, y, w, h, startFrame?, color?, opacity?, animation?, borderRadius?, group?}[], framesPerRegion?, startOffset?, highlightColor?, activeOpacity?, doneOpacity?, blendMode?, animation?, borderRadius?, backgroundColor?, dimAmount?, underlineThickness?, underlineColor?, imageWidth?, imageHeight?",
+      "bestFor": [
+        "image annotation",
+        "manual highlight",
+        "text emphasis",
+        "screenshot markup",
+        "composable overlays",
+        "UI walkthroughs",
+        "reading focus",
+        "underline emphasis"
+      ],
+      "pairsWellWith": [
+        "SmartCamera",
+        "PerspectiveZoomScene",
+        "KenBurns",
+        "TextCallout",
+        "Spotlight"
+      ],
+      "suggestedDuration": 180,
+      "suggestedDurationSec": 6
+    },
+    {
+      "id": "EnhancedMarkerHighlight",
+      "name": "Enhanced Marker Highlight",
+      "category": "effect",
+      "subcategory": "annotation",
+      "tags": [
+        "highlight",
+        "marker",
+        "camera",
+        "tracking",
+        "zoom",
+        "word",
+        "image",
+        "ocr",
+        "follow",
+        "reading",
+        "cinematic"
+      ],
+      "description": "Word-tracking marker highlight with cinematic camera. Camera FOLLOWS each word like a reading eye — zooms to ~2.5x and pans to keep the active word centered. Goes through phases: entrance → overview → zoom-in → tracking → hold → zoom-out. Creates a dramatic 'reading along' effect with marker highlights and camera movement combined.",
+      "inputSchema": "imageSrc (file), isStaticFile?, regions: {label, x, y, w, h, startFrame, line?}[], highlightColor?, glowColor?, trackingZoom?, targetScreenX?, targetScreenY?, imageWidth?, imageHeight?",
+      "bestFor": [
+        "dramatic text reveals",
+        "reading annotations",
+        "code walkthroughs",
+        "document emphasis",
+        "cinematic screenshot tours"
+      ],
+      "pairsWellWith": [
+        "ImageTextHighlight",
+        "SmartCamera",
+        "KenBurns",
+        "Spotlight"
+      ],
+      "suggestedDuration": 240,
+      "suggestedDurationSec": 8
+    },
+    {
+      "id": "SpeakerCaptionScene",
+      "name": "Speaker with Captions",
+      "category": "speaker",
+      "subcategory": "overlay",
+      "tags": [
+        "speaker",
+        "caption",
+        "subtitle",
+        "video",
+        "overlay",
+        "talking head"
+      ],
+      "description": "Speaker video with animated caption overlay. Captions appear as the speaker talks.",
+      "inputSchema": "videoSrc (file), captions: {text, startFrame, endFrame}[], videoSrc?, volume?",
+      "bestFor": [
+        "talking head videos",
+        "podcast clips",
+        "educational content"
+      ],
+      "pairsWellWith": [
+        "HookScene",
+        "CinematicOutroScene",
+        "KeyInsightScene"
+      ],
+      "suggestedDuration": 300,
+      "suggestedDurationSec": 10
+    },
+    {
+      "id": "SpeakerCozyScene",
+      "name": "Speaker Cozy",
+      "category": "speaker",
+      "subcategory": "style",
+      "tags": [
+        "speaker",
+        "cozy",
+        "warm",
+        "video",
+        "presenter",
+        "studio"
+      ],
+      "description": "Warm cozy-style speaker layout with soft lighting aesthetic.",
+      "inputSchema": "videoSrc (file), videoSrc?, volume?, title?",
+      "bestFor": [
+        "lifestyle content",
+        "casual talks",
+        "vlogs"
+      ],
+      "pairsWellWith": [
+        "OutroWarmTextScene",
+        "HookScene"
+      ],
+      "suggestedDuration": 300,
+      "suggestedDurationSec": 10
+    },
+    {
+      "id": "SpeakerDominantScene",
+      "name": "Speaker Dominant",
+      "category": "speaker",
+      "subcategory": "layout",
+      "tags": [
+        "speaker",
+        "dominant",
+        "fullscreen",
+        "video",
+        "presenter",
+        "bold"
+      ],
+      "description": "Full-frame speaker video with bold presence. Speaker fills the entire frame.",
+      "inputSchema": "videoSrc (file), videoSrc?, volume?",
+      "bestFor": [
+        "keynote clips",
+        "motivational content",
+        "strong statements"
+      ],
+      "pairsWellWith": [
+        "GrandFinaleScene",
+        "HookScene",
+        "FireTextScene"
+      ],
+      "suggestedDuration": 300,
+      "suggestedDurationSec": 10
+    },
+    {
+      "id": "SpeakerNeonCaptionScene",
+      "name": "Speaker Neon Captions",
+      "category": "speaker",
+      "subcategory": "overlay",
+      "tags": [
+        "speaker",
+        "neon",
+        "caption",
+        "glow",
+        "video",
+        "animated text"
+      ],
+      "description": "Speaker video with neon-glowing animated captions. Eye-catching subtitle style.",
+      "inputSchema": "videoSrc (file), captions: {text, startFrame, endFrame}[], neonColor?, volume?",
+      "bestFor": [
+        "social media clips",
+        "reels",
+        "attention-grabbing content"
+      ],
+      "pairsWellWith": [
+        "GlitchTextScene",
+        "NeonFrameTextScene"
+      ],
+      "suggestedDuration": 300,
+      "suggestedDurationSec": 10
+    },
+    {
+      "id": "SpeakerPIPScene",
+      "name": "Speaker Picture-in-Picture",
+      "category": "speaker",
+      "subcategory": "layout",
+      "tags": [
+        "speaker",
+        "pip",
+        "picture in picture",
+        "video",
+        "overlay",
+        "screen recording"
+      ],
+      "description": "Speaker in a small PIP bubble over main content. Great for tutorials and demos.",
+      "inputSchema": "mainVideoSrc (file), videoSrc (file), pip?: {position, size}, volume?",
+      "bestFor": [
+        "screen recordings",
+        "tutorials",
+        "product demos"
+      ],
+      "pairsWellWith": [
+        "SmartCameraScene",
+        "VideoSmartCameraScene"
+      ],
+      "suggestedDuration": 300,
+      "suggestedDurationSec": 10
+    },
+    {
+      "id": "SpeakerSoloScene",
+      "name": "Speaker Solo",
+      "category": "speaker",
+      "subcategory": "layout",
+      "tags": [
+        "speaker",
+        "solo",
+        "simple",
+        "video",
+        "clean",
+        "minimal"
+      ],
+      "description": "Clean minimal speaker layout. Simple and professional.",
+      "inputSchema": "videoSrc (file), videoSrc?, volume?",
+      "bestFor": [
+        "professional presentations",
+        "interviews",
+        "clean content"
+      ],
+      "pairsWellWith": [
+        "CinematicOutroScene",
+        "KeyInsightScene"
+      ],
+      "suggestedDuration": 300,
+      "suggestedDurationSec": 10
+    },
+    {
+      "id": "SpeakerStudioScene",
+      "name": "Speaker Studio",
+      "category": "speaker",
+      "subcategory": "style",
+      "tags": [
+        "speaker",
+        "studio",
+        "professional",
+        "video",
+        "broadcast",
+        "news"
+      ],
+      "description": "Broadcast studio-style speaker layout with professional framing.",
+      "inputSchema": "videoSrc (file), videoSrc?, volume?, lowerThird?",
+      "bestFor": [
+        "news style",
+        "broadcast content",
+        "professional interviews"
+      ],
+      "pairsWellWith": [
+        "LowerThirdScene",
+        "SpeakerCaptionScene"
+      ],
+      "suggestedDuration": 300,
+      "suggestedDurationSec": 10
+    },
+    {
+      "id": "SplitSpeakerScene",
+      "name": "Split Speaker",
+      "category": "speaker",
+      "subcategory": "layout",
+      "tags": [
+        "speaker",
+        "split",
+        "side by side",
+        "video",
+        "interview",
+        "dual"
+      ],
+      "description": "Two speakers side by side. Perfect for interviews and conversations.",
+      "inputSchema": "leftVideoSrc (file), rightVideoSrc (file), volume?",
+      "bestFor": [
+        "interviews",
+        "debates",
+        "podcast dual view",
+        "conversations"
+      ],
+      "pairsWellWith": [
+        "SpeakerCaptionScene",
+        "SplitCompareScene"
+      ],
+      "suggestedDuration": 300,
+      "suggestedDurationSec": 10
+    },
+    {
+      "id": "WarmStudioScene",
+      "name": "Warm Studio",
+      "category": "speaker",
+      "subcategory": "style",
+      "tags": [
+        "speaker",
+        "warm",
+        "studio",
+        "video",
+        "cozy",
+        "inviting"
+      ],
+      "description": "Warm-toned studio speaker layout with inviting atmosphere.",
+      "inputSchema": "videoSrc (file), videoSrc?, volume?",
+      "bestFor": [
+        "personal branding",
+        "storytelling",
+        "warm content"
+      ],
+      "pairsWellWith": [
+        "OutroWarmTextScene",
+        "SpeakerCozyScene"
+      ],
+      "suggestedDuration": 300,
+      "suggestedDurationSec": 10
+    },
+    {
+      "id": "SegmentedVideoScene",
+      "name": "Segmented Video",
+      "category": "effect",
+      "subcategory": "composition",
+      "tags": [
+        "segmented",
+        "video",
+        "cuts",
+        "segments",
+        "merge",
+        "combine",
+        "sequence",
+        "multi-clip",
+        "composite"
+      ],
+      "description": "Plays multiple video segments back-to-back with no gaps. Handles cuts, removals, and multi-source clips — each segment has its own source, start time, and end time. Perfect for composing a final cut from trimmed clips.",
+      "inputSchema": "segments: {src (file), startFrom, endAt, volume?, label?}[], volume?, objectFit?, title?",
+      "bestFor": [
+        "combining cut clips",
+        "gap-free playback",
+        "multi-segment composition",
+        "final cut from timeline"
+      ],
+      "pairsWellWith": [
+        "KenBurns",
+        "PictureInPicture",
+        "SplitCompare"
+      ],
+      "suggestedDuration": 300,
+      "suggestedDurationSec": 10
+    },
+    {
+      "id": "LightLeaks",
+      "name": "Light Leaks",
+      "category": "effect",
+      "subcategory": "overlay",
+      "tags": [
+        "light",
+        "leak",
+        "leaks",
+        "light-leak",
+        "spill",
+        "flare",
+        "bloom",
+        "glow",
+        "cinematic",
+        "overlay",
+        "transition",
+        "film",
+        "anamorphic",
+        "bokeh",
+        "warm",
+        "orange",
+        "blue",
+        "screen",
+        "blend",
+        "hue",
+        "seed",
+        "layer",
+        "video",
+        "image",
+        "transparent",
+        "preset"
+      ],
+      "description": "Cinematic light leak overlay effect. Transparent by default — layer on top of any content. Uses @remotion/light-leaks for procedural film-style light bleeds with screen blend mode. 8 built-in presets (warm-film, cool-blue, golden-hour, rainbow, pink-dream, subtle-flare, neon-glow, cinematic-red). Supports custom multi-layer leaks with per-layer seed, hue shift, timing, and opacity. Adjustable intensity, blend mode, and background.",
+      "inputSchema": "preset? (warm-film|cool-blue|golden-hour|rainbow|pink-dream|subtle-flare|neon-glow|cinematic-red), background? (color, default transparent), intensity? (0-1), blendMode? (screen|overlay|hard-light|soft-light|color-dodge), src? (file), leaks?: {seed, hueShift, startFrame, durationInFrames, opacity?}[]",
+      "bestFor": [
+        "cinematic transitions",
+        "light leak overlays",
+        "film-style effects",
+        "atmospheric mood",
+        "transition flair",
+        "scene transitions",
+        "warm glow overlay",
+        "anamorphic effect",
+        "video overlay",
+        "light spill",
+        "transparent overlay"
+      ],
+      "pairsWellWith": [
+        "KenBurns",
+        "SplitCompare",
+        "Spotlight",
+        "PerspectiveZoomScene",
+        "SegmentedVideoScene",
+        "PictureInPicture"
+      ],
+      "suggestedDuration": 90,
+      "suggestedDurationSec": 3
+    },
+    {
+      "id": "NestedCompositionScene",
+      "name": "Nested Composition",
+      "category": "layout",
+      "subcategory": "composition",
+      "tags": [
+        "nested",
+        "composition",
+        "compose",
+        "combine",
+        "layers",
+        "multi-scene",
+        "widget",
+        "overlay",
+        "stack",
+        "pre-compose"
+      ],
+      "description": "Composes multiple scenes as positioned layers within a single frame. Each layer is an independent scene with its own props and layout. Supports infinite nesting — a Nested Composition can contain another Nested Composition.",
+      "inputSchema": "layers: {sceneType, sceneProps, layout: {x,y,width,height,zIndex?}, startOffset?, durationInFrames?, enter?, exit?, label?}[], backgroundColor?, style?",
+      "bestFor": [
+        "multi-scene composition",
+        "dashboard layouts",
+        "layered effects",
+        "combining scenes",
+        "pre-compose"
+      ],
+      "pairsWellWith": [
+        "SegmentedVideoScene",
+        "AuroraScene",
+        "LineChartScene",
+        "NumberTickerScene",
+        "KeyInsightScene"
+      ],
+      "suggestedDuration": 300,
+      "suggestedDurationSec": 10
+    },
+    {
+      "id": "PerspectiveZoomScene",
+      "name": "Perspective Zoom",
+      "category": "effect",
+      "subcategory": "camera",
+      "tags": [
+        "perspective",
+        "zoom",
+        "3d",
+        "camera",
+        "orbit",
+        "pan",
+        "tilt",
+        "rotate",
+        "parallax",
+        "depth",
+        "keyframe",
+        "cinematic",
+        "shake",
+        "push-in",
+        "pull-out",
+        "ken-burns",
+        "dolly",
+        "crane",
+        "fly-over",
+        "reveal",
+        "whip-pan",
+        "smart-camera",
+        "focus-tracking",
+        "vignette",
+        "film-grain",
+        "chromatic",
+        "particles",
+        "letterbox",
+        "pip",
+        "highlight",
+        "marker",
+        "layers",
+        "preserve-3d",
+        "depth-of-field",
+        "anamorphic",
+        "color-grade",
+        "saber",
+        "text-reveal",
+        "flip",
+        "transition",
+        "image",
+        "video",
+        "multi-layer",
+        "configurable",
+        "universal"
+      ],
+      "description": "Universal 3D camera scene. The most configurable scene in the library — replaces 15+ individual perspective/zoom scenes with one fully parameterized component. Supports: 17 camera presets, arbitrary keyframe timelines with hold+easing, multi-axis rotation, zoom arcs, N content layers with Z-depth parallax, camera shake with 5 envelope patterns, focus tracking, PIP, highlight overlays, 10+ visual effects (vignette, DOF, film grain, chromatic aberration, particles, letterbox, etc.), saber/typewriter text reveals, and 10 enter/exit transitions. Everything is JSON-drivable.",
+      "inputSchema": "cameraPreset? | cameraKeyframes[]? | rotateY/X/Z+zoom+panX/Y ranges | layers[]? (image/video/text/card with z-depth) | imageSrc/videoSrc (single source) | effects? | shake? | pip? | highlights? | text? | textReveal? | enter/exit?",
+      "bestFor": [
+        "cinematic camera movements",
+        "product reveals",
+        "3D parallax",
+        "image showcase",
+        "video smart camera",
+        "ken burns",
+        "orbit showcases",
+        "card flip animations",
+        "multi-layer depth compositions",
+        "focus tracking",
+        "text reveals",
+        "zoom tracking highlights",
+        "speaker camera",
+        "establishing shots",
+        "dolly zoom",
+        "dramatic arc reveals",
+        "fly-over",
+        "whip-pan transitions"
+      ],
+      "pairsWellWith": [
+        "SmartCameraScene",
+        "VideoSmartCameraScene",
+        "KenBurnsScene",
+        "SegmentedVideoScene",
+        "AuroraScene",
+        "TitleCardScene",
+        "NestedCompositionScene",
+        "HeroTextScene"
+      ],
+      "suggestedDuration": 200,
+      "suggestedDurationSec": 6.7
+    }
+  ]
+}
