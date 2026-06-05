@@ -1,7 +1,7 @@
 ---
-name: ai-content-generation
-description: AI-powered image generation, video analysis, text generation, and content creation using PrepWithAI MCP tools.
-tags: ai, image, generate, analyze, vision, text, tts, speech, search, prepwithai, content
+name: prepwithai
+description: AI-powered content creation using PrepWithAI MCP tools — image generation/search/analysis, text generation, TTS speech, voice cloning, SFX search, and asset hosting. Use when you need to generate or find media assets for ContentLead videos.
+tags: ai, image, generate, analyze, vision, text, tts, speech, search, prepwithai, content, sfx, voice
 ---
 
 # AI Content Generation (PrepWithAI)
