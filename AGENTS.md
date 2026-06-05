@@ -8,7 +8,7 @@
 
 ### Step 0: Start the App (if not running)
 
-The app MUST be started with the Next.js server. **Never start Electron alone.**
+The app loads the cloud frontend from `contentlead.in` by default. No local server needed.
 
 ```bash
 # Check if app is already running
@@ -16,17 +16,42 @@ cat ~/.skilltown-desktop/api.json 2>/dev/null | python3 -c "
 import sys,json,subprocess
 d = json.load(sys.stdin)
 r = subprocess.run(['kill', '-0', str(d['pid'])], capture_output=True)
-if r.returncode == 0: print(f'RUNNING on port {d[\"port\"]}')
+if r.returncode == 0: print(f'RUNNING on port {d[\"port\"]} — origin: {d.get(\"appOrigin\",\"unknown\")}')
 else: print('NOT RUNNING')
 "
 
-# If not running, start with BOTH Next.js + Electron:
-cd /path/to/SkillTown-Desktop && npm run dev:with-server
-# This runs: concurrently "npm run dev:nextjs" "wait-on http://127.0.0.1:3000 && electron . --dev"
+# If not running, launch:
+# Production (packaged .app):
+open /Applications/ContentLead.app
 
-# ⚠️ NEVER run just `electron .` — it needs the Next.js server on port 3000
-# ⚠️ First load compiles 13,700+ modules (30-40s), subsequent loads <1s
+# Development:
+cd /path/to/SkillTown-Desktop && npm run dev
+# Or point to local Next.js dev server:
+cd /path/to/SkillTown-Desktop && npm run dev -- --url=http://localhost:3000
+
 # ⚠️ Port and token CHANGE every restart — always re-read api.json
+```
+
+#### Switching between cloud and local dev at runtime
+
+You can switch the frontend origin without restarting the app:
+
+```bash
+# Switch to local dev server (must be running on localhost:3000)
+curl -X POST http://127.0.0.1:$PORT/api/app/set-origin \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"origin": "local"}'
+
+# Switch back to cloud
+curl -X POST http://127.0.0.1:$PORT/api/app/set-origin \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"origin": "cloud"}'
+
+# Check current origin
+curl http://127.0.0.1:$PORT/api/app/origin -H "Authorization: Bearer $TOKEN"
+
+# Shortcut names: "cloud" | "local" | "local-ip" | any full URL
+# After switching, wait for editor: POST /api/editor/wait-ready
 ```
 
 ### Step 1: Connect
@@ -431,6 +456,7 @@ curl "http://127.0.0.1:$PORT/api/skills?q=animation" -H "Authorization: Bearer $
 ```
 AI Terminal → reads ~/.skilltown-desktop/api.json → gets port + token
            → curl GET /api/health → checks app health
+           → curl GET /api/app/origin → checks cloud vs local-dev mode
            → curl GET /api/content/list → discovers available content
            → curl POST /api/navigate → opens content in editor (auto-activates editor view)
            → curl POST /api/editor/wait-ready → waits for editor mount
@@ -441,20 +467,27 @@ AI Terminal → reads ~/.skilltown-desktop/api.json → gets port + token
            → curl POST /api/scene-bundles/build → compile scenes with real imports
            → curl POST /api/render → render videos locally via Remotion
            → Electron main process → IPC → renderer → DesignCombo editor
-```
 
-No external servers needed. Everything runs locally — editing, scene authoring, and rendering.
+Hybrid architecture:
+  Cloud (contentlead.in)  →  Frontend UI, auth, database, content library
+  Local (Electron)        →  Video rendering (Remotion+FFmpeg), file access, media server, AI API
+  
+  Switch at runtime: POST /api/app/set-origin {"origin": "local"} or {"origin": "cloud"}
+```
 
 > **Scope note:** This guide documents the recommended command/API subset for AI agents. It is curated, not exhaustive. Additional commands and endpoints exist — use `GET /api/skills` at runtime for the full current surface, or `GET /api/capabilities` for endpoint discovery.
 
 ## Navigation & Content Discovery
 
-### Discovery file (v2)
+### Discovery file (v3)
 ```bash
 cat ~/.skilltown-desktop/api.json
-# → {"schemaVersion":2, "port":54110, "token":"abc...", "baseUrl":"http://127.0.0.1:54110",
-#    "appOrigin":"http://127.0.0.1:3000", "mediaServerPort":54109, "editorReady":false, ...}
+# → {"schemaVersion":3, "port":54110, "token":"abc...", "baseUrl":"http://127.0.0.1:54110",
+#    "apiOrigin":"http://127.0.0.1:54110", "appOrigin":"https://contentlead.in",
+#    "mediaServerPort":54109, "editorReady":false, ...}
 ```
+- `apiOrigin` — the local API server (always localhost)
+- `appOrigin` — the frontend origin (cloud `contentlead.in` or local dev `localhost:3000`)
 
 ### Health check
 ```bash
@@ -527,6 +560,44 @@ curl -X POST http://127.0.0.1:$PORT/api/project/restore \
   -d '{"contentId": "content_abc..."}'
 ```
 Loads the autosave `.skilltown` file and sends `editor.loadDesign` to restore the full timeline.
+
+### Origin switching (cloud ↔ local dev)
+
+Switch the app between cloud production and local development server at runtime:
+
+```bash
+# Check current origin
+curl http://127.0.0.1:$PORT/api/app/origin -H "Authorization: Bearer $TOKEN"
+# → {"origin":"https://contentlead.in", "mode":"cloud", "shortcuts":{"cloud":"https://contentlead.in","local":"http://localhost:3000","local-ip":"http://127.0.0.1:3000"}}
+
+# Switch to local dev (Next.js must be running on localhost:3000)
+curl -X POST http://127.0.0.1:$PORT/api/app/set-origin \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"origin": "local"}'
+# → {"success":true, "previousOrigin":"https://contentlead.in", "activeOrigin":"http://localhost:3000", "mode":"local-dev", "navigated":true}
+
+# Switch to custom port
+curl -X POST http://127.0.0.1:$PORT/api/app/set-origin \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"origin": "http://localhost:3001"}'
+
+# Switch back to cloud
+curl -X POST http://127.0.0.1:$PORT/api/app/set-origin \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"origin": "cloud"}'
+```
+
+| Shortcut | Resolves to |
+|----------|-------------|
+| `cloud` | `https://contentlead.in` |
+| `local` | `http://localhost:3000` |
+| `local-ip` | `http://127.0.0.1:3000` |
+
+**Options:**
+- `navigate` (default `true`) — reload window to new origin
+- `path` (default `"/content"`) — path to load after switch
+
+**After switching:** use `POST /api/editor/wait-ready` to wait for the editor to reinitialize. CORS is automatically updated and the discovery file (`api.json`) is refreshed with the new `appOrigin`.
 
 ### Typical AI workflow
 ```bash

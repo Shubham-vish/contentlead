@@ -16,22 +16,26 @@ SkillTown Desktop writes connection details to `~/.skilltown-desktop/api.json` o
 cat ~/.skilltown-desktop/api.json
 ```
 
-Expected shape (v2):
+Expected shape (v3):
 
 ```json
 {
-  "version": 2,
+  "schemaVersion": 3,
   "port": 3847,
   "pid": 12345,
   "token": "64-char-hex-token",
   "baseUrl": "http://127.0.0.1:3847",
-  "mediaPort": 3848,
+  "apiOrigin": "http://127.0.0.1:3847",
+  "appOrigin": "https://contentlead.in",
+  "mediaServerPort": 3848,
   "contentId": "current-project-id",
   "editorReady": true,
-  "startedAt": "2025-01-15T10:30:00.000Z",
-  "features": ["navigation", "content-list", "wait-ready", "restore", "health", "console-errors"]
+  "startedAt": "2025-01-15T10:30:00.000Z"
 }
 ```
+
+- `apiOrigin` — the local API server (always localhost)
+- `appOrigin` — the frontend the Electron window is loading (cloud or local dev)
 
 ## Authentication
 
@@ -57,6 +61,8 @@ Expected shape (v2):
 | `POST` | `/api/batch` | Yes | Execute many commands in order |
 | `GET` | `/api/skills` | Yes | List available skill docs |
 | `GET` | `/api/skills/:name` | Yes | Load one skill document by name |
+| `GET` | `/api/app/origin` | Yes | Get current app origin (cloud vs local dev) |
+| `POST` | `/api/app/set-origin` | Yes | Switch between cloud and local dev server |
 
 ## Health Check
 
@@ -77,6 +83,46 @@ Typical response:
 ```
 
 Fallback (no auth): `GET /api/info` — returns basic status.
+
+## Origin Switching (Cloud ↔ Local Dev)
+
+The Electron app loads a frontend (cloud `contentlead.in` by default, or local `localhost:3000` for development). You can switch at runtime without restarting.
+
+### Check current origin
+```bash
+curl http://127.0.0.1:$PORT/api/app/origin -H "Authorization: Bearer $TOKEN"
+# → { origin: "https://contentlead.in", mode: "cloud", shortcuts: {...} }
+```
+
+### Switch to local dev
+```bash
+curl -X POST http://127.0.0.1:$PORT/api/app/set-origin \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"origin": "local"}'
+# → { success: true, activeOrigin: "http://localhost:3000", mode: "local-dev" }
+```
+
+### Switch back to cloud
+```bash
+curl -X POST http://127.0.0.1:$PORT/api/app/set-origin \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"origin": "cloud"}'
+```
+
+### Shortcut names
+| Shortcut | Resolves to |
+|----------|-------------|
+| `cloud` | `https://contentlead.in` |
+| `local` | `http://localhost:3000` |
+| `local-ip` | `http://127.0.0.1:3000` |
+
+You can also pass any full URL: `{"origin": "http://localhost:3001"}`.
+
+**Options:**
+- `navigate` (default `true`) — reload the window to the new origin
+- `path` (default `"/content"`) — path to navigate to after switching
+
+After switching, use `POST /api/editor/wait-ready` to wait for the editor to reinitialize.
 
 ## Navigation & Content Discovery
 
