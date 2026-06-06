@@ -100,7 +100,8 @@ AI-powered content search across multiple platforms. Returns ranked, deduplicate
 
 | Param | Type | Required | Description |
 |-------|------|----------|-------------|
-| `context` | string | ✅ | What you're looking for (topic, niche, style) |
+| `context` | string or object | ✅ | Simple query string OR full SearchContext `{query, keywords, hashtags, entities, origin}` |
+| `query` | string | | Shortcut — same as passing `context` as a string |
 | `sources` | string[] | | Platforms to search: `["instagram"]`, `["youtube"]`, or both |
 | `perSourceLimit` | number | | Results per source (default 10) |
 | `limit` | number | | Alias for perSourceLimit |

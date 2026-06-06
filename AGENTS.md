@@ -24,10 +24,10 @@ else: print('NOT RUNNING')
 # Production (packaged .app):
 open /Applications/ContentLead.app
 
-# Development:
-cd /path/to/SkillTown-Desktop && npm run dev
+# Development (CURRENT — use this):
+cd /Users/shubham/Codes/SkillTown-Desktop && npm run dev
 # Or point to local Next.js dev server:
-cd /path/to/SkillTown-Desktop && npm run dev -- --url=http://localhost:3000
+cd /Users/shubham/Codes/SkillTown-Desktop && npm run dev -- --url=http://localhost:3000
 
 # ⚠️ Port and token CHANGE every restart — always re-read api.json
 ```
