@@ -21,9 +21,46 @@ Two access paths are available:
 | `instagram_get_posts` | Get last N posts with metrics. Params: `account_id`, `limit` (1-50), `media_id`, `media_type` (REELS/IMAGE/VIDEO), `include_cta` |
 | `instagram_get_automation` | Get CTA config per-account or per-post. Params: `account_id` or `media_id` |
 | `instagram_update_automation` | **3 actions:** `toggle` (enable/disable automation), `update_rules` (trigger keywords + DM templates), `update_cta` (per-post keywords, DM body, comment replies, follow gate) |
-| `instagram_publish_reel` | Publish a reel. Params: `account_id`, `video_url` (must be public), `caption` |
-| `instagram_publish_status` | Poll publish progress. Params: `container_id`, `account_id`, `auto_publish` (true = publish when FINISHED) |
+| `instagram_publish_reel` | Publish a reel. **Recommended:** pass `content_id` to track in UI. Legacy: `account_id` + `video_url` |
+| `instagram_publish_status` | Poll publish progress. Pass `content_id` or `container_id` + `account_id`. With `auto_publish=true`, publishes when ready |
 | `instagram_validate_token` | Check if account token is still valid. Returns `healthy: true/false` |
+
+### Content Publish Setup (2 tools — NEW)
+
+| Tool | What it does |
+|------|-------------|
+| `content_configure_publish` | Set title/desc/caption/tags/thumbnail/account on a Content doc before publishing. Works for all platforms. |
+| `youtube_publish` | Publish content video to YouTube. Reads metadata from Content doc, uploads, writes back, auto-posts CTA comment |
+
+#### Content-Aware Publish Flow (Recommended)
+```
+# 1. Configure the content for Instagram
+content_configure_publish(
+  content_id="content_xxx",
+  platform="instagram",
+  caption="5 AI tools you need in 2025! 🚀",
+  hashtags='["AI", "tools", "2025"]',
+  selected_account="ig_account_id"
+)
+
+# 2. Publish — reads config from Content doc, tracks in UI
+instagram_publish_reel(content_id="content_xxx")
+
+# 3. Poll status — writes back to Content doc when published
+instagram_publish_status(content_id="content_xxx", auto_publish=true)
+
+# For YouTube:
+content_configure_publish(
+  content_id="content_xxx",
+  platform="youtube",
+  title="5 AI Tools You Need in 2025",
+  description="In this video...",
+  tags='["AI", "tools"]',
+  privacy="public",
+  selected_account="channel_id"
+)
+youtube_publish(content_id="content_xxx")
+```
 
 #### CTA Update Example
 ```
