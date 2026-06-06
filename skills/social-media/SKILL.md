@@ -6,18 +6,37 @@ tags: publish, instagram, linkedin, youtube, social, post, upload, reel, account
 
 # Social Media Publishing & Management
 
-Two access paths are available:
+> ⚠️ **CRITICAL: Always use `content_id` when publishing.**
+> If you publish without `content_id`, the post goes live on social media but is
+> **NOT tracked** in the ContentLead dashboard — the user won't see it in their content list.
+> The direct/legacy mode (`account_id + video_url`) exists only for backward compatibility.
+> **Never use it unless the user explicitly asks for a quick post without content tracking.**
 
-1. **MCP Server tools** (full capabilities) — get posts, manage CTA, automation, scraping, token validation
-2. **Desktop bridge endpoints** (quick publish) — publish, poll status, list accounts from the Electron app
+## Relationship to `content-management` Skill
 
-> **Prerequisite:** Before publishing, set up your content using the **`content-management`** skill.
-> Use `content_create` → `content_update` → `content_configure_publish` to prepare content,
-> then come back here to publish.
+| Skill | What it does | When to use |
+|-------|-------------|-------------|
+| `content-management` | Create content, set title/description/thumbnail/video, configure channels | **FIRST** — before any publishing |
+| `social-media` (this) | Publish to platforms, manage CTA, get posts, scrape | **SECOND** — after content is configured |
+
+**Correct flow:**
+```
+content-management                          social-media
+─────────────────                          ────────────
+content_create()                           instagram_get_accounts()
+  → content_update()                         → (get account IDs)
+    → content_configure_publish()          instagram_publish_reel(content_id=...)
+                                             → instagram_publish_status(content_id=...)
+                                           youtube_publish(content_id=...)
+```
+
+**The `content_configure_publish` tool lives in `content-management` but sets up data
+that the publish tools here consume.** You MUST call it before publishing to set
+caption, hashtags, selected_account, etc. on the Content document.
 
 ---
 
-## Instagram Publishing Flow (IMPORTANT — Async, 2-Step Process)
+## Instagram Publishing Flow (Async, 2-Step Process)
 
 Instagram publishing is **asynchronous**. You cannot publish in a single call.
 
@@ -156,20 +175,19 @@ instagram_update_automation(
 
 | Param | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `content_id` | string | ⭐ Recommended | — | Content ID — reads caption, account, video from Content doc. Tracks in UI. |
-| `account_id` | string | | — | Account ID (optional if Content doc has `selected_account`) |
-| `video_url` | string | | — | Public video URL (optional if Content doc has video) |
-| `caption` | string | | — | Caption (optional if Content doc has caption) |
+| `content_id` | string | ✅ **Always use this** | — | Content ID — reads caption, account, video from Content doc. Tracks in UI. |
+| `account_id` | string | | — | ⚠️ Legacy — only if no content_id. Bypasses UI tracking. |
+| `video_url` | string | | — | ⚠️ Legacy — only if no content_id. |
+| `caption` | string | | — | ⚠️ Legacy — only if no content_id. |
 
-**Two modes:**
-1. ✅ **Content-aware** (recommended): Pass `content_id` — everything reads from Content doc, publish progress tracked in UI.
-2. **Direct** (legacy): Pass `account_id` + `video_url` + `caption` — publishes directly, no UI tracking.
+> **⚠️ Direct mode (`account_id` + `video_url`) publishes to Instagram but the ContentLead
+> dashboard will NOT show it. Always use `content_id` unless the user explicitly asks otherwise.**
 
-**Prerequisites for content-aware mode:**
-- Content must have a video (`videoUrl` or `downloadableSasUrl`)
-- Content must have `channels.instagram.selected_account` set
-- Content must NOT already be published (`channels.instagram.published !== true`)
-- Content must NOT be currently publishing (`publish_progress.stage !== "processing"`)
+**Prerequisites (content-aware mode):**
+- ✅ Content has a video (`videoUrl` or `downloadableSasUrl` set via `content_update`)
+- ✅ Content has `channels.instagram.selected_account` set via `content_configure_publish`
+- ✅ Content is NOT already published (`channels.instagram.published !== true`)
+- ✅ Content is NOT currently publishing (`publish_progress.stage !== "processing"`)
 
 **Returns:**
 ```json
@@ -191,9 +209,9 @@ instagram_update_automation(
 
 | Param | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `content_id` | string | ⭐ Recommended | — | Content ID — resolves container/account from Content doc |
-| `container_id` | string | | — | Container ID from `instagram_publish_reel` (legacy mode) |
-| `account_id` | string | | — | Account ID (legacy mode) |
+| `content_id` | string | ✅ **Always use this** | — | Content ID — resolves container/account from Content doc, writes result back |
+| `container_id` | string | | — | ⚠️ Legacy — only if no content_id |
+| `account_id` | string | | — | ⚠️ Legacy — only if no content_id |
 | `auto_publish` | bool | | `false` | If `true` and container is FINISHED, publish immediately |
 
 **Status progression:**
@@ -334,9 +352,14 @@ No parameters. Returns connected LinkedIn account info.
 
 ### `linkedin_post` — Publish a post
 
-> **Note:** LinkedIn publishing is NOT content-aware — it does not read from or write to a Content document.
-> You must pass the text directly. To cross-post from a Content doc, use `content_get` first to read
-> the caption/description, then pass it to `linkedin_post`.
+> **⚠️ LinkedIn publishing is NOT content-aware** — it does not read from or write to a Content document.
+> The post goes live but is NOT tracked in the ContentLead dashboard's publish status.
+>
+> **To maintain content tracking:** First call `content_get(content_id)` to read the caption/description,
+> then pass it to `linkedin_post`. After posting, update the content manually:
+> ```python
+> content_configure_publish(content_id="...", platform="linkedin", status="published")
+> ```
 
 | Param | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
@@ -408,6 +431,10 @@ linkedin_post(
 ---
 
 ## Desktop Bridge Endpoints
+
+> **⚠️ Bridge endpoints are NOT content-aware** — they don't update the Content document's
+> publish status. Use MCP tools with `content_id` instead for tracked publishing.
+> Bridge is only for quick testing or when the desktop app is the primary interface.
 
 Use these when running inside the desktop Electron app. Authenticates through the user's web session — no API keys needed.
 
@@ -555,11 +582,13 @@ content_get(content_id="content_xxx")
 
 ## Tips for AI Agents
 
+- **🚨 ALWAYS use `content_id`** — never publish with just `account_id + video_url`. Direct mode bypasses content tracking.
+- **Set up content FIRST** — use `content-management` skill to create → update → configure before publishing
 - **Always list accounts first** — never assume which platforms are connected or what IDs to use
 - **Instagram is async** — `instagram_publish_reel` starts it, `instagram_publish_status` completes it. Poll every 15-30s.
 - **YouTube is sync but slow** — response comes after upload, may take 1-5 minutes
-- **LinkedIn is sync and fast** — response confirms immediately
+- **LinkedIn is NOT content-aware** — manually update content status after posting
 - **Video must be on a public URL** — localhost URLs won't work for social APIs
 - **Check SAS expiry** — if `sasExpiresAt` is past, the video URL won't work for publish
-- **Use content_id for all publishing** — this is the only way publish results show up in the ContentLead UI dashboard
-- **CTA must be set before publish** — for Instagram DM automation, call `instagram_update_automation(action="update_cta")` before `instagram_publish_reel`
+- **CTA must be set before publish** — call `instagram_update_automation(action="update_cta")` before `instagram_publish_reel`
+- **Bridge endpoints skip content tracking** — prefer MCP tools over bridge for publishing
