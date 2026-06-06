@@ -316,7 +316,8 @@ All times in **milliseconds** (1s = 1000ms). Canvas origin: (0,0) = top-left.
 | `content-bridge` | Apply/remove images and captions from pipeline |
 | `project-and-export` | Save, export, resize, tracks, undo/redo |
 | `queries-and-state` | Read editor state, timeline, transcript, fonts |
-| `social-media` | Publish to Instagram, LinkedIn, YouTube — accounts listing, publishing, status polling |
+| `social-media` | Publish to Instagram, LinkedIn, YouTube — accounts listing, CTA, publishing, status polling |
+| `content-management` | Full content lifecycle — create, list, update metadata, upload video/thumbnail, configure channels, toggle/schedule publish |
 | `content-inspiration` | Research trending content, browse creators, search across platforms, transcribe videos |
 | `remotion/SKILL.md` | Index to all Remotion rules (scene commands, animations, components, patterns, debugging) |
 | `remotion/rules/*` | Topic-specific Remotion rules (19 files: animations, components, patterns, camera-engine, etc.) |

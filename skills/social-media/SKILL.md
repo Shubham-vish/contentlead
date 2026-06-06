@@ -13,20 +13,8 @@ Two access paths are available:
 
 ## MCP Tools (Recommended — Full Capabilities)
 
-### Content Management (3 tools — manage content BEFORE publishing)
-
-| Tool | What it does |
-|------|-------------|
-| `content_get` | Get full Content doc: title, description, thumbnail, videoUrl, channels config, publish status |
-| `content_update` | Set top-level metadata directly in DB: `title`, `display_title`, `content_title`, `description`, `caption`, `thumbnail`, `video_url`, `status` (draft/ready/published) |
-| `content_get_upload_url` | Get SAS upload URL to attach video/thumbnail files to a content |
-
-### Content Publish Config (2 tools — set channel-specific config)
-
-| Tool | What it does |
-|------|-------------|
-| `content_configure_publish` | Set platform publish config: caption/hashtags (IG), title/desc/tags/privacy/thumbnail_url (YT), selected_account |
-| `youtube_publish` | Publish content to YouTube — reads metadata from Content doc, uploads, writes back, auto-posts CTA |
+> **Content management tools** (create, list, update, upload, configure channels) are in the
+> **`content-management`** skill. Load that skill for content CRUD before publishing.
 
 ### Instagram (7 tools)
 
@@ -40,63 +28,38 @@ Two access paths are available:
 | `instagram_publish_status` | Poll publish progress. Pass `content_id` or `container_id` + `account_id`. With `auto_publish=true`, publishes when ready |
 | `instagram_validate_token` | Check if account token is still valid. Returns `healthy: true/false` |
 
-### Content Publish Setup (2 tools — NEW)
+### YouTube (1 tool)
 
 | Tool | What it does |
 |------|-------------|
-| `content_configure_publish` | Set title/desc/caption/tags/thumbnail/account on a Content doc before publishing. Works for all platforms. |
-| `youtube_publish` | Publish content video to YouTube. Reads metadata from Content doc, uploads, writes back, auto-posts CTA comment |
+| `youtube_publish` | Publish content video to YouTube. Reads metadata from Content doc, uploads, writes back, auto-posts CTA comment. Pass `content_id` (recommended) or overrides. |
 
-#### Complete Content Lifecycle (UI Parity)
+#### End-to-End Publish Example (uses content-management + social-media skills)
 ```
-# 1. Get content to check current state
-content_get(content_id="content_xxx")
+# 1. Create & configure content (content-management skill)
+content_create(title="5 AI Tools You Need in 2025")
+content_update(content_id="content_xxx", video_url="https://...", thumbnail="https://...", status="ready")
+content_configure_publish(content_id="content_xxx", platform="instagram",
+  enabled=true, to_publish=true, caption="5 AI tools! 🚀", hashtags='["AI"]', selected_account="ig_xxx")
 
-# 2. Update top-level metadata (title, description, thumbnail)
-content_update(
-  content_id="content_xxx",
-  display_title="5 AI Tools You Need in 2025",
-  description="A deep dive into the best AI tools...",
-  thumbnail="https://storage.blob.core.windows.net/.../thumb.jpg",
-  status="ready"
-)
-
-# 3. Configure Instagram channel
-content_configure_publish(
-  content_id="content_xxx",
-  platform="instagram",
-  caption="5 AI tools you need in 2025! 🚀",
-  hashtags='["AI", "tools", "2025"]',
-  selected_account="ig_account_id"
-)
-
-# 4. Set up CTA for Instagram DM automation
+# 2. Set up CTA for Instagram DM automation
 instagram_update_automation(
-  action="update_cta",
-  media_id="content_xxx",
+  action="update_cta", media_id="content_xxx",
   contains='["free", "link", "send"]',
   message_body='{"text": "Here is your free guide: https://..."}',
   enable_comment_reply=true
 )
 
-# 5. Publish to Instagram (content-aware — tracks in UI)
+# 3. Publish to Instagram (content-aware — tracks in UI)
 instagram_publish_reel(content_id="content_xxx")
 
-# 6. Poll until published
+# 4. Poll until published
 instagram_publish_status(content_id="content_xxx", auto_publish=true)
 
-# 7. Configure YouTube channel
-content_configure_publish(
-  content_id="content_xxx",
-  platform="youtube",
-  title="5 AI Tools You Need in 2025",
-  description="In this video...",
-  tags='["AI", "tools"]',
-  privacy="public",
-  selected_account="channel_id"
-)
-
-# 8. Publish to YouTube (auto-posts CTA comment)
+# 5. Publish to YouTube
+content_configure_publish(content_id="content_xxx", platform="youtube",
+  enabled=true, to_publish=true, title="5 AI Tools You Need in 2025",
+  tags='["AI", "tools"]', privacy="public", selected_account="channel_xxx")
 youtube_publish(content_id="content_xxx")
 ```
 
