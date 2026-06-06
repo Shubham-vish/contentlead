@@ -116,6 +116,15 @@ curl -X POST http://127.0.0.1:$PORT/api/execute \
 | POST | `/api/ui/action` | Trigger a UI action (`save`, `undo`, `redo`, etc.) |
 | GET | `/api/app/origin` | Get the current frontend origin |
 | POST | `/api/app/set-origin` | Switch cloud/local origin |
+| GET | `/api/bridge/accounts` | List connected IG/LI/YT accounts |
+| POST | `/api/bridge/publish/instagram` | Start Instagram Reel publish |
+| GET | `/api/bridge/publish/instagram/status` | Poll Instagram publish progress |
+| POST | `/api/bridge/publish/linkedin` | Create LinkedIn post |
+| POST | `/api/bridge/publish/youtube` | Upload video to YouTube |
+| GET | `/api/bridge/publish/youtube/status` | Check YouTube upload status |
+| GET | `/api/bridge/inspiration/feed` | Browse creator content feed |
+| POST | `/api/bridge/inspiration/search` | Search for content inspiration |
+| POST | `/api/bridge/inspiration/transcribe` | Transcribe a video by shortcode |
 
 ### Activity Logs & Error Checking
 
@@ -307,5 +316,7 @@ All times in **milliseconds** (1s = 1000ms). Canvas origin: (0,0) = top-left.
 | `content-bridge` | Apply/remove images and captions from pipeline |
 | `project-and-export` | Save, export, resize, tracks, undo/redo |
 | `queries-and-state` | Read editor state, timeline, transcript, fonts |
+| `social-media` | Publish to Instagram, LinkedIn, YouTube — accounts listing, publishing, status polling |
+| `content-inspiration` | Research trending content, browse creators, search across platforms, transcribe videos |
 | `remotion/SKILL.md` | Index to all Remotion rules (scene commands, animations, components, patterns, debugging) |
 | `remotion/rules/*` | Topic-specific Remotion rules (19 files: animations, components, patterns, camera-engine, etc.) |
