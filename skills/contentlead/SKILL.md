@@ -338,6 +338,15 @@ The API auto-fixes common mistakes (e.g., unwrapped `borderWidth` → wrapped in
 | POST | `/api/ui/action` | Trigger a UI action (`save`, `undo`, `redo`, etc.) |
 | GET | `/api/app/origin` | Get current app origin |
 | POST | `/api/app/set-origin` | Switch cloud/local origin |
+| GET | `/api/bridge/accounts` | List connected IG/LI/YT accounts |
+| POST | `/api/bridge/publish/instagram` | Start Instagram Reel publish |
+| GET | `/api/bridge/publish/instagram/status` | Poll Instagram publish progress |
+| POST | `/api/bridge/publish/linkedin` | Create LinkedIn post |
+| POST | `/api/bridge/publish/youtube` | Upload video to YouTube |
+| GET | `/api/bridge/publish/youtube/status` | Check YouTube upload status |
+| GET | `/api/bridge/inspiration/feed` | Browse creator content feed |
+| POST | `/api/bridge/inspiration/search` | Search for content inspiration |
+| POST | `/api/bridge/inspiration/transcribe` | Transcribe a video by shortcode |
 
 ## Auth
 
