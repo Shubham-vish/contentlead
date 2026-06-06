@@ -220,6 +220,13 @@ Every command response includes an `editorHealth` object. **Always read it:**
 
 ### Full Diagnostic Check (run after every editing session)
 
+**💾 Before running diagnostics at the end of a session, always save first:**
+```bash
+curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"type": "editor.save", "params": {}}'
+```
+
 ```bash
 # PREFERRED: Single unified diagnostics check (replaces 4 separate calls)
 curl -s "http://127.0.0.1:$PORT/api/diagnostics" -H "Authorization: Bearer $TOKEN" | \
@@ -643,6 +650,12 @@ curl -X POST http://127.0.0.1:$PORT/api/execute ...
 
 # 10. After EVERY batch of edits, check for errors
 curl -s "http://127.0.0.1:$PORT/api/console-errors?level=error&afterSeq=LAST_SEQ" -H "Authorization: Bearer $TOKEN"
+
+# 11. 💾 Save periodically — after each phase of work or every 5-10 commands
+curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"type": "editor.save", "params": {}}'
+# → {"status":"success","result":{"saved":true}}
 ```
 
 ## Error Handling & Verification
@@ -654,7 +667,8 @@ The AI agent MUST:
 2. **Check `editorHealth` in EVERY command response** — it's embedded in every response
 3. **Check errors after media/scene commands** — wait 2s, then check `/api/diagnostics`
 4. **Check errors before saving** — run `validateTimeline` and `media.status`
-5. **Check errors before rendering** — run `render.validate`
+5. **💾 Save your work** — call `editor.save` after completing edits and before rendering. Also save periodically during long editing sessions (every 5-10 commands, or after completing each phase of work).
+6. **Check errors before rendering** — run `render.validate`
 6. **Self-heal before user sees errors** — if errors are detected, fix them immediately or try a different approach
 
 If errors are found, **STOP and fix them** before continuing. Do not accumulate errors.
@@ -747,6 +761,7 @@ Every `/api/execute` response includes a `warnings` array if any browser console
 1. Check the response `warnings` field — if present, diagnose before proceeding
 2. For media commands (addVideo, addImage), also check `/api/console-errors?afterSeq=LAST_SEQ` after 1-2 seconds (media errors may be async)
 3. If errors found, fix the issue before adding more items
+4. **💾 After a significant batch of work (5+ items added, major scene changes, or risky operations), call `editor.save` to persist progress.** Don't wait until the end — save incrementally so work isn't lost if something crashes.
 
 ### Error endpoints
 | Endpoint | Description |
@@ -1057,8 +1072,10 @@ Load the `prepwithai/SKILL` skill for full documentation, workflows, and example
 
 1. **Analyze** source material (extract + view video frames)
 2. **Plan** the video structure (scenes, transitions, pacing, style)
-3. **Build in phases**: canvas → background scenes → content → text → reorder → save → verify
+3. **Build in phases**: canvas → background scenes → content → text → reorder → **save** → verify
 4. **Verify** thoroughly (no gaps, no hidden text, no errors)
+
+> 💾 **Save after each phase**, not just at the end. Call `editor.save` after completing background scenes, after content, and after text/reorder. This way if a later phase fails, you don't lose earlier work.
 
 Load the `remotion/rules/creative-approach` skill for the full planning workflow, pacing guidelines, and common mistakes to avoid.
 
@@ -1873,6 +1890,29 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
 ### Save
 `editor.save` persists the design to the Next.js backend database. It may timeout for projects with large bundled scene code.
 
+```bash
+# Save command:
+curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"type": "editor.save", "params": {}}'
+# → {"status":"success","result":{"saved":true}}
+```
+
+### 💾 When to save (quick reference)
+
+| Trigger | Why |
+|---------|-----|
+| After completing each build phase (scenes, content, text) | Prevents losing earlier phases if a later one fails |
+| After every 5-10 commands in a long editing session | Incremental persistence — don't batch all saves to the end |
+| Before running diagnostics at end of session | Ensures diagnostics reflect the saved state |
+| Before killing, restarting, or rebuilding the app | **MANDATORY** — autosave ≠ cloud save |
+| After fixing errors (deleted broken items, re-added) | Lock in the fix so it's not lost |
+| Before rendering/exporting | Ensures render uses the latest state |
+| After `editor.reorderTracks` | Track order is a common source of visual bugs — save the fix |
+| When switching to a different content/project | Current project won't auto-save after navigation |
+
+**Rule of thumb:** If you'd be upset losing the work you just did, call `editor.save` now.
+
 **Reliable alternative for bundled scenes:** Use `project.getFullState` to get the current state, then write directly to the autosave file:
 ```
 Path: ~/.skilltown-desktop/projects/<contentId>.autosave.skilltown
@@ -1960,7 +2000,7 @@ ffprobe -v error -show_entries format=duration \
 After building a video, run this sequence before reporting done:
 
 1. **`editor.reorderTracks`** — fix layer z-order
-2. **`editor.save`** — persist to backend
+2. **💾 `editor.save`** — persist to backend (**MANDATORY — never skip this**)
 3. **`GET /api/state`** — verify:
    - Expected number of items in `trackItemsMap`
    - No zombie items (all have valid `type`)
