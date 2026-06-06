@@ -1,12 +1,95 @@
 ---
 name: content-inspiration
-description: Research trending content, analyze competitors, search across platforms, and transcribe videos — all from the desktop app. Use before creating content to find winning hooks, topics, and formats.
-tags: inspiration, trending, research, competitor, niche, search, transcribe, hooks, ideas, content-planning
+description: Research trending content, analyze competitors, search across platforms (IG, YT, Twitter, Reddit, tech news), and transcribe videos. Use MCP tools for full research capabilities or desktop bridge for quick lookups.
+tags: inspiration, trending, research, competitor, niche, search, transcribe, hooks, ideas, content-planning, scraping, twitter, reddit, technews
 ---
 
-# Content Inspiration
+# Content Inspiration & Research
 
-Research trending content, analyze creators, and transcribe videos before creating your own. The bridge proxies to SkillTown's content inspiration engine — powered by cross-platform data from Instagram, YouTube, and more.
+Two access paths:
+
+1. **MCP Server tools** (full research) — scrape IG/YT/Twitter, Reddit, tech news, web search, context memory
+2. **Desktop bridge endpoints** (quick lookups) — feed, search, transcribe from the Electron app
+
+## MCP Tools (Recommended — Full Research)
+
+### YouTube Scraping (4 tools)
+
+| Tool | What it does |
+|------|-------------|
+| `scraping_youtube_search` | Search YouTube for videos by query |
+| `scraping_youtube_get_info` | Get video metadata (title, views, description, duration) |
+| `scraping_youtube_get_transcript` | Extract full transcript/subtitles from a video |
+| `scraping_youtube_channel_videos` | List videos from a YouTube channel |
+
+### Twitter/X Scraping (3 tools)
+
+| Tool | What it does |
+|------|-------------|
+| `scraping_twitter_search` | Search tweets by query |
+| `scraping_twitter_get_trending` | Get trending topics |
+| `scraping_twitter_get_user_tweets` | Get tweets from a specific user |
+
+### Reddit (3 tools)
+
+| Tool | What it does |
+|------|-------------|
+| `reddit_fetch_posts` | Fetch posts from a subreddit |
+| `reddit_search` | Search Reddit by query |
+| `reddit_get_comments` | Get comments on a post |
+
+### Tech News (4 tools)
+
+| Tool | What it does |
+|------|-------------|
+| `technews_fetch` | Aggregate from HN, arXiv, Product Hunt, Dev.to, GitHub Trending, HuggingFace, Lobsters, StackOverflow |
+| `technews_list_sources` | List all available news sources |
+| `technews_fetch_rss` | Fetch from custom RSS feeds |
+| `technews_extract` | Extract full article content from a URL |
+
+### Web Search & Crawl (5 tools)
+
+| Tool | What it does |
+|------|-------------|
+| `web_search` / `search_web` | Search the web (Tavily-powered) |
+| `web_fetch` / `search_fetch` | Fetch and extract content from a URL |
+| `web_extract` / `search_extract` | Extract clean text from URLs |
+| `web_crawl` / `search_crawl` | Crawl a website following links |
+| `web_map` / `search_map` | Map a website's URL structure |
+
+### Context Store (5 tools — persistent AI memory)
+
+| Tool | What it does |
+|------|-------------|
+| `context_list` | List stored context entries |
+| `context_search` | Search context by keyword |
+| `context_get` | Get a specific context entry |
+| `context_manage` | Create/update/delete context entries |
+| `context_edit` | Edit context content in-place |
+
+### Research Workflow Example
+
+```
+1. technews_fetch(sources=["hackernews", "producthunt"], limit=10)
+   → Find trending topics in tech
+
+2. scraping_twitter_search(query="AI video editing")
+   → See what's being discussed on Twitter
+
+3. reddit_search(query="best video editing tools 2025", subreddit="videography")
+   → Get community opinions
+
+4. scraping_youtube_search(query="AI video editing tutorial")
+   → Find top YouTube content
+
+5. scraping_youtube_get_transcript(video_url="https://youtube.com/watch?v=...")
+   → Study the hook and structure
+
+6. context_manage(action="create", title="Research: AI Video Editing", content="...")
+   → Save findings for later
+```
+
+## Desktop Bridge Endpoints (Alternative — from Electron app)
 
 ## Prerequisites
 
