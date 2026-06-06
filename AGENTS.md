@@ -119,6 +119,26 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
 curl -s http://127.0.0.1:$PORT/api/skills/overview -H "Authorization: Bearer $TOKEN"
 ```
 
+### ⚠️ CRITICAL: Always save before killing or restarting the app
+
+**You MUST call `editor.save` before ANY of these actions:**
+- Killing/terminating the app process
+- Rebuilding and reinstalling the app
+- Restarting the app for any reason
+- Running tests that may restart the app
+
+```bash
+# Save to cloud DB (always do this first)
+curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"type": "editor.save", "params": {}}'
+
+# Verify save succeeded before proceeding
+# Response: {"status":"success","result":{"saved":true}}
+```
+
+The autosave timer writes to local `.skilltown` files periodically, but this does NOT save to the cloud DB. If you kill the app without `editor.save`, any work since the last autosave tick is lost locally, and ALL work is lost from the cloud perspective.
+
 ### Common startup issues & auto-fixes
 
 | Error Pattern | Cause | Fix |
@@ -1836,6 +1856,19 @@ Timeline tracks show thumbnail previews for video items. The system:
 ---
 
 ## Design Save & Load
+
+### ⚠️ CRITICAL: Save before kill/restart
+**Always call `editor.save` before terminating the app.** Autosave only writes local `.skilltown` files — it does NOT persist to the cloud DB. Killing the app without saving means:
+- Cloud DB has stale data (last explicit save)
+- Local autosave may be seconds/minutes behind current state
+- Any unsaved edits are permanently lost
+
+```bash
+# Always run before kill/restart/rebuild:
+curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"type": "editor.save", "params": {}}'
+```
 
 ### Save
 `editor.save` persists the design to the Next.js backend database. It may timeout for projects with large bundled scene code.
