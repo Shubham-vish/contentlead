@@ -20,7 +20,7 @@ The render worker checks these at startup:
 
 Check dependency status:
 ```bash
-curl http://127.0.0.1:$PORT/api/render/deps -H "Authorization: Bearer $TOKEN"
+curl http://127.0.0.1:$PORT/api/render/capabilities -H "Authorization: Bearer $TOKEN"
 ```
 
 ---
@@ -173,14 +173,14 @@ curl http://127.0.0.1:$PORT/api/render/JOBID \
 ### List All Jobs
 
 ```bash
-curl http://127.0.0.1:$PORT/api/render \
+curl http://127.0.0.1:$PORT/api/render/jobs \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 ### Cancel a Render
 
 ```bash
-curl -X DELETE http://127.0.0.1:$PORT/api/render/JOBID \
+curl -X POST http://127.0.0.1:$PORT/api/render/JOBID/cancel \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -195,7 +195,7 @@ curl -X DELETE http://127.0.0.1:$PORT/api/render/JOBID \
 | `rendering` | Encoding frames to video |
 | `completed` | Done — `outputPath` has the file |
 | `failed` | Error occurred — check `error` field |
-| `cancelled` | User cancelled via DELETE |
+| `cancelled` | User cancelled via `POST /api/render/:jobId/cancel` |
 
 ---
 

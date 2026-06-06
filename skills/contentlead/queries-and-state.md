@@ -451,79 +451,7 @@ Example:
 }
 ```
 
-## `validateTimeline`
-
-Run a full timeline health check for orphaned items, gaps, track ordering issues, and audio overlap.
-
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `—` | `—` | `—` | No parameters |
-
-Example:
-
-```json
-{
-  "type": "validateTimeline",
-  "params": {}
-}
-```
-
-## `getCommandHistory`
-
-Read recent command execution history for debugging and audit trails.
-
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `count` | `number` | `20` | Maximum number of recent commands to return |
-
-Example:
-
-```json
-{
-  "type": "getCommandHistory",
-  "params": {
-    "count": 10
-  }
-}
-```
-
-## `getMetrics`
-
-Return command execution metrics such as success/fail rates and timing summaries.
-
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `—` | `—` | `—` | No parameters |
-
-Example:
-
-```json
-{
-  "type": "getMetrics",
-  "params": {}
-}
-```
-
----
-
 ## Additional Diagnostics Queries
-
-### `query.diagnoseScenes`
-
-Diagnose scene and template health, including missing props, bad timing, stale blob URLs, and captured runtime errors.
-
-| Param | Type | Default | Description |
-|---|---|---|---|
-| *(none)* | — | — | Scans all current scene/template items |
-
-**Returns:** scene summaries with `status`, `issueCount`, and `issues` per scene.
-
-```json
-{
-  "type": "query.diagnoseScenes",
-  "params": {}
-}
-```
 
 ### `query.validateTimeline`
 

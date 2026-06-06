@@ -138,7 +138,7 @@ curl http://127.0.0.1:$PORT/api/content/list -H "Authorization: Bearer $TOKEN"
 ```bash
 curl -X POST http://127.0.0.1:$PORT/api/navigate \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"url": "/content/content_xxx", "waitForReady": true, "timeout": 30000}'
+  -d '{"url": "/content/content_xxx", "waitForReady": true, "timeoutMs": 30000}'
 # → { success: true, editorReady: true }
 ```
 
@@ -146,7 +146,7 @@ curl -X POST http://127.0.0.1:$PORT/api/navigate \
 ```bash
 curl -X POST http://127.0.0.1:$PORT/api/editor/wait-ready \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"timeout": 30000}'
+  -d '{"timeoutMs": 30000}'
 ```
 
 ### Restore autosaved project
