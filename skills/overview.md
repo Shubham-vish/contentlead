@@ -13,9 +13,10 @@ The desktop app runs a local HTTP API. Commands are JSON objects with `type` and
 ### Discovery
 ```bash
 cat ~/.skilltown-desktop/api.json
-# → { "version": 2, "port": 3847, "token": "abc...", "baseUrl": "http://127.0.0.1:3847",
-#     "mediaPort": 3848, "editorReady": true, "contentId": "content_xxx", "pid": 12345,
-#     "startedAt": "2024-...", "features": ["navigation", "content-list", "wait-ready", "restore", ...] }
+# → { "schemaVersion": 3, "port": 3847, "token": "abc...", "baseUrl": "http://127.0.0.1:3847",
+#     "apiOrigin": "http://127.0.0.1:3847", "appOrigin": "https://contentlead.in",
+#     "mediaServerPort": 3848, "contentId": "content_xxx", "editorReady": true,
+#     "startedAt": "2025-...", "pid": 12345 }
 ```
 
 ### Health Check (recommended first call)
@@ -34,7 +35,7 @@ curl http://127.0.0.1:$PORT/api/content/list -H "Authorization: Bearer $TOKEN"
 # Navigate to a content page (auto-opens editor)
 curl -X POST http://127.0.0.1:$PORT/api/navigate \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"url": "/content/content_xxx", "waitForReady": true, "timeout": 30000}'
+  -d '{"url": "/content/content_xxx", "waitForReady": true, "timeoutMs": 30000}'
 
 # Check current navigation state
 curl http://127.0.0.1:$PORT/api/navigation -H "Authorization: Bearer $TOKEN"
@@ -65,37 +66,56 @@ curl -X POST http://127.0.0.1:$PORT/api/execute \
 |--------|------|-------------|
 | GET | `/api/info` | App status (no auth needed) |
 | GET | `/api/health` | Comprehensive health check (editor, media, errors) |
-| GET | `/api/navigation` | Current URL, editor state, contentId |
-| GET | `/api/content/list` | List content items with autosave files |
-| POST | `/api/navigate` | Navigate to URL (auto-appends `?view=editor` for content pages) |
-| POST | `/api/editor/wait-ready` | Block until editor is mounted and ready |
-| POST | `/api/project/restore` | Restore autosave project into editor |
-| POST | `/api/reload` | Reload page (with optional waitForReady/autoRestore) |
+| GET | `/api/state?scope=summary\|snapshot\|full` | Current editor state |
 | GET | `/api/capabilities` | Machine-readable command catalog |
-| GET | `/api/state?scope=summary` | Current editor state (items at `result.design.trackItemsMap`) |
-| GET | `/api/skills` | List available skill docs |
-| GET | `/api/skills/:name` | Load a specific skill doc |
+| POST | `/api/debug/toggle` | Toggle verbose debug logging |
+| POST | `/api/media/heal` | Heal stale media URLs in editor state |
 | POST | `/api/execute` | Execute single command |
 | POST | `/api/batch` | Execute multiple commands |
+| GET | `/api/events` | SSE event stream |
+| GET | `/api/metrics` | API and editor metrics |
+| GET | `/api/logs` | Query activity logs |
+| GET | `/api/console-errors` | Browser console errors/warnings |
+| GET | `/api/diagnostics` | Unified error check (`?full=true` for deep scan) |
+| GET | `/api/screenshot` | Capture current preview frame as base64 PNG |
+| GET | `/api/skills` | List available skill docs |
+| GET | `/api/skills/:name` | Load a specific skill doc |
 | GET | `/api/scenes` | List custom scenes |
 | POST | `/api/scenes` | Create a custom scene |
 | GET | `/api/scenes/:name` | Get scene source |
 | PUT | `/api/scenes/:name` | Update scene code |
 | DELETE | `/api/scenes/:name` | Delete a scene |
-| POST | `/api/render` | Start a render job |
-| GET | `/api/render/jobs` | List render jobs |
+| POST | `/api/scene-bundles/build` | Build scene with imports |
+| GET | `/api/scene-bundles` | List cached scene bundles |
+| GET | `/api/scene-bundles/supported-imports` | List supported imports for bundled scenes |
+| GET | `/api/scene-bundles/:id` | Get a bundle by ID |
+| DELETE | `/api/scene-bundles/:id` | Delete a cached bundle |
 | GET | `/api/render/capabilities` | Check render capabilities |
+| GET | `/api/render/jobs` | List render jobs |
+| POST | `/api/render` | Start a render job |
 | GET | `/api/render/:jobId` | Check render status |
 | POST | `/api/render/:jobId/cancel` | Cancel render |
-| GET | `/api/console-errors` | Browser console errors/warnings (ring buffer) |
-| GET | `/api/local-file?path=...` | Serve local file for media |
-| GET | `/api/logs` | Query activity logs |
 | GET | `/api/project/export` | Export full project as JSON |
 | POST | `/api/project/import` | Import design JSON into editor |
 | POST | `/api/project/save` | Save project to .skilltown file |
 | POST | `/api/project/open` | Load .skilltown file into editor |
 | GET | `/api/project/autosaves` | List autosave files |
 | GET | `/api/project/recent` | Recent projects list |
+| POST | `/api/project/create` | Create a new empty project |
+| POST | `/api/project/duplicate` | Duplicate the current project |
+| POST | `/api/project/restore` | Restore autosave project into editor |
+| POST | `/api/navigate` | Navigate to URL or content path |
+| GET | `/api/navigation` | Current URL and navigation state |
+| POST | `/api/reload` | Reload the editor page |
+| POST | `/api/editor/wait-ready` | Block until editor is mounted and ready |
+| GET | `/api/content/list` | List available content/projects |
+| POST | `/api/content/create` | Create new content in the database |
+| GET | `/api/local-file?path=...` | Serve a local file |
+| POST | `/api/media/import` | Import a local file into the media library |
+| POST | `/api/media/analyze` | Analyze a media file with ffmpeg |
+| POST | `/api/ui/action` | Trigger a UI action (`save`, `undo`, `redo`, etc.) |
+| GET | `/api/app/origin` | Get the current frontend origin |
+| POST | `/api/app/set-origin` | Switch cloud/local origin |
 
 ### Activity Logs & Error Checking
 
@@ -121,7 +141,7 @@ Response: `{ entries: [{seq, ts, level, source, message, commandId, data}], curr
 
 To add local files (audio/video/images) to the editor, use the **media server** (preferred) or the local-file endpoint:
 ```bash
-# Preferred: Media server URL (stable across restarts, port from api.json "mediaPort")
+# Preferred: Media server URL (stable across restarts, port from api.json "mediaServerPort")
 # http://127.0.0.1:$MEDIA_PORT/media?path=/absolute/path/to/file.mp3
 
 # Fallback: API server URL (port changes on restart — auto-healed on editor load)
@@ -237,10 +257,10 @@ To add local files (audio/video/images) to the editor, use the **media server** 
 - `query.listFonts`, `query.listAnimationPresets`
 
 ### Diagnostics & Infrastructure
-- `validateTimeline` — full timeline health check
-- `getCommandHistory` — recent command history (count param)
-- `getSceneErrors` — scene error list
-- `getMetrics` — command success/fail rates, timing stats
+- `query.validateTimeline` — full timeline health check
+- `query.getCommandHistory` — recent command history (count param)
+- `query.getSceneErrors` — scene error list
+- `query.getMetrics` — command success/fail rates, timing stats
 - `query.diff` — state diffs since version N
 - `query.getVisibleText` — text items at specific time
 - `query.getCircuitBreakerStatus` — circuit breaker status
@@ -283,6 +303,7 @@ All times in **milliseconds** (1s = 1000ms). Canvas origin: (0,0) = top-left.
 | `custom-scene-authoring` | Create custom .tsx scenes with full React/Remotion freedom |
 | `rendering` | Local video rendering — start, monitor, cancel render jobs |
 | `storystudio-pipeline` | AI B-roll pipeline (5 steps) |
+| `infrastructure` | Debug, metrics, screenshots, media import/analyze, project create/duplicate, UI actions, scene bundles |
 | `content-bridge` | Apply/remove images and captions from pipeline |
 | `project-and-export` | Save, export, resize, tracks, undo/redo |
 | `queries-and-state` | Read editor state, timeline, transcript, fonts |

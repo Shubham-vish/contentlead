@@ -157,22 +157,23 @@ If `editorHealth.status === "issues_found"` → **STOP and fix** before continui
 
 ### Batch Execution
 
+Send this body to `POST /api/batch`:
+
 ```json
 {
-  "type": "batch",
   "commands": [
     {"type": "editor.addText", "params": {"text": "Title", "from": 0, "durationMs": 3000}},
     {"type": "editor.addText", "params": {"text": "Subtitle", "from": 1000, "durationMs": 2000}}
   ],
-  "transaction": true
+  "stopOnError": true
 }
 ```
 
-With `transaction: true`, if any command fails, all are rolled back.
+Batch execution runs commands in order. There is **no transaction or rollback support**.
 
 ## Runtime Skill Discovery
 
-The running app serves **20 detailed skill docs** via its API. Load them on-demand:
+The running app serves detailed skill docs via its API. Load them on-demand:
 
 ```bash
 # List all available skills
@@ -199,6 +200,7 @@ curl -s "http://127.0.0.1:$PORT/api/skills?q=animation" -H "Authorization: Beare
 | Pre-built scene library (159 scenes) | `scenes-and-templates` |
 | Custom Remotion scenes (full code) | `custom-scene-authoring` |
 | Render/export video | `rendering` |
+| Debugging, screenshots, media import/analyze, project lifecycle, scene bundles | `infrastructure` |
 | Save/load projects | `project-and-export` |
 | Read editor state & timeline | `queries-and-state` |
 | End-to-end video creation | `orchestration-e2e` |
@@ -231,7 +233,7 @@ curl -s "http://127.0.0.1:$PORT/api/skills?q=animation" -H "Authorization: Beare
 `editor.reorderTracks`, `editor.muteTrack`, `editor.lockTrack`, `editor.renameTrack`
 
 ### Queries (read-only)
-`query.getTimelineItems`, `query.getCanvasSize`, `query.getCurrentTime`, `query.getDuration`, `query.diagnoseScenes`
+`query.getTimelineItems`, `query.getCanvasSize`, `query.getCurrentTime`, `query.getDuration`, `query.getSceneErrors`
 
 ### Render
 `POST /api/render` with preset: `preview`, `draft`, `final`, `4k`
@@ -284,18 +286,58 @@ The API auto-fixes common mistakes (e.g., unwrapped `borderWidth` → wrapped in
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| GET | `/api/info` | App status (no auth needed) |
 | GET | `/api/health` | Health check |
-| GET | `/api/diagnostics` | Error diagnostics (`?full=true` for deep check) |
-| GET | `/api/content/list` | List available content |
-| POST | `/api/navigate` | Navigate to content |
+| GET | `/api/state?scope=summary\|snapshot\|full` | Get current editor state |
+| GET | `/api/capabilities` | Machine-readable command catalog |
+| POST | `/api/debug/toggle` | Toggle verbose debug logging |
+| POST | `/api/media/heal` | Heal stale media URLs in editor state |
 | POST | `/api/execute` | Execute editor command |
 | POST | `/api/batch` | Execute multiple commands |
-| GET | `/api/state` | Get current editor state |
-| POST | `/api/render` | Start render job |
+| GET | `/api/events` | SSE event stream |
+| GET | `/api/metrics` | API and editor metrics |
+| GET | `/api/logs` | Query activity logs |
+| GET | `/api/console-errors` | Browser errors |
+| GET | `/api/diagnostics` | Error diagnostics (`?full=true` for deep check) |
+| GET | `/api/screenshot` | Capture current preview frame |
 | GET | `/api/skills` | List runtime skills |
 | GET | `/api/skills/:name` | Load specific skill |
-| GET | `/api/events` | SSE event stream |
-| GET | `/api/console-errors` | Browser errors |
+| GET | `/api/content/list` | List available content |
+| POST | `/api/content/create` | Create new content in the database |
+| POST | `/api/navigate` | Navigate to content |
+| GET | `/api/navigation` | Current URL and navigation state |
+| POST | `/api/reload` | Reload the editor page |
+| POST | `/api/editor/wait-ready` | Wait for editor readiness |
+| GET | `/api/scenes` | List custom scenes |
+| POST | `/api/scenes` | Create a custom scene |
+| GET | `/api/scenes/:name` | Get scene source |
+| PUT | `/api/scenes/:name` | Update scene code |
+| DELETE | `/api/scenes/:name` | Delete a scene |
+| POST | `/api/scene-bundles/build` | Build scene with imports |
+| GET | `/api/scene-bundles` | List cached scene bundles |
+| GET | `/api/scene-bundles/supported-imports` | List supported imports for bundled scenes |
+| GET | `/api/scene-bundles/:id` | Get a bundle by ID |
+| DELETE | `/api/scene-bundles/:id` | Delete a cached bundle |
+| GET | `/api/render/capabilities` | Check ffmpeg/Chrome availability |
+| GET | `/api/render/jobs` | List render jobs |
+| POST | `/api/render` | Start render job |
+| GET | `/api/render/:jobId` | Get render job status |
+| POST | `/api/render/:jobId/cancel` | Cancel render |
+| GET | `/api/project/export` | Export full project as JSON |
+| POST | `/api/project/import` | Import design JSON into editor |
+| POST | `/api/project/save` | Save project to `.skilltown` file |
+| POST | `/api/project/open` | Load `.skilltown` file into editor |
+| GET | `/api/project/autosaves` | List autosave files |
+| GET | `/api/project/recent` | Recent projects list |
+| POST | `/api/project/create` | Create a new empty project |
+| POST | `/api/project/duplicate` | Duplicate the current project |
+| POST | `/api/project/restore` | Restore autosave for the current content |
+| GET | `/api/local-file?path=...` | Serve a local file |
+| POST | `/api/media/import` | Import a local file into the media library |
+| POST | `/api/media/analyze` | Analyze a media file with ffmpeg |
+| POST | `/api/ui/action` | Trigger a UI action (`save`, `undo`, `redo`, etc.) |
+| GET | `/api/app/origin` | Get current app origin |
+| POST | `/api/app/set-origin` | Switch cloud/local origin |
 
 ## Auth
 
