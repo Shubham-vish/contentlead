@@ -123,7 +123,7 @@ curl -s http://127.0.0.1:$PORT/api/skills/overview -H "Authorization: Bearer $TO
 
 | Error Pattern | Cause | Fix |
 |---|---|---|
-| `ERR_CONNECTION_REFUSED` on `127.0.0.1:3000` | Next.js server not running | Stop Electron, restart with `npm run dev:with-server` |
+| `ERR_CONNECTION_REFUSED` on `127.0.0.1:3000` | Only if using `origin: "local"` — local Next.js dev server not running | Start Next.js (`cd SkillTown && npm run dev`) or switch back to cloud: `POST /api/app/set-origin {"origin":"cloud"}` |
 | `ERR_CONNECTION_REFUSED` on `127.0.0.1:XXXXX/media` | Media server port changed after restart | Reload project — URLs are auto-healed on load |
 | Audio waveforms gone / no playback after restart | Audio URLs used stale `/api/local-file` port | Auto-healed: `rewriteMediaUrlPort()` converts `/api/local-file` → `/media` on editor load |
 | `blob:` URL errors | Blob URLs don't survive page reloads | Re-add the media from local file path |
@@ -447,7 +447,7 @@ curl "http://127.0.0.1:$PORT/api/skills?q=animation" -H "Authorization: Bearer $
 | AI B-roll pipeline (5 steps) | `storystudio-pipeline` |
 | Apply/remove images & captions | `content-bridge` |
 | Save, export, resize, tracks | `project-and-export` |
-| **AI image generation, vision, TTS** | `ai-content-generation` |
+| **AI image generation, vision, TTS** | `prepwithai/SKILL` |
 | Read state, timeline, transcript | `queries-and-state` |
 | Save/load .skilltown project files | `project-files` |
 
@@ -1029,7 +1029,7 @@ The agent has access to **PrepWithAI MCP tools** for AI-powered content creation
 - **Text-to-speech** — Generate voiceovers with Minimax TTS
 - **Content-aware editing** — Analyze video frames → understand topics → create contextual intros/transitions/outros
 
-Load the `ai-content-generation` skill for full documentation, workflows, and examples.
+Load the `prepwithai/SKILL` skill for full documentation, workflows, and examples.
 
 ## 🎬 Creative Approach — Think Like a Video Editor
 
