@@ -1,18 +1,65 @@
 ---
 name: social-media
-description: Publish content to Instagram, LinkedIn, and YouTube from the desktop app. Covers account listing, publishing workflows, and status polling for each platform.
-tags: publish, instagram, linkedin, youtube, social, post, upload, reel, accounts, share
+description: Publish, manage posts, and configure CTA automation for Instagram, LinkedIn, and YouTube. Use MCP tools for full capabilities or desktop bridge for quick publishing.
+tags: publish, instagram, linkedin, youtube, social, post, upload, reel, accounts, share, cta, automation, scraping
 ---
 
-# Social Media Publishing
+# Social Media Publishing & Management
 
-Publish directly from the desktop editor to Instagram, LinkedIn, and YouTube using bridge endpoints. The bridge authenticates through the user's web session — no extra API keys needed.
+Two access paths are available:
 
-## Prerequisites
+1. **MCP Server tools** (full capabilities) — get posts, manage CTA, automation, scraping, token validation
+2. **Desktop bridge endpoints** (quick publish) — publish, poll status, list accounts from the Electron app
 
-- User must be **logged in** on the ContentLead web app (inside the Electron window)
-- Social accounts must be **connected** via the web app's settings (OAuth)
-- For Instagram/YouTube video publishing, the video must be on a **public URL** (uploaded via the content pipeline, not localhost)
+## MCP Tools (Recommended — Full Capabilities)
+
+### Instagram (7 tools)
+
+| Tool | What it does |
+|------|-------------|
+| `instagram_get_accounts` | List all connected IG accounts (IDs, usernames, automation status) |
+| `instagram_get_posts` | Get last N posts with metrics. Params: `account_id`, `limit` (1-50), `media_id`, `media_type` (REELS/IMAGE/VIDEO), `include_cta` |
+| `instagram_get_automation` | Get CTA config per-account or per-post. Params: `account_id` or `media_id` |
+| `instagram_update_automation` | **3 actions:** `toggle` (enable/disable automation), `update_rules` (trigger keywords + DM templates), `update_cta` (per-post keywords, DM body, comment replies, follow gate) |
+| `instagram_publish_reel` | Publish a reel. Params: `account_id`, `video_url` (must be public), `caption` |
+| `instagram_publish_status` | Poll publish progress. Params: `container_id`, `account_id`, `auto_publish` (true = publish when FINISHED) |
+| `instagram_validate_token` | Check if account token is still valid. Returns `healthy: true/false` |
+
+#### CTA Update Example
+```
+instagram_update_automation(
+  action="update_cta",
+  media_id="17889...",
+  contains='["free", "link", "send"]',           # trigger keywords
+  message_body='{"text": "Here is your free guide: https://..."}',
+  comment_replies='["Thanks! Check your DMs 🎁"]',
+  enable_comment_reply=true,
+  enable_follow_gate=true,
+  follow_reply="Follow us first, then comment again!",
+  follow_button_text="Follow @myhandle"
+)
+```
+
+### LinkedIn (4 tools)
+
+| Tool | What it does |
+|------|-------------|
+| `linkedin_get_account` | Get connected LI account info (name, token status, can_post) |
+| `linkedin_post` | Publish post. Params: `text`, `image_urls` (JSON array), `article_url`, `article_title`, `visibility` (PUBLIC/CONNECTIONS) |
+| `linkedin_get_posts` | Get last N published posts (default 20) |
+| `linkedin_delete_post` | Delete a post by URN. Params: `post_urn`, `delete_from_linkedin` (default true) |
+
+### Instagram Scraping (3 tools)
+
+| Tool | What it does |
+|------|-------------|
+| `scraping_instagram_download_reels` | Download reels from a user profile |
+| `scraping_instagram_download_reel_url` | Download a specific reel by URL |
+| `scraping_instagram_get_user_info` | Get user profile info (followers, bio, etc.) |
+
+## Desktop Bridge Endpoints (Alternative — from Electron app)
+
+Use these when running inside the desktop app. The bridge authenticates through the user's web session — no extra API keys needed.
 
 ## Quick Start
 
