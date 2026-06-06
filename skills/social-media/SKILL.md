@@ -11,113 +11,379 @@ Two access paths are available:
 1. **MCP Server tools** (full capabilities) — get posts, manage CTA, automation, scraping, token validation
 2. **Desktop bridge endpoints** (quick publish) — publish, poll status, list accounts from the Electron app
 
-## MCP Tools (Recommended — Full Capabilities)
+> **Prerequisite:** Before publishing, set up your content using the **`content-management`** skill.
+> Use `content_create` → `content_update` → `content_configure_publish` to prepare content,
+> then come back here to publish.
 
-> **Content management tools** (create, list, update, upload, configure channels) are in the
-> **`content-management`** skill. Load that skill for content CRUD before publishing.
+---
 
-### Instagram (7 tools)
+## Instagram Publishing Flow (IMPORTANT — Async, 2-Step Process)
 
-| Tool | What it does |
-|------|-------------|
-| `instagram_get_accounts` | List all connected IG accounts (IDs, usernames, automation status) |
-| `instagram_get_posts` | Get last N posts with metrics. Params: `account_id`, `limit` (1-50), `media_id`, `media_type` (REELS/IMAGE/VIDEO), `include_cta` |
-| `instagram_get_automation` | Get CTA config per-account or per-post. Params: `account_id` or `media_id` |
-| `instagram_update_automation` | **3 actions:** `toggle` (enable/disable automation), `update_rules` (trigger keywords + DM templates), `update_cta` (per-post keywords, DM body, comment replies, follow gate) |
-| `instagram_publish_reel` | Publish a reel. **Recommended:** pass `content_id` to track in UI. Legacy: `account_id` + `video_url` |
-| `instagram_publish_status` | Poll publish progress. Pass `content_id` or `container_id` + `account_id`. With `auto_publish=true`, publishes when ready |
-| `instagram_validate_token` | Check if account token is still valid. Returns `healthy: true/false` |
+Instagram publishing is **asynchronous**. You cannot publish in a single call.
 
-### YouTube (1 tool)
-
-| Tool | What it does |
-|------|-------------|
-| `youtube_publish` | Publish content video to YouTube. Reads metadata from Content doc, uploads, writes back, auto-posts CTA comment. Pass `content_id` (recommended) or overrides. |
-
-#### End-to-End Publish Example (uses content-management + social-media skills)
 ```
-# 1. Create & configure content (content-management skill)
-content_create(title="5 AI Tools You Need in 2025")
-content_update(content_id="content_xxx", video_url="https://...", thumbnail="https://...", status="ready")
-content_configure_publish(content_id="content_xxx", platform="instagram",
-  enabled=true, to_publish=true, caption="5 AI tools! 🚀", hashtags='["AI"]', selected_account="ig_xxx")
+Step 1: instagram_publish_reel()  →  Creates a "container" on Instagram's servers
+Step 2: instagram_publish_status()  →  Poll every 10-30 seconds until:
+        - IN_PROGRESS  →  keep polling
+        - FINISHED     →  if auto_publish=true, publishes automatically
+        - PUBLISHED    →  done! media_id and permalink available
+        - ERROR        →  publishing failed (check error_message)
+```
 
-# 2. Set up CTA for Instagram DM automation
+**Typical timeline:** Container processing takes 30-120 seconds.
+
+---
+
+## MCP Tools — Instagram (7 tools)
+
+### `instagram_get_accounts` — List connected accounts
+
+No parameters. Returns all connected Instagram accounts.
+
+**Returns:**
+```json
+{
+  "accounts": [
+    {
+      "id": "abc123",               // ← Use this as account_id everywhere
+      "username": "myhandle",
+      "profilePic": "https://...",
+      "pageName": "My Business Page",
+      "status": "active",
+      "automationEnabled": true,
+      "tokenExpiry": "2025-12-31"
+    }
+  ]
+}
+```
+
+**Always call this first** to get valid `account_id` values for other tools.
+
+---
+
+### `instagram_get_posts` — Get posts with metrics
+
+| Param | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `account_id` | string | ✅ | — | Account ID from `instagram_get_accounts` |
+| `limit` | int | | `10` | Max posts to return (1-50) |
+| `media_id` | string | | — | Fetch a specific post by Instagram media ID |
+| `media_type` | string | | — | Filter: `"REELS"`, `"IMAGE"`, `"VIDEO"`, `"CAROUSEL_ALBUM"` |
+| `include_cta` | bool | | `false` | Include CTA automation config per post |
+
+**Returns:** Array of posts, each with: `id`, `caption`, `media_url`, `permalink`, `timestamp`, `like_count`, `media_type`, and optionally `cta` config.
+
+---
+
+### `instagram_get_automation` — Get CTA/automation config
+
+| Param | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `account_id` | string | | — | Get automation config for this account |
+| `media_id` | string | | — | Get per-post CTA config for this media |
+
+Call with no params → summary of all accounts.
+Call with `account_id` → rules for that account.
+Call with `media_id` → CTA keywords/DM template for that post.
+
+---
+
+### `instagram_update_automation` — Update CTA & automation
+
+This tool has **3 different actions**, each with different required params:
+
+#### Action: `"toggle"` — Enable/disable automation
+
+| Param | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | ✅ | `"toggle"` |
+| `account_id` | string | ✅ | Account to toggle |
+| `enabled` | bool | ✅ | `true` to enable, `false` to disable |
+
+```python
+instagram_update_automation(action="toggle", account_id="abc123", enabled=True)
+```
+
+#### Action: `"update_rules"` — Set account-level automation rules
+
+| Param | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | ✅ | `"update_rules"` |
+| `account_id` | string | ✅ | Account to update |
+| `automation_rules` | string | ✅ | JSON array of rule objects |
+
+Each rule: `{"triggerKeywords": ["free", "link"], "dmTemplate": "Here's your link: ...", "commentReplyTemplate": "Check DMs!", "enabled": true}`
+
+```python
 instagram_update_automation(
-  action="update_cta", media_id="content_xxx",
-  contains='["free", "link", "send"]',
-  message_body='{"text": "Here is your free guide: https://..."}',
-  enable_comment_reply=true
+    action="update_rules",
+    account_id="abc123",
+    automation_rules='[{"triggerKeywords": ["free"], "dmTemplate": "Here is your free guide!", "enabled": true}]'
 )
-
-# 3. Publish to Instagram (content-aware — tracks in UI)
-instagram_publish_reel(content_id="content_xxx")
-
-# 4. Poll until published
-instagram_publish_status(content_id="content_xxx", auto_publish=true)
-
-# 5. Publish to YouTube
-content_configure_publish(content_id="content_xxx", platform="youtube",
-  enabled=true, to_publish=true, title="5 AI Tools You Need in 2025",
-  tags='["AI", "tools"]', privacy="public", selected_account="channel_xxx")
-youtube_publish(content_id="content_xxx")
 ```
 
-#### CTA Update Example
-```
+#### Action: `"update_cta"` — Set per-post CTA (most common)
+
+| Param | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | ✅ | `"update_cta"` |
+| `media_id` | string | ✅ | Instagram media ID or content_id |
+| `contains` | string | ✅ | JSON array of trigger keywords: `'["free", "link", "send"]'` |
+| `message_body` | string | ✅ | JSON object with DM text: `'{"text": "Here is your link: https://..."}'` |
+| `comment_replies` | string | | JSON array of auto-reply texts: `'["Thanks! Check your DMs 🎁"]'` |
+| `enable_comment_reply` | bool | | Enable auto-reply to comments (`true`/`false`) |
+| `enable_follow_gate` | bool | | Require follow before DM (`true`/`false`) |
+| `follow_reply` | string | | Message if user hasn't followed |
+| `follow_button_text` | string | | Button text (e.g. `"Follow @myhandle"`) |
+
+```python
 instagram_update_automation(
-  action="update_cta",
-  media_id="17889...",
-  contains='["free", "link", "send"]',           # trigger keywords
-  message_body='{"text": "Here is your free guide: https://..."}',
-  comment_replies='["Thanks! Check your DMs 🎁"]',
-  enable_comment_reply=true,
-  enable_follow_gate=true,
-  follow_reply="Follow us first, then comment again!",
-  follow_button_text="Follow @myhandle"
+    action="update_cta",
+    media_id="content_xxx",                          # can be content_id
+    contains='["free", "link", "send", "guide"]',    # trigger keywords
+    message_body='{"text": "Here is your free guide: https://mysite.com/guide"}',
+    comment_replies='["Thanks! Check your DMs 🎁", "Sent! Look in your inbox 📩"]',
+    enable_comment_reply=True,
+    enable_follow_gate=True,
+    follow_reply="Follow us first, then comment again to get the guide!",
+    follow_button_text="Follow @myhandle"
 )
-```
-
-### LinkedIn (4 tools)
-
-| Tool | What it does |
-|------|-------------|
-| `linkedin_get_account` | Get connected LI account info (name, token status, can_post) |
-| `linkedin_post` | Publish post. Params: `text`, `image_urls` (JSON array), `article_url`, `article_title`, `visibility` (PUBLIC/CONNECTIONS) |
-| `linkedin_get_posts` | Get last N published posts (default 20) |
-| `linkedin_delete_post` | Delete a post by URN. Params: `post_urn`, `delete_from_linkedin` (default true) |
-
-### Instagram Scraping (3 tools)
-
-| Tool | What it does |
-|------|-------------|
-| `scraping_instagram_download_reels` | Download reels from a user profile |
-| `scraping_instagram_download_reel_url` | Download a specific reel by URL |
-| `scraping_instagram_get_user_info` | Get user profile info (followers, bio, etc.) |
-
-## Desktop Bridge Endpoints (Alternative — from Electron app)
-
-Use these when running inside the desktop app. The bridge authenticates through the user's web session — no extra API keys needed.
-
-## Quick Start
-
-```bash
-# 1. Check which accounts are connected
-curl http://127.0.0.1:$PORT/api/bridge/accounts -H "Authorization: Bearer $TOKEN"
-
-# 2. Publish to Instagram
-curl -X POST http://127.0.0.1:$PORT/api/bridge/publish/instagram \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"contentId": "content_xxx", "selectedAccount": "ig_account_id"}'
-
-# 3. Poll for publish status
-curl "http://127.0.0.1:$PORT/api/bridge/publish/instagram/status?contentId=content_xxx" \
-  -H "Authorization: Bearer $TOKEN"
 ```
 
 ---
 
-## API Endpoints
+### `instagram_publish_reel` — Start reel publish
+
+| Param | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `content_id` | string | ⭐ Recommended | — | Content ID — reads caption, account, video from Content doc. Tracks in UI. |
+| `account_id` | string | | — | Account ID (optional if Content doc has `selected_account`) |
+| `video_url` | string | | — | Public video URL (optional if Content doc has video) |
+| `caption` | string | | — | Caption (optional if Content doc has caption) |
+
+**Two modes:**
+1. ✅ **Content-aware** (recommended): Pass `content_id` — everything reads from Content doc, publish progress tracked in UI.
+2. **Direct** (legacy): Pass `account_id` + `video_url` + `caption` — publishes directly, no UI tracking.
+
+**Prerequisites for content-aware mode:**
+- Content must have a video (`videoUrl` or `downloadableSasUrl`)
+- Content must have `channels.instagram.selected_account` set
+- Content must NOT already be published (`channels.instagram.published !== true`)
+- Content must NOT be currently publishing (`publish_progress.stage !== "processing"`)
+
+**Returns:**
+```json
+{
+  "success": true,
+  "containerId": "17889xxx",
+  "shouldPoll": true,
+  "message": "Reel container created"
+}
+```
+
+**Idempotency:** Returns 409 if content is already published or currently being published.
+
+**Next step:** Call `instagram_publish_status` to poll until published.
+
+---
+
+### `instagram_publish_status` — Poll publish progress
+
+| Param | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `content_id` | string | ⭐ Recommended | — | Content ID — resolves container/account from Content doc |
+| `container_id` | string | | — | Container ID from `instagram_publish_reel` (legacy mode) |
+| `account_id` | string | | — | Account ID (legacy mode) |
+| `auto_publish` | bool | | `false` | If `true` and container is FINISHED, publish immediately |
+
+**Status progression:**
+```
+IN_PROGRESS → FINISHED → (auto_publish) → PUBLISHED
+                       ↘ ERROR / EXPIRED
+```
+
+**Returns (in progress):**
+```json
+{ "status": "IN_PROGRESS", "shouldPoll": true }
+```
+
+**Returns (published):**
+```json
+{
+  "status": "PUBLISHED",
+  "published": true,
+  "media_id": "17889xxx",
+  "published_url": "https://www.instagram.com/reel/ABC123/"
+}
+```
+
+**Returns (error):**
+```json
+{ "status": "ERROR", "shouldPoll": false, "canRetry": true, "error": "Media processing failed" }
+```
+
+**Content doc updates:** When published with `content_id`, automatically writes `published`, `published_at`, `media_id`, `published_url`, `publish_progress` to `Content.channels.instagram`.
+
+**Polling strategy:** Call every 10-30 seconds until `shouldPoll` is `false`.
+
+---
+
+### `instagram_validate_token` — Check account health
+
+| Param | Type | Required | Description |
+|-------|------|----------|-------------|
+| `account_id` | string | ✅ | Account ID from `instagram_get_accounts` |
+
+**Returns:**
+```json
+{ "healthy": true }
+// or
+{ "healthy": false, "error": "token_expired" }
+```
+
+Possible errors: `"token_invalid"`, `"token_expired"`, `"permissions_revoked"`. If unhealthy, user must reconnect the account in the ContentLead UI.
+
+---
+
+## MCP Tools — YouTube (1 tool)
+
+### `youtube_publish` — Publish video to YouTube
+
+| Param | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `content_id` | string | ✅ | — | Content ID (reads metadata from Content doc) |
+| `channel_id` | string | | — | YouTube channel ID (optional if set in Content doc) |
+| `selected_account` | string | | — | Account name (alternative to channel_id) |
+| `title` | string | | from Content | Override video title |
+| `description` | string | | from Content | Override description |
+| `tags` | string | | from Content | Override tags as JSON array: `'["AI", "tutorial"]'` |
+| `privacy_status` | string | | from Content | Override: `"public"`, `"private"`, `"unlisted"` |
+| `thumbnail_url` | string | | from Content | Override thumbnail URL |
+
+**Video URL resolution order:** `downloadableSasUrl` → `videoSasUrl` → `videoUrl`
+
+**What happens:**
+1. Reads metadata from `Content.channels.youtube` (or uses overrides)
+2. Downloads video from resolved URL
+3. Uploads to YouTube via YouTube Data API
+4. Writes back to Content doc: `published`, `video_id`, `published_url`, `youtube_response`
+5. Auto-reads CTA config (if any) and posts + pins a comment
+6. Writes CTA state: `cta_comment_id`, `cta_comment_posted`, `cta_comment_pinned`
+
+**Returns:**
+```json
+{
+  "success": true,
+  "videoId": "dQw4w9WgXcQ",
+  "videoUrl": "https://youtube.com/watch?v=dQw4w9WgXcQ",
+  "cta": {
+    "posted": true,
+    "pinned": true,
+    "commentId": "UgyxKJ..."
+  }
+}
+```
+
+**Idempotency:** Returns 409 if `channels.youtube.published === true`.
+
+**YouTube is synchronous** — the response comes after upload completes. May take 1-5 minutes for long videos.
+
+---
+
+## MCP Tools — LinkedIn (4 tools)
+
+### `linkedin_get_account` — Get connected account
+
+No parameters. Returns connected LinkedIn account info.
+
+**Returns:**
+```json
+{
+  "success": true,
+  "total": 1,
+  "active": 1,
+  "accounts": [
+    { "id": "def456", "name": "John Doe", "headline": "Content Creator", "profilePic": "https://..." }
+  ]
+}
+```
+
+---
+
+### `linkedin_post` — Publish a post
+
+| Param | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `text` | string | ✅ | — | Post content (up to 3000 chars) |
+| `image_urls` | string | | — | JSON array of image URLs (1-9): `'["https://..."]'` |
+| `article_url` | string | | — | URL to share as a link card |
+| `article_title` | string | | — | Custom title for the article card |
+| `article_description` | string | | — | Custom description for the article card |
+| `visibility` | string | | `"PUBLIC"` | `"PUBLIC"` or `"CONNECTIONS"` |
+
+Post type is inferred: text only, text + images, or text + article link.
+
+**LinkedIn is synchronous** — response confirms success immediately.
+
+```python
+linkedin_post(
+    text="Just published a deep dive into AI tools! 🚀\n\n#AI #ContentCreation",
+    visibility="PUBLIC"
+)
+```
+
+---
+
+### `linkedin_get_posts` — Get published posts
+
+| Param | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `count` | int | | `20` | Number of posts to return (newest first) |
+
+---
+
+### `linkedin_delete_post` — Delete a post
+
+| Param | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `post_urn` | string | ✅ | — | Post URN from `linkedin_get_posts` (e.g. `"urn:li:share:12345"`) |
+| `delete_from_linkedin` | bool | | `true` | Also delete from LinkedIn. `false` = local DB only. |
+
+---
+
+## MCP Tools — Instagram Scraping (3 tools)
+
+> **Requires Instagram cookies.** Use `scraping_cookie_update(platform="instagram", cookies="...")` first.
+
+### `scraping_instagram_download_reels` — Get reels from a profile
+
+| Param | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `username` | string | ✅ | — | Instagram username (without @) |
+| `count` | int | | `5` | Number of reels (1-5). For more, call multiple times with `offset`. |
+| `offset` | int | | `0` | Skip this many reels. Use `next_offset` from previous response. |
+
+**Returns:** Video URLs, captions, likes, views, comments, duration + `next_offset` for pagination.
+
+### `scraping_instagram_download_reel_url` — Get reel by URL
+
+| Param | Type | Required | Description |
+|-------|------|----------|-------------|
+| `reel_url` | string | ✅ | Full URL (e.g. `"https://www.instagram.com/reel/ABC123/"`) |
+
+### `scraping_instagram_get_user_info` — Get profile info
+
+| Param | Type | Required | Description |
+|-------|------|----------|-------------|
+| `username` | string | ✅ | Instagram username (without @) |
+
+**Returns:** followers, following, posts count, bio, profile picture URL.
+
+---
+
+## Desktop Bridge Endpoints
+
+Use these when running inside the desktop Electron app. Authenticates through the user's web session — no API keys needed.
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -128,235 +394,146 @@ curl "http://127.0.0.1:$PORT/api/bridge/publish/instagram/status?contentId=conte
 | POST | `/api/bridge/publish/youtube` | Upload video to YouTube |
 | GET | `/api/bridge/publish/youtube/status` | Check YouTube upload status |
 
----
-
-## List Connected Accounts
-
-### `GET /api/bridge/accounts`
-
-Returns all connected social accounts across all three platforms. Uses `Promise.allSettled` — partial results returned if one platform fails.
+### Bridge Instagram Publish
 
 ```bash
-curl http://127.0.0.1:$PORT/api/bridge/accounts -H "Authorization: Bearer $TOKEN"
-```
-
-**Response:**
-```json
-{
-  "instagram": {
-    "ok": true,
-    "accounts": [
-      { "id": "abc123", "username": "myhandle", "profilePic": "https://...", "pageName": "My Page", "status": "active", "automationEnabled": false }
-    ]
-  },
-  "linkedin": {
-    "ok": true,
-    "accounts": [
-      { "id": "def456", "name": "John Doe", "headline": "Content Creator", "profilePic": "https://..." }
-    ]
-  },
-  "youtube": {
-    "ok": true,
-    "channels": [
-      { "id": "UCxxx", "title": "My Channel", "thumbnail": "https://...", "subscriberCount": "1.2K" }
-    ]
-  }
-}
-```
-
-If a platform fails: `{ "ok": false, "error": "not_authenticated" }`
-
----
-
-## Instagram Publishing
-
-Instagram publishing is **asynchronous** — you start it, then poll for status.
-
-### Step 1: Start Publish
-
-#### `POST /api/bridge/publish/instagram`
-
-| Param | Type | Required | Description |
-|-------|------|----------|-------------|
-| `contentId` | string | ✅ | Content ID (must have an uploaded video) |
-| `selectedAccount` | string | ✅ | Instagram account ID (from `/api/bridge/accounts`) |
-| `videoUrl` | string | | Override video URL (must be public) |
-| `metadata` | object | | Optional caption, hashtags |
-
-```bash
+# Start publish
 curl -X POST http://127.0.0.1:$PORT/api/bridge/publish/instagram \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{
-    "contentId": "content_073de19c",
-    "selectedAccount": "abc123"
-  }'
-```
+  -d '{"contentId": "content_xxx", "selectedAccount": "ig_account_id"}'
+# → { "success": true, "containerId": "17889...", "shouldPoll": true }
 
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Reel container created",
-  "containerId": "17889...",
-  "shouldPoll": true
-}
-```
-
-### Step 2: Poll Status
-
-#### `GET /api/bridge/publish/instagram/status?contentId=...`
-
-Poll every 10-30 seconds until `published: true` or `canRetry: true` (failure).
-
-```bash
-curl "http://127.0.0.1:$PORT/api/bridge/publish/instagram/status?contentId=content_073de19c" \
+# Poll (every 10-30s)
+curl "http://127.0.0.1:$PORT/api/bridge/publish/instagram/status?contentId=content_xxx" \
   -H "Authorization: Bearer $TOKEN"
+# → { "status": "IN_PROGRESS", "shouldPoll": true }
+# → { "published": true, "media_id": "17889...", "published_url": "https://..." }
 ```
 
-**Response (in progress):**
-```json
-{ "status": "IN_PROGRESS", "shouldPoll": true }
-```
-
-**Response (published):**
-```json
-{ "published": true, "media_id": "17889...", "published_url": "https://instagram.com/reel/..." }
-```
-
-**Response (failed):**
-```json
-{ "shouldPoll": false, "canRetry": true, "error": "Media processing failed" }
-```
-
----
-
-## LinkedIn Publishing
-
-LinkedIn posts are **synchronous** — the response confirms success immediately.
-
-### `POST /api/bridge/publish/linkedin`
-
-| Param | Type | Required | Description |
-|-------|------|----------|-------------|
-| `accountId` | string | ✅ | LinkedIn account ID |
-| `text` | string | ✅ | Post text content |
-| `postType` | string | | `text`, `image`, `article` (default: `text`) |
-| `imageUrns` | string[] | | Image URNs (upload first via web app) |
-| `articleUrl` | string | | Article URL to share |
-| `articleTitle` | string | | Article title |
+### Bridge LinkedIn Publish
 
 ```bash
 curl -X POST http://127.0.0.1:$PORT/api/bridge/publish/linkedin \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{
-    "accountId": "def456",
-    "text": "Just launched our new video! 🎬\n\n#contentcreation #video"
-  }'
+  -d '{"accountId": "def456", "text": "New video! 🎬\n\n#content"}'
+# → { "success": true, "post": { "id": "urn:li:share:xxx", ... } }
 ```
 
-**Response:**
-```json
-{ "success": true, "post": { "id": "urn:li:share:7xxx", "text": "...", "createdAt": "..." } }
-```
-
----
-
-## YouTube Publishing
-
-YouTube upload is **synchronous** but may take time for long videos.
-
-### `POST /api/bridge/publish/youtube`
-
-| Param | Type | Required | Description |
-|-------|------|----------|-------------|
-| `contentId` | string | ✅ | Content ID (must have an uploaded video) |
-| `channelId` | string | | YouTube channel ID (from accounts) |
-| `videoUrl` | string | | Override video URL (must be public) |
-| `thumbnailUrl` | string | | Custom thumbnail URL |
-| `metadata` | object | | `{ title, description, tags, privacyStatus }` |
-| `title` | string | | Shortcut for metadata.title |
-| `description` | string | | Shortcut for metadata.description |
-| `tags` | string[] | | Shortcut for metadata.tags |
+### Bridge YouTube Publish
 
 ```bash
 curl -X POST http://127.0.0.1:$PORT/api/bridge/publish/youtube \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{
-    "contentId": "content_073de19c",
-    "channelId": "UCxxx",
-    "metadata": {
-      "title": "How AI Is Changing Content Creation",
-      "description": "In this video...",
-      "tags": ["AI", "content", "video"],
-      "privacyStatus": "public"
-    }
-  }'
+  -d '{"contentId": "content_xxx", "channelId": "UCxxx", "metadata": {"title": "...", "description": "...", "tags": ["AI"], "privacyStatus": "public"}}'
+# → { "success": true, "videoId": "dQw4...", "videoUrl": "https://youtube.com/watch?v=..." }
 ```
-
-**Response:**
-```json
-{
-  "success": true,
-  "videoId": "dQw4w9WgXcQ",
-  "videoUrl": "https://youtube.com/watch?v=dQw4w9WgXcQ",
-  "message": "Video uploaded successfully"
-}
-```
-
-### `GET /api/bridge/publish/youtube/status?videoId=...`
-
-Check upload status for a specific video.
 
 ---
 
-## Complete Workflow: Edit → Render → Publish
+## Complete Workflow: Content → Configure → CTA → Publish (All Platforms)
 
-```bash
-# 1. Edit video in the editor (using editor commands)
-# 2. Save the project (triggers upload to cloud storage)
-curl -X POST http://127.0.0.1:$PORT/api/execute \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"type": "editor.save", "params": {}}'
+```python
+# ─── STEP 1: Prepare content (content-management skill) ───
+content_create(title="5 AI Tools for 2025")
+# → content_id = "content_xxx"
 
-# 3. Check which platforms are connected
-curl http://127.0.0.1:$PORT/api/bridge/accounts -H "Authorization: Bearer $TOKEN"
+content_update(
+    content_id="content_xxx",
+    display_title="5 AI Tools You Need in 2025",
+    content_title="5 AI Tools You Need in 2025",
+    video_url="https://storage.blob.../video.mp4",
+    downloadable_sas_url="https://storage.blob.../video.mp4?sv=...",
+    sas_expires_at="2025-12-31T00:00:00Z",
+    thumbnail="https://storage.blob.../thumb.jpg",
+    status="ready"
+)
 
-# 4. Publish to Instagram
-curl -X POST http://127.0.0.1:$PORT/api/bridge/publish/instagram \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"contentId": "content_xxx", "selectedAccount": "ig_id"}'
+# ─── STEP 2: Get account IDs ───
+instagram_get_accounts()
+# → use account id "ig_abc123"
 
-# 5. Post to LinkedIn (simultaneously)
-curl -X POST http://127.0.0.1:$PORT/api/bridge/publish/linkedin \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"accountId": "li_id", "text": "New video just dropped! 🎬"}'
+linkedin_get_account()
+# → use account id "li_def456"
 
-# 6. Upload to YouTube
-curl -X POST http://127.0.0.1:$PORT/api/bridge/publish/youtube \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"contentId": "content_xxx", "metadata": {"title": "...", "description": "..."}}'
+# ─── STEP 3: Configure channels (content-management skill) ───
+content_configure_publish(
+    content_id="content_xxx", platform="instagram",
+    enabled=True, to_publish=True, post_type="reel",
+    caption="5 AI tools you need right now! 🚀\n\nComment 'FREE' to get the guide!",
+    hashtags='["AI", "tools", "2025", "contentcreator"]',
+    selected_account="ig_abc123"
+)
 
-# 7. Poll Instagram until published
-# (poll every 15s — Instagram container processing takes 30-120s)
+content_configure_publish(
+    content_id="content_xxx", platform="youtube",
+    enabled=True, to_publish=True, post_type="long",
+    title="5 AI Tools You Need in 2025",
+    description="In this video, I share the top 5 AI tools...",
+    tags='["AI", "tools", "tutorial"]',
+    privacy="public", category="22",
+    selected_account="UCxxx"
+)
+
+# ─── STEP 4: Set up CTA automation ───
+instagram_update_automation(
+    action="update_cta",
+    media_id="content_xxx",
+    contains='["free", "guide", "link", "send"]',
+    message_body='{"text": "Here is your free AI tools guide: https://mysite.com/guide"}',
+    comment_replies='["Thanks! Check your DMs 🎁", "Sent! Look in your inbox 📩"]',
+    enable_comment_reply=True,
+    enable_follow_gate=True,
+    follow_reply="Follow us first, then comment again!",
+    follow_button_text="Follow @myhandle"
+)
+
+# ─── STEP 5: Publish to Instagram ───
+instagram_publish_reel(content_id="content_xxx")
+# → { "containerId": "17889xxx", "shouldPoll": true }
+
+# Poll every 15 seconds
+instagram_publish_status(content_id="content_xxx", auto_publish=True)
+# → { "status": "IN_PROGRESS", "shouldPoll": true }
+# ... poll again ...
+# → { "status": "PUBLISHED", "published": true, "media_id": "17889xxx", "published_url": "https://..." }
+
+# ─── STEP 6: Publish to YouTube ───
+youtube_publish(content_id="content_xxx")
+# → { "success": true, "videoId": "dQw4...", "cta": { "posted": true, "pinned": true } }
+
+# ─── STEP 7: Post to LinkedIn ───
+linkedin_post(
+    text="Just published: 5 AI Tools You Need in 2025! 🚀\n\nWatch the full video: https://youtube.com/watch?v=dQw4...\n\n#AI #ContentCreation #Tools"
+)
+
+# ─── STEP 8: Verify everything ───
+content_get(content_id="content_xxx")
+# Check: channels.instagram.published === true
+# Check: channels.youtube.published === true
+# Check: channels.instagram.published_url, channels.youtube.published_url
 ```
 
 ---
 
 ## Error Handling
 
-| Error | Meaning | Fix |
-|-------|---------|-----|
-| `not_authenticated` | User not logged in on web app | Log in via the Electron app window |
-| `no_window` | Electron window not available | Restart the desktop app |
-| `bad_origin` | Renderer on wrong origin | Check app origin with `GET /api/app/origin` |
-| `bridge_timeout` | Request took >30s | Retry; check network |
-| `missing_params` | Required fields missing | Check the param table above |
+| Error | When | Fix |
+|-------|------|-----|
+| 409 "already published" | Content already published to this platform | Check with `content_get` first |
+| 409 "publish in progress" | Container still processing | Wait and poll status |
+| `not_authenticated` | Bridge: user not logged in | Log in via Electron app |
+| `no_window` | Bridge: Electron window unavailable | Restart desktop app |
+| `token_expired` | Instagram token expired | User must reconnect in UI; check with `instagram_validate_token` |
+| `missing_params` | Required fields missing | Check param tables above |
+| Video URL unreachable | SAS URL expired | Check `sasExpiresAt`, generate new SAS URLs |
 
 ## Tips for AI Agents
 
-- **Always list accounts first** — don't assume which platforms are connected
-- **Instagram is async** — start the publish, then poll every 15-30 seconds
-- **LinkedIn/YouTube are sync** — response confirms success immediately
+- **Always list accounts first** — never assume which platforms are connected or what IDs to use
+- **Instagram is async** — `instagram_publish_reel` starts it, `instagram_publish_status` completes it. Poll every 15-30s.
+- **YouTube is sync but slow** — response comes after upload, may take 1-5 minutes
+- **LinkedIn is sync and fast** — response confirms immediately
 - **Video must be on a public URL** — localhost URLs won't work for social APIs
-- **Save before publishing** — `editor.save` triggers the cloud upload pipeline
-- **Cross-post thoughtfully** — adjust text/format for each platform's audience
+- **Check SAS expiry** — if `sasExpiresAt` is past, the video URL won't work for publish
+- **Use content_id for all publishing** — this is the only way publish results show up in the ContentLead UI dashboard
+- **CTA must be set before publish** — for Instagram DM automation, call `instagram_update_automation(action="update_cta")` before `instagram_publish_reel`
