@@ -176,8 +176,8 @@ instagram_update_automation(
 {
   "success": true,
   "containerId": "17889xxx",
-  "shouldPoll": true,
-  "message": "Reel container created"
+  "contentId": "content_xxx",
+  "message": "Reel container created. Poll /api/mcp/instagram/publish/status to track progress."
 }
 ```
 
@@ -204,22 +204,44 @@ IN_PROGRESS → FINISHED → (auto_publish) → PUBLISHED
 
 **Returns (in progress):**
 ```json
-{ "status": "IN_PROGRESS", "shouldPoll": true }
+{
+  "containerId": "17889xxx",
+  "contentId": "content_xxx",
+  "status": "IN_PROGRESS",
+  "statusMessage": "Media is being processed",
+  "shouldPoll": true
+}
 ```
 
-**Returns (published):**
+**Returns (published — when `auto_publish=true` and container is FINISHED):**
 ```json
 {
   "status": "PUBLISHED",
-  "published": true,
-  "media_id": "17889xxx",
-  "published_url": "https://www.instagram.com/reel/ABC123/"
+  "mediaId": "17889xxx",
+  "permalink": "https://www.instagram.com/reel/ABC123/",
+  "contentId": "content_xxx",
+  "shouldPoll": false
+}
+```
+
+**Returns (finished but auto_publish=false):**
+```json
+{
+  "containerId": "17889xxx",
+  "status": "FINISHED",
+  "statusMessage": "Container ready for publishing",
+  "shouldPoll": false
 }
 ```
 
 **Returns (error):**
 ```json
-{ "status": "ERROR", "shouldPoll": false, "canRetry": true, "error": "Media processing failed" }
+{
+  "containerId": "17889xxx",
+  "status": "ERROR",
+  "statusMessage": "Media processing failed",
+  "shouldPoll": false
+}
 ```
 
 **Content doc updates:** When published with `content_id`, automatically writes `published`, `published_at`, `media_id`, `published_url`, `publish_progress` to `Content.channels.instagram`.
@@ -311,6 +333,10 @@ No parameters. Returns connected LinkedIn account info.
 ---
 
 ### `linkedin_post` — Publish a post
+
+> **Note:** LinkedIn publishing is NOT content-aware — it does not read from or write to a Content document.
+> You must pass the text directly. To cross-post from a Content doc, use `content_get` first to read
+> the caption/description, then pass it to `linkedin_post`.
 
 | Param | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|

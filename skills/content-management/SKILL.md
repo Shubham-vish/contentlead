@@ -183,12 +183,19 @@ Gets a pre-signed Azure Blob Storage URL for uploading a file (video or thumbnai
 **Returns:**
 ```json
 {
-  "uploadUrl": "https://...?sv=2022&sig=...",   // PUT the file binary here
-  "videoUrl": "https://.../video.mp4",           // permanent blob URL (no SAS)
-  "downloadableSasUrl": "https://...?sv=...",    // read URL with SAS token
-  "sasExpiresAt": "2025-06-15T12:00:00Z",       // when URLs expire
-  "headers": { "x-ms-blob-type": "BlockBlob" }, // required PUT headers
-  "metadata": { "contentId": "content_xxx" }
+  "uploadUrl": "https://...?sv=2022&sig=...",          // PUT the file binary here
+  "videoUrl": "https://.../video.mp4",                  // permanent blob URL (no SAS)
+  "downloadableSasUrl": "https://...?sv=...",           // read URL with SAS token + download header
+  "sasExpiresAt": "2027-06-15T12:00:00.000Z",          // when SAS URLs expire (2 years)
+  "headers": {
+    "x-ms-blob-type": "BlockBlob",
+    "Content-Type": "video/mp4"                         // matches your content_type param
+  },
+  "metadata": {
+    "blobName": "content_xxx/uuid-video.mp4",
+    "containerName": "content-videos",
+    "accountName": "storageaccountname"
+  }
 }
 ```
 
@@ -230,7 +237,7 @@ Sets platform-specific publish config on `Content.channels[platform]`. Call this
 | `post_type` | string | — | **Instagram:** `"reel"`, `"feed"`, `"story"`. **YouTube:** `"long"`, `"short"`. **LinkedIn:** `"post"`, `"article"`. |
 | `to_publish` | bool | — | Mark this channel for publishing (`true`/`false`) |
 | `enabled` | bool | — | Enable/disable this channel (`true`/`false`) |
-| `status` | string | — | Channel status: `"draft"`, `"scheduled"`, `"ready"` |
+| `status` | string | — | Channel status: `"draft"`, `"scheduled"`, `"ready"` (convention, not enforced by API) |
 | `publish_date` | string | — | Scheduled date (ISO, e.g. `"2025-06-15"`) |
 | `publish_timestamp` | string | — | Scheduled datetime (ISO, e.g. `"2025-06-15T14:00:00+05:30"`) |
 
@@ -242,7 +249,7 @@ Sets platform-specific publish config on `Content.channels[platform]`. Call this
 | `hashtags` | string | JSON array: `'["ai", "video", "tools"]'` |
 | `location` | string | Location tag (e.g. `"Mumbai, India"`) |
 
-> **Note:** `tagged_users` is in the server allowlist but not yet exposed as an MCP param.
+> `tagged_users` is in the server allowlist but not yet exposed as an MCP tool param. Use `content_update` with raw channels body if needed.
 
 #### YouTube-specific params
 
@@ -255,6 +262,8 @@ Sets platform-specific publish config on `Content.channels[platform]`. Call this
 | `thumbnail_url` | string | Custom thumbnail URL |
 | `category` | string | YouTube category ID (default `"22"` = People & Blogs) |
 
+> `playlist_id` is in the server allowlist but not yet exposed as an MCP tool param.
+
 #### LinkedIn-specific params
 
 | Param | Type | Description |
@@ -262,6 +271,8 @@ Sets platform-specific publish config on `Content.channels[platform]`. Call this
 | `title` | string | Post title |
 | `description` | string | Post content text (stored as `content` field internally) |
 | `hashtags` | string | JSON array: `'["marketing", "ai"]'` |
+
+> `mention_users` is in the server allowlist but not yet exposed as an MCP tool param.
 
 **Returns:**
 ```json
@@ -277,8 +288,9 @@ Sets platform-specific publish config on `Content.channels[platform]`. Call this
 
 **Blocked fields** (system-owned — set automatically during publish, cannot be manually set):
 `published`, `published_at`, `media_id`, `video_id`, `container_id`, `publish_progress`,
-`published_url`, `youtube_response`, `instagram_response`, `linkedin_response`,
-`cta_comment_id`, `cta_comment_posted`, `cta_comment_pinned`, `error_message`
+`published_url`, `youtube_response`, `instagram_response`, `linkedin_response`, `linkedin_id`,
+`cta_comment_id`, `cta_comment_posted`, `cta_comment_pinned`, `cta_comment_posted_at`,
+`publish_date_ist`, `error_message`
 
 ---
 
