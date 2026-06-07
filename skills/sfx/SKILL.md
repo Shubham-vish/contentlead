@@ -1,26 +1,21 @@
 ---
 name: sfx
-description: Complete sound effects workflow for ContentLead — core library (27 keyed sounds), cloud search (1000+ via PrepWithAI), placement strategy, volume/gain rules, scene-type pairing, and batch SFX workflows. Use when adding SFX to videos, searching for sounds, or planning audio design.
-tags: sfx, sound-effects, audio, prepwithai, core-set, placement, whoosh, transition, impact, mood, energy, volume
+description: Sound effects for ContentLead — core library (27 keyed sounds), placement strategy, volume/gain rules, scene-type pairing, and batch SFX workflows. Use when adding SFX to videos or planning audio design.
+tags: sfx, sound-effects, audio, core-set, placement, whoosh, transition, impact, mood, energy, volume
 ---
 
 # SFX — Sound Effects for ContentLead
 
-Complete workflow for finding, placing, and mixing sound effects in the ContentLead video editor.
+Complete workflow for placing and mixing sound effects in the ContentLead video editor.
 
-## Two SFX Libraries
+## SFX Library
 
 | Library | Sounds | Access | Best For |
 |---------|--------|--------|----------|
-| **Core Set** (local) | 27 keyed sounds | `_Assets/sfx/core-set/` | Standard editing — fast, no network, one best sound per role |
-| **PrepWithAI Cloud** | 1000+ sounds | `prepwithai_sfx_search()` MCP tool | Variety, niche sounds, mood/energy filtering |
+| **Core Set** (local) | 27 keyed sounds | `_Assets/sfx/core-set/` | All standard editing — fast, no network needed |
 
-**Decision tree:**
-```
-Need SFX → Is it in core-set? (27 keyed sounds)
-  YES → Use core-set (fast, no download needed)
-  NO  → Search PrepWithAI cloud → Download → Add to timeline
-```
+The core set has one best sound per role (transitions, clicks, impacts, etc.).
+AI should use the key names below, not filenames.
 
 ---
 
@@ -98,69 +93,6 @@ Each key maps to exactly one sound. AI should use keys, not filenames.
 | `thug_life` | 10.5s | 20% | Meme/flex moments — **clip to 2-3s, max once** |
 
 ---
-
-## PrepWithAI Cloud Search
-
-When core-set doesn't have what you need:
-
-```python
-# Semantic search
-prepwithai_sfx_search(query="dramatic cinematic boom", top_k=5)
-# → {name, description, score, category, duration, blob_path, tags}
-
-# Filter by category, mood, energy, duration
-prepwithai_sfx_search(query="whoosh", category="Transitions", energy="high", max_duration=2.0)
-
-# List all categories
-prepwithai_sfx_categories()
-```
-
-### Cloud Categories
-| Category | Use For |
-|----------|---------|
-| Camera | Screenshot reveals, before/after |
-| Comedy | Fun content, meme moments |
-| Foley | Realistic ambience, scene-setting |
-| Hits | Transitions, big reveals, emphasis |
-| Mechanical | Tech/engineering, robot themes |
-| Music | Intro/outro stings, achievements |
-| Notifications | UI reveals, success, milestones |
-| Playful | Kids content, casual explainers |
-| Pops | Text reveals, list items |
-| Risers | Building anticipation |
-| Transitions | Scene changes, topic shifts |
-| Typing | Code/terminal scenes |
-| UI | Interface demos, button presses |
-| Whooshes | Slide transitions, fast movements |
-
-### Search Strategies
-
-```python
-# By mood
-prepwithai_sfx_search(query="gentle ambient", energy="low", mood="calm")
-prepwithai_sfx_search(query="epic impact", energy="high", mood="dramatic")
-
-# By use case
-prepwithai_sfx_search(query="mechanical keyboard", category="Typing", max_duration=3.0)
-prepwithai_sfx_search(query="modern UI click", category="UI", energy="medium")
-
-# Get variations (e.g., 5 different pops for a list)
-prepwithai_sfx_search(query="pop bubble snap", category="Pops", top_k=10)
-```
-
-### Download & Add
-
-```bash
-# Download
-curl -sL "https://prepwithai.blob.core.windows.net/sfx/{blob_path}" -o ~/Downloads/sound.mp3
-
-# Add to timeline
-curl -X POST http://127.0.0.1:$PORT/api/execute \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"type": "editor.addAudio", "params": {
-    "src": "/path/to/sound.mp3", "name": "Boom", "from": 5000, "duration": 1500, "volume": 40
-  }}'
-```
 
 ---
 
@@ -276,6 +208,5 @@ curl -X POST http://127.0.0.1:$PORT/api/batch \
 ## Related Skills
 
 - **`sfx-placement`** — Detailed transcript-based placement workflow
-- **`prepwithai-sfx-search`** — Detailed PrepWithAI cloud search API reference
 - **`remotion/rules/sfx-and-audio`** — SFX pairing for Remotion scenes, voiceover workflow
 - **`media-and-audio`** — General audio commands (add, volume, speed, opacity)
