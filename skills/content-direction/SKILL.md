@@ -1,14 +1,26 @@
 ---
 name: content-direction
-description: Creative strategy, storyboarding, narrative arcs, track management, and content planning for the ContentLead video editor. Use before building any non-trivial video. Pairs with the `contentlead` skill (editor commands) and `remotion` skill (scene creation).
-tags: creative, storyboard, narrative, planning, strategy, hook, pacing, direction, tracks
+description: Creative strategy, storyboarding, narrative arcs, SFX placement, audio layering, track management, and content planning for the ContentLead video editor. Load before building any non-trivial video.
+tags: creative, storyboard, narrative, planning, strategy, hook, pacing, direction, tracks, sfx, sound-effects, audio, placement, volume
 ---
 
-# Content Direction — Creative Strategy for Video Editing
+# Content Direction — Creative Strategy & Audio Design
 
-## Why This Matters
+Technical capability without creative direction produces demo reels, not content.
+Every video edit must start with a PURPOSE — what story are we telling, who's watching, what should they feel?
 
-Technical capability without creative direction produces demo reels, not content. Every video edit must start with a PURPOSE — what story are we telling, who's watching, what should they feel?
+---
+
+## Load the Right Sub-Doc
+
+| When you need to... | Load |
+|---------------------|------|
+| Place SFX on a video — which sounds, where, at what gain | `sfx-reference.md` |
+| Detailed transcript-based SFX workflow with clipping/gain rules | `sfx-placement.md` |
+
+This file covers: narrative arcs, pacing, scene diversity, audio layering, track management, text pacing, and the pre-edit planning template.
+
+---
 
 ## Mandatory Pre-Edit Steps
 
@@ -108,7 +120,7 @@ When building a multi-scene video, track these to ensure variety:
 - Location: `_Assets/background_music/`
 
 ### Layer 2: SFX (Contextual, not random)
-- Map each SFX to content meaning using the SFX-to-Context table in `media-and-audio.md`
+- Map each SFX to content meaning — see `sfx-reference.md` for the 27 core sounds
 - Place at meaningful moments, not arbitrary time points
 - Respect spacing rules: min 1.5s gap, min 7s for same type
 
@@ -134,7 +146,7 @@ Use this mental template before any video editing session:
 3. ARC: Which narrative pattern? (hook-build-payoff/problem-solution/montage)
 4. SOURCES: What source material do I have? (list videos/images)
 5. SCENES: How many scenes, what effect for each?
-6. AUDIO: Music choice + SFX mapping
+6. AUDIO: Music choice + SFX mapping (see sfx-reference.md)
 7. TEXT: What text/captions are needed?
 ```
 
@@ -243,4 +255,5 @@ Validate AFTER building, BEFORE presenting to user:
 
 - **`contentlead`** — Editor connection, commands, API
 - **`remotion`** — Scene creation, animations, effects, camera
+- **`remotion/rules/sfx-and-audio`** — SFX pairing for Remotion scenes, voiceover workflow
 - Load `orchestration-e2e` from the running app for the full 8-phase pipeline
