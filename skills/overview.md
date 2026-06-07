@@ -316,8 +316,7 @@ All times in **milliseconds** (1s = 1000ms). Canvas origin: (0,0) = top-left.
 | `content-bridge` | Apply/remove images and captions from pipeline |
 | `project-and-export` | Save, export, resize, tracks, undo/redo |
 | `queries-and-state` | Read editor state, timeline, transcript, fonts |
-| `social-media` | Publish to Instagram, LinkedIn, YouTube — accounts listing, CTA, publishing, status polling |
-| `content-management` | Full content lifecycle — create, list, update metadata, upload video/thumbnail, configure channels, toggle/schedule publish |
-| `content-inspiration` | Research trending content, browse creators, search across platforms, transcribe videos |
+| `content-publishing` | **Full content pipeline** — create content, set metadata, upload video, configure channels, CTA, publish to IG/YT/LinkedIn, poll status. Sub-docs: `content-lifecycle.md`, `channel-configuration.md`, `instagram.md`, `youtube.md`, `linkedin.md`, `platform-rules.md`, `workflows.md` |
+| `content-inspiration` | Research trending content — YouTube, Instagram, Twitter, Reddit scraping, tech news, web search. Sub-docs: `youtube-research.md`, `social-scraping.md`, `reddit-research.md`, `news-and-web.md` |
 | `remotion/SKILL.md` | Index to all Remotion rules (scene commands, animations, components, patterns, debugging) |
 | `remotion/rules/*` | Topic-specific Remotion rules (19 files: animations, components, patterns, camera-engine, etc.) |
