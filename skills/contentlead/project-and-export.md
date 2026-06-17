@@ -31,6 +31,85 @@ Example:
 }
 ```
 
+## Snapshots
+
+Snapshots are manual project checkpoints stored in Cosmos DB. Each project keeps a maximum of 5 snapshots; creating a 6th snapshot auto-evicts the oldest one.
+
+### `editor.createSnapshot`
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `label` | `string` | auto-generated | Optional snapshot label |
+
+```json
+{
+  "type": "editor.createSnapshot",
+  "params": {
+    "label": "Before title redesign"
+  }
+}
+```
+
+### `editor.listSnapshots`
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `—` | `—` | `—` | No parameters |
+
+```json
+{
+  "type": "editor.listSnapshots",
+  "params": {}
+}
+```
+
+### `editor.restoreSnapshot`
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `snapshotId` | `string` | required | Snapshot ID to restore |
+
+```json
+{
+  "type": "editor.restoreSnapshot",
+  "params": {
+    "snapshotId": "snapshot_123"
+  }
+}
+```
+
+### `editor.renameSnapshot`
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `snapshotId` | `string` | required | Snapshot ID to rename |
+| `label` | `string` | required | New label |
+
+```json
+{
+  "type": "editor.renameSnapshot",
+  "params": {
+    "snapshotId": "snapshot_123",
+    "label": "Approved draft"
+  }
+}
+```
+
+### `editor.deleteSnapshot`
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `snapshotId` | `string` | required | Snapshot ID to delete |
+
+```json
+{
+  "type": "editor.deleteSnapshot",
+  "params": {
+    "snapshotId": "snapshot_123"
+  }
+}
+```
+
 ## `editor.undo`
 
 | Param | Type | Default | Description |

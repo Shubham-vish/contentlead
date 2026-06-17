@@ -8,22 +8,32 @@ tags: move, trim, split, delete, clone, bulk, shift, gap, rearrange, reorder, tr
 
 Use these commands to change timing, duplicate or remove items, and make broad timeline-wide adjustments.
 
+**Quick Reference**
+
+| Command | Description | Params |
+|---|---|---|
+| `editor.undo` | Undo the last action and restore the previous editor state | none |
+
 ## ⚠️ CRITICAL: Track Reordering
 
 ### `editor.reorderTracks`
 
 Reorder tracks so content layers are correctly stacked. **Call this after building any video.**
 
+> ⚠️ **Common mistake:** forgetting to call this after adding captions/text. As of 2026-06-18, `editor.addCaption`, `editor.addText`, and `editor.autoCaption` auto-call this by default — but if you bulk-add via `content.applyCaptions` or modify track structure manually, you **MUST** call this yourself.
+
 | Param | Type | Default | Description |
 |---|---|---|---|
 | *(none)* | — | — | Automatically sorts by layer priority |
 
-**Layer priority** (top = front, bottom = back):
-1. Text / Caption tracks
-2. Audio tracks
-3. Video tracks
-4. Regular image tracks
-5. Template / Scene tracks (backgrounds)
+**Layer priority** (Track 0 = TOP/front-most layer):
+1. Caption / text tracks — top
+2. Audio tracks — middle
+3. Video tracks — bottom/background
+4. Regular image tracks — bottom/background
+5. Template / scene tracks — bottom-most backgrounds
+
+Empty tracks are garbage-collected during reorder.
 
 **Why this matters:** In video editors, Track 0 (top) renders in front. If background scenes are on top tracks and text is on bottom tracks, the backgrounds cover all text — making it invisible.
 
@@ -46,7 +56,28 @@ Set the global canvas background. **ALWAYS do this first** — prevents white fl
 
 ### Clearing all items
 
-`editor.deleteItems` may not reliably remove all items. The guaranteed approach:
+**Preferred:** Use `editor.clearTimeline` (simpler, supports filtering):
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `types` | `string[]` | all item types | Optional filter such as `caption`, `text`, or `video` |
+| `trackId` | `string` | all tracks | Clear only one specific track |
+
+```json
+// Clear everything
+{"type": "editor.clearTimeline", "params": {}}
+
+// Clear only captions
+{"type": "editor.clearTimeline", "params": {"types": ["caption"]}}
+
+// Clear only video items
+{"type": "editor.clearTimeline", "params": {"types": ["video"]}}
+
+// Clear only one track
+{"type": "editor.clearTimeline", "params": {"trackId": "track_01"}}
+```
+
+**Fallback** if clearTimeline fails — use `editor.loadDesign` with empty state:
 
 ```json
 {"type": "editor.loadDesign", "params": {"design": {
@@ -55,6 +86,27 @@ Set the global canvas background. **ALWAYS do this first** — prevents white fl
   "size": {"width": 1080, "height": 1920}, "duration": 60000, "fps": 30
 }}}
 ```
+
+### `editor.removeSegment` — Cut out a time range
+
+Remove a section from the timeline and optionally shift everything after it left.
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `from_ms` | `number` | required | Start of range to remove |
+| `to_ms` | `number` | required | End of range to remove |
+| `ripple` | `boolean` | `true` | Shift items after `to_ms` left |
+| `types` | `string[]` | all types | Only affect specific types |
+
+```json
+{"type": "editor.removeSegment", "params": {
+  "from_ms": 15000, "to_ms": 16500, "ripple": true
+}}
+```
+
+**⚠️ When removing multiple ranges:** process from END to START so ripple shifts don't invalidate unprocessed positions.
+
+> **See also:** [Transcription & Editing Workflow](./transcription-and-editing.md) for complete transcription → captions → jump cuts workflow.
 
 ## `editor.moveItem`
 
@@ -266,8 +318,8 @@ Apply one style payload to every item of a type.
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `type` | `string` | required | Target item type |
-| `details` | `object` | required | Properties to apply |
+| `type` | `"caption" \| "text" \| "video"` | required | Apply to every item of that type |
+| `details` | `object` | required | Styling properties to apply |
 
 Example:
 
@@ -692,8 +744,8 @@ Apply one shared `details` payload to every item of a type.
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `type` | `string` | required | Target item type |
-| `details` | `object` | required | Style fields to apply |
+| `type` | `"caption" \| "text" \| "video"` | required | Apply to every item of that type |
+| `details` | `object` | required | Styling properties to apply |
 
 **Returns:** `{ updated }`
 
@@ -760,6 +812,25 @@ Run multiple commands sequentially in one request.
 ```
 
 ## AI Helpers
+
+### `editor.undo`
+
+Undo the last action. Restores the previous editor state.
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| *(none)* | — | — | No parameters |
+
+**Returns:** `{ status: "success" }`
+
+Example:
+
+```json
+{
+  "type": "editor.undo",
+  "params": {}
+}
+```
 
 ### `ai.undoLastAction`
 

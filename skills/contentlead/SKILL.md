@@ -197,6 +197,7 @@ curl -s "http://127.0.0.1:$PORT/api/skills?q=animation" -H "Authorization: Beare
 | Position, align, rotate, layers | `canvas-and-positioning` |
 | Images, video, audio, volume | `media-and-audio` |
 | Move, trim, split, delete, bulk ops | `timeline-operations` |
+| Transcribe, trim, cut, jump-cuts, captions | `transcription-and-editing` |
 | Pre-built scene library (159 scenes) | `scenes-and-templates` |
 | Custom Remotion scenes (full code) | `custom-scene-authoring` |
 | Render/export video | `rendering` |
