@@ -114,8 +114,12 @@ Apply subtitle segments and optional word timing.
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `subtitles` | `array<object>` | required | Subtitle segments with text and timing |
-| `words` | `array<object>` | optional | Word-level timing for karaoke behavior |
+| `subtitles` | `array<object>` | required | Subtitle segments with text and timing. Accepts both `{startTime, endTime}` in seconds and `{from, to}` in ms |
+| `words` | `array<object>` | optional | Word-level timing for karaoke behavior. Accepts both `{startTime, endTime}` in seconds and `{from, to}` in ms |
+
+Accepted timing keys:
+- `subtitles[]` accepts both `{ startTime, endTime }` in seconds and `{ from, to }` in ms
+- `words[]` accepts both `{ startTime, endTime }` in seconds and `{ from, to }` in ms
 
 Example:
 
@@ -126,13 +130,13 @@ Example:
     "subtitles": [
       {
         "text": "This is the first subtitle",
-        "from": 0,
-        "to": 1800
+        "startTime": 0,
+        "endTime": 1.8
       }
     ],
     "words": [
-      { "word": "This", "from": 0, "to": 300 },
-      { "word": "is", "from": 300, "to": 500 },
+      { "word": "This", "startTime": 0, "endTime": 0.3 },
+      { "word": "is", "startTime": 0.3, "endTime": 0.5 },
       { "word": "the", "from": 500, "to": 700 },
       { "word": "first", "from": 700, "to": 1200 },
       { "word": "subtitle", "from": 1200, "to": 1800 }
@@ -198,12 +202,12 @@ Pipeline-generated images usually flow like this:
       "subtitles": [
         {
           "text": "Fresh captions",
-          "from": 0,
-          "to": 1400
+          "startTime": 0,
+          "endTime": 1.4
         }
       ],
       "words": [
-        { "word": "Fresh", "from": 0, "to": 700 },
+        { "word": "Fresh", "startTime": 0, "endTime": 0.7 },
         { "word": "captions", "from": 700, "to": 1400 }
       ]
     }
@@ -302,8 +306,12 @@ Create caption items from subtitle segments and optional word timings.
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `subtitles` | `array<object>` | required | Subtitle segments |
-| `words` | `array<object>` | optional | Word-level timing data |
+| `subtitles` | `array<object>` | required | Subtitle segments. Accepts both `{startTime, endTime}` in seconds and `{from, to}` in ms |
+| `words` | `array<object>` | optional | Word-level timing data. Accepts both `{startTime, endTime}` in seconds and `{from, to}` in ms |
+
+Accepted timing keys:
+- `subtitles[]` accepts both `{ startTime, endTime }` in seconds and `{ from, to }` in ms
+- `words[]` accepts both `{ startTime, endTime }` in seconds and `{ from, to }` in ms
 
 **Returns:** `{ captionsAdded }`
 

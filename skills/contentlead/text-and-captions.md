@@ -8,6 +8,14 @@ tags: text, caption, font, style, subtitle, title, stroke, shadow, role
 
 Use these commands for titles, lower-thirds, subtitles, karaoke captions, and text restyling.
 
+> ## ⚠️ CRITICAL: Track Z-Order for EVERY Text/Caption
+>
+> **Track 0 is the TOP/front-most layer.** Captions and text must stay above video/image/background tracks or they will be hidden.
+>
+> **Pattern:** After adding ANY caption/text item, immediately call `editor.reorderTracks` **or rely on the now-automatic reordering** in `editor.addCaption`, `editor.addText`, and `editor.autoCaption`.
+>
+> As of 2026-06-18, `editor.addCaption` and `editor.addText` auto-reorder by default. Pass `autoReorder: false` only when you intentionally want to skip it and will reorder later. `editor.autoCaption` also auto-reorders by default.
+
 ## Style Guide Defaults
 
 All text and caption commands use the project's **dark cinematic** style guide by default:
@@ -33,7 +41,14 @@ Text items are placed on existing agent-created text tracks when their time rang
 
 **In video editors, top track (Track 0) = front layer.** Text MUST be on top tracks, scenes/backgrounds on bottom tracks.
 
+- **Track 0 = TOP/front-most layer**
+- **Caption/text tracks → top**
+- **Audio tracks → middle**
+- **Video/image tracks → bottom/background**
+- **Empty tracks are garbage-collected**
 - **Always call `editor.reorderTracks` after building a video** — sorts text to top, scenes to bottom
+- After adding ANY caption/text item, immediately call `editor.reorderTracks` OR rely on automatic reordering
+- As of 2026-06-18, `editor.addCaption`, `editor.addText`, and `editor.autoCaption` auto-reorder by default; pass `autoReorder: false` to skip
 - If text tracks end up below scene tracks, text is invisible (covered by background)
 - The `editor.reorderTracks` command sorts: text/caption (top) → audio → video → images → template scenes (bottom)
 
@@ -90,6 +105,7 @@ Add a styled text layer to the timeline.
 | `strokeWidth` | `number` | `0` | Stroke width in pixels |
 | `strokeColor` | `string` | none | Stroke color |
 | `trackId` | `string` | auto | Place in specific track |
+| `autoReorder` | `boolean` | `true` | Automatically call `editor.reorderTracks` after adding; pass `false` only for bulk workflows where you reorder later |
 
 Example — cinematic title (uses defaults):
 
@@ -151,6 +167,7 @@ Add a caption layer. Defaults to Montserrat 120px, weight 800, purple active hig
 | `color` | `string` | `#ffffff` | Text color |
 | `textShadow` | `string` | purple glow | CSS text-shadow |
 | `trackId` | `string` | auto | Place in specific track |
+| `autoReorder` | `boolean` | `true` | Automatically call `editor.reorderTracks` after adding; pass `false` only for bulk workflows where you reorder later |
 
 > ⚠️ **Positioning note**: `x` and `y` in `editor.addCaption` / `editor.addText` are accepted as convenience inputs and are converted to `details.left` and `details.top` CSS strings (e.g. `x: 100` → `details.left: "100px"`, `y: 500` → `details.top: "500px"`). For later repositioning, use **`editor.positionItem`**. Do **not** use `editor.editItem` with `x`/`y` — visual position lives in `details.top` / `details.left`, and `positionItem` updates that correctly.
 >

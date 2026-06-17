@@ -82,7 +82,7 @@ All text and caption commands now default to the project's cinematic style guide
 
 - **Font**: Montserrat (weight 800 for headings, 400 for body)
 - **Colors**: White `#FFFFFF` headings, `#D0D0D0` body, purple glow shadow
-- **Sizes**: Headline 96px, Title 80px, Subtitle 52px, Body 36px, Label 24px, Caption 64px
+- **Sizes**: Headline 96px, Title 80px, Subtitle 52px, Body 36px, Label 24px, Caption 120px
 - **Effects**: Purple text shadow `0 4px 30px rgba(138, 43, 226, 0.6)` for headings
 
 Use `params.role` to select a text style: `'headline'`, `'title'`, `'subtitle'`, `'body'`, `'label'`, `'caption'`.
@@ -145,24 +145,23 @@ Add a video clip.
 |---|---|---|---|
 | `url` | `string` | required | Source video URL |
 | `from_ms` | `number` | `0` | Timeline start time |
-| `duration_ms` | `number` | editor default | Timeline duration |
+| `duration_ms` / `durationMs` | `number` | source duration or `10000` | Timeline duration override |
 | `width` | `number` | `1920` | Video width in pixels |
 | `height` | `number` | `1080` | Video height in pixels |
-| `duration` | `number` | auto-detected | Video duration in **ms** (see ⚠️ below) |
+| `duration` | `number` | source duration or `10000` | Legacy duration override in **ms** |
 | `volume` | `number` | `100` | Clip audio level from `0` to `100` (100 = full volume) |
 | `trim_start` | `number` | `0` | Source trim start in milliseconds |
 | `trim_end` | `number` | source end | Source trim end in milliseconds |
 
-> ⚠️ **CRITICAL — Pre-provide video metadata to avoid failures**
+> ℹ️ **Duration auto-detection**
 >
-> The internal state reducer creates a hidden `<video>` element to detect `duration`, `width`, and `height`.
-> This **fails** for localhost URLs, data URLs, blob URLs, CORS-restricted URLs, and many non-public URLs.
-> When it fails, the item silently never appears in the timeline.
+> `editor.addVideo` probes the source media and auto-sets `display.to` from the intrinsic duration when probing succeeds.
+> If duration cannot be determined, it falls back to **10000ms (10 seconds)** and returns a warning in the response.
 >
-> **Always provide `width`, `height`, AND `duration` (ms)** in params. When all three are present,
-> the reducer skips the internal video element load entirely and the item is added reliably.
+> Pass explicit `duration_ms` / `durationMs` (or legacy `duration`) to override. Passing both
+> `trim_start` and `trim_end` also overrides the detected duration using that trimmed range.
 >
-> Use `ffprobe` or equivalent to extract metadata before calling this command:
+> Use `ffprobe` or equivalent when you need exact metadata before calling this command:
 > ```bash
 > ffprobe -v quiet -print_format json -show_streams video.mp4
 > # → width, height, duration (convert seconds → ms)
@@ -185,6 +184,42 @@ Example:
   }
 }
 ```
+
+## `editor.addVideoSegments`
+
+Add multiple trimmed segments from one source video in a single call. Segments are placed sequentially on the timeline.
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `url` | `string` | required | Source video URL |
+| `segments` | `array` | required | `[{start, end, label?}, ...]` — source ranges in ms |
+| `gap` | `number` | `0` | Gap between segments in ms |
+| `startAt` | `number` | `0` | Timeline start position in ms |
+| `width` | `number` | `1080` | Video width |
+| `height` | `number` | `1920` | Video height |
+| `volume` | `number` | `100` | Audio level |
+
+Example — extract 4 segments into a ~71s edit:
+
+```json
+{
+  "type": "editor.addVideoSegments",
+  "params": {
+    "url": "http://127.0.0.1:PORT/media?path=...",
+    "segments": [
+      {"start": 3000, "end": 21700, "label": "hook"},
+      {"start": 75000, "end": 100000, "label": "demo"},
+      {"start": 100000, "end": 112000, "label": "automation"},
+      {"start": 205000, "end": 220500, "label": "cta"}
+    ],
+    "gap": 0,
+    "width": 1080,
+    "height": 1920
+  }
+}
+```
+
+> **See also:** [Transcription & Editing Workflow](./transcription-and-editing.md) for the full transcribe → segment → caption → jump-cut pipeline.
 
 ## `editor.addAudio`
 

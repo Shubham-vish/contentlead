@@ -475,6 +475,7 @@ curl "http://127.0.0.1:$PORT/api/skills?q=animation" -H "Authorization: Bearer $
 | Apply/remove images & captions | `content-bridge` |
 | Save, export, resize, tracks | `project-and-export` |
 | **AI image generation, vision, TTS** | `prepwithai/SKILL` |
+| **Transcribe video + Hinglish captions** | `transcription-and-editing` (Firebase polling + Latin transliteration) |
 | Read state, timeline, transcript | `queries-and-state` |
 | Save/load .skilltown project files | `project-files` |
 
@@ -926,10 +927,14 @@ These are commonly useful commands not covered in the core sections above:
 | `editor.cloneItem` | Duplicate an item | `{itemId: string}` |
 | `editor.positionItem` | Set item spatial position | `{itemId, top?, left?}` |
 | `editor.rotateItem` | Rotate an item | `{itemId, angle: number}` |
-| `editor.alignItem` | Align item to canvas edge/center | `{itemId, alignment: string}` |
+| `editor.alignItem` | Align item to canvas edge/center | `{itemId, align: string}` (`alignment` also accepted) |
 | `editor.setZIndex` | Set item z-index layer | `{itemId, zIndex: number}` |
 | `editor.setOpacity` | Set item opacity | `{itemId, opacity: number}` |
 | `editor.setPlaybackRate` | Set video playback speed | `{itemId, rate: number}` |
+| `editor.addVideoSegments` | Add multiple trimmed segments from one source | `{url, segments: [{start, end, label?}], gap?, startAt?, width?, height?, volume?}` |
+| `editor.removeSegment` | Cut a time range, optionally ripple-shifting later items | `{from_ms, to_ms, ripple?: boolean}` |
+| `editor.clearTimeline` | Clear all items, filtered types, or one track | `{types?: string[], trackId?: string}` |
+| `bulk.styleByType` | Apply one style payload to every item of a type | `{type: "caption"|"text"|"video", details: {...styling}}` |
 | `editor.addKeyframe` | Add animation keyframe | `{itemId, time, property, value}` |
 | `editor.removeKeyframe` | Remove animation keyframe | `{itemId, keyframeId}` |
 | `editor.addEffect` | Apply visual effect to item | `{itemId, effect: {type, params}}` |
@@ -969,7 +974,7 @@ These are commonly useful commands not covered in the core sections above:
 
 | Category | Commands |
 |---|---|
-| Add/replace media | `editor.addImage`, `editor.addVideo`, `editor.addAudio`, `editor.replaceMedia` |
+| Add/replace media | `editor.addImage`, `editor.addVideo`, `editor.addVideoSegments`, `editor.addAudio`, `editor.replaceMedia` |
 | Media playback/style | `editor.setVolume`, `editor.setAudioGain`, `editor.setPlaybackRate`, `editor.setOpacity` |
 | Media checks | `media.validate`, `media.prepare`, `media.status`, `query.getAudioLoudness` |
 
@@ -977,9 +982,9 @@ These are commonly useful commands not covered in the core sections above:
 
 | Category | Commands |
 |---|---|
-| Timeline edits | `editor.moveItem`, `editor.trimItem`, `editor.splitItem`, `editor.cutItem`, `editor.cloneItem`, `editor.deleteItems`, `editor.purgeItems` |
+| Timeline edits | `editor.moveItem`, `editor.trimItem`, `editor.splitItem`, `editor.cutItem`, `editor.cloneItem`, `editor.removeSegment`, `editor.deleteItems`, `editor.purgeItems` |
 | Selection | `editor.select`, `editor.deselectAll` |
-| Cleanup & batching | `editor.removeGaps`, `editor.setMagnetic`, `bulk.deleteByType`, `bulk.styleByType`, `bulk.shiftAll`, `batch.execute` |
+| Cleanup & batching | `editor.clearTimeline`, `editor.removeGaps`, `editor.setMagnetic`, `bulk.deleteByType`, `bulk.styleByType`, `bulk.shiftAll`, `batch.execute` |
 | AI helpers | `ai.undoLastAction`, `ai.previewChange` |
 
 ### Canvas, effects, and playback
@@ -1342,6 +1347,14 @@ const captions = createTikTokStyleCaptions({
 
 Pattern: Transcribe audio → extract word timings → render animated captions as a bundled scene overlay.
 
+### `content.applyCaptions` timing formats
+
+Use either transcript-style seconds or timeline-style milliseconds:
+- `subtitles[].startTime` (seconds) **or** `subtitles[].from` (ms)
+- `subtitles[].endTime` (seconds) **or** `subtitles[].to` (ms)
+- `words[].start` (seconds) **or** `words[].from` (ms)
+- `words[].end` (seconds) **or** `words[].to` (ms)
+
 ## Auth
 
 All endpoints except `/api/info` require: `Authorization: Bearer <token>`
@@ -1488,15 +1501,26 @@ The commandExecutor accepts BOTH camelCase and snake_case for common params:
 
 ## ⚠️ CRITICAL: Track Z-Order (Layer Visibility)
 
+> ## ⚠️ DO NOT HIDE CAPTIONS/TEXT
+>
+> **Track 0 = TOP/front-most layer.** Caption/text tracks must be above all video/image/background tracks. After adding ANY caption/text item, immediately call `editor.reorderTracks` **or rely on automatic reordering** (`editor.addCaption`, `editor.addText`, and `editor.autoCaption` auto-call it by default as of 2026-06-18).
+>
+> If you bulk-add via `content.applyCaptions`, add B-roll, or manually modify track structure, you **MUST** call `editor.reorderTracks` yourself.
+
 **Top track (Track 0) = front layer.** Text on bottom tracks is INVISIBLE behind backgrounds.
 
 ### The Rule
 - Text/caption tracks MUST be ABOVE (lower track index than) scene/image tracks
+- Track 0 = TOP/front-most layer
+- Caption/text tracks → top
+- Audio tracks → middle
+- Video/image tracks → bottom/background
+- Empty tracks should be garbage-collected
 - If text ends up below scene tracks, backgrounds cover all text → invisible content
 - Scene tracks have `metadata.isTemplateTrack = true` — they are background layers
 
 ### The Fix: Always call `editor.reorderTracks`
-**After adding all items to a video, ALWAYS call `editor.reorderTracks`.** It sorts tracks by layer priority:
+**After adding all items to a video, ALWAYS call `editor.reorderTracks`.** `editor.addCaption`, `editor.addText`, and `editor.autoCaption` now do this automatically by default; pass `autoReorder: false` only if you will reorder later. It sorts tracks by layer priority:
 1. **Text/Caption** (top — most visible, front layer)
 2. **Audio**
 3. **Video**
@@ -1963,7 +1987,7 @@ render-worker → @remotion/renderer.renderMedia()
 
 ## Time Units ⚠️
 
-**All timeline fields use MILLISECONDS** — no exceptions:
+**Timeline edit fields use MILLISECONDS unless a command explicitly documents transcript-style aliases:**
 - `from: 5000` = 5 seconds
 - `to: 10000` = 10 seconds
 - `durationMs: 3000` = 3 seconds
@@ -1972,7 +1996,7 @@ Scene commands also use milliseconds:
 - `from: 5000` = start at 5 seconds
 - `durationMs: 3000` = 3 seconds long
 
-There are NO commands that use seconds. Always use milliseconds.
+Most commands use milliseconds. Exception: `content.applyCaptions` also accepts `subtitles[].startTime` / `subtitles[].endTime` and `words[].start` / `words[].end` in seconds.
 
 ---
 

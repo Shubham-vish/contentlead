@@ -113,7 +113,7 @@ Align an item relative to the canvas.
 | Param | Type | Default | Description |
 |---|---|---|---|
 | `itemId` | `string` | required | Target item |
-| `alignment` | `string` | required | `center`, `centerH`, `centerV`, `left`, `right`, `top`, or `bottom` |
+| `align` (alias: `alignment`) | `string` | required | `center`, `centerH`, `centerV`, `left`, `right`, `top`, or `bottom` |
 
 Example:
 
@@ -122,7 +122,7 @@ Example:
   "type": "editor.alignItem",
   "params": {
     "itemId": "text_title",
-    "alignment": "centerH"
+    "align": "centerH"
   }
 }
 ```
