@@ -12,14 +12,14 @@ Use these commands for titles, lower-thirds, subtitles, karaoke captions, and te
 
 All text and caption commands use the project's **dark cinematic** style guide by default:
 
-| Role | Font Size | Weight | Color | Shadow | Letter Spacing |
-|------|-----------|--------|-------|--------|----------------|
-| `headline` | 96px | 800 | `#FFFFFF` | Purple glow | `-0.02em` |
-| `title` | 80px | 800 | `#FFFFFF` | Purple glow | `-0.02em` |
-| `subtitle` | 52px | 600 | `#D0D0D0` | Dark shadow | `normal` |
-| `body` | 36px | 400 | `#D0D0D0` | Dark shadow | `normal` |
-| `label` | 24px | 700 | `#BC4AEF` | Purple glow (subtle) | `0.08em` |
-| `caption` | 64px | 800 | `#FFFFFF` | Purple glow | `0.02em` |
+| Role | Font Size | Weight | Font | Color | Shadow | Letter Spacing |
+|------|-----------|--------|------|-------|--------|----------------|
+| `headline` | 96px | 800 | Montserrat | `#FFFFFF` | Purple glow | `-0.02em` |
+| `title` | 80px | 800 | Montserrat | `#FFFFFF` | Purple glow | `-0.02em` |
+| `subtitle` | 52px | 600 | Montserrat | `#D0D0D0` | Dark shadow | `normal` |
+| `body` | 36px | 400 | Montserrat | `#D0D0D0` | Dark shadow | `normal` |
+| `label` | 24px | 700 | Montserrat | `#BC4AEF` | Purple glow (subtle) | `0.08em` |
+| `caption` | 120px | 800 | Montserrat | `#FFFFFF` | Purple glow | `0.02em` |
 
 Font: **Montserrat** for all roles. Purple glow = `0 4px 30px rgba(138, 43, 226, 0.6)`.
 
@@ -137,20 +137,24 @@ Example — styled title (explicit overrides):
 
 ## `editor.addCaption`
 
-Add a caption layer. Defaults to Montserrat 64px, weight 800, purple active highlight.
+Add a caption layer. Defaults to Montserrat 120px, weight 800, purple active highlight.
 
 | Param | Type | Default | Description |
 |---|---|---|---|
 | `text` | `string` | required | Caption text |
 | `from` (alias: `from_ms`) | `number` | `0` | Timeline start time |
 | `to` or `durationMs` (alias: `duration_ms`) | `number` | `3000` | Caption end or duration |
-| `words` | `array<object>` | auto | Optional per-word timing for karaoke |
-| `fontSize` | `number` | `64` | Font size (Montserrat) |
+| `words` | `array<object>` | auto | Optional karaoke words. Accepts `params.words` (preferred) or `params.details.words`. Both timing formats accepted: `{ word, from, to }` or `{ word, start, end }` (all in ms). The handler normalizes to include both properties internally. |
+| `fontSize` | `number` | `120` | Font size (Montserrat) |
 | `fontWeight` | `number` | `800` | Font weight |
 | `activeColor` | `string` | `#BC4AEF` | Active word highlight color |
 | `color` | `string` | `#ffffff` | Text color |
 | `textShadow` | `string` | purple glow | CSS text-shadow |
 | `trackId` | `string` | auto | Place in specific track |
+
+> ⚠️ **Positioning note**: `x` and `y` in `editor.addCaption` / `editor.addText` are accepted as convenience inputs and are converted to `details.left` and `details.top` CSS strings (e.g. `x: 100` → `details.left: "100px"`, `y: 500` → `details.top: "500px"`). For later repositioning, use **`editor.positionItem`**. Do **not** use `editor.editItem` with `x`/`y` — visual position lives in `details.top` / `details.left`, and `positionItem` updates that correctly.
+>
+> **Caption compatibility note**: `words` accept both `{ word, from, to }` and `{ word, start, end }` formats (all times in milliseconds). Output always includes both key sets for compatibility. Do **not** manually set `details.top` / `details.left` for `addCaption` — use the `x` / `y` params instead, or use **`editor.positionItem`** after creation.
 
 Example — caption with karaoke words:
 
@@ -171,6 +175,16 @@ Example — caption with karaoke words:
   }
 }
 ```
+
+### Word timing format compatibility
+
+The renderer and preset system accept **both** `{ word, from, to }` and `{ word, start, end }` formats (all times in milliseconds). You can mix formats safely — the system normalizes internally:
+
+- **`from`/`to`** — canonical storage format (what gets saved to DB)
+- **`start`/`end`** — used by Whisper transcription and `content.applyCaptions`
+- The `addCaption` handler normalizes custom words to include both properties
+- The caption player (`CaptionWord` component) reads `start ?? from` and `end ?? to`
+- Preset re-application (`transformCaptions`) normalizes on read and writes both formats
 
 ## `editor.editItem`
 
@@ -330,3 +344,87 @@ Example — restyle a lower-third:
   }
 ]
 ```
+
+---
+
+## editor.autoCaption — Automated Segment Transcription (Electron Only)
+
+Transcribes a specific clip in the timeline and applies captions automatically. Handles audio extraction, upload, transcription, and caption placement in one command.
+
+### Parameters
+
+| Param | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `trackItemId` | string | ✅ | — | The ID of the video/audio item to transcribe |
+| `language` | string | — | `"hi"` | Language code for Whisper (`hi`, `en`, `mr`, etc.) |
+| `passes` | number | — | `1` | Number of retry attempts (1–3). More passes = higher accuracy, each with less context padding |
+| `style` | string | — | `""` | `"hinglish"` to transliterate Hindi → Roman script |
+| `translate` | boolean | — | `false` | Translate to English |
+| `from` | number | — | auto | Override clip start (ms, source-relative) |
+| `to` | number | — | auto | Override clip end (ms, source-relative) |
+
+### How It Works
+
+1. **Resolves source** — finds the actual media file from the track item
+2. **Extracts audio** — ffmpeg extracts ONLY the trimmed segment + 10s context padding
+3. **Uploads** — Azure Blob (if configured) or direct file upload to PrepWithAI
+4. **Transcribes** — calls PrepWithAI, polls Firebase until complete
+5. **Filters words** — keeps only words within the actual clip range (discards padding)
+6. **Applies captions** — calls `content.applyCaptions` with properly timed words
+
+### Progress Monitoring
+
+The command writes progress to `~/.skilltown-desktop/jobs/transcription_<jobId>.json`:
+
+```json
+{
+  "jobId": "tc_abc123",
+  "status": "in_progress",
+  "steps": {
+    "resolve_source": { "done": true, "src": "/path/to/video.mp4" },
+    "extract_audio": { "done": true, "pass": 1, "paddingSec": 10 },
+    "upload": { "done": true, "mode": "azure", "url": "https://..." },
+    "transcribe": { "done": false, "progress": 45, "firebasePath": "..." },
+    "filter_words": { "done": false },
+    "apply_captions": { "done": false }
+  }
+}
+```
+
+**To monitor progress:** Read the job file periodically. The `jobId` is returned immediately in the response.
+
+### Example Usage
+
+```json
+[
+  {
+    "type": "editor.autoCaption",
+    "params": {
+      "trackItemId": "item_abc123",
+      "language": "hi",
+      "passes": 2,
+      "style": "hinglish"
+    }
+  }
+]
+```
+
+### Response
+
+```json
+{
+  "status": "success",
+  "captionCount": 28,
+  "trackId": "track_xyz",
+  "jobId": "tc_m2abc123def"
+}
+```
+
+### Important Notes
+
+- **Slow command** — takes 30–120 seconds depending on clip length
+- Only works on **Electron desktop app** (needs ffmpeg + local file access)
+- For web users, use the existing retranscription UI in the Transcript tab
+- If `PREPWITHAI_API_SECRET` is not set, the command will fail immediately
+- The command auto-detects trim/display ranges from the track item — you usually don't need `from`/`to`
+- Context padding (10s before/after) ensures Whisper gets clean word boundaries
