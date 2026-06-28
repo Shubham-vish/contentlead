@@ -267,6 +267,27 @@ Example:
 }
 ```
 
+## `editor.relinkMedia`
+
+Like `editor.replaceMedia`, but specifically for **recovering a broken clip** — one showing a red "media error" placeholder because its source URL expired (stale CDN/blob URL). It swaps `details.src` (preserving all trims, effects, keyframes, position) **and clears the missing-media error state** so the clip renders again.
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `itemId` | `string` | required | The broken video/audio/image item |
+| `src` | `string` | required | New (working) source URL |
+
+```json
+{
+  "type": "editor.relinkMedia",
+  "params": {
+    "itemId": "video_03",
+    "src": "https://example.com/fresh-signed-url.mp4"
+  }
+}
+```
+
+> Use `editor.replaceMedia` for a normal source swap; use `editor.relinkMedia` when the clip is in an error state and you want to also clear that error.
+
 ## `editor.setVolume`
 
 Adjust an audio or video item's volume.
@@ -287,6 +308,41 @@ Example:
   }
 }
 ```
+
+## `editor.setClipState`
+
+Toggle a single clip **"off"** (multicam primitive) and/or **mute** its audio — independently of its track. Unlike `editor.muteTrack` (which affects the whole track) this targets one clip.
+
+- `enabled: false` → clip is **off**: excluded from the preview AND the final render (the local converter skips it entirely). `enabled: true` turns it back on.
+- `muted: true` → silences only this clip's audio, leaving its video visible. Independent of any track-level mute.
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `itemId` | `string` | required | Video or audio clip |
+| `enabled` | `boolean` | — | `false` = clip off (skipped in render), `true` = on |
+| `muted` | `boolean` | — | `true` = silence this clip only |
+
+Provide at least one of `enabled` / `muted`. Maps to `details.enabled` / `details.muted` on the item.
+
+Example — turn off an alternate camera angle but keep it on the timeline:
+
+```json
+{
+  "type": "editor.setClipState",
+  "params": { "itemId": "video_camB", "enabled": false }
+}
+```
+
+Example — keep a B-roll clip visible but drop its noisy audio:
+
+```json
+{
+  "type": "editor.setClipState",
+  "params": { "itemId": "video_broll", "muted": true }
+}
+```
+
+> Disabled (`enabled: false`) clips are **omitted from the local render** — use this for multicam-style A/B angle switching without deleting clips.
 
 ## `editor.setPlaybackRate`
 
@@ -329,6 +385,72 @@ Example:
   }
 }
 ```
+
+---
+
+## Audio Enhancement: EQ & Noise Reduction
+
+### `audio.setEq` — 3-band equalizer (preview + render)
+
+Apply a 3-band EQ to a clip. Stored on `details.eq` and honored in **both the live preview and the local render**. Use a named preset or set bands directly (or both — explicit bands override the preset).
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `itemId` | `string` | required | Audio or video clip |
+| `preset` | `string` | — | One of: `flat`, `voice-enhance`, `bass-boost`, `podcast`, `warm`, `bright`, `de-mud`, `telephone` |
+| `low` | `number` | — | Low-shelf gain, −12..+12 dB (≈200 Hz) |
+| `mid` | `number` | — | Mid peak gain, −12..+12 dB (≈1 kHz) |
+| `high` | `number` | — | High-shelf gain, −12..+12 dB (≈4 kHz) |
+| `enabled` | `boolean` | `true` | Toggle EQ on/off without losing settings |
+
+Example — clean up a voiceover with the podcast preset:
+
+```json
+{
+  "type": "audio.setEq",
+  "params": { "itemId": "vo_main", "preset": "podcast" }
+}
+```
+
+Example — manual band control (preset becomes `custom`):
+
+```json
+{
+  "type": "audio.setEq",
+  "params": { "itemId": "music_01", "low": 4, "mid": -2, "high": 1 }
+}
+```
+
+`audio.removeEq { itemId }` disables and resets EQ to flat.
+
+### Noise reduction (Desktop only — local ffmpeg)
+
+These run **locally in the Electron main process** on **file paths** (not timeline item IDs). They extract a noise sample, learn its spectral fingerprint, and subtract it — writing a processed `.m4a` and returning its path. They are **slow** (ffmpeg). A typical flow: process the source file → then `editor.replaceMedia` the clip with the returned `outputPath`.
+
+| Command | Key params | Returns |
+|---|---|---|
+| `audio.reduceNoise` | `sourcePath` (required), `profileSegment: [startSec, endSec]`, `noiseReduction` 0..1 (default 0.35), `noiseFloor` dB, `outputDir?` | `{ success, outputPath }` |
+| `audio.reduceNoiseWithProfile` | `sourcePath` (required), `profileId` (required), `amount?` 0..1, `outputDir?` | `{ success, outputPath }` |
+| `audio.listNoiseProfiles` | — | saved profiles |
+| `audio.saveNoiseProfile` | `sourcePath` (required), `name` (required), `profileSegment` (required) | saved profile |
+| `audio.deleteNoiseProfile` | `id` (required) | `{ success }` |
+| `audio.renameNoiseProfile` | `id` (required), `name` (required) | `{ success }` |
+| `audio.getNoiseProfilePath` | `id` (required) | profile path |
+
+Example — denoise a recording using the first 1.5s as the noise sample:
+
+```json
+{
+  "type": "audio.reduceNoise",
+  "params": {
+    "sourcePath": "/Users/me/Movies/raw-vo.m4a",
+    "profileSegment": [0, 1.5],
+    "noiseReduction": 0.4
+  }
+}
+```
+
+> `audio.reduceNoise*` need a **local file path**, not a timeline URL. If the clip's source is a remote/blob URL, download or extract it to a local file first. `outputDir` defaults to a temp dir.
 
 ---
 

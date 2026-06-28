@@ -19,6 +19,9 @@ End-to-end workflow for editing talking-head or screen-share videos: transcribe 
 | `editor.splitItem` | Split item(s) at a time point |
 | `editor.cutItem` | Split + delete one side |
 | `content.applyCaptions` | Apply word-level karaoke captions |
+| `query.getTranscriptionStatus` | Check auto-caption/transcription job status (idle/processing/completed/error) |
+| `editor.editCaptionWord` | Fix one caption word's text or timing |
+| `editor.bulkReplaceText` | Find/replace text across all captions/text items |
 
 ---
 
@@ -146,6 +149,22 @@ curl -s "$DB_URL/$FB_PATH/progress.json"
 
 > Code-switched audio (e.g., Hindi with English words like "content creator") returns mixed-script words —
 > English words come back in Latin, Hindi words in Devanagari. Don't re-transliterate already-Latin words.
+
+### Checking transcription status — `query.getTranscriptionStatus`
+
+Auto-caption (`editor.autoCaption`) transcription runs asynchronously. Poll its status instead of guessing — it's derived from persisted content, so it survives reloads.
+
+| Param | Type | Description |
+|---|---|---|
+| `scopeKey` | `string` (optional) | Filter to one transcription scope; omit to list all |
+
+**Returns:** `{ isAnyProcessing, activeProcesses: [{ scopeKey, processId }], scopeCount, scopes: [{ scopeKey, status, cancelled, wordCount, hasSavedWords, transcribedAt, processId }] }`
+
+`status` is one of `idle | pending | processing | completed | error | cancelled`. Wait for `isAnyProcessing: false` (and `status: "completed"` with `wordCount > 0`) before reading the transcript with `query.getTranscript`.
+
+```json
+{ "type": "query.getTranscriptionStatus", "params": {} }
+```
 
 ---
 

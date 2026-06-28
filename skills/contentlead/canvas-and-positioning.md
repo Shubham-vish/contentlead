@@ -148,9 +148,45 @@ Example:
 }
 ```
 
-## `editor.setZIndex`
+## `editor.cropItem`
 
-Move an item forward or backward in layer order.
+Set a **crop window** on a video or image item — a rectangle (in source pixels) that selects which part of the media is shown. Mirrors the editor's interactive crop handles.
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `itemId` | `string` | required | Target video/image item |
+| `crop` | `object` | required | `{ x?, y?, width, height }` in source pixels. `x`/`y` default to current crop origin |
+| `preservePosition` | `boolean` | `true` | Reposition the item so the kept content stays **visually fixed** on the canvas (accounts for any scaling). Set `false` to leave `left`/`top` untouched |
+
+- `width` / `height` must be positive. `x` / `y` are the top-left of the crop in source coordinates.
+- The item's `details.crop` is updated; with `preservePosition: true` the item's `left`/`top` are recomputed (center-origin aware) so cropping doesn't shift the visible content.
+
+Example — crop a 1080×1920 clip to a centered 1080×1080 square:
+
+```json
+{
+  "type": "editor.cropItem",
+  "params": {
+    "itemId": "video_main",
+    "crop": { "x": 0, "y": 420, "width": 1080, "height": 1080 }
+  }
+}
+```
+
+Example — crop without repositioning (manual placement afterwards):
+
+```json
+{
+  "type": "editor.cropItem",
+  "params": {
+    "itemId": "img_bg",
+    "crop": { "x": 200, "y": 100, "width": 720, "height": 720 },
+    "preservePosition": false
+  }
+}
+```
+
+## `editor.setZIndex`
 
 | Param | Type | Default | Description |
 |---|---|---|---|

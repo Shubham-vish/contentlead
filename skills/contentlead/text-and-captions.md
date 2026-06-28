@@ -237,6 +237,48 @@ Example — restyle a lower-third:
 }
 ```
 
+## `editor.editCaptionWord`
+
+Edit a **single word** (text and/or timing) inside a caption or text item that has word-level data (`details.words`). The item's `details.text` is automatically rebuilt to stay in sync. Use this to fix one mis-transcribed word or nudge a word's karaoke timing without touching the rest of the caption.
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `itemId` | `string` | required | Caption/text item with `details.words` |
+| `wordIndex` | `number` | required | 0-based index of the word to edit |
+| `text` | `string` | — | New word text (original is preserved in `original_word`, `edited: true` is set) |
+| `startMs` | `number` | — | New word start time in ms |
+| `endMs` | `number` | — | New word end time in ms |
+
+Provide at least one of `text` / `startMs` / `endMs`.
+
+```json
+{
+  "type": "editor.editCaptionWord",
+  "params": { "itemId": "caption_03", "wordIndex": 2, "text": "automation" }
+}
+```
+
+## `editor.bulkReplaceText`
+
+Find/replace text across **all** text and/or caption items on the timeline in one call. For caption items it also updates `details.words[].word` so word-level data stays in sync.
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `find` | `string` | required | Text to search for |
+| `replace` | `string` | `""` | Replacement text (empty string deletes the match) |
+| `matchCase` | `boolean` | `false` | Case-sensitive matching |
+| `wholeWord` | `boolean` | `false` | Match whole words only (word boundaries) |
+| `itemType` | `string` | `"both"` | `"text"`, `"caption"`, or `"both"` |
+
+**Returns:** `{ changedItems, totalReplacements, changed: [{ id, type, replacements }] }`
+
+```json
+{
+  "type": "editor.bulkReplaceText",
+  "params": { "find": "Instgram", "replace": "Instagram", "matchCase": false }
+}
+```
+
 ## Font and Styling Notes
 
 - Use `query.listFonts` to discover supported fonts.
