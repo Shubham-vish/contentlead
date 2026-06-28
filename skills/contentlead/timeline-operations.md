@@ -160,6 +160,7 @@ Split one or more items at a specific time into two parts. The original item bec
 |---|---|---|---|
 | `itemIds` | `array<string>` | **required** | IDs of items to split |
 | `timeMs` | `number` | **required** | Split time in ms — must be **strictly inside** the item's display range (not at boundaries) |
+| `cascade` | `boolean` | `true` | If the item is on a **linked track**, also split time-overlapping items on the other linked tracks. Set `false` to split only the named items |
 
 **Returns:** `{ splitCount, newItemIds: { originalId: newPartId }, skipped: [...] }`
 
@@ -190,6 +191,7 @@ Split + delete one side in a single operation. Equivalent to split + delete but 
 | `itemIds` | `array<string>` | **required** | IDs of items to cut |
 | `timeMs` | `number` | **required** | Cut time in ms — must be strictly inside item display range |
 | `cutMode` | `string` | `"keep-left"` | `"keep-left"` keeps the portion before timeMs; `"keep-right"` keeps the portion after |
+| `cascade` | `boolean` | `true` | If on a **linked track**, also cut time-overlapping items on linked tracks. Set `false` to cut only the named items |
 
 **Returns:** `{ cutMode, splitCount, deletedIds: [...], survivorIds: [...] }`
 
@@ -226,6 +228,7 @@ Delete one or more items.
 | Param | Type | Default | Description |
 |---|---|---|---|
 | `item_ids` | `array<string>` | required | Items to delete |
+| `cascade` | `boolean` | `false` | Also delete **time-overlapping** items on linked tracks. Off by default because cascading a delete is destructive |
 
 Example:
 
@@ -235,6 +238,40 @@ Example:
   "params": {
     "item_ids": ["text_old", "caption_07"]
   }
+}
+```
+
+## `editor.linkTracks`
+
+Link 2+ tracks into a **link group** so timeline edits (split / cut, and opt-in delete) cascade across them at the same time — e.g. keep a video track and its caption track in sync.
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `trackIds` | `array<string>` | **required** | 2+ track IDs to link. Linking tracks already in groups merges them |
+| `color` | `string` | auto | Optional group color |
+
+**Returns:** `{ groupId, trackIds, color }`
+
+```json
+{
+  "type": "editor.linkTracks",
+  "params": { "trackIds": ["track_video", "track_captions"] }
+}
+```
+
+## `editor.unlinkTracks`
+
+Remove tracks from their link group, or destroy a whole group. Provide **either** `trackIds` or `groupId`.
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `trackIds` | `array<string>` | — | Tracks to remove from their group (group dissolves if it drops below 2 tracks) |
+| `groupId` | `string` | — | Destroy this entire link group |
+
+```json
+{
+  "type": "editor.unlinkTracks",
+  "params": { "groupId": "grp_abc123" }
 }
 ```
 
