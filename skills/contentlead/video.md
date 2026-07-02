@@ -4,7 +4,7 @@ Commands for adding, trimming (at creation), and styling video items.
 
 > **Disambiguation: Trimming vs Cutting**
 > - **Trimming at creation:** Pass `trim: {from, to}` to `editor.addVideo` to only insert a specific portion of the source file.
-> - **Cutting after creation:** Use `editor.splitItem` or `editor.cutItem` (see `timeline-operations`) to split or shorten clips already on the timeline.
+> - **Cutting after creation:** Use `editor.splitItem` or `editor.cutItem` (see `item-editing`) to split or shorten clips already on the timeline.
 
 ## Adding Videos
 
