@@ -76,7 +76,7 @@ You can also patch details directly:
 
 ## Z-Index (Layering)
 
-While `editor.reorderTracks` (see `timeline-operations`) handles macro layer ordering (text > video > backgrounds), you can manually adjust z-index within a track.
+While `editor.reorderTracks` (see `track-management`) handles macro layer ordering (text > video > backgrounds), you can manually adjust z-index within a track.
 
 ### `editor.setZIndex`
 ```json

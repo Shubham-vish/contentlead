@@ -28,16 +28,19 @@ Every session must execute these steps before any editing commands.
 | Task | Skill to Load | Key Commands |
 |------|---------------|--------------|
 | Text & Typography (manual) | `text-and-captions` | `editor.addText`, `editor.editItem` |
-| Video, Images, Audio, EQ | `media-and-audio` | `editor.addVideo`, `editor.addImage`, `editor.addAudio`, `audio.setEq`, `editor.setVolume` |
-| Item positioning, Crop, Resize | `canvas-and-positioning` | `editor.positionItem`, `editor.resize`, `editor.cropItem`, `editor.setZIndex` |
-| Cuts, Splits, Moves, Linking | `timeline-operations` | `editor.splitItem`, `editor.cutItem`, `editor.trimItem`, `editor.linkTracks`, `editor.reorderTracks` |
-| Transcripts, Auto-Captions | `transcription-and-editing` | `content.applyCaptions`, `query.getTranscriptionStatus`, `editor.editCaptionWord` |
+| Video & Chroma-key | `video` | `editor.addVideo`, `editor.addVideoSegments`, `editor.setClipState` |
+| Images & Static Media | `images` | `editor.addImage`, `editor.replaceMedia`, `media.validate` |
+| Audio, Gain, EQ, Noise | `audio-gain-eq` | `editor.addAudio`, `editor.setAudioGain`, `audio.setEq`, `audio.reduceNoise` |
+| Position, Crop, Resize | `canvas-and-positioning` | `editor.positionItem`, `editor.resize`, `editor.cropItem` |
+| Trim/Split/Cut on timeline | `item-editing` | `editor.splitItem`, `editor.cutItem`, `editor.trimItem`, `editor.moveItem` |
+| Tracks, Z-order, Linking | `track-management` | `editor.reorderTracks`, `editor.linkTracks`, `editor.renameTrack` |
+| Bulk / Batch operations | `bulk-operations` | `bulk.styleByType`, `bulk.shiftAll`, `POST /api/batch` |
+| Transcripts, Auto-Captions | `transcription-and-editing` | `content.applyCaptions`, `query.getTranscriptionStatus` |
 | Animations, Transitions, VFX | `animations-and-effects` | `editor.setAnimation`, `editor.addTransitionBetween`, `editor.addKeyframe` |
-| Custom JSX/Remotion Scenes | `scenes-and-templates` | `scene.addCustomScene`, `scene.addBundledScene`, `scene.addLibraryScene` |
+| Full E2E Pipeline & Scenes | `storystudio-pipeline` | (Workflow guide, pipeline states) |
 | Project save/load, Export | `project-and-export` | `editor.save`, `editor.export`, `project.getFullState` |
 | Read timeline/editor state | `queries-and-state` | `query.getTimelineItems`, `query.getTrackInfo`, `query.getEditorState` |
-| Debugging, Logs, Architecture | `infrastructure` | `GET /api/diagnostics`, `GET /api/console-errors` |
-| Full E2E Video Pipeline | `orchestration-e2e` | (Workflow guide, 8-phase pipeline) |
+| Debugging, Logs, Arch | `infrastructure` | `GET /api/diagnostics`, `GET /api/console-errors` |
 
 ## Disambiguation: Which Text/Cut command do I use?
 
@@ -45,5 +48,5 @@ Every session must execute these steps before any editing commands.
 - **Subtitles (Auto-generated):** Use `content.applyCaptions` (`transcription-and-editing`).
 - **Karaoke/Word-level manual captions:** Use `editor.addCaption` (`text-and-captions`).
 - **Fixing typos in auto-captions:** Use `editor.editCaptionWord` (`transcription-and-editing`).
-- **Trimming media BEFORE adding:** Pass `from`/`to` to `editor.addVideo` (`media-and-audio`).
-- **Cutting/splitting clips ALREADY on timeline:** Use `editor.splitItem` / `editor.cutItem` (`timeline-operations`).
+- **Trimming media BEFORE adding:** Pass `trim: {from, to}` to `editor.addVideo` (`video`).
+- **Cutting/splitting clips ALREADY on timeline:** Use `editor.splitItem` / `editor.cutItem` (`item-editing`).

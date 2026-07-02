@@ -3,8 +3,8 @@
 Use these read-only commands to inspect the timeline, check item properties, and verify editor state.
 
 ## ⚠️ State vs Discovery
-- If you need to know **how to connect** or if the editor is ready, see `getting-started`.
-- If you need a **list of available commands**, use `overview`.
+- If you need to know **how to connect** or if the editor is ready, see `SKILL`.
+- If you need a **list of available commands**, use `SKILL`.
 - The commands below are for inspecting **the content inside the editor**.
 
 ## Core Queries
