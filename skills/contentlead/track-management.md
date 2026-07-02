@@ -4,17 +4,18 @@ Commands for organizing the timeline into tracks, controlling layer visibility, 
 
 ## ⚠️ CRITICAL: Track Z-Order (Layer Visibility)
 
-**Track 0 = TOP/front-most layer.** 
-Items on lower-indexed tracks render IN FRONT of items on higher-indexed tracks.
+**Track 0 is the FRONT layer (closest to the viewer).**
+**Higher track numbers go BEHIND lower track numbers.**
 
-- **Top tracks (0, 1...):** Text, Captions, Overlays
-- **Middle tracks:** Audio, SFX
-- **Bottom tracks:** Video, Background Scenes
+This is the opposite of some design tools.
+- **Track 0:** Front layer (Text, Captions, Overlays)
+- **Track 1:** Behind Track 0 (Images, B-Roll)
+- **Track 2+:** Background layers (Video, Scenes)
 
-If text ends up on a track below a background scene, the background will cover the text, making it invisible.
+If you place text on Track 3, and a video on Track 0, the video will completely hide the text.
 
-### `editor.reorderTracks`
-Always call this after adding a batch of items to fix the Z-order automatically.
+### `editor.reorderTracks` (THE FIX)
+Because track math is confusing, the API provides an auto-sorter. **Always call this after adding new items to the timeline.** It automatically moves Text to the front (Track 0) and Videos/Scenes to the back.
 ```json
 { "type": "editor.reorderTracks", "params": {} }
 ```

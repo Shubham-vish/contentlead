@@ -21,6 +21,13 @@ Every session must execute these steps before any editing commands.
    - Open: `curl -s -X POST http://127.0.0.1:$PORT/api/navigate -d '{"url":"/content/<id>","waitForReady":true,"autoRestore":true}'`
 5. **Verify Canvas:** Check dimensions with `query.getCanvasSize` before adding items.
 
+## ⚠️ CRITICAL VISIBILITY RULE: Track Z-Order
+
+**Track 0 is the FRONT layer.** Higher track numbers (Track 1, 2, 3) are placed **BEHIND** Track 0.
+If you add text on Track 2 and a video on Track 0, the text will be **invisible** (hidden behind the video).
+**SOLUTION:** ALWAYS call `editor.reorderTracks` after adding items to automatically fix layer ordering.
+
+
 ## Skill Routing Table
 
 **⚠️ CRITICAL:** Load the relevant skill file BEFORE attempting to use commands in that category. The detailed docs contain mandatory rules (like track z-order, parameter names, and timing formats) that you will fail without.
