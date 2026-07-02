@@ -1,356 +1,49 @@
 ---
 name: contentlead
-description: Control the ContentLead video editor from any AI agent. Covers connection, authentication, command execution, error handling, and the full editing workflow. Use when asked to edit video in ContentLead, control the desktop editor, add scenes/text/media to a timeline, render/export videos, or troubleshoot the editor API. For Remotion scene creation (custom animations, effects, camera), also load the `remotion` skill. For creative planning and storyboarding, load the `content-direction` skill.
+description: Control the ContentLead video editor from any AI agent. This is the master router skill. Load this first to discover capabilities, then load specific sub-skills for detailed API instructions. Use this for editing video, adding scenes/text/media, managing tracks, and exporting. For Remotion scene creation, load the `remotion` skill.
 ---
 
-# ContentLead Editor — AI Agent Skill
+# ContentLead Editor — AI Master Router
 
-ContentLead is a desktop video editor (Electron + Next.js) with a **local HTTP API** that lets AI agents control the entire editing workflow — add text, images, video, animated scenes, audio, transitions, render to MP4, and more.
+ContentLead is a desktop video editor (Electron + Next.js) with a local HTTP API that lets AI agents control the entire editing workflow.
 
-The editor includes 159 pre-built Remotion scenes, a real-time preview, and supports custom scene creation with full React/Remotion capabilities.
-
-## Architecture
-
-```
-AI Agent (Claude, Copilot, ChatGPT, Cursor, etc.)
-    │
-    ▼  HTTP + JSON (Bearer token auth)
-┌──────────────────────────────┐
-│  Local API Server (Electron) │  ← port + token in ~/.skilltown-desktop/api.json
-└──────────────┬───────────────┘
-               │ IPC
-               ▼
-┌──────────────────────────────┐
-│  Editor (React + Remotion)   │  ← 110+ commands, real-time preview
-└──────────────────────────────┘
-```
-
-No external servers needed for editing. Everything runs locally.
-
-## Quick Start
-
-```bash
-# 1. Read connection info (changes every session)
-API=$(cat ~/.skilltown-desktop/api.json)
-PORT=$(echo $API | python3 -c "import sys,json; print(json.load(sys.stdin)['port'])")
-TOKEN=$(echo $API | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
-
-# 2. Health check
-curl -s http://127.0.0.1:$PORT/api/health -H "Authorization: Bearer $TOKEN"
-
-# 3. Discover capabilities
-curl -s http://127.0.0.1:$PORT/api/skills/overview -H "Authorization: Bearer $TOKEN"
-
-# 4. Execute a command
-curl -s -X POST http://127.0.0.1:$PORT/api/execute \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"type": "editor.addText", "params": {"text": "Hello World", "from": 0, "durationMs": 3000}}'
-```
+**This is a router document.** Do not guess command parameters from this file. Use the skill table below to load the specific, detailed skill document for the task you are trying to accomplish.
 
 ## Mandatory Startup Protocol
 
-**Every session must follow this before editing.** Do not skip steps.
+Every session must execute these steps before any editing commands.
 
-### Step 0: Verify the App Is Running
+1. **Read API info:** `cat ~/.skilltown-desktop/api.json` (extract port and token)
+2. **Health check:** `curl -s http://127.0.0.1:$PORT/api/health -H "Authorization: <token>"`
+3. **Diagnostics:** `curl -s "http://127.0.0.1:$PORT/api/diagnostics?full=true" -H "Authorization: <token>"`
+4. **Open Content:** 
+   - List: `curl -s http://127.0.0.1:$PORT/api/content/list`
+   - Open: `curl -s -X POST http://127.0.0.1:$PORT/api/navigate -d '{"url":"/content/<id>","waitForReady":true,"autoRestore":true}'`
+5. **Verify Canvas:** Check dimensions with `query.getCanvasSize` before adding items.
 
-```bash
-cat ~/.skilltown-desktop/api.json 2>/dev/null | python3 -c "
-import sys,json,subprocess
-d = json.load(sys.stdin)
-r = subprocess.run(['kill', '-0', str(d['pid'])], capture_output=True)
-if r.returncode == 0: print(f'RUNNING on port {d[\"port\"]}')
-else: print('NOT RUNNING')
-"
-```
+## Skill Routing Table
 
-If not running, start with BOTH Next.js + Electron:
-```bash
-cd /path/to/SkillTown-Desktop && npm run dev:with-server
-# ⚠️ First load compiles 13,700+ modules (30-40s), subsequent loads <1s
-# ⚠️ Port and token CHANGE every restart — always re-read api.json
-```
+**⚠️ CRITICAL:** Load the relevant skill file BEFORE attempting to use commands in that category. The detailed docs contain mandatory rules (like track z-order, parameter names, and timing formats) that you will fail without.
 
-### Step 1: Connect
-```bash
-API=$(cat ~/.skilltown-desktop/api.json)
-PORT=$(echo $API | python3 -c "import sys,json; print(json.load(sys.stdin)['port'])")
-TOKEN=$(echo $API | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
-```
+| Task | Skill to Load | Key Commands |
+|------|---------------|--------------|
+| Text & Typography (manual) | `text-and-captions` | `editor.addText`, `editor.editItem` |
+| Video, Images, Audio, EQ | `media-and-audio` | `editor.addVideo`, `editor.addImage`, `editor.addAudio`, `audio.setEq`, `editor.setVolume` |
+| Item positioning, Crop, Resize | `canvas-and-positioning` | `editor.positionItem`, `editor.resize`, `editor.cropItem`, `editor.setZIndex` |
+| Cuts, Splits, Moves, Linking | `timeline-operations` | `editor.splitItem`, `editor.cutItem`, `editor.trimItem`, `editor.linkTracks`, `editor.reorderTracks` |
+| Transcripts, Auto-Captions | `transcription-and-editing` | `content.applyCaptions`, `query.getTranscriptionStatus`, `editor.editCaptionWord` |
+| Animations, Transitions, VFX | `animations-and-effects` | `editor.setAnimation`, `editor.addTransitionBetween`, `editor.addKeyframe` |
+| Custom JSX/Remotion Scenes | `scenes-and-templates` | `scene.addCustomScene`, `scene.addBundledScene`, `scene.addLibraryScene` |
+| Project save/load, Export | `project-and-export` | `editor.save`, `editor.export`, `project.getFullState` |
+| Read timeline/editor state | `queries-and-state` | `query.getTimelineItems`, `query.getTrackInfo`, `query.getEditorState` |
+| Debugging, Logs, Architecture | `infrastructure` | `GET /api/diagnostics`, `GET /api/console-errors` |
+| Full E2E Video Pipeline | `orchestration-e2e` | (Workflow guide, 8-phase pipeline) |
 
-### Step 2: Health Check — STOP if not healthy
-```bash
-curl -s http://127.0.0.1:$PORT/api/health -H "Authorization: Bearer $TOKEN"
-# Must have: editor.ready == true, media.serverActive == true
-```
+## Disambiguation: Which Text/Cut command do I use?
 
-### Step 3: Run Diagnostics
-```bash
-curl -s "http://127.0.0.1:$PORT/api/diagnostics?full=true" -H "Authorization: Bearer $TOKEN"
-# If status is 'issues_found', fix all errors before editing
-```
-
-### Step 4: Open Content
-```bash
-# List available content
-curl -s http://127.0.0.1:$PORT/api/content/list -H "Authorization: Bearer $TOKEN"
-
-# Navigate + wait + auto-restore autosave
-curl -s -X POST http://127.0.0.1:$PORT/api/navigate \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"url": "/content/<contentId>", "waitForReady": true, "autoRestore": true, "timeoutMs": 120000}'
-```
-
-### Step 5: Wait for DB Load (new projects only)
-```bash
-# After navigating to NEW projects, wait 10-12s for DB content to load
-sleep 10
-# Then verify canvas before adding anything:
-curl -s -X POST http://127.0.0.1:$PORT/api/execute \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"type": "query.getCanvasSize", "params": {}}'
-```
-
-### Step 6: Start Editing
-```bash
-# Load the full capability overview from the running app
-curl -s http://127.0.0.1:$PORT/api/skills/overview -H "Authorization: Bearer $TOKEN"
-```
-
-## Command Execution
-
-All editing is done via `POST /api/execute` with a JSON body:
-
-```json
-{
-  "type": "editor.addText",
-  "params": {
-    "text": "Hello World",
-    "from": 0,
-    "durationMs": 3000,
-    "fontSize": 64,
-    "color": "#FFFFFF"
-  }
-}
-```
-
-### Response Format
-
-Every response includes `editorHealth` — **always check it**:
-
-```json
-{
-  "commandId": "cmd_123",
-  "status": "success",
-  "stateVersion": 42,
-  "executionTimeMs": 118,
-  "editorHealth": {
-    "status": "clean",
-    "commandSuccess": true,
-    "newConsoleErrors": 0,
-    "currentSceneErrors": 0
-  },
-  "result": { "itemId": "text_abc123" }
-}
-```
-
-If `editorHealth.status === "issues_found"` → **STOP and fix** before continuing.
-
-### Batch Execution
-
-Send this body to `POST /api/batch`:
-
-```json
-{
-  "commands": [
-    {"type": "editor.addText", "params": {"text": "Title", "from": 0, "durationMs": 3000}},
-    {"type": "editor.addText", "params": {"text": "Subtitle", "from": 1000, "durationMs": 2000}}
-  ],
-  "stopOnError": true
-}
-```
-
-Batch execution runs commands in order. There is **no transaction or rollback support**.
-
-## Runtime Skill Discovery
-
-The running app serves detailed skill docs via its API. Load them on-demand:
-
-```bash
-# List all available skills
-curl -s http://127.0.0.1:$PORT/api/skills -H "Authorization: Bearer $TOKEN"
-
-# Load a specific skill
-curl -s http://127.0.0.1:$PORT/api/skills/text-and-captions -H "Authorization: Bearer $TOKEN"
-
-# Search skills by keyword
-curl -s "http://127.0.0.1:$PORT/api/skills?q=animation" -H "Authorization: Bearer $TOKEN"
-```
-
-### Skill Loading Guide
-
-| Task | Skill to Load |
-|------|---------------|
-| First time connecting | `getting-started` |
-| Full capabilities overview | `overview` |
-| Adding/styling text | `text-and-captions` |
-| Animations, keyframes, effects | `animations-and-effects` |
-| Position, align, rotate, layers | `canvas-and-positioning` |
-| Images, video, audio, volume | `media-and-audio` |
-| Move, trim, split, delete, bulk ops | `timeline-operations` |
-| Transcribe, trim, cut, jump-cuts, captions | `transcription-and-editing` |
-| Pre-built scene library (159 scenes) | `scenes-and-templates` |
-| Custom Remotion scenes (full code) | `custom-scene-authoring` |
-| Render/export video | `rendering` |
-| Debugging, screenshots, media import/analyze, project lifecycle, scene bundles | `infrastructure` |
-| Save/load projects | `project-and-export` |
-| Read editor state & timeline | `queries-and-state` |
-| End-to-end video creation | `orchestration-e2e` |
-| AI image gen, TTS, vision | `ai-content-generation` |
-| SFX placement | `sfx-placement` |
-
-## Command Categories (Quick Reference)
-
-## Command Categories (Quick Reference)
-
-### Text & Captions
-`editor.addText`, `editor.addCaption`, `editor.editItem`
-
-### Media
-`editor.addImage`, `editor.addVideo`, `editor.addAudio`, `editor.replaceMedia`, `editor.setVolume`
-
-### Timeline
-`editor.moveItem`, `editor.trimItem`, `editor.splitItem`, `editor.deleteItems`, `editor.removeGaps`
-
-### Scenes (159 pre-built + custom)
-`scene.addLibraryScene`, `scene.addCustomScene`, `scene.addBundledScene`, `scene.listScenes`, `scene.getSceneProps`
-
-### Playback & Canvas
-`editor.play`, `editor.pause`, `editor.seekTo`, `editor.resize`, `editor.setBackground`
-
-### Effects & Animation
-`editor.setAnimation`, `editor.addKeyframe`, `editor.addEffect`, `editor.addTransition`
-
-### Tracks
-`editor.reorderTracks`, `editor.muteTrack`, `editor.lockTrack`, `editor.renameTrack`
-
-### Queries (read-only)
-`query.getTimelineItems`, `query.getCanvasSize`, `query.getCurrentTime`, `query.getDuration`, `query.getSceneErrors`
-
-### Render
-`POST /api/render` with preset: `preview`, `draft`, `final`, `4k`
-
-## Error Handling
-
-## Error Handling
-
-### Key Rules
-
-1. **Check `editorHealth` in EVERY command response** — it's embedded in every response
-2. **After adding scenes**: seek to scene's time range and check for render errors
-3. **After batch operations**: run `GET /api/diagnostics`
-4. **Before presenting results**: run `GET /api/diagnostics?full=true`
-
-### Common Auto-Fixes
-
-| Error | Fix |
-|-------|-----|
-| `ERR_CONNECTION_REFUSED` on media URLs | Reload project — URLs auto-heal |
-| Scene crash (`data.map is not a function`) | Fix scene props or delete broken item |
-| Editor unresponsive | `POST /api/reload` with `waitForReady: true` |
-| Zombie items after delete | Use `editor.purgeItems` |
-
-## Critical Rules
-
-### Time Units
-**All timeline values use MILLISECONDS** — `from: 5000` = 5 seconds. No exceptions.
-
-### Track Z-Order
-**Top track = front layer.** Always call `editor.reorderTracks` after adding all items. Text must be above scenes/backgrounds.
-
-### Media URLs
-- **Videos/audio**: served via media server (`/media?path=...`). Local paths auto-resolved.
-- **Images**: converted to inline data URLs
-- **Never use `blob:` URLs** — they don't survive reloads
-
-### Audio Limit
-Max ~5 total audio items in timeline (browser Html5Audio tag limit). Keep to 1 music + max 4 SFX.
-
-### Smart Param Corrections
-The API auto-fixes common mistakes (e.g., unwrapped `borderWidth` → wrapped in `details`). Check `commandCorrections` in responses.
-
-## Related Skills
-
-- **`remotion`** — Remotion scene creation knowledge (animations, camera, effects, components). Use when writing custom scenes for the ContentLead editor.
-- **`content-direction`** — Creative planning, storyboarding, pacing, track management. Use before building any non-trivial video.
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/info` | App status (no auth needed) |
-| GET | `/api/health` | Health check |
-| GET | `/api/state?scope=summary\|snapshot\|full` | Get current editor state |
-| GET | `/api/capabilities` | Machine-readable command catalog |
-| POST | `/api/debug/toggle` | Toggle verbose debug logging |
-| POST | `/api/media/heal` | Heal stale media URLs in editor state |
-| POST | `/api/execute` | Execute editor command |
-| POST | `/api/batch` | Execute multiple commands |
-| GET | `/api/events` | SSE event stream |
-| GET | `/api/metrics` | API and editor metrics |
-| GET | `/api/logs` | Query activity logs |
-| GET | `/api/console-errors` | Browser errors |
-| GET | `/api/diagnostics` | Error diagnostics (`?full=true` for deep check) |
-| GET | `/api/screenshot` | Capture current preview frame |
-| GET | `/api/skills` | List runtime skills |
-| GET | `/api/skills/:name` | Load specific skill |
-| GET | `/api/content/list` | List available content |
-| POST | `/api/content/create` | Create new content in the database |
-| POST | `/api/navigate` | Navigate to content |
-| GET | `/api/navigation` | Current URL and navigation state |
-| POST | `/api/reload` | Reload the editor page |
-| POST | `/api/editor/wait-ready` | Wait for editor readiness |
-| GET | `/api/scenes` | List custom scenes |
-| POST | `/api/scenes` | Create a custom scene |
-| GET | `/api/scenes/:name` | Get scene source |
-| PUT | `/api/scenes/:name` | Update scene code |
-| DELETE | `/api/scenes/:name` | Delete a scene |
-| POST | `/api/scene-bundles/build` | Build scene with imports |
-| GET | `/api/scene-bundles` | List cached scene bundles |
-| GET | `/api/scene-bundles/supported-imports` | List supported imports for bundled scenes |
-| GET | `/api/scene-bundles/:id` | Get a bundle by ID |
-| DELETE | `/api/scene-bundles/:id` | Delete a cached bundle |
-| GET | `/api/render/capabilities` | Check ffmpeg/Chrome availability |
-| GET | `/api/render/jobs` | List render jobs |
-| POST | `/api/render` | Start render job |
-| GET | `/api/render/:jobId` | Get render job status |
-| POST | `/api/render/:jobId/cancel` | Cancel render |
-| GET | `/api/project/export` | Export full project as JSON |
-| POST | `/api/project/import` | Import design JSON into editor |
-| POST | `/api/project/save` | Save project to `.skilltown` file |
-| POST | `/api/project/open` | Load `.skilltown` file into editor |
-| GET | `/api/project/autosaves` | List autosave files |
-| GET | `/api/project/recent` | Recent projects list |
-| POST | `/api/project/create` | Create a new empty project |
-| POST | `/api/project/duplicate` | Duplicate the current project |
-| POST | `/api/project/restore` | Restore autosave for the current content |
-| GET | `/api/local-file?path=...` | Serve a local file |
-| POST | `/api/media/import` | Import a local file into the media library |
-| POST | `/api/media/analyze` | Analyze a media file with ffmpeg |
-| POST | `/api/ui/action` | Trigger a UI action (`save`, `undo`, `redo`, etc.) |
-| GET | `/api/app/origin` | Get current app origin |
-| POST | `/api/app/set-origin` | Switch cloud/local origin |
-| GET | `/api/bridge/accounts` | List connected IG/LI/YT accounts |
-| POST | `/api/bridge/publish/instagram` | Start Instagram Reel publish |
-| GET | `/api/bridge/publish/instagram/status` | Poll Instagram publish progress |
-| POST | `/api/bridge/publish/linkedin` | Create LinkedIn post |
-| POST | `/api/bridge/publish/youtube` | Upload video to YouTube |
-| GET | `/api/bridge/publish/youtube/status` | Check YouTube upload status |
-| GET | `/api/bridge/inspiration/feed` | Browse creator content feed |
-| POST | `/api/bridge/inspiration/search` | Search for content inspiration |
-| POST | `/api/bridge/inspiration/transcribe` | Transcribe a video by shortcode |
-
-## Auth
-
-All endpoints except `/api/info` require: `Authorization: Bearer <token>`
-
-Token is in `~/.skilltown-desktop/api.json` — changes each session.
+- **Titles / Lower Thirds:** Use `editor.addText` (`text-and-captions`).
+- **Subtitles (Auto-generated):** Use `content.applyCaptions` (`transcription-and-editing`).
+- **Karaoke/Word-level manual captions:** Use `editor.addCaption` (`text-and-captions`).
+- **Fixing typos in auto-captions:** Use `editor.editCaptionWord` (`transcription-and-editing`).
+- **Trimming media BEFORE adding:** Pass `from`/`to` to `editor.addVideo` (`media-and-audio`).
+- **Cutting/splitting clips ALREADY on timeline:** Use `editor.splitItem` / `editor.cutItem` (`timeline-operations`).

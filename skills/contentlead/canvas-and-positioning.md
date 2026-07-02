@@ -1,361 +1,84 @@
----
-name: canvas-and-positioning
-description: Spatial positioning, alignment, rotation, z-index, coordinate guides for portrait/landscape
-tags: position, align, center, rotate, z-index, layer, canvas, portrait, landscape, lower-third, split-screen
----
+# Canvas, Positioning, and Transforms
 
-# Canvas and Positioning
+Commands for resizing the main video canvas, positioning items spatially, cropping, rotating, and managing z-index.
 
-> ⚠️ **CRITICAL — Use `positionItem` to move items, NOT `editItem`**
->
-> The visual position on the canvas is controlled by `details.top` and `details.left`
-> (CSS properties inside the item). The `display.x` / `display.y` fields in
-> `trackItemsMap` are **timeline metadata only** — changing them via `editor.editItem`
-> does NOT move the item on screen.
->
-> **Always use `editor.positionItem`** to set or change x, y, width, height after creation.
-> This is the only command that correctly updates both the internal CSS and the display state.
+## Global Canvas
 
-## Coordinate System
-
-- `(0, 0)` is the top-left corner.
-- `x` increases to the right.
-- `y` increases downward.
-- Positioning is based on the item's top-left corner.
-- For centered layouts, compute `x = (canvas_width - item_width) / 2` and `y = (canvas_height - item_height) / 2`.
-
-## Portrait Canvas Guide — 1080 x 1920
-
-```text
-(0,0)  +--------------------------------------+
-       |              top-safe zone           |
-       |               y: 80-260              |
-       |                                      |
-       |              center zone             |
-       |             y: 760-1160              |
-       |                                      |
-       |            lower-third zone          |
-       |            y: 1560-1740              |
-       +--------------------------------------+  (1080,1920)
-```
-
-| Position | X | Y | Notes |
-|---|---|---|---|
-| Top-center | `540 - width/2` | `100-180` | Headlines and logos |
-| Center | `540 - width/2` | `960 - height/2` | Primary title or hero object |
-| Lower-third | `40-80` | `1600-1700` | Name bars and captions |
-| Bottom CTA | `540 - width/2` | `1760-1840` | Subscribe or call-to-action |
-| Full-screen | `0` | `0` | Use `width: 1080`, `height: 1920` |
-
-## Landscape Canvas Guide — 1920 x 1080
-
-```text
-(0,0)  +------------------------------------------------------+
-       |                   top-safe zone                      |
-       |                    y: 50-160                         |
-       |                                                      |
-       |                    center zone                       |
-       |                   y: 390-690                         |
-       |                                                      |
-       |                 lower-third zone                     |
-       |                   y: 840-960                         |
-       +------------------------------------------------------+  (1920,1080)
-```
-
-| Position | X | Y | Notes |
-|---|---|---|---|
-| Top-center | `960 - width/2` | `60-120` | Openers and labels |
-| Center | `960 - width/2` | `540 - height/2` | Main focal area |
-| Lower-third | `60-120` | `860-940` | Speaker names |
-| Right inset | `1460-1580` | `60-120` | Picture-in-picture |
-| Full-screen | `0` | `0` | Use `width: 1920`, `height: 1080` |
-
-## Square Canvas Guide — 1080 x 1080
-
-| Position | X | Y | Notes |
-|---|---|---|---|
-| Top-center | `540 - width/2` | `50-100` | Short headlines |
-| Center | `540 - width/2` | `540 - height/2` | Core composition |
-| Lower-third | `50-80` | `860-940` | Compact labels |
-| Full-screen | `0` | `0` | Use `width: 1080`, `height: 1080` |
-
-## `editor.positionItem`
-
-Set exact coordinates and optional size.
-
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `itemId` | `string` | required | Target item |
-| `x` | `number` | keep current | Left position |
-| `y` | `number` | keep current | Top position |
-| `width` | `number` | keep current | Item width |
-| `height` | `number` | keep current | Item height |
-
-Example:
-
+### `query.getCanvasSize`
+Check current dimensions. **Always do this before adding scenes.**
 ```json
-{
-  "type": "editor.positionItem",
-  "params": {
-    "itemId": "image_hero",
-    "x": 90,
-    "y": 240,
-    "width": 900,
-    "height": 1440
-  }
-}
+{ "type": "query.getCanvasSize", "params": {} }
 ```
 
-## `editor.alignItem`
-
-Align an item relative to the canvas.
-
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `itemId` | `string` | required | Target item |
-| `align` (alias: `alignment`) | `string` | required | `center`, `centerH`, `centerV`, `left`, `right`, `top`, or `bottom` |
-
-Example:
-
+### `editor.resize`
+Resize the whole project canvas.
 ```json
-{
-  "type": "editor.alignItem",
-  "params": {
-    "itemId": "text_title",
-    "align": "centerH"
-  }
-}
+{ "type": "editor.resize", "params": { "width": 1080, "height": 1920 } }
 ```
 
-## `editor.rotateItem`
-
-Rotate an item by degrees.
-
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `itemId` | `string` | required | Target item |
-| `angle` | `number` | `0` | Rotation in degrees |
-
-Example:
-
+### `editor.setBackground`
+Set the global canvas background (prevents white flashes).
 ```json
-{
-  "type": "editor.rotateItem",
-  "params": {
-    "itemId": "badge_01",
-    "angle": -12
-  }
-}
+{ "type": "editor.setBackground", "params": { "type": "color", "value": "#0a0a0f" } }
 ```
 
-## `editor.cropItem`
+## Spatial Positioning
 
-Set a **crop window** on a video or image item — a rectangle (in source pixels) that selects which part of the media is shown. Mirrors the editor's interactive crop handles.
-
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `itemId` | `string` | required | Target video/image item |
-| `crop` | `object` | required | `{ x?, y?, width, height }` in source pixels. `x`/`y` default to current crop origin |
-| `preservePosition` | `boolean` | `true` | Reposition the item so the kept content stays **visually fixed** on the canvas (accounts for any scaling). Set `false` to leave `left`/`top` untouched |
-
-- `width` / `height` must be positive. `x` / `y` are the top-left of the crop in source coordinates.
-- The item's `details.crop` is updated; with `preservePosition: true` the item's `left`/`top` are recomputed (center-origin aware) so cropping doesn't shift the visible content.
-
-Example — crop a 1080×1920 clip to a centered 1080×1080 square:
-
+### `editor.positionItem`
+Move an item to specific X/Y coordinates.
 ```json
-{
-  "type": "editor.cropItem",
-  "params": {
-    "itemId": "video_main",
-    "crop": { "x": 0, "y": 420, "width": 1080, "height": 1080 }
-  }
-}
+{ "type": "editor.positionItem", "params": {
+  "itemId": "clip_abc",
+  "top": 100,
+  "left": 200
+}}
 ```
 
-Example — crop without repositioning (manual placement afterwards):
-
+### `editor.alignItem`
+Snap an item to canvas edges or center.
 ```json
-{
-  "type": "editor.cropItem",
-  "params": {
-    "itemId": "img_bg",
-    "crop": { "x": 200, "y": 100, "width": 720, "height": 720 },
-    "preservePosition": false
-  }
-}
+{ "type": "editor.alignItem", "params": {
+  "itemId": "clip_abc",
+  "align": "center" // "top", "bottom", "left", "right", "center-horizontal", "center-vertical"
+}}
 ```
 
-## `editor.setZIndex`
+## Transforms
 
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `itemId` | `string` | required | Target item |
-| `direction` | `string` | required | `front`, `back`, `forward`, or `backward` |
-
-Example:
-
+### `editor.cropItem`
+Crop an image or video visually.
 ```json
-{
-  "type": "editor.setZIndex",
-  "params": {
-    "itemId": "text_title",
-    "direction": "front"
-  }
-}
+{ "type": "editor.cropItem", "params": {
+  "itemId": "clip_abc",
+  "crop": { "x": 100, "y": 100, "w": 800, "h": 600 }
+}}
+```
+*Note: Uses the in-editor crop math to reposition the media cleanly within the new container bounds.*
+
+### `editor.rotateItem`
+```json
+{ "type": "editor.rotateItem", "params": { "itemId": "clip_abc", "angle": 45 }}
 ```
 
-## Common Patterns / Recipes
-
-### Centered title
-
+### Generic Transforms via `editor.editItem`
+You can also patch details directly:
 ```json
-[
-  {
-    "type": "editor.positionItem",
-    "params": {
-      "itemId": "text_title",
-      "width": 900,
-      "height": 220,
-      "x": 90,
-      "y": 840
-    }
-  },
-  {
-    "type": "editor.alignItem",
-    "params": {
-      "itemId": "text_title",
-      "alignment": "centerH"
-    }
+{ "type": "editor.editItem", "params": {
+  "itemId": "clip_abc",
+  "details": {
+    "flipX": true,
+    "flipY": false,
+    "opacity": 0.8,
+    "blendMode": "screen"
   }
-]
+}}
 ```
 
-### Lower-third
+## Z-Index (Layering)
 
+While `editor.reorderTracks` (see `timeline-operations`) handles macro layer ordering (text > video > backgrounds), you can manually adjust z-index within a track.
+
+### `editor.setZIndex`
 ```json
-{
-  "type": "editor.positionItem",
-  "params": {
-    "itemId": "text_lower_third",
-    "x": 60,
-    "y": 1630,
-    "width": 620,
-    "height": 90
-  }
-}
-```
-
-### Full-screen background + text
-
-```json
-[
-  {
-    "type": "editor.positionItem",
-    "params": {
-      "itemId": "image_bg",
-      "x": 0,
-      "y": 0,
-      "width": 1080,
-      "height": 1920
-    }
-  },
-  {
-    "type": "editor.setZIndex",
-    "params": {
-      "itemId": "image_bg",
-      "direction": "back"
-    }
-  },
-  {
-    "type": "editor.setZIndex",
-    "params": {
-      "itemId": "text_title",
-      "direction": "front"
-    }
-  }
-]
-```
-
-### Split-screen
-
-```json
-[
-  {
-    "type": "editor.positionItem",
-    "params": {
-      "itemId": "video_left",
-      "x": 0,
-      "y": 0,
-      "width": 960,
-      "height": 1080
-    }
-  },
-  {
-    "type": "editor.positionItem",
-    "params": {
-      "itemId": "video_right",
-      "x": 960,
-      "y": 0,
-      "width": 960,
-      "height": 1080
-    }
-  }
-]
-```
-
-### Picture-in-picture
-
-```json
-[
-  {
-    "type": "editor.positionItem",
-    "params": {
-      "itemId": "video_pip",
-      "x": 740,
-      "y": 80,
-      "width": 280,
-      "height": 280
-    }
-  },
-  {
-    "type": "editor.setZIndex",
-    "params": {
-      "itemId": "video_pip",
-      "direction": "front"
-    }
-  }
-]
-```
-
----
-
-## `editor.addTransition`
-
-Add a transition between two adjacent clips on a track.
-
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `trackId` | `string` | required | Track that owns the transition |
-| `fromId` | `string` | required | Outgoing item ID |
-| `toId` | `string` | required | Incoming item ID |
-| `kind` | `string` | required | Transition preset or kind |
-| `duration` | `number` | required | Transition duration |
-| `direction` | `string` | optional | Directional variant when supported |
-| `name` | `string` | optional | Friendly transition label |
-| `id` | `string` | auto-generated | Optional transition ID override |
-
-**Returns:** `{ transitionId }`
-
-```json
-{
-  "type": "editor.addTransition",
-  "params": {
-    "trackId": "track_video",
-    "fromId": "clip_a",
-    "toId": "clip_b",
-    "kind": "fade",
-    "duration": 500
-  }
-}
+{ "type": "editor.setZIndex", "params": { "itemId": "clip_abc", "zIndex": 10 }}
 ```
