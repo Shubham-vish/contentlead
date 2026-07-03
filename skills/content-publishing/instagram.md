@@ -1,5 +1,7 @@
 # Instagram — Publishing, CTA Automation & Account Management
 
+> **Copilot CLI without MCP server:** use bridge mode through the running SkillTown Desktop app. See [`bridge-mode.md`](bridge-mode.md) for auth, endpoint parity, and curl examples.
+
 ## Publishing Flow (Async, 2-Step)
 
 Instagram publishing is **asynchronous** — you cannot publish in a single call.
@@ -166,9 +168,18 @@ IN_PROGRESS → FINISHED → (auto_publish) → PUBLISHED
 
 ---
 
-## CTA & DM Automation (3 tools)
+## CTA & DM Automation (MCP mode + bridge mode)
 
-### `instagram_get_automation` — Get CTA config
+CTA automation can be configured in two ways:
+
+- **MCP mode** — use `instagram_get_automation` / `instagram_update_automation` when the MCP server is attached.
+- **Bridge mode** — use the local desktop HTTP bridge when Copilot CLI can read `~/.skilltown-desktop/api.json`; no MCP server or signed-in CLI browser session is needed.
+
+> **Multi-tab note:** CTA settings are **contentId-scoped / mediaId-scoped, not tab-scoped**. Do not pass `tabId` to these automation endpoints. `tabId` is only for editor `/api/execute` commands; see `../contentlead/multi-tab.md`.
+
+### MCP mode — `instagram_get_automation` / `instagram_update_automation`
+
+#### `instagram_get_automation` — Get CTA config
 
 | Param | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -181,11 +192,11 @@ IN_PROGRESS → FINISHED → (auto_publish) → PUBLISHED
 
 ---
 
-### `instagram_update_automation` — Update CTA & automation
+#### `instagram_update_automation` — Update CTA & automation
 
 3 different actions:
 
-#### Action: `"toggle"` — Enable/disable automation
+##### Action: `"toggle"` — Enable/disable automation
 
 | Param | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -193,7 +204,7 @@ IN_PROGRESS → FINISHED → (auto_publish) → PUBLISHED
 | `account_id` | string | ✅ | Account to toggle |
 | `enabled` | bool | ✅ | `true`/`false` |
 
-#### Action: `"update_rules"` — Set account-level rules
+##### Action: `"update_rules"` — Set account-level rules
 
 | Param | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -203,7 +214,7 @@ IN_PROGRESS → FINISHED → (auto_publish) → PUBLISHED
 
 Each rule: `{"triggerKeywords": ["free", "link"], "dmTemplate": "Here's your link: ...", "commentReplyTemplate": "Check DMs!", "enabled": true}`
 
-#### Action: `"update_cta"` — Set per-post CTA (most common)
+##### Action: `"update_cta"` — Set per-post CTA (most common)
 
 | Param | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -236,10 +247,14 @@ instagram_update_automation(
 
 ---
 
-## Desktop Bridge (Alternative)
+### Bridge mode — local desktop API
 
-> **⚠️ Bridge endpoints are NOT content-aware** — they don't update the Content document's
-> publish status. Use MCP tools with `content_id` for tracked publishing.
+For Copilot CLI without the MCP server, use the cross-cutting bridge docs: [`bridge-mode.md`](bridge-mode.md).
+
+## Legacy Desktop Bridge (Alternative)
+
+> **⚠️ Publishing bridge endpoints are NOT content-aware** — they don't update the Content document's
+> publish status. Use MCP publish tools with `content_id` for tracked publishing. For MCP-mirror bridge publishing and CTA automation, see [`bridge-mode.md`](bridge-mode.md).
 
 ```bash
 # Start publish via bridge
@@ -267,7 +282,6 @@ curl "http://127.0.0.1:$PORT/api/bridge/publish/instagram/status?contentId=conte
 
 ## Tips
 
-- **Always `auto_publish=True`** in `instagram_publish_status` for a streamlined flow
-- **CTA before publish** — set keywords and DM templates before publishing the reel
+- **Always set CTA before publishing** — use MCP mode (`instagram_update_automation`) or bridge mode (`POST /api/bridge/instagram/automation`) before `instagram_publish_reel`
 - **Poll every 15s** — faster polling doesn't speed up processing
 - **Check token health** — call `instagram_validate_token` if publish fails with auth errors

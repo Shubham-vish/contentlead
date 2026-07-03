@@ -169,6 +169,11 @@ These endpoints are available on the Electron API server (in addition to `POST /
 | `/api/tabs/:id/close` | POST | Close a specific tab |
 | `/api/content/create` | POST | Create new content in CosmosDB — `{title, description}` → creates DB record + navigates to editor |
 | `/api/content/list` | GET | List available content (DB + local autosaves) |
+| `/api/bridge/instagram/*` | GET/POST | MCP mirror bridge for Instagram accounts, publish/status, token validation, posts, and CTA automation |
+| `/api/bridge/youtube/*` | POST | MCP mirror bridge for YouTube publishing |
+| `/api/bridge/content/*` | POST | MCP mirror bridge for content publish configuration |
+| `/api/bridge/context/*` | GET/POST | MCP mirror bridge for context store list/search/get/edit/manage |
+| `/api/bridge/learn/*` | GET/POST | MCP mirror bridge for Learn/KB list/search/get/edit/manage/categories |
 | `/api/project/create` | POST | Create local project file (autosave only, no DB) |
 | `/api/project/save` | POST | Save current project to file |
 | `/api/project/save-autosave` | POST | Save current project to canonical autosave file |
@@ -2159,6 +2164,11 @@ When editing scene/template rendering code: `TemplateInner` component does NOT h
 | GET | `/api/metrics` | Yes | API stats, connections, uptime |
 | GET | `/api/navigation` | Yes | Current URL, editor state, contentId |
 | GET | `/api/content/list` | Yes | List content from remote (cloud) + local (autosave) sources |
+| GET/POST | `/api/bridge/instagram/*` | Yes | MCP mirror bridge for Instagram accounts, publish/status, token validation, posts, and CTA automation |
+| POST | `/api/bridge/youtube/*` | Yes | MCP mirror bridge for YouTube publishing |
+| POST | `/api/bridge/content/*` | Yes | MCP mirror bridge for content publish configuration |
+| GET/POST | `/api/bridge/context/*` | Yes | MCP mirror bridge for context store list/search/get/edit/manage |
+| GET/POST | `/api/bridge/learn/*` | Yes | MCP mirror bridge for Learn/KB list/search/get/edit/manage/categories |
 | POST | `/api/navigate` | Yes | Navigate to URL, auto-appends `?view=editor`. Options: `waitForReady`, `autoRestore`, `timeoutMs` |
 | POST | `/api/editor/wait-ready` | Yes | Wait for editor readiness (blocking) |
 | POST | `/api/project/restore` | Yes | Restore autosave project into editor |

@@ -28,6 +28,7 @@ Changes made via these tools are **immediately visible** in the UI dashboard.
 
 | When you need to... | Load |
 |---------------------|------|
+| Use local desktop bridge endpoints instead of MCP tools | `bridge-mode.md` |
 | Create, list, get, update content, upload video/thumbnail | `content-lifecycle.md` |
 | Configure channel settings (captions, tags, scheduling, toggles) | `channel-configuration.md` |
 | Publish to Instagram, set up CTA/DM automation, poll status | `instagram.md` |
@@ -51,7 +52,17 @@ Changes made via these tools are **immediately visible** in the UI dashboard.
 | `content_get_upload_url` | Get pre-signed Azure Blob URL for uploading video/thumbnail |
 | `content_configure_publish` | Set channel config (caption, hashtags, account, schedule, toggle) |
 
-### Instagram (7 tools) → `instagram.md`
+### Bridge Mode (HTTP endpoints) → `bridge-mode.md`
+
+| Endpoint family | What it does |
+|-----------------|-------------|
+| `/api/bridge/instagram/*` | Instagram MCP mirrors: accounts, publish/status, validate, posts, CTA automation |
+| `/api/bridge/youtube/*` | YouTube MCP mirror publishing |
+| `/api/bridge/content/*` | Content publish configuration mirror |
+| `/api/bridge/context/*` | Context store list/search/get/edit/manage mirrors |
+| `/api/bridge/learn/*` | Learn/KB list/search/get/edit/manage/category mirrors |
+
+### Instagram (7 MCP tools) → `instagram.md`
 
 | Tool | What it does |
 |------|-------------|

@@ -67,6 +67,20 @@ instagram_update_automation(
     follow_reply="Follow us first, then comment again!",
     follow_button_text="Follow @myhandle"
 )
+```
+
+Step 5 (CTA) can use either the MCP tool above or the local desktop bridge endpoint below. See [`bridge-mode.md`](bridge-mode.md) for the full bridge endpoint reference. CTA is contentId-scoped, not tab-scoped, so no `tabId` is required. The bridge resolves `contentId` to `Content.channels.instagram.media_id` when available and returns `SkillTown session expired — sign in via the desktop app UI.` if the desktop session cookies have expired.
+
+```bash
+# Bridge-mode equivalent of Step 5 (no MCP server needed):
+TOK=$(python3 -c "import json;print(json.load(open('/Users/shubham/.skilltown-desktop/api.json'))['token'])")
+PORT=$(python3 -c "import json;print(json.load(open('/Users/shubham/.skilltown-desktop/api.json'))['port'])")
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/automation" \
+  -H "Authorization: Bearer $TOK" -H "Content-Type: application/json" \
+  -d '{"action":"update_cta","contentId":"content_xxx","contains":["LAUNCH","LINK"],"messageBody":"Here is your link + coupon...","commentReplies":["Just sent you DM 💌"],"enableCommentReply":true,"enableFollowGate":true,"followReply":"Hi {name}! Follow first...","followButtonText":"Follow @myhandle","configName":"Launch CTA"}'
+```
+
+```python
 
 # ─── STEP 6: Publish to Instagram ───
 instagram_publish_reel(content_id=content_id)

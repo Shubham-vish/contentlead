@@ -1,5 +1,7 @@
 # Content Lifecycle — Create, Read, Update, Upload
 
+> **Copilot CLI without MCP server:** use bridge mode through the running SkillTown Desktop app. See [`bridge-mode.md`](bridge-mode.md) for auth, endpoint parity, and curl examples.
+
 ## MCP Tools
 
 ### `content_create` — Create new content

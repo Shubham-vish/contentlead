@@ -1,5 +1,7 @@
 # YouTube — Publishing & CTA Comments
 
+> **Copilot CLI without MCP server:** use bridge mode through the running SkillTown Desktop app. See [`bridge-mode.md`](bridge-mode.md) for auth, endpoint parity, and curl examples.
+
 ## `youtube_publish` — Upload video to YouTube
 
 YouTube publishing is **synchronous** — the response comes after the upload completes (1–5 minutes for long videos).
@@ -88,9 +90,9 @@ The CTA comment typically contains a link (e.g., "Download the free guide: https
 
 ---
 
-## Desktop Bridge (Alternative)
+## Legacy Desktop Bridge (Alternative)
 
-> **⚠️ Bridge endpoints are NOT content-aware** — use MCP tools with `content_id` for tracked publishing.
+> **⚠️ This legacy publishing bridge is not the MCP-mirror bridge mode.** For Copilot CLI without MCP, prefer the content-aware `/api/bridge/youtube/publish` mirror documented in [`bridge-mode.md`](bridge-mode.md).
 
 ```bash
 curl -X POST http://127.0.0.1:$PORT/api/bridge/publish/youtube \

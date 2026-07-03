@@ -1,5 +1,7 @@
 # LinkedIn — Posting & Management
 
+> **Copilot CLI without MCP server:** use bridge mode through the running SkillTown Desktop app. See [`bridge-mode.md`](bridge-mode.md) for auth, endpoint parity, and curl examples.
+
 > **⚠️ LinkedIn publishing is NOT content-aware.**
 > The `linkedin_post` tool does NOT read from or write to Content documents.
 > Posts go live but are NOT tracked in the ContentLead dashboard's publish status.
@@ -92,9 +94,9 @@ This way the ContentLead dashboard shows LinkedIn as published, even though the 
 
 ---
 
-## Desktop Bridge (Alternative)
+## Legacy Desktop Bridge (Alternative)
 
-> **⚠️ Bridge is also NOT content-aware for LinkedIn.**
+> **⚠️ This legacy bridge is also NOT content-aware for LinkedIn.** No new `/api/bridge/linkedin/*` MCP-mirror endpoints shipped yet; see [`bridge-mode.md`](bridge-mode.md).
 
 ```bash
 curl -X POST http://127.0.0.1:$PORT/api/bridge/publish/linkedin \
