@@ -164,6 +164,8 @@ IN_PROGRESS → FINISHED → (auto_publish) → PUBLISHED
 
 **Content doc updates:** When published with `content_id`, automatically writes `published`, `published_at`, `media_id`, `published_url`, `publish_progress` to `Content.channels.instagram`.
 
+**CTA auto-sync:** When the final publish status returns a real Instagram `media_id`, the status endpoint also copies any draft CTA from `ContentLeadCTA` keyed by `media_${content_id}` to `ConfigurationData` keyed by `media_${media_id}`. No manual CTA copy is needed after publishing.
+
 **Polling strategy:** Call every 10–30 seconds until `shouldPoll` is `false`.
 
 ---
@@ -176,6 +178,15 @@ CTA automation can be configured in two ways:
 - **Bridge mode** — use the local desktop HTTP bridge when Copilot CLI can read `~/.skilltown-desktop/api.json`; no MCP server or signed-in CLI browser session is needed.
 
 > **Multi-tab note:** CTA settings are **contentId-scoped / mediaId-scoped, not tab-scoped**. Do not pass `tabId` to these automation endpoints. `tabId` is only for editor `/api/execute` commands; see `../contentlead/multi-tab.md`.
+
+### CTA storage model
+
+CTA automation uses two Cosmos containers:
+
+- **`ContentLeadCTA`** — draft container used by the Content editor UI before publish. Pre-publish CTA is keyed by `media_${contentId}`.
+- **`ConfigurationData`** — production container used by the Instagram webhook when live comments arrive. Post-publish CTA is keyed by `media_${realIGMediaId}`.
+
+Set CTA before publishing with `contentId` and the default `containerName: "ContentLeadCTA"`. When `/api/mcp/instagram/publish/status` (or the bridge mirror) publishes the reel and receives the real Instagram media ID, it auto-syncs the draft CTA into `ConfigurationData`; agents do **not** need to copy it manually.
 
 ### MCP mode — `instagram_get_automation` / `instagram_update_automation`
 
@@ -251,6 +262,32 @@ instagram_update_automation(
 
 For Copilot CLI without the MCP server, use the cross-cutting bridge docs: [`bridge-mode.md`](bridge-mode.md).
 
+The bridge `update_cta` action accepts an agent-friendly `messageBody` string plus `buttons[]` label/url pairs and converts them to the required Facebook Messenger button-template payload. Advanced callers may still pass a pre-formed `message_body` object unchanged.
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/automation" \
+  -H "Authorization: ******" -H "Content-Type: application/json" \
+  -d '{
+    "action": "update_cta",
+    "contentId": "content_xxx",
+    "contains": ["LAUNCH", "LINK"],
+    "messageBody": "DM text here",
+    "buttons": [
+      { "label": "Get Free Trial", "url": "https://example.com/trial" },
+      { "label": "Watch Guide", "url": "https://example.com/guide" }
+    ],
+    "commentReplies": ["Sent DM 💌", "Check inbox ✨"],
+    "enableCommentReply": true,
+    "enableFollowGate": true,
+    "followReply": "Follow me first, then tap the button 🙏",
+    "followButtonText": "Follow @myhandle",
+    "containerName": "ContentLeadCTA",
+    "syncToProduction": false
+  }'
+```
+
+Use the default `ContentLeadCTA` container for drafts. Only set `containerName: "ConfigurationData"` when manually targeting production, or `syncToProduction: true` when `mediaId` is already a real numeric Instagram media ID.
+
 ## Legacy Desktop Bridge (Alternative)
 
 > **⚠️ Publishing bridge endpoints are NOT content-aware** — they don't update the Content document's
@@ -282,6 +319,6 @@ curl "http://127.0.0.1:$PORT/api/bridge/publish/instagram/status?contentId=conte
 
 ## Tips
 
-- **Always set CTA before publishing** — use MCP mode (`instagram_update_automation`) or bridge mode (`POST /api/bridge/instagram/automation`) before `instagram_publish_reel`
+- **Always set CTA before publishing** — use MCP mode (`instagram_update_automation`) or bridge mode (`POST /api/bridge/instagram/automation`) before `instagram_publish_reel`; publish status auto-syncs draft CTA to production when the real IG media ID lands
 - **Poll every 15s** — faster polling doesn't speed up processing
 - **Check token health** — call `instagram_validate_token` if publish fails with auth errors

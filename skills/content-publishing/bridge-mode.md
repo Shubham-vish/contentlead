@@ -38,15 +38,47 @@ If the forwarded desktop cookies are expired, bridge endpoints return HTTP `401`
 |-------------|--------|-------------------|-------------|---------------------|
 | `/api/bridge/instagram/accounts` | GET | — | List connected Instagram accounts | `instagram_get_accounts` |
 | `/api/bridge/instagram/automation` | GET | none, or `account=<accountId>`, or `mediaId=<id>` | Get all-account automation summary, account rules, or per-media CTA | `instagram_get_automation` |
-| `/api/bridge/instagram/automation` | POST | `action:update_cta`, `mediaId?`/`media_id?`/`contentId?`, `contains`, `messageBody?`/`message_body?`, `commentReplies?`, `enableCommentReply?`, `enableFollowGate?`, `followReply?`, `followButtonText?`, `configName?` | Upsert per-post CTA; camelCase fields are normalized to MCP snake_case | `instagram_update_automation` |
+| `/api/bridge/instagram/automation` | POST | `action:update_cta`, `contentId?` or `mediaId?`/`media_id?`, `contains`, `messageBody?`, `buttons?`, `message_body?`, `commentReplies?`, `enableCommentReply?`, `enableFollowGate?`, `followReply?`, `followButtonText?`, `containerName?`, `syncToProduction?`, `configName?` | Upsert per-post CTA; `messageBody` + `buttons[]` are converted to Messenger template shape | `instagram_update_automation` |
 | `/api/bridge/instagram/automation` | POST | `action:toggle`, `accountId`, `enabled` | Enable/disable automation for an account | `instagram_update_automation` |
 | `/api/bridge/instagram/automation` | POST | `action:update_rules`, `accountId`, `automationRules` | Replace account-level automation rules | `instagram_update_automation` |
 | `/api/bridge/instagram/publish` | POST | `contentId?`, `accountId?`, `videoUrl?`, `caption?`; legacy direct mode: `accountId`, `videoUrl`, `caption?` | Start Instagram Reel publishing through the MCP mirror | `instagram_publish_reel` |
-| `/api/bridge/instagram/publish/status` | GET | `containerId?`, `account?`, `contentId?`, `publish=true?` | Poll Instagram publish status; publish when requested by upstream params | `instagram_publish_status` |
+| `/api/bridge/instagram/publish/status` | GET | `containerId?`, `account?`, `contentId?`, `publish=true?` | Poll Instagram publish status; when published, auto-sync draft CTA to production | `instagram_publish_status` |
 | `/api/bridge/instagram/validate` | GET | `account=<accountId>` | Validate Instagram account token/session health | `instagram_validate_token` |
 | `/api/bridge/instagram/posts` | GET | `account=<accountId>`, `limit?`, `mediaId?`, `mediaType?`, `includeCta?` | List published Instagram posts with metrics and optional CTA config | `instagram_get_posts` |
 
-`update_cta` accepts agent-friendly camelCase and normalizes to the existing Next.js MCP body: `mediaId→media_id`, `messageBody→message_body`, `commentReplies→comment_replies`, `enableCommentReply→enable_comment_reply`, `enableFollowGate→enable_follow_gate`, `followReply→follow_reply`, `followButtonText→follow_button_text`, `configName→config_name`. If only `contentId` is provided, or `mediaId` starts with `content_`, the bridge resolves it to `Content.channels.instagram.media_id` via `/api/content/:contentId`; otherwise it falls back to the content ID. Missing `mediaId`/`media_id`/`contentId` for `update_cta` returns HTTP `400`: `{ "error": "missing_mediaId", "message": "update_cta requires mediaId or contentId" }`.
+`update_cta` accepts agent-friendly camelCase and normalizes to the existing Next.js MCP body: `mediaId→media_id`, `commentReplies→comment_replies`, `enableCommentReply→enable_comment_reply`, `enableFollowGate→enable_follow_gate`, `followReply→follow_reply`, `followButtonText→follow_button_text`, `containerName→container_name`, `syncToProduction→sync_to_production`, `configName→config_name`. The new `messageBody` string plus `buttons[]` label/url pairs are translated into the Facebook Messenger button template shape:
+
+```json
+{
+  "attachment": {
+    "type": "template",
+    "payload": {
+      "template_type": "button",
+      "text": "DM text here",
+      "buttons": [
+        { "type": "web_url", "url": "https://example.com", "title": "Open Link" }
+      ]
+    }
+  }
+}
+```
+
+Advanced callers can still pass a pre-formed `message_body` object, which passes through unchanged. Missing `mediaId`/`media_id`/`contentId` for `update_cta` returns HTTP `400`: `{ "error": "missing_mediaId", "message": "update_cta requires mediaId or contentId" }`.
+
+#### Two-container architecture
+
+CTA automation is split across two Cosmos containers:
+
+- **`ContentLeadCTA`** — draft container. The Content editor UI reads/writes here before publish, keyed by `media_${contentId}`.
+- **`ConfigurationData`** — production container. The Instagram webhook reads here when a live comment fires, keyed by `media_${realIGMediaId}`.
+
+Default agent flow:
+
+1. **Pre-publish:** call `POST /api/bridge/instagram/automation` with `contentId` and default `containerName: "ContentLeadCTA"`. The editor UI shows the CTA immediately.
+2. **Publish:** call `POST /api/bridge/instagram/publish`, then poll `/api/bridge/instagram/publish/status`. When the real numeric `media_id` lands, the status endpoint auto-copies `ContentLeadCTA/media_${contentId}` to `ConfigurationData/media_${media_id}`.
+3. **Live comments:** Instagram webhook reads `ConfigurationData` and fires the DM/comment automation.
+
+Use `containerName: "ConfigurationData"` only when manually targeting production. Use `syncToProduction: true` only when `mediaId` is already a real numeric Instagram media ID and you want the bridge to also copy the config to production immediately.
 
 ### YouTube
 
@@ -111,12 +143,12 @@ These routes still exist unchanged. They are not MCP mirrors unless noted elsewh
 
 ### Set Instagram CTA before publishing
 
-CTA is contentId/mediaId-scoped, not tab-scoped. No `tabId` is required.
+CTA is contentId/mediaId-scoped, not tab-scoped. No `tabId` is required. Before publish, write drafts to `ContentLeadCTA` with `contentId`; publish status auto-syncs them to `ConfigurationData` under the real Instagram media ID.
 
 ```bash
 curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/automation" \
   -H "Authorization: Bearer $TOK" -H "Content-Type: application/json" \
-  -d '{"action":"update_cta","contentId":"content_xxx","contains":["LAUNCH","LINK"],"messageBody":"Here is your link + coupon...","commentReplies":["Just sent you DM 💌"],"enableCommentReply":true,"enableFollowGate":true,"followReply":"Hi {name}! Follow first...","followButtonText":"Follow @myhandle","configName":"Launch CTA"}'
+  -d '{"action":"update_cta","contentId":"content_xxx","contains":["LAUNCH","LINK"],"messageBody":"DM text here","buttons":[{"label":"Get Free Trial","url":"https://example.com/trial"},{"label":"Watch Guide","url":"https://example.com/guide"}],"commentReplies":["Sent DM 💌","Check inbox ✨"],"enableCommentReply":true,"enableFollowGate":true,"followReply":"Follow me first, then tap the button 🙏","followButtonText":"Follow @myhandle","containerName":"ContentLeadCTA","syncToProduction":false}'
 ```
 
 ### Configure YouTube channel settings

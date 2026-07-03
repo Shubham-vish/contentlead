@@ -163,6 +163,21 @@ content_update(
 > **Note:** The AI agent cannot upload binary file data itself. This tool is useful when
 > a client system or user is doing the actual upload, and the AI coordinates the flow.
 
+### Local render upload shortcut — preferred for Desktop renders
+
+For videos rendered by SkillTown Desktop, prefer `POST /api/render` with a `contentId` and `uploadToCloud: true` instead of the manual SAS upload dance above:
+
+```json
+{
+  "renderType": "design",
+  "data": { "...": "..." },
+  "contentId": "content_xxx",
+  "uploadToCloud": true
+}
+```
+
+When upload succeeds, the render job extracts a frame-1 thumbnail, uploads both MP4 and thumbnail through the Content upload-URL flow, updates `Content.videoUrl`, `Content.videoSasUrl`, `Content.downloadableSasUrl`, `Content.sasExpiresAt`, and `Content.thumbnail`, and returns `cloudVideoUrl`, `thumbnailUrl`, and `contentUpdated: true`. If cloud upload fails, the local render still succeeds and the response includes the failure reason. `GET /api/render/:jobId` includes the same upload fields once upload completes.
+
 ---
 
 ## Content Document Schema

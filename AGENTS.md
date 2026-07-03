@@ -169,7 +169,7 @@ These endpoints are available on the Electron API server (in addition to `POST /
 | `/api/tabs/:id/close` | POST | Close a specific tab |
 | `/api/content/create` | POST | Create new content in CosmosDB — `{title, description}` → creates DB record + navigates to editor |
 | `/api/content/list` | GET | List available content (DB + local autosaves) |
-| `/api/bridge/instagram/*` | GET/POST | MCP mirror bridge for Instagram accounts, publish/status, token validation, posts, and CTA automation |
+| `/api/bridge/instagram/*` | GET/POST | MCP mirror bridge for Instagram accounts, publish/status, token validation, posts, and CTA automation (`update_cta` supports `messageBody` + `buttons[]`; publish status auto-syncs CTA draft → production) |
 | `/api/bridge/youtube/*` | POST | MCP mirror bridge for YouTube publishing |
 | `/api/bridge/content/*` | POST | MCP mirror bridge for content publish configuration |
 | `/api/bridge/context/*` | GET/POST | MCP mirror bridge for context store list/search/get/edit/manage |
@@ -179,8 +179,8 @@ These endpoints are available on the Electron API server (in addition to `POST /
 | `/api/project/save-autosave` | POST | Save current project to canonical autosave file |
 | `/api/media/import` | POST | Import media file — `{filePath}` → serves via media server |
 | `/api/media/analyze` | POST | Analyze media file metadata (duration, resolution, codec) |
-| `/api/render` | POST | Start render job with preset — `{preset: "preview"|"draft"|"final"|"4k"}` |
-| `/api/render/:jobId` | GET | Poll render job status |
+| `/api/render` | POST | Start render job; supports presets or `{renderType:"design", data:{...}, contentId, uploadToCloud:true}` to upload MP4 + thumbnail and update Content URLs |
+| `/api/render/:jobId` | GET | Poll render job status, including `cloudVideoUrl`, `thumbnailUrl`, and `contentUpdated` after cloud upload |
 | `/api/console-errors` | GET | Get buffered console errors from the renderer |
 | `/api/reload` | POST | Force-reload the renderer page |
 
@@ -503,7 +503,7 @@ AI Terminal → reads ~/.skilltown-desktop/api.json → gets port + token
            → curl POST /api/execute → sends commands to editor
            → curl POST /api/scenes → create custom .tsx scenes
            → curl POST /api/scene-bundles/build → compile scenes with real imports
-           → curl POST /api/render → render videos locally via Remotion
+           → curl POST /api/render → render locally via Remotion; with contentId/uploadToCloud, upload MP4 + thumbnail and update Content URLs
            → Electron main process → IPC → renderer → DesignCombo editor
 
 Hybrid architecture:
@@ -2060,6 +2060,8 @@ The render worker (`render-worker.cjs`) uses Remotion's `renderMedia()` with:
 
 The same option is applied to `selectComposition()` so composition detection also works with WebGL content.
 
+For content-linked local renders, call `POST /api/render` with `contentId` and `uploadToCloud: true` (default when `contentId` is present). The job renders MP4 locally, extracts a frame-1 thumbnail, uploads both through the Content upload-URL flow, updates `Content.videoUrl`, `Content.videoSasUrl`, `Content.downloadableSasUrl`, `Content.sasExpiresAt`, and `Content.thumbnail`, and returns/polls `cloudVideoUrl`, `thumbnailUrl`, and `contentUpdated`. If upload fails, the local render still succeeds and reports the failure reason.
+
 ### Render architecture
 ```
 Electron main → spawns render-worker.cjs (child process)
@@ -2164,7 +2166,7 @@ When editing scene/template rendering code: `TemplateInner` component does NOT h
 | GET | `/api/metrics` | Yes | API stats, connections, uptime |
 | GET | `/api/navigation` | Yes | Current URL, editor state, contentId |
 | GET | `/api/content/list` | Yes | List content from remote (cloud) + local (autosave) sources |
-| GET/POST | `/api/bridge/instagram/*` | Yes | MCP mirror bridge for Instagram accounts, publish/status, token validation, posts, and CTA automation |
+| GET/POST | `/api/bridge/instagram/*` | Yes | MCP mirror bridge for Instagram accounts, publish/status, token validation, posts, and CTA automation (`update_cta` supports `messageBody` + `buttons[]`; publish status auto-syncs CTA draft → production) |
 | POST | `/api/bridge/youtube/*` | Yes | MCP mirror bridge for YouTube publishing |
 | POST | `/api/bridge/content/*` | Yes | MCP mirror bridge for content publish configuration |
 | GET/POST | `/api/bridge/context/*` | Yes | MCP mirror bridge for context store list/search/get/edit/manage |
@@ -2184,7 +2186,7 @@ When editing scene/template rendering code: `TemplateInner` component does NOT h
 | GET | `/api/scene-bundles/supported-imports` | Yes | List supported import packages |
 | GET | `/api/scene-bundles/:id` | Yes | Get a specific bundle by ID |
 | DELETE | `/api/scene-bundles/:id` | Yes | Delete a cached bundle |
-| POST | `/api/render` | Yes | Start local render |
+| POST | `/api/render` | Yes | Start local render; with `contentId` + `uploadToCloud:true`, upload MP4 + thumbnail and update Content URLs |
 | GET | `/api/console-errors` | Yes | Browser console errors/warnings. Params: `?afterSeq=N`, `?level=error`, `?search=text`, `?clear=true` |
 | GET | `/api/logs` | Yes | Activity log (persisted to `~/.skilltown-desktop/agent-activity.jsonl`) |
 | GET | `/api/skills` | Yes | List available skills |

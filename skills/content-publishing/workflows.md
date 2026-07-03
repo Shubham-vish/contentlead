@@ -55,30 +55,20 @@ content_configure_publish(
     selected_account="li_def456"
 )
 
-# ─── STEP 5: Set CTA automation (before publishing) ───
-instagram_update_automation(
-    action="update_cta",
-    media_id=content_id,
-    contains='["free", "guide", "link", "send"]',
-    message_body='{"text": "Here is your free AI tools guide: https://mysite.com/guide"}',
-    comment_replies='["Thanks! Check your DMs 🎁", "Sent! Look in your inbox 📩"]',
-    enable_comment_reply=True,
-    enable_follow_gate=True,
-    follow_reply="Follow us first, then comment again!",
-    follow_button_text="Follow @myhandle"
-)
 ```
 
-Step 5 (CTA) can use either the MCP tool above or the local desktop bridge endpoint below. See [`bridge-mode.md`](bridge-mode.md) for the full bridge endpoint reference. CTA is contentId-scoped, not tab-scoped, so no `tabId` is required. The bridge resolves `contentId` to `Content.channels.instagram.media_id` when available and returns `SkillTown session expired — sign in via the desktop app UI.` if the desktop session cookies have expired.
+Step 5 (CTA) should be set before publishing. The bridge accepts agent-friendly `messageBody` + `buttons[]`, writes the draft to `ContentLeadCTA` keyed by `media_${contentId}`, and publish status auto-syncs it to `ConfigurationData` when the real Instagram media ID lands. CTA is contentId-scoped, not tab-scoped, so no `tabId` is required. See [`bridge-mode.md`](bridge-mode.md) for the full bridge endpoint reference.
 
 ```bash
-# Bridge-mode equivalent of Step 5 (no MCP server needed):
+# ─── STEP 5: Set CTA automation (before publishing) ───
 TOK=$(python3 -c "import json;print(json.load(open('/Users/shubham/.skilltown-desktop/api.json'))['token'])")
 PORT=$(python3 -c "import json;print(json.load(open('/Users/shubham/.skilltown-desktop/api.json'))['port'])")
 curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/automation" \
-  -H "Authorization: Bearer $TOK" -H "Content-Type: application/json" \
-  -d '{"action":"update_cta","contentId":"content_xxx","contains":["LAUNCH","LINK"],"messageBody":"Here is your link + coupon...","commentReplies":["Just sent you DM 💌"],"enableCommentReply":true,"enableFollowGate":true,"followReply":"Hi {name}! Follow first...","followButtonText":"Follow @myhandle","configName":"Launch CTA"}'
+  -H "Authorization: ******" -H "Content-Type: application/json" \
+  -d '{"action":"update_cta","contentId":"content_xxx","contains":["FREE","GUIDE","LINK","SEND"],"messageBody":"Here is your free AI tools guide.","buttons":[{"label":"Download Guide","url":"https://mysite.com/guide"},{"label":"Watch Tutorial","url":"https://mysite.com/tutorial"}],"commentReplies":["Thanks! Check your DMs 🎁","Sent! Look in your inbox 📩"],"enableCommentReply":true,"enableFollowGate":true,"followReply":"Follow us first, then comment again!","followButtonText":"Follow @myhandle","containerName":"ContentLeadCTA","syncToProduction":false}'
 ```
+
+If you render the video locally in SkillTown Desktop, prefer `POST /api/render` with `contentId` and `uploadToCloud: true` before publishing. It renders locally, uploads the MP4 + thumbnail, and sets `Content.videoUrl`, SAS URLs, and `thumbnail`, so you can skip Workflow 2's manual upload steps for local renders.
 
 ```python
 
@@ -118,6 +108,8 @@ final = content_get(content_id=content_id)
 ---
 
 ## Workflow 2: Upload Video via SAS URL
+
+> **Preferred for local renders:** use `POST /api/render` with `{"contentId":"content_xxx","uploadToCloud":true}`. It uploads the MP4 and thumbnail and updates the Content document automatically. Use the manual SAS flow below only for external/client-side binary uploads.
 
 ```python
 # 1. Get upload URL
@@ -220,7 +212,8 @@ else:
 | Question | Answer |
 |----------|--------|
 | Publishing for the first time? | Workflow 1 (full pipeline) |
-| Just uploading a video? | Workflow 2 (SAS URL upload) |
+| Just uploading a local render? | `POST /api/render` with `contentId` + `uploadToCloud:true` |
+| Uploading an external video binary? | Workflow 2 (SAS URL upload) |
 | Setting up for future publish? | Workflow 3 (schedule) |
 | Not sure if content is ready? | Workflow 4 (readiness check) |
 | Content exists, just need to publish? | Workflow 5 (find & publish) |
