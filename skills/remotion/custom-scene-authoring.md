@@ -24,6 +24,61 @@ These are JSX code strings added directly to the editor timeline. They run in a 
 
 **Available globals (no imports):** `React`, `AbsoluteFill`, `useCurrentFrame`, `useVideoConfig`, `interpolate`, `Easing`, `Sequence`, `spring`, `Img`, `staticFile`, `fadeIn`, `slideUp`, `springPop`, and 80+ animation/component helpers.
 
+## Batch Creating Similar Scenes: Template + Substitution
+
+For creating multiple structurally-identical scenes (e.g., 6 title cards with different text/colors), use a **template file + string substitution** approach instead of parameterized JSX. This avoids sandbox prop-passing issues and validates once for all cards.
+
+### Recipe
+
+**1. Write one template with `__PLACEHOLDER__` tokens:**
+```js
+// /tmp/scene_template.js
+const Scene = () => {
+  const words = __WORDS_JSON__;
+  const accentColor = '__ACCENT__';
+  const emoji = '__EMOJI__';
+  // ... rest of JSX using these constants
+};
+```
+
+**2. Substitute in Python (JSON-safe):**
+```python
+import json
+with open('/tmp/scene_template.js') as f: tpl = f.read()
+
+scenes = [
+    ('🔥', 'THE MOMENT', ['GAME', 'CHANGING'], '#FF6B35'),
+    ('⚡', 'FEATURE 1', ['INSTAGRAM', 'AUTOMATION'], '#00E5FF'),
+    # ...
+]
+
+for i, (emoji, kicker, words, color) in enumerate(scenes):
+    code = (tpl
+        .replace('__EMOJI__', emoji)
+        .replace('__KICKER__', kicker)
+        .replace('__ACCENT__', color)
+        .replace('__WORDS_JSON__', json.dumps(words)))
+    with open(f'/tmp/scene_{i+1}.js','w') as f: f.write(code)
+```
+
+**3. Validate once, add many:**
+```python
+# Validate first scene (they all share structure)
+r = requests.post(URL, json={'type':'scene.validateCode','params':{'code': code}})
+assert r.json()['status'] == 'success'
+
+# Then loop and add
+for path in scene_files:
+    with open(path) as f: code = f.read()
+    requests.post(URL, json={'type':'scene.addCustomScene','params':{'code': code, ...}})
+```
+
+### Why not parameterized props?
+
+Custom scenes in the sandbox (`scene.addCustomScene`) DON'T receive props — they use constants baked into the code. Template substitution keeps the sandbox model simple and gives you compile-time-visible values in every scene (easier debugging).
+
+For scenes that DO accept props at runtime, use `scene.addLibraryScene` or `scene.addBundledScene` with `sceneProps`.
+
 ### 2. Bundled Scenes (`scene.addBundledScene`) — Most Powerful
 
 Full `.tsx` source compiled via esbuild with real `import` statements. Use when you need:

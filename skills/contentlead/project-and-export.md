@@ -35,6 +35,30 @@ Example:
 
 Snapshots are manual project checkpoints stored in Cosmos DB. Each project keeps a maximum of 5 snapshots; creating a 6th snapshot auto-evicts the oldest one.
 
+## ⚠️ Snapshot Before Batch Operations
+
+Before any destructive/batch operation (deleting multiple items, moving many, bulk restyling, applying auto-captions to full video), ALWAYS create a snapshot:
+
+```json
+{
+  "type": "editor.createSnapshot",
+  "params": { "label": "Before batch caption cleanup" }
+}
+```
+
+This gives you a one-shot Ctrl+Z equivalent via `editor.restoreSnapshot({snapshotId})`. Without it, a batch mistake requires rebuilding from scratch.
+
+**When you MUST snapshot first:**
+- Before `bulk.deleteByType`
+- Before `bulk.styleByType` on many items
+- Before `editor.clearTimeline` (even with `trackId` filter)
+- Before `editor.removeSegment` with ripple
+- Before running `editor.autoCaption` on already-captioned content
+- Before mass `editor.moveItem` loops
+- Before deleting scene/audio tracks
+
+The snapshot system already supports up to 5 snapshots per project (older auto-evict).
+
 ### `editor.createSnapshot`
 
 | Param | Type | Default | Description |

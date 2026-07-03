@@ -20,9 +20,9 @@ Keep total audio items (music + SFX) to ≤ 5. Overlap is fine, but total distin
 
 ## Mixing & Volume
 
-You can set volume using the linear 0-100 scale, or the professional dB scale.
+You can set volume using the linear scale (100 = unity; >100 amplifies), or the professional dB scale.
 
-### `editor.setVolume` (0-100 scale)
+### `editor.setVolume` (linear scale)
 ```json
 { "type": "editor.setVolume", "params": { "itemId": "aud_123", "volume": 30 } }
 ```
@@ -68,6 +68,24 @@ Apply a 3-band equalizer (Low, Mid, High gains in ±12 dB).
 ```json
 { "type": "audio.removeEq", "params": { "itemId": "vid_123" } }
 ```
+
+## Render Audio Rules (post-2026-07-03 fix)
+
+The render pipeline now processes each audio item's effects (volume, EQ) INDIVIDUALLY, matching what the preview does. Previous versions had a global post-render EQ pass that incorrectly applied one item's filter chain to the entire mixed audio.
+
+### Rules for any future audio effect (compressor, reverb, noise reduction, etc.)
+- **Must be applied per-item pre-processing** (not global post-pass)
+- **Volume >100% is supported** via Remotion's native `<Video volume={x}>` and `<Audio volume={x}>` — see `electron/design-converter/item-converters.cjs::resolveAudioVolume()`
+- **EQ per-item** — see `electron/render-worker.cjs::preProcessItemAudio()` for the pattern (pre-processes source file with ffmpeg, swaps `details.src` before Remotion mixes)
+
+### Clipping warning
+- **Preview clamps at 0 dBFS in browser** — audio never "sounds distorted" in preview even if math would clip
+- **Render captures raw math** — volume=400% + heavy EQ boost WILL clip in the MP4
+- **No automatic limiter** — user is responsible for volume + EQ combinations that stay ≤0 dBFS peak
+- If you need to check: `ffmpeg -i output.mp4 -af ebur128=peak=true:framelog=quiet -f null /dev/null` — Peak should be ≤0 dBFS
+
+### Multi-track SFX architecture
+`editor.addAudio` auto-splits SFX across separate tracks based on time-overlap detection. If you add 20 SFX close in time, expect 5-6 audio tracks in the timeline (by design — avoids overlap conflicts).
 
 ## Noise Reduction (Main Process)
 

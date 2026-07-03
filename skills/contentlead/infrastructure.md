@@ -8,6 +8,18 @@ tags: debug, media, import, analyze, screenshot, project, create, duplicate, ui,
 
 Endpoints for debugging, media management, project lifecycle, and UI automation that don't fit neatly into the editing workflow.
 
+## ⚠️ App/API Port Regenerates on Restart
+
+Every time the Electron app restarts (hot reload, crash, manual restart, code changes), the API port + token regenerate in `~/.skilltown-desktop/api.json`. Never hardcode these — always read fresh each call:
+
+```bash
+CONFIG=$(cat ~/.skilltown-desktop/api.json)
+PORT=$(echo "$CONFIG" | python3 -c "import sys,json; print(json.load(sys.stdin)['port'])")
+TOKEN=$(echo "$CONFIG" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+```
+
+If your script hits `ConnectionRefusedError` mid-session, re-read the config — the port likely changed.
+
 ## Debugging & Monitoring
 
 ### POST /api/debug/toggle
@@ -46,6 +58,26 @@ Server-Sent Events stream for real-time updates (command results, state changes,
 curl -N http://127.0.0.1:$PORT/api/events -H "Authorization: Bearer $TOKEN"
 # SSE stream: event: commandResult, data: {...}
 ```
+
+## ⚠️ Render Worker is a Forked Child Process
+
+The render worker (`electron/render-worker.cjs`) is a `fork()`'d Node child process. It loads all `require()`'d modules ONCE at startup. When you edit render-related code:
+
+- `electron/render-worker.cjs`
+- `electron/audio-processing/eq-filters.cjs`
+- `electron/design-converter/item-converters.cjs`
+
+The changes will NOT take effect until you restart the worker. The Electron main process doesn't auto-reload it.
+
+**How to restart:**
+```bash
+# Find worker PID
+ps aux | grep render-worker | grep -v grep
+# Kill it — parent will respawn on next render
+kill <PID>
+```
+
+Verify no worker running afterward: `ps aux | grep render-worker | grep -v grep` (should be empty). Next render call will spawn a fresh worker with your updated code.
 
 ## Media Management
 

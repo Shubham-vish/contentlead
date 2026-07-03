@@ -944,7 +944,10 @@ These are commonly useful commands not covered in the core sections above:
 | `editor.lockTrack` | Lock/unlock a track | `{trackId, locked: boolean}` |
 | `editor.hideTrack` | Show/hide a track | `{trackId, hidden: boolean}` |
 | `editor.renameTrack` | Rename a track | `{trackId, name: string}` |
-| `editor.addTransition` | Add transition between items | transition-specific params |
+| `editor.addTransition` | Add transition between two specific items | `{fromId, toId, kind, duration?, direction?}` |
+| `editor.addTransitionBetween` | Smart: add transition after an item (auto-finds next clip) | `{itemId, kind, duration?, direction?}` |
+| `editor.removeTransition` | Remove a transition | `{transitionId}` or `{fromId, toId}` or `{fromId}` |
+| `query.listTransitions` | List available presets + applied transitions | none |
 | `editor.addTemplate` | Add a design template | template-specific params |
 | `query.getTimelineItems` | Get all items on the timeline | none |
 | `query.getTrackInfo` | Get track details | `{trackId?: string}` |
@@ -992,7 +995,7 @@ These are commonly useful commands not covered in the core sections above:
 | Category | Commands |
 |---|---|
 | Positioning | `editor.positionItem`, `editor.alignItem`, `editor.rotateItem`, `editor.setZIndex` |
-| Motion & effects | `editor.addTransition`, `editor.setAnimation`, `editor.removeAnimation`, `editor.addKeyframe`, `editor.removeKeyframe`, `editor.addEffect`, `editor.removeEffect` |
+| Motion & effects | `editor.addTransition`, `editor.addTransitionBetween`, `editor.removeTransition`, `query.listTransitions`, `editor.setAnimation`, `editor.removeAnimation`, `editor.addKeyframe`, `editor.removeKeyframe`, `editor.addEffect`, `editor.removeEffect` |
 | Playback | `editor.play`, `editor.pause`, `editor.seekTo`, `editor.seekToFrame` |
 
 ### Tracks, project state, and export
@@ -1059,6 +1062,76 @@ If any command fails, all earlier commands in the batch are automatically rolled
 - Maximum retry count: 2 retries after the initial attempt
 - If a command type fails 3 consecutive times, its circuit breaker opens for 30 seconds
 - Use `query.getCircuitBreakerStatus` to inspect breaker state before retrying manually
+
+## Clip Transitions (Timeline)
+
+Transitions create smooth visual effects between adjacent clips on the same track. These are **timeline transitions** (not scene enter/exit animations).
+
+### Available Transition Kinds
+
+| Kind | Name | Directions |
+|------|------|-----------|
+| `fade` | Fade | — |
+| `slide` | Slide | `from-left`, `from-right`, `from-top`, `from-bottom` |
+| `wipe` | Wipe | `from-left`, `from-right`, `from-top`, `from-bottom` |
+| `flip` | Flip | `from-left`, `from-right`, `from-top`, `from-bottom` |
+| `clockWipe` | Clock Wipe | — |
+| `star` | Star | — |
+| `circle` | Circle | — |
+| `rectangle` | Rectangle | — |
+| `slidingDoors` | Sliding Doors | — |
+
+### Transition Commands
+
+#### `editor.addTransitionBetween` (recommended)
+Adds a transition after a given clip, auto-finding the next adjacent clip on the same track.
+
+```json
+{"type": "editor.addTransitionBetween", "params": {
+  "itemId": "clip_abc",
+  "kind": "fade",
+  "duration": 500,
+  "direction": "from-left"
+}}
+```
+- `itemId` (required) — the clip to add a transition AFTER
+- `kind` (required) — one of the transition kinds above
+- `duration` (optional, ms, default 500) — overlap duration
+- `direction` (optional) — only for slide/wipe/flip
+
+#### `editor.addTransition` (explicit)
+Adds a transition between two specific clips (you must know both IDs).
+
+```json
+{"type": "editor.addTransition", "params": {
+  "fromId": "clip_abc",
+  "toId": "clip_def",
+  "kind": "slide",
+  "duration": 700,
+  "direction": "from-right"
+}}
+```
+
+#### `editor.removeTransition`
+Removes a transition. Accepts any of: `transitionId`, `{fromId, toId}`, or just `{fromId}` (removes its outgoing transition).
+
+```json
+{"type": "editor.removeTransition", "params": {"fromId": "clip_abc"}}
+```
+
+#### `query.listTransitions`
+Returns available presets and all currently applied transitions.
+
+```json
+{"type": "query.listTransitions", "params": {}}
+```
+
+### Transition Tips
+- Duration is in **milliseconds** (500 = 0.5s overlap)
+- Transitions only work between adjacent clips on the same track
+- Audio is automatically handled: incoming clip is muted during the overlap period
+- Use `query.listTransitions` first to see what's already applied before adding more
+- Removing a transition reverts to a hard cut (no gap created)
 
 ## 🤖 AI Content Generation (PrepWithAI)
 

@@ -535,6 +535,34 @@ POST /api/execute → editor.save
 
 ---
 
+## Verify Edits by Re-transcribing (Ground Truth)
+
+**Captions on the timeline are NOT the same as what the audio actually plays.** When you cut/split/rearrange video segments, always re-verify by transcribing the ACTUAL audio output. Common trap: you see the correct caption text but the audio underneath plays a different section (e.g., opening line repeated).
+
+**How to verify:**
+```bash
+# 1. Build the actual audio your edit produces
+ffmpeg -y -ss <segment1_start> -to <segment1_end> -i source.mp4 -vn -acodec libmp3lame /tmp/p1.mp3
+# ... repeat for each segment
+ffmpeg -y -i "concat:/tmp/p1.mp3|/tmp/p2.mp3|/tmp/p3.mp3" -acodec copy /tmp/verify.mp3
+
+# 2. Upload with unique blob name (see Phase 1) and re-transcribe
+# 3. Diff the returned text against what you expected
+
+# Check for repetitions:
+python3 -c "
+text = open('/tmp/verify_transcript.txt').read()
+# Opening phrases should appear ONCE
+signature = 'अगर तुम एक'  # or your video's unique opening
+assert text.count(signature) == 1, f'REPETITION: found {text.count(signature)}x'
+print('OK — no repetition')
+"
+```
+
+**Why this matters:** In a session where the user reported "the opening line is repeating", the issue was `editor.splitItem` not setting trim on split pieces — captions looked right but audio played source from time 0 for each piece. Only re-transcription caught it.
+
+---
+
 ## Troubleshooting
 
 | Issue | Cause | Fix |

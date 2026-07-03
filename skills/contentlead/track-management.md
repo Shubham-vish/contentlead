@@ -20,6 +20,27 @@ Because track math is confusing, the API provides an auto-sorter. **Always call 
 { "type": "editor.reorderTracks", "params": {} }
 ```
 
+## ⚠️ Scene Tracks Sink to Bottom
+
+Custom scenes (added via `scene.addCustomScene`, `scene.addLibraryScene`, `scene.addBundledScene`) create a track with `metadata.isTemplateTrack: true`. The `editor.reorderTracks` handler uses hardcoded priority:
+
+| Track Type | Priority | Position |
+|-----------|----------|----------|
+| text / caption | 0 | Front (top) |
+| audio | 1 | — |
+| video | 2 | — |
+| image (regular) | 3 | — |
+| image with `metadata.isTemplateTrack: true` | **4** | **Bottom** ← scenes go here |
+
+**Result:** After adding a custom scene, `reorderTracks` puts it BEHIND video — scene invisible in preview.
+
+**Workaround options:**
+1. Manually drag the scene track above videos in the UI, OR
+2. Add scene BEFORE videos (so it gets a lower index), OR
+3. Use `editor.setZIndex({item_id, direction: "front"})` — works within a track but doesn't cross tracks
+
+**No documented command** currently changes track metadata to promote a scene track above videos. If needed, this would be a new `editor.editTrack` command (not yet built).
+
 ## Track Commands
 
 ### `editor.renameTrack`
@@ -49,4 +70,10 @@ Linking tracks ensures that when you split, cut, or delete items on the primary 
 ### `editor.unlinkTracks`
 ```json
 { "type": "editor.unlinkTracks", "params": { "trackIds": ["track_video"] } }
+```
+
+### `editor.moveTrack`
+Manually push a track to a specific layer.
+```json
+{ "type": "editor.moveTrack", "params": { "trackId": "track_abc", "index": 0 } }
 ```
