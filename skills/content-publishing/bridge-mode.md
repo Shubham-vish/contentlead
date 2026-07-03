@@ -30,6 +30,50 @@ If the forwarded desktop cookies are expired, bridge endpoints return HTTP `401`
 { "error": "session_expired", "message": "SkillTown session expired — sign in via the desktop app UI" }
 ```
 
+## SSE events
+
+Subscribe to the desktop stream to react to agent/bridge mutations without polling:
+
+```bash
+curl -N "http://127.0.0.1:$PORT/api/events?token=$TOK"
+```
+
+Content mutations emit:
+
+```json
+{
+  "event": "content.updated",
+  "data": {
+    "contentId": "content_xxx",
+    "changedFields": ["videoUrl", "thumbnail"],
+    "source": "render-upload",
+    "timestamp": 1783100000000
+  }
+}
+```
+
+`source` is `render-upload` for local render uploads and `desktop-bridge` for `/api/bridge/content/*` writes. The web editor listens for matching `contentId` and refetches the Content record, so thumbnail, video URL, title, description, and caption changes appear without manual refresh.
+
+Render jobs started through `POST /api/render` emit `render.job.created` and `render.job.completed` (with progress updates on `render.progress`) so the editor's Recent renders panel can update for API-triggered renders:
+
+```json
+{
+  "event": "render.job.completed",
+  "data": {
+    "jobId": "uuid",
+    "contentId": "content_xxx",
+    "status": "completed",
+    "progress": 100,
+    "outputPath": "/Users/shubham/Movies/SkillTown/render.mp4",
+    "cloudVideoUrl": "https://...",
+    "thumbnailUrl": "https://...",
+    "fileSizeBytes": 47000000,
+    "createdAt": "2026-07-04T00:00:00.000Z",
+    "completedAt": "2026-07-04T00:02:00.000Z"
+  }
+}
+```
+
 ## Full endpoint reference
 
 ### Instagram
