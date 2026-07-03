@@ -163,6 +163,10 @@ These endpoints are available on the Electron API server (in addition to `POST /
 | `/api/diagnostics?full=true` | GET | Unified diagnostic check — console errors, scene errors, timeline issues |
 | `/api/screenshot` | GET | Capture screenshot of the Electron window (returns PNG) |
 | `/api/navigate` | POST | Navigate to a URL — `{url, waitForReady, autoRestore, timeoutMs}` |
+| `/api/tabs` | GET | List all open tabs and the active `tabId` |
+| `/api/tabs/new` | POST | Open a new tab — `{url}` or `{contentId}` |
+| `/api/tabs/:id/activate` | POST | Switch focus to a specific tab |
+| `/api/tabs/:id/close` | POST | Close a specific tab |
 | `/api/content/create` | POST | Create new content in CosmosDB — `{title, description}` → creates DB record + navigates to editor |
 | `/api/content/list` | GET | List available content (DB + local autosaves) |
 | `/api/project/create` | POST | Create local project file (autosave only, no DB) |
@@ -508,15 +512,19 @@ Hybrid architecture:
 
 ## Navigation & Content Discovery
 
-### Discovery file (v3)
+### Discovery file (v4)
 ```bash
 cat ~/.skilltown-desktop/api.json
-# → {"schemaVersion":3, "port":54110, "token":"abc...", "baseUrl":"http://127.0.0.1:54110",
+# → {"schemaVersion":4, "port":54110, "token":"abc...", "baseUrl":"http://127.0.0.1:54110",
 #    "apiOrigin":"http://127.0.0.1:54110", "appOrigin":"https://contentlead.in",
-#    "mediaServerPort":54109, "editorReady":false, ...}
+#    "mediaServerPort":54109, "editorReady":false, "activeTabId":"tab-abc",
+#    "tabs":[{"tabId":"tab-abc","contentId":"content_abc","title":"My Video",
+#             "url":"/content/content_abc?view=editor","active":true,"ready":false}], ...}
 ```
 - `apiOrigin` — the local API server (always localhost)
 - `appOrigin` — the frontend origin (cloud `contentlead.in` or local dev `localhost:3000`)
+- `tabs[]` — all open projects/tabs; use `tabId` from this array to target commands
+- Top-level `contentId` / `editorReady` describe the ACTIVE tab only
 
 ### Health check
 ```bash
@@ -629,6 +637,8 @@ curl -X POST http://127.0.0.1:$PORT/api/app/set-origin \
 **After switching:** use `POST /api/editor/wait-ready` to wait for the editor to reinitialize. CORS is automatically updated and the discovery file (`api.json`) is refreshed with the new `appOrigin`.
 
 ### Typical AI workflow
+> **Multi-tab note:** When multiple tabs are open, resolve your target `tabId` from `~/.skilltown-desktop/api.json` or `GET /api/tabs`, then include it in every `/api/execute` body. See [`skills/contentlead/multi-tab.md`](skills/contentlead/multi-tab.md).
+
 ```bash
 # 1-5. Follow the MANDATORY Startup Protocol above (health, errors, validate, media check)
 

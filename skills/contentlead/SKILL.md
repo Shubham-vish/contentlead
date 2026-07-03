@@ -48,6 +48,7 @@ If you add text on Track 2 and a video on Track 0, the text will be **invisible*
 | Project save/load, Export | `project-and-export` | `editor.save`, `editor.export`, `project.getFullState` |
 | Read timeline/editor state | `queries-and-state` | `query.getTimelineItems`, `query.getTrackInfo`, `query.getEditorState` |
 | Debugging, Logs, Arch | `infrastructure` | `GET /api/diagnostics`, `GET /api/console-errors` |
+| Multi-tab collaboration | `multi-tab` | `GET /api/tabs`, `POST /api/tabs/new`, `tabId` on `/api/execute` |
 
 ## Disambiguation: Which Text/Cut command do I use?
 
