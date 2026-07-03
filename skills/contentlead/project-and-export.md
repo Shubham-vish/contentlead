@@ -134,7 +134,31 @@ The snapshot system already supports up to 5 snapshots per project (older auto-e
 }
 ```
 
-## `editor.undo`
+## `project.saveAutosave` — local autosave file (fallback for large projects)
+
+Writes the full project state directly to `~/.skilltown-desktop/projects/<contentId>.autosave.skilltown`. Use this when `editor.save` times out (typically on projects with large bundled scenes >10KB per scene).
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| *(none)* | — | — | Uses currently-loaded contentId. |
+
+```json
+{ "type": "project.saveAutosave", "params": {} }
+// → { path, bytes, contentId }
+```
+
+**Also exposed via HTTP:** `POST /api/project/save-autosave` (same auth as `/api/execute`).
+
+**Important:** This does NOT clear the "unsaved changes" indicator — it saves LOCALLY only. The cloud autosave loop will continue firing after this call (correct behavior — cloud is still stale). To actually mark saved-to-cloud, call `editor.save`.
+
+**When to use it:**
+- `editor.save` timed out (bundled scenes, big projects)
+- You want a durable local checkpoint without touching cloud
+- You're about to restart the app and cloud save isn't reachable
+
+The autosave file survives page reloads and app restarts. On next load, `POST /api/project/restore` reads it.
+
+
 
 | Param | Type | Default | Description |
 |---|---|---|---|

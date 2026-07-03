@@ -20,26 +20,42 @@ Because track math is confusing, the API provides an auto-sorter. **Always call 
 { "type": "editor.reorderTracks", "params": {} }
 ```
 
-## ⚠️ Scene Tracks Sink to Bottom
+## Track Layer Priority
 
-Custom scenes (added via `scene.addCustomScene`, `scene.addLibraryScene`, `scene.addBundledScene`) create a track with `metadata.isTemplateTrack: true`. The `editor.reorderTracks` handler uses hardcoded priority:
+`editor.reorderTracks` sorts tracks by a numeric priority — **lower priority = closer to viewer (higher on stack)**:
 
-| Track Type | Priority | Position |
-|-----------|----------|----------|
-| text / caption | 0 | Front (top) |
-| audio | 1 | — |
-| video | 2 | — |
-| image (regular) | 3 | — |
-| image with `metadata.isTemplateTrack: true` | **4** | **Bottom** ← scenes go here |
+| Track Type | Default Priority | Position |
+|-----------|-----------------:|----------|
+| text / caption | **1** | Front (top) |
+| audio | **2** | — |
+| video | **3** | — |
+| image (regular) | **4** | — |
+| image with `metadata.isTemplateTrack: true` | **5** | Bottom (background) |
 
-**Result:** After adding a custom scene, `reorderTracks` puts it BEHIND video — scene invisible in preview.
+Custom scenes (added via `scene.addCustomScene`, `scene.addLibraryScene`, `scene.addBundledScene`) get `metadata.isTemplateTrack: true` and default to the bottom — great for backgrounds, wrong when a scene needs to overlay video.
 
-**Workaround options:**
-1. Manually drag the scene track above videos in the UI, OR
-2. Add scene BEFORE videos (so it gets a lower index), OR
-3. Use `editor.setZIndex({item_id, direction: "front"})` — works within a track but doesn't cross tracks
+### `editor.editTrack` — override the default priority
 
-**No documented command** currently changes track metadata to promote a scene track above videos. If needed, this would be a new `editor.editTrack` command (not yet built).
+Set an explicit `metadata.priority` (number) to override the type-based default. Lower value = closer to viewer. Persists across save, restore, undo/redo.
+
+```json
+// Promote a scene track above videos (make it a foreground overlay)
+{ "type": "editor.editTrack", "params": {
+  "trackId": "track_abc",
+  "metadata": { "priority": 1 }
+}}
+
+// Then call reorderTracks so the change takes effect
+{ "type": "editor.reorderTracks", "params": {} }
+```
+
+Pass `metadata.priority: null` to clear the override and fall back to the default rank.
+
+**Other track metadata** can also be updated the same way: `{trackId, metadata: {name, isTemplateTrack, ...}}`.
+
+**Fallback options** if you don't want to touch metadata:
+- `editor.moveTrack({trackId, index: 0})` — push to a specific position manually
+- Manually drag in the UI
 
 ## Track Commands
 

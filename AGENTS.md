@@ -1337,7 +1337,7 @@ curl -X POST http://127.0.0.1:$PORT/api/execute \
 # → result.bytes and result.contentId confirm what was written
 ```
 
-The command captures the full project state (including bundled code), writes the autosave file via Electron IPC, and clears the editor's unsaved indicator. The autosave file survives page reloads and app restarts.
+The command captures the full project state (including bundled code) and writes the autosave file via Electron IPC. The autosave file survives page reloads and app restarts. **Note:** this saves LOCALLY only — it does NOT clear the editor's unsaved indicator (which tracks cloud-save state). To also sync to cloud, call `editor.save` when it's healthy.
 
 ## Scene Catalog (159 Scenes)
 
@@ -2014,7 +2014,7 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
 ~/.skilltown-desktop/projects/<contentId>.autosave.skilltown
 ```
 
-The autosave file is what `POST /api/project/restore` reads. This bypasses the DB save mechanism and clears the editor's unsaved indicator.
+The autosave file is what `POST /api/project/restore` reads. This bypasses the DB save mechanism. **Note:** this saves LOCALLY only — it does NOT clear the editor's unsaved indicator (which tracks cloud-save state). To sync to cloud, call `editor.save` when it's healthy.
 
 ### Autosave timer
 The Electron main process runs an autosave timer that periodically captures state via IPC and writes to the `.skilltown` file. However, this timer may not be active for all content IDs. If `editor.save` fails and the autosave timer isn't running, call `project.saveAutosave`.

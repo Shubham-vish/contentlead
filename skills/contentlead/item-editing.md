@@ -7,14 +7,16 @@ Commands for modifying items that are **already on the timeline**.
 ## Trimming & Moving
 
 ### `editor.trimItem`
-Change the start/end bounds of an existing item.
+Change the source range of an existing item. **Also syncs `display.to`** so the timeline block resizes to match the new trim range (accounts for `playbackRate`).
+
 ```json
 { "type": "editor.trimItem", "params": {
   "itemId": "vid_abc",
-  "from": 2000,
-  "to": 8000
+  "trim": { "from": 2000, "to": 8000 }
 }}
 ```
+
+Returns `{trim: {...}, display: {...}}` — new display range for verification.
 
 ### `editor.moveItem`
 Slide an item left or right on the timeline (changes `display.from` and `display.to` by the same offset).
@@ -67,47 +69,58 @@ If a video/audio was added WITHOUT trim (no `details.from`/`details.to` set), sp
 
 **Better alternative:** Use `editor.removeSegment({from_ms, to_ms, ripple: true})` — it splits AND sets trim correctly, plus ripple-shifts.
 
-### ⚠️ `editor.addAudio` without `durationMs` defaults to 10000ms (10s) block
-When you call `editor.addAudio` with just `{src, from_ms}` — no `duration_ms` — the item is created with a **10-second placeholder block** even if the actual audio file is only 0.4–3s. The audio plays for its real duration (waveform stops correctly), but the item block spans 10s and can:
-- Extend past the end of your main video (breaks "no dead air" rule for reels)
-- Overlap and hide other SFX blocks in the timeline UI
-- Make it look like SFX are longer than they are
+### ✅ `editor.addAudio` probes source duration automatically
+When you omit `duration_ms`, the handler now creates a hidden `<audio>` element, waits for `loadedmetadata` (5s timeout), and uses the real duration. The response includes `durationProbed: true` when this happened, or a `warning` field if the probe failed (e.g. CORS-blocked source) and it fell back to the 10s default.
 
-**Root cause:** `editor.addAudio` cannot synchronously probe the duration of a `media://` URL (audio files load async). It falls back to 10000ms. Video items don't have this problem because `<video>.duration` populates fast enough.
-
-**Prevention (best):** Always pass `duration_ms` explicitly:
+**Best practice: still pass `duration_ms` explicitly when known** — saves the ~100-300ms probe roundtrip per item:
 ```json
 // Pre-probe with ffprobe first, then:
 { "type": "editor.addAudio", "params": { "url": "/path/to/whoosh.wav", "from_ms": 5000, "duration_ms": 476 } }
 ```
 Shell one-liner to get ms: `ffprobe -v error -show_entries format=duration -of default=nk=1:nw=1 file.wav | awk '{printf "%.0f\n", $1*1000}'`
 
-**Cleanup (after the fact):** ffprobe each source, then update BOTH trim and display (see below — trim alone is not enough).
+**Legacy projects:** If you inherited a project with oversized SFX blocks from before this fix, call `editor.trimItem` on each — it now correctly resizes both the source range AND the display block (see below).
 
-### ⚠️ `editor.trimItem` updates trim.to but NOT display.to
-Calling `editor.trimItem` to shrink a block from `to: 10000` down to `to: 1276` sets `trim.to: 1276` correctly — but leaves `display.to: 10000` untouched. The audio still cuts off at 1.276s (good), but the timeline block still occupies 10s (bad).
+### ✅ `editor.trimItem` now syncs both `trim` and `display`
+Previously `trimItem` only updated `trim.to` — the timeline block stayed oversized. Now it also computes `display.to = display.from + (trim.to - trim.from) / playbackRate` and updates both atomically. Matches the UI's edge-drag behavior.
 
-To ACTUALLY shrink the timeline block, use `editor.editItem` with the `updates.display` shape:
 ```json
-{ "type": "editor.editItem", "params": {
+{ "type": "editor.trimItem", "params": {
   "itemId": "abc123",
-  "updates": { "display": { "from": 5000, "to": 6276 } }
+  "trim": { "from": 0, "to": 1276 }
 }}
+// Returns: { trim: {...}, display: {from: <preserved>, to: from + 1276} }
 ```
-⚠️ **Note:** `editor.editItem` only accepts `display` inside `updates`, NOT `details`. Wrong shape (`details.display`) returns "No details to update. Use moveItem for display changes, trimItem for trim changes." — a misleading error, because `moveItem` shifts position and `trimItem` doesn't touch display either. Only `editItem + updates.display` works.
 
-**Full cleanup pattern for oversized SFX blocks:**
-```python
-# 1. Fetch all audio items
-# 2. For each local-file SFX (skip blob URLs like BG music):
-#    a. Parse src → local path (unquote from ?path=)
-#    b. real_ms = ffprobe(path)
-#    c. If current (trim.to - trim.from) > real_ms:
-#       - trimItem(id, trim={from: cur_from, to: cur_from + real_ms})
-#       - editItem(id, updates={display: {from: disp.from, to: disp.from + real_ms}})
-# 3. editor.save
+If you need to change ONLY the display range without touching trim (unusual — usually you want them in sync), use `editor.editItem` with `updates.display`.
+
+### `editor.editItem` accepts multiple shapes for updates
+The normalization layer accepts any of these — they all reach the same handler:
+```json
+// Canonical (recommended)
+{ "type": "editor.editItem", "params": { "itemId": "X", "updates": {
+  "details":  { "color": "#FFFFFF", "fontSize": 48 },
+  "display":  { "from": 0, "to": 1276 },
+  "trim":     { "from": 0, "to": 1276 },
+  "metadata": { "priority": 1 }
+}}}
+
+// Top-level shorthands (all equivalent)
+{ "type": "editor.editItem", "params": { "itemId": "X", "display": { "from": 0, "to": 1276 } }}
+{ "type": "editor.editItem", "params": { "itemId": "X", "trim":    { "from": 0, "to": 1276 } }}
+{ "type": "editor.editItem", "params": { "itemId": "X", "metadata":{ "priority": 1 } }}
+{ "type": "editor.editItem", "params": { "itemId": "X", "details": { "color": "#FFFFFF" } }}
 ```
-Batch both commands via `/api/batch` for atomicity. Verified working: 38 items cleaned in <1s.
+Precedence when multiple shapes conflict: `updates.*` wins over top-level shorthand wins over `details`-nested siblings (first-wins).
+
+Empty `updates.details: {}` is a valid no-op success (idempotent). If you get "No valid update fields provided", check that at least one of `details`, `display`, `trim`, or `metadata` has a non-empty value.
+
+**Historical cleanup pattern** (for legacy oversized SFX blocks from projects saved before the `trimItem` fix landed):
+```python
+# For SkillTown versions BEFORE the trimItem+display sync fix,
+# you had to call BOTH trimItem AND editItem to shrink a block.
+# On current builds, just calling editor.trimItem does both.
+```
 
 ### `editor.moveItem` with `from: null` silently corrupts
 Passing `from: null` (or omitting it) does NOT preserve the current value — it resets to 0. Always pass BOTH `from` and `to` as concrete numbers:
