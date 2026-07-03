@@ -87,14 +87,52 @@ data: {"activeTabId":"tab-abc","tabs":[{"tabId":"tab-abc","contentId":"content_a
 
 ## Targeting a tab in commands
 
-`POST /api/execute` now accepts `tabId` in the request body. If `tabId` is omitted and only one tab is open, the command runs against that tab for backward compatibility. If multiple tabs are open and `tabId` is omitted, the request is REJECTED with HTTP 409 and an actionable error listing all available tabs. This prevents commands being silently applied to the wrong project.
+The same 4-rule strict validation applies to **every HTTP endpoint that dispatches renderer commands**, not just `/api/execute`. Endpoints in scope:
+
+| Endpoint | tabId location | Notes |
+|----------|---------------|-------|
+| `POST /api/execute` | body `{tabId}` | Main command endpoint |
+| `POST /api/batch` | body `{tabId}` on each command | Batch runs in one tab |
+| `POST /api/project/save` | body `{tabId}` or `{contentId}` | Saves specific project |
+| `POST /api/project/save-autosave` | body `{tabId}` or `{contentId}` | Autosave specific project |
+| `POST /api/project/export` | body `{tabId}` | Exports specific project |
+| `POST /api/project/import` | body `{tabId}` | Imports into specific tab |
+| `POST /api/project/open` | body `{tabId}` | Opens file in specific tab |
+| `POST /api/project/restore` | body `{tabId}` or `{contentId}` | Restores specific project |
+| `POST /api/project/duplicate` | body `{tabId}` | Duplicates specific project |
+| `GET  /api/state` | query `?tabId=` | Reads specific tab's state |
+| `GET  /api/diagnostics` | query `?tabId=` | Diagnoses specific tab |
+| `GET  /api/screenshot?mode=preview` | query `?tabId=` | Captures specific tab |
+
+If `tabId` (or `contentId` for endpoints that accept it) is omitted and only one tab is open, the command runs against that tab. If multiple tabs are open and no target is specified, the request is REJECTED with HTTP 409 and an actionable error listing all available tabs. This prevents commands being silently applied to the wrong project.
 
 ```bash
+# Body-based (POST endpoints)
 curl -X POST http://127.0.0.1:$PORT/api/execute \
   -H "Authorization: Bearer $TOK" \
   -H "Content-Type: application/json" \
   -d '{"tabId": "tab-abc", "type": "editor.addText", "params": {"text": "Hello"}}'
+
+# Query-based (GET endpoints)
+curl "http://127.0.0.1:$PORT/api/diagnostics?tabId=tab-abc" \
+  -H "Authorization: Bearer $TOK"
+
+# contentId-based (auto-resolves to the single hosting tab if unambiguous)
+curl -X POST http://127.0.0.1:$PORT/api/project/save-autosave \
+  -H "Authorization: Bearer $TOK" \
+  -H "Content-Type: application/json" \
+  -d '{"contentId": "content_9daa..."}'
 ```
+
+### Endpoints that intentionally ignore tabId
+
+These target the active tab by design (background/UI operations, not agent commands):
+
+- Health-check cache refreshers inside the API server
+- Keyboard shortcut dispatcher (`deselectAll`, etc.)
+- SSE stream events (broadcast globally)
+
+These paths don't accept agent-supplied commands, so ambiguity isn't possible.
 
 ### Validation errors you might get
 
