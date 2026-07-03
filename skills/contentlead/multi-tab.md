@@ -287,7 +287,3 @@ Use this startup flow for multi-tab aware agents:
 3. Else → POST /api/tabs/new {contentId} to open it in a fresh tab
 4. Every subsequent /api/execute → pass tabId
 ```
-
-## Backward-compat opt-out
-
-For legacy scripts that can't be updated, set the Electron process env var `SKILLTOWN_ALLOW_IMPLICIT_TAB=1` before launching the app. This reverts to the old "silently use active tab" behavior with a warning. Default is strict (recommended).
