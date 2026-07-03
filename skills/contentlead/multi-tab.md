@@ -87,7 +87,7 @@ data: {"activeTabId":"tab-abc","tabs":[{"tabId":"tab-abc","contentId":"content_a
 
 ## Targeting a tab in commands
 
-`POST /api/execute` now accepts `tabId` in the request body. If `tabId` is omitted, the command runs against the active tab for backward compatibility. If multiple tabs are open and `tabId` is omitted, the response includes a `warning` field; do not rely on that fallback for agent work.
+`POST /api/execute` now accepts `tabId` in the request body. If `tabId` is omitted and only one tab is open, the command runs against that tab for backward compatibility. If multiple tabs are open and `tabId` is omitted, the request is REJECTED with HTTP 409 and an actionable error listing all available tabs. This prevents commands being silently applied to the wrong project.
 
 ```bash
 curl -X POST http://127.0.0.1:$PORT/api/execute \
@@ -96,16 +96,55 @@ curl -X POST http://127.0.0.1:$PORT/api/execute \
   -d '{"tabId": "tab-abc", "type": "editor.addText", "params": {"text": "Hello"}}'
 ```
 
-Example response when `tabId` is omitted with multiple tabs open:
+### Validation errors you might get
+
+#### Rule 1 — Unknown tabId (HTTP 404)
 
 ```json
 {
-  "status": "success",
-  "warning": "Multiple tabs are open; command used active tab tab-abc because tabId was omitted.",
-  "activeTabId": "tab-abc",
-  "result": {}
+  "status": "failed",
+  "error": "unknown_tab",
+  "message": "No tab found with tabId='tab-xyz'. Call GET /api/tabs to list valid tabIds.",
+  "tabId": "tab-xyz",
+  "availableTabs": [...]
 }
 ```
+
+**How to fix:** call `GET /api/tabs`, pick the right tabId, retry.
+
+#### Rule 2 — Single tab open, no tabId needed
+
+Command runs against the only tab. No error, no warning.
+
+#### Rule 3 — Multi-tab ambiguity (HTTP 409 Conflict)
+
+```json
+{
+  "status": "failed",
+  "error": "tabId_required",
+  "message": "Multiple tabs are open — you MUST specify tabId...",
+  "tabCount": 3,
+  "activeTabId": "tab-abc",
+  "availableTabs": [...],
+  "hint": "..."
+}
+```
+
+**How to fix:** the response CONTAINS the tabId list. Pick the right one (match by `contentId` or `title`), then re-send the same command with `tabId` in the body.
+
+#### Rule 4 — Tab exists but editor not mounted (HTTP 425 Too Early)
+
+```json
+{
+  "status": "failed",
+  "error": "tab_not_ready",
+  "message": "Tab 'tab-xyz' exists but its editor has not mounted yet.",
+  "tabId": "tab-xyz",
+  "editorReady": false
+}
+```
+
+**How to fix:** poll `GET /api/tabs` or subscribe to SSE `tabs.updated` until that tab's `ready: true`, then retry.
 
 ## Tab lifecycle (creating, switching, closing tabs)
 
@@ -234,7 +273,7 @@ status: pending | in_progress | done | blocked
 
 ## Anti-patterns
 
-- Sending commands without `tabId` when multiple tabs are open — you'll silently edit the wrong project.
+- Sending commands without `tabId` when multiple tabs are open — this now HARD-FAILS with HTTP 409 `tabId_required`. Read the response's `availableTabs` list and re-send with the correct tabId.
 - Assuming `~/.skilltown-desktop/api.json` `contentId` is the tab you're working on — it is only the ACTIVE tab.
 - Relying on tab order — tabs can be reordered by the user; always look up by `tabId`.
 
@@ -248,3 +287,7 @@ Use this startup flow for multi-tab aware agents:
 3. Else → POST /api/tabs/new {contentId} to open it in a fresh tab
 4. Every subsequent /api/execute → pass tabId
 ```
+
+## Backward-compat opt-out
+
+For legacy scripts that can't be updated, set the Electron process env var `SKILLTOWN_ALLOW_IMPLICIT_TAB=1` before launching the app. This reverts to the old "silently use active tab" behavior with a warning. Default is strict (recommended).

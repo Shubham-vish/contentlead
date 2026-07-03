@@ -638,6 +638,7 @@ curl -X POST http://127.0.0.1:$PORT/api/app/set-origin \
 
 ### Typical AI workflow
 > **Multi-tab note:** When multiple tabs are open, resolve your target `tabId` from `~/.skilltown-desktop/api.json` or `GET /api/tabs`, then include it in every `/api/execute` body. See [`skills/contentlead/multi-tab.md`](skills/contentlead/multi-tab.md).
+> **⚠️ Multi-tab validation:** If multiple tabs are open, `/api/execute` REQUIRES `tabId` in the body. Omitting it returns HTTP 409 with the full tab list — pick the right one and retry.
 
 ```bash
 # 1-5. Follow the MANDATORY Startup Protocol above (health, errors, validate, media check)
