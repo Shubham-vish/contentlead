@@ -167,6 +167,7 @@ These endpoints are available on the Electron API server (in addition to `POST /
 | `/api/content/list` | GET | List available content (DB + local autosaves) |
 | `/api/project/create` | POST | Create local project file (autosave only, no DB) |
 | `/api/project/save` | POST | Save current project to file |
+| `/api/project/save-autosave` | POST | Save current project to canonical autosave file |
 | `/api/media/import` | POST | Import media file — `{filePath}` → serves via media server |
 | `/api/media/analyze` | POST | Analyze media file metadata (duration, resolution, codec) |
 | `/api/render` | POST | Start render job with preset — `{preset: "preview"|"draft"|"final"|"4k"}` |
@@ -1003,7 +1004,7 @@ These are commonly useful commands not covered in the core sections above:
 | Category | Commands |
 |---|---|
 | Track operations | `editor.reorderTracks`, `editor.muteTrack`, `editor.lockTrack`, `editor.hideTrack`, `editor.renameTrack` |
-| Project commands | `editor.resize`, `editor.setBackground`, `editor.loadDesign`, `editor.save`, `editor.undo`, `editor.redo`, `editor.export`, `project.getFullState`, `project.loadFullState` |
+| Project commands | `editor.resize`, `editor.setBackground`, `editor.loadDesign`, `editor.save`, `editor.undo`, `editor.redo`, `editor.export`, `project.getFullState`, `project.saveAutosave`, `project.loadFullState` |
 | Render checks | `render.validate`, `render.verifyOutput` |
 
 ### Read-only queries and diagnostics
@@ -1041,6 +1042,7 @@ These endpoints exist but are not covered in detail above:
 | `GET` | `/api/project/export` | Export current project |
 | `POST` | `/api/project/import` | Import a project file |
 | `POST` | `/api/project/save` | Save project to disk |
+| `POST` | `/api/project/save-autosave` | Save current project to canonical autosave file |
 | `POST` | `/api/project/open` | Open a project file |
 | `GET` | `/api/project/autosaves` | List available autosave files |
 | `GET` | `/api/project/recent` | List recently opened projects |
@@ -1325,20 +1327,17 @@ export default function KenBurns() {
 | Library preset (LightLeaks, etc.) | `scene.addLibraryScene` |
 
 ### ⚠️ Save persistence for bundled scenes
-The `editor.save` command saves to the Next.js backend DB, which may fail/timeout for large bundled code. **Use `project.getFullState` + write to autosave file** as a reliable alternative:
+The `editor.save` command saves to the Next.js backend DB, which may fail/timeout for large bundled code. **Use `project.saveAutosave`** as the reliable local autosave fallback:
 
 ```bash
-# Get full project state
 curl -X POST http://127.0.0.1:$PORT/api/execute \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{"type": "project.getFullState"}'
-# → result.project contains the full design with bundled code
-
-# Write to autosave file (Python/Node script)
-# Path: ~/.skilltown-desktop/projects/<contentId>.autosave.skilltown
+  -H "Authorization: ******" \
+  -d '{"type": "project.saveAutosave", "params": {}}'
+# → result.path = ~/.skilltown-desktop/projects/<contentId>.autosave.skilltown
+# → result.bytes and result.contentId confirm what was written
 ```
 
-The autosave file survives page reloads and app restarts.
+The command captures the full project state (including bundled code), writes the autosave file via Electron IPC, and clears the editor's unsaved indicator. The autosave file survives page reloads and app restarts.
 
 ## Scene Catalog (159 Scenes)
 
@@ -2010,16 +2009,15 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
 
 **Rule of thumb:** If you'd be upset losing the work you just did, call `editor.save` now.
 
-**Reliable alternative for bundled scenes:** Use `project.getFullState` to get the current state, then write directly to the autosave file:
+**Reliable alternative for bundled scenes:** Use `project.saveAutosave` to write the current full project state directly to:
 ```
-Path: ~/.skilltown-desktop/projects/<contentId>.autosave.skilltown
-Format: JSON with keys: schemaVersion, meta, design, editorPreferences, assets, customScenes
+~/.skilltown-desktop/projects/<contentId>.autosave.skilltown
 ```
 
-The autosave file is what `POST /api/project/restore` reads. Writing directly to it bypasses the DB save mechanism.
+The autosave file is what `POST /api/project/restore` reads. This bypasses the DB save mechanism and clears the editor's unsaved indicator.
 
 ### Autosave timer
-The Electron main process runs an autosave timer that periodically captures state via IPC and writes to the `.skilltown` file. However, this timer may not be active for all content IDs. If `editor.save` fails and the autosave timer isn't running, use the manual write approach above.
+The Electron main process runs an autosave timer that periodically captures state via IPC and writes to the `.skilltown` file. However, this timer may not be active for all content IDs. If `editor.save` fails and the autosave timer isn't running, call `project.saveAutosave`.
 
 ### Load / Restore
 After navigating to a content page, use `POST /api/project/restore` to reload the saved design:
