@@ -488,6 +488,8 @@ curl "http://127.0.0.1:$PORT/api/skills?q=animation" -H "Authorization: Bearer $
 | **Transcribe video + Hinglish captions** | `transcription-and-editing` (Firebase polling + Latin transliteration) |
 | Read state, timeline, transcript | `queries-and-state` |
 | Save/load .skilltown project files | `project-files` |
+| **🎯 AI viral clipping pipeline** | **`ai-clipping`** — transcribe → score virality → extract clips → reframe → render |
+| **📝 Script evaluation & writing** | **`script-evaluator`** — score scripts 0-100, rewrite hooks, write viral scripts |
 
 ## Architecture
 

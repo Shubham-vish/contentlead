@@ -49,6 +49,8 @@ If you add text on Track 2 and a video on Track 0, the text will be **invisible*
 | Read timeline/editor state | `queries-and-state` | `query.getTimelineItems`, `query.getTrackInfo`, `query.getEditorState` |
 | Debugging, Logs, Arch | `infrastructure` | `GET /api/diagnostics`, `GET /api/console-errors` |
 | Multi-tab collaboration | `multi-tab` | `GET /api/tabs`, `POST /api/tabs/new`, `tabId` on `/api/execute` |
+| **AI Viral Clipping** | `ai-clipping` | Transcribe → score virality → extract clips → reframe 9:16 → render |
+| **Script Evaluation & Writing** | `script-evaluator` | Score scripts 0-100, rewrite hooks, write viral scripts from scratch |
 
 ## Disambiguation: Which Text/Cut command do I use?
 
