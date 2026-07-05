@@ -12,7 +12,6 @@ End-to-end workflow for editing talking-head or screen-share videos: transcribe 
 
 | Command | What It Does |
 |---------|-------------|
-| `editor.autoCaption` | **One-shot**: transcribe a clip + apply karaoke captions + persist transcript + reorder tracks |
 | `editor.addVideo` with `trim_start`/`trim_end` | Add a video clip showing only a source time range |
 | `editor.addVideoSegments` | Add multiple trimmed segments from one source in a single call |
 | `editor.clearTimeline` | Remove all items, filter by type, or clear one track |
@@ -27,86 +26,6 @@ End-to-end workflow for editing talking-head or screen-share videos: transcribe 
 ---
 
 ## Phase 1: Transcription
-
-### Option 0 (recommended): One-shot `editor.autoCaption`
-
-The fastest path. A single command that resolves the clip's source, extracts audio,
-transcribes it, applies word-level karaoke captions to the timeline, persists the
-transcript to the content, and reorders tracks so captions sit on top. Handles the
-whole Option A/B pipeline below for you.
-
-```json
-{
-  "type": "editor.autoCaption",
-  "params": {
-    "trackItemId": "video_abc",
-    "language": "hi",
-    "passes": 1,
-    "translate": false,
-    "autoReorder": true
-  }
-}
-```
-
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `trackItemId` | `string` | **required** | The video/audio clip on the timeline to caption |
-| `from` / `to` | `number` (ms) | clip range | Optional sub-window of the clip to caption |
-| `language` | `string` | `"hi"` | Transcription language (`hi` = Hindi/Hinglish, `en`, etc.) |
-| `passes` | `1`–`3` | `1` | Retry passes with widening audio padding — raise if edge words get clipped |
-| `style` | `string` | — | Caption style preset to apply |
-| `translate` | `boolean` | `false` | Translate captions instead of transcribing verbatim |
-| `autoReorder` | `boolean` | `true` | Reorder tracks (captions to top) after applying |
-
-**Returns** on success:
-```json
-{
-  "status": "success",
-  "captionCount": 42,
-  "trackId": "track_xyz",
-  "jobId": "tc_lz3k9f8a2b1c",
-  "reordered": true,
-  "transcriptPersisted": true,
-  "transcriptWordCount": 318
-}
-```
-
-**Progress tracking via job file.** The command runs a multi-step job and writes live
-progress to:
-
-```
-~/.skilltown-desktop/jobs/<jobId>.json
-```
-
-The `/api/execute` call **blocks until the job finishes** and returns the final result,
-but for a long clip you can tail the job file to watch progress. Shape:
-
-```json
-{
-  "jobId": "tc_lz3k9f8a2b1c",
-  "status": "in_progress",          // → "success" | "failed"
-  "params": { ... },
-  "steps": {
-    "resolve_source":    { "done": true, "sourceDurationSec": 222.9 },
-    "extract_audio":     { "done": true },
-    "upload":            { "done": true },
-    "transcribe":        { "done": false, "progress": 63 },   // 0–100
-    "filter_words":      { "done": false },
-    "apply_captions":    { "done": false },
-    "persist_transcript":{ "done": false },
-    "reorder_tracks":    { "done": false }
-  },
-  "result": null
-}
-```
-
-Poll `steps.transcribe.progress` (0–100) for the slow transcription phase. On failure,
-the failing step gets `{ done: false, error: "..." }` and top-level `status: "failed"`.
-Use `query.getTranscriptionStatus` (below) as the reload-safe status source.
-
-> Requires `PREPWITHAI_API_SECRET` configured on the desktop app. If you need full
-> control (custom upload, multi-language merge, manual word filtering), use the manual
-> pipeline in Option A / Option B instead.
 
 ### Option A: MCP Transcription (recommended for long videos)
 
@@ -613,34 +532,6 @@ POST /api/execute → content.applyCaptions {subtitles, words}
 # 7. Save
 POST /api/execute → editor.save
 ```
-
----
-
-## Verify Edits by Re-transcribing (Ground Truth)
-
-**Captions on the timeline are NOT the same as what the audio actually plays.** When you cut/split/rearrange video segments, always re-verify by transcribing the ACTUAL audio output. Common trap: you see the correct caption text but the audio underneath plays a different section (e.g., opening line repeated).
-
-**How to verify:**
-```bash
-# 1. Build the actual audio your edit produces
-ffmpeg -y -ss <segment1_start> -to <segment1_end> -i source.mp4 -vn -acodec libmp3lame /tmp/p1.mp3
-# ... repeat for each segment
-ffmpeg -y -i "concat:/tmp/p1.mp3|/tmp/p2.mp3|/tmp/p3.mp3" -acodec copy /tmp/verify.mp3
-
-# 2. Upload with unique blob name (see Phase 1) and re-transcribe
-# 3. Diff the returned text against what you expected
-
-# Check for repetitions:
-python3 -c "
-text = open('/tmp/verify_transcript.txt').read()
-# Opening phrases should appear ONCE
-signature = 'अगर तुम एक'  # or your video's unique opening
-assert text.count(signature) == 1, f'REPETITION: found {text.count(signature)}x'
-print('OK — no repetition')
-"
-```
-
-**Why this matters:** In a session where the user reported "the opening line is repeating", the issue was `editor.splitItem` not setting trim on split pieces — captions looked right but audio played source from time 0 for each piece. Only re-transcription caught it.
 
 ---
 

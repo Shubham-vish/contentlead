@@ -173,7 +173,7 @@ These endpoints are available on the Electron API server (in addition to `POST /
 | `/api/bridge/youtube/*` | POST | MCP mirror bridge for YouTube publishing |
 | `/api/bridge/content/*` | POST | MCP mirror bridge for content publish configuration |
 | `/api/bridge/context/*` | GET/POST | MCP mirror bridge for context store list/search/get/edit/manage |
-| `/api/bridge/learn/*` | GET/POST | MCP mirror bridge for Learn/KB list/search/get/edit/manage/categories |
+| `/api/bridge/hub/:handle/*` | GET/POST | **Creator Hub** — manage articles, folders, publish/edit in a user's hub. Load `hub` skill for full docs. |
 | `/api/project/create` | POST | Create local project file (autosave only, no DB) |
 | `/api/project/save` | POST | Save current project to file |
 | `/api/project/save-autosave` | POST | Save current project to canonical autosave file |
@@ -483,6 +483,7 @@ curl "http://127.0.0.1:$PORT/api/skills?q=animation" -H "Authorization: Bearer $
 | **🎯 End-to-end video creation** | **`orchestration-e2e`** — master 8-phase pipeline |
 | AI B-roll pipeline (5 steps) | `storystudio-pipeline` |
 | Apply/remove images & captions | `content-bridge` |
+| **📚 Creator Hub** (articles, folders, publish) | **`hub`** — manage knowledge hub content via bridge API |
 | Save, export, resize, tracks | `project-and-export` |
 | **AI image generation, vision, TTS** | `prepwithai/SKILL` |
 | **Transcribe video + Hinglish captions** | `transcription-and-editing` (Firebase polling + Latin transliteration) |
@@ -2172,7 +2173,7 @@ When editing scene/template rendering code: `TemplateInner` component does NOT h
 | POST | `/api/bridge/youtube/*` | Yes | MCP mirror bridge for YouTube publishing |
 | POST | `/api/bridge/content/*` | Yes | MCP mirror bridge for content publish configuration |
 | GET/POST | `/api/bridge/context/*` | Yes | MCP mirror bridge for context store list/search/get/edit/manage |
-| GET/POST | `/api/bridge/learn/*` | Yes | MCP mirror bridge for Learn/KB list/search/get/edit/manage/categories |
+| GET/POST | `/api/bridge/hub/:handle/*` | Yes | Creator Hub — manage articles, folders, publish/edit. See `hub` skill. |
 | POST | `/api/navigate` | Yes | Navigate to URL, auto-appends `?view=editor`. Options: `waitForReady`, `autoRestore`, `timeoutMs` |
 | POST | `/api/editor/wait-ready` | Yes | Wait for editor readiness (blocking) |
 | POST | `/api/project/restore` | Yes | Restore autosave project into editor |

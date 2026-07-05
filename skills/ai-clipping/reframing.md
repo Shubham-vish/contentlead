@@ -237,3 +237,139 @@ Use `POST /api/media/analyze` to get scene boundaries, then apply different stat
 ```
 
 This gives you 80% of the value of face tracking without any new infrastructure.
+
+---
+
+## v3: Dynamic Reframe Engine (✅ Implemented)
+
+**One-shot smooth reframing** — face detection + smoothing + keyframe animation in one API call. The video pans smoothly to follow the speaker's face.
+
+### Quick Start (One Call)
+
+```bash
+# Full pipeline: detect faces → smooth → generate keyframes → optionally apply
+curl -s -X POST "http://127.0.0.1:$PORT/api/media/reframe" \
+  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -d '{
+    "path": "/path/to/video.mp4",
+    "itemId": "video_abc123",
+    "preset": "smooth",
+    "apply": true,
+    "canvasWidth": 1080,
+    "canvasHeight": 1920,
+    "fps": 30
+  }'
+```
+
+When `apply: true` + `itemId` provided, keyframes are automatically applied to the video item's `x` property — the video pans within the vertical canvas.
+
+### Response
+
+```json
+{
+  "sourceWidth": 1920,
+  "sourceHeight": 1080,
+  "framesAnalyzed": 65,
+  "facesDetected": 58,
+  "faceSegments": [...],
+  "keyframes": [
+    {"frame": 0, "x": -888, "y": 0, "easing": "easeInOutCubic"},
+    {"frame": 150, "x": -1421, "y": 0, "easing": "easeInOutCubic"},
+    {"frame": 300, "x": -1065, "y": 0, "easing": "easeInOutCubic"}
+  ],
+  "commands": [
+    {"type": "editor.addKeyframe", "params": {"trackItemId": "video_abc123", "property": "x", "frame": 0, "value": -888, "easing": "easeInOutCubic"}},
+    ...
+  ],
+  "metadata": {
+    "method": "face-tracked",
+    "preset": "smooth",
+    "keyframeCount": 3,
+    "panRange": 533
+  }
+}
+```
+
+### Presets
+
+```bash
+# List all presets
+curl -s "http://127.0.0.1:$PORT/api/media/reframe/presets" -H "Authorization: $TOKEN"
+```
+
+| Preset | Dead Zone | Min Hold | Max Speed | Best For |
+|--------|-----------|----------|-----------|----------|
+| `smooth` (default) | 8% | 1.5s | 30%/s | General talking-head, podcasts |
+| `responsive` | 5% | 0.8s | 50%/s | Active movement, presentations |
+| `locked` | 20% | 3s | 20%/s | Minimal movement, interviews |
+| `cinematic` | 10% | 2s | 15%/s | Slow, dramatic pans |
+| `vlogger` | 4% | 0.5s | 60%/s | Single face, tight follow |
+
+### From Pre-Computed Segments (Skip Detection)
+
+If you already ran face detection (e.g., cached), generate keyframes directly:
+
+```bash
+curl -s -X POST "http://127.0.0.1:$PORT/api/media/reframe/from-segments" \
+  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -d '{
+    "segments": [
+      {"startSec": 0, "endSec": 5, "faceCenterX": 803, "cropX": 500, "cropWidth": 607},
+      {"startSec": 5, "endSec": 10, "faceCenterX": 1103, "cropX": 800, "cropWidth": 607}
+    ],
+    "sourceWidth": 1920,
+    "sourceHeight": 1080,
+    "itemId": "video_abc123",
+    "apply": true,
+    "preset": "cinematic"
+  }'
+```
+
+### AI Agent Workflow (for AI Clipping)
+
+```
+1. POST /api/media/reframe {path, preset: "smooth"}
+   → Get keyframes + face segments (don't apply yet)
+
+2. POST /api/content/create → new clip project
+3. Wait 10-12s for DB load
+4. editor.resize → 1080×1920
+5. editor.addVideo → place trimmed clip (get itemId)
+
+6. POST /api/media/reframe/from-segments {
+     segments: <from step 1, filtered to clip time range>,
+     itemId: <from step 5>,
+     apply: true,
+     trimStartSec: <clip start time>
+   }
+   → Keyframes applied, video pans smoothly
+
+7. editor.autoCaption → add captions
+8. editor.save
+```
+
+### Smoothing Algorithm
+
+The engine applies 4 passes to produce smooth, natural-looking pans:
+
+1. **Dead zone filter** — movements < deadZonePercent of frame width are ignored (prevents jitter from slight head movement)
+2. **Minimum hold** — stays at each position for minHoldSec before moving
+3. **Speed limiter** — pans never exceed maxSpeedPercent of frame width per second
+4. **Edge clamping** — crop window never goes beyond source frame boundaries (with edgePaddingPercent margin)
+
+### Custom Options
+
+Override any smoothing parameter:
+
+```json
+{
+  "path": "/path/to/video.mp4",
+  "options": {
+    "deadZonePercent": 12,
+    "minHoldSec": 2,
+    "maxSpeedPercent": 25,
+    "easing": "easeInOutSine",
+    "edgePaddingPercent": 8
+  }
+}
+```

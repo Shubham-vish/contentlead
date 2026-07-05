@@ -93,6 +93,61 @@ You need a project with the source video loaded to run autoCaption:
 // → {words: [{word, start, end}, ...], text: "full transcript...", srt: "..."}
 ```
 
+### 1.5 Speaker Diarization (Optional — for multi-speaker content)
+
+For podcasts, interviews, and panel discussions, run hybrid speaker diarization to identify WHO said what. This enables better clip selection (balanced Q&A, best guest answers, etc.).
+
+**Desktop Command:**
+```json
+{"type": "query.transcribeWithSpeakers", "params": {
+  "trackItemId": "<video track item ID>",
+  "language": "en"
+}}
+```
+
+**Alternative inputs (skip audio extraction):**
+```json
+{"type": "query.transcribeWithSpeakers", "params": {
+  "audioUrl": "<public URL to audio/video>",
+  "language": "en"
+}}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "transcript": { "text": "...", "words": [{"word": "Hello", "start": 0.0, "end": 0.4}, ...] },
+  "diarization": {
+    "speakers": ["A", "B"],
+    "speaker_count": 2,
+    "dialogue": [
+      {"speaker": "A", "start": 0.0, "end": 3.4, "text": "What about crypto?", "word_count": 3},
+      {"speaker": "B", "start": 3.8, "end": 12.2, "text": "It's not something you can ban...", "word_count": 25}
+    ]
+  },
+  "hybrid_words": [{"word": "What", "start": 0.0, "end": 0.4, "speaker": "A"}, ...],
+  "stats": {"whisper_time_sec": 9, "diarize_time_sec": 35, "total_words": 353, "matched_pct": 100}
+}
+```
+
+**How it works:** Runs Azure Whisper (word timestamps) + GPT-4o-transcribe-diarize (speaker segments) in parallel on the PrepWithAI backend, then merges by time overlap. ~97-100% word-to-speaker match rate.
+
+**When to use diarization:**
+- Content has 2+ speakers (podcast, interview, debate, panel)
+- You want to extract "best guest answers" or "best interviewer questions"
+- You want balanced clips (roughly equal speaking time per speaker)
+
+**When to skip:**
+- Single-speaker content (vlog, tutorial, commentary)
+- Speed is critical and speaker info not needed
+
+**Using speaker context in scoring (Phase 2):**
+- Tag each clip with primary speaker: `"primary_speaker": "B"` (who speaks most in that clip)
+- Prefer clips with speaker TRANSITIONS (question → answer) — they feel more dynamic
+- For interview content, the best clips usually start with host's question + guest's answer
+- Speaker ratio per clip: aim for 30-70% split (pure monologue clips are less engaging)
+
 ---
 
 ## Phase 2: Score Virality (YOUR BRAIN)
@@ -146,7 +201,9 @@ For each clip, produce:
   "end_time": 489.2,
   "score": 87,
   "hook_sentence": "Here's what nobody in this industry will tell you publicly...",
-  "virality_reason": "Opens with forbidden-knowledge hook, delivers a contrarian take with specific examples"
+  "virality_reason": "Opens with forbidden-knowledge hook, delivers a contrarian take with specific examples",
+  "primary_speaker": "B",
+  "speaker_ratio": {"A": 0.3, "B": 0.7}
 }
 ```
 

@@ -125,6 +125,11 @@ curl -X POST http://127.0.0.1:$PORT/api/execute \
 | GET | `/api/bridge/inspiration/feed` | Browse creator content feed |
 | POST | `/api/bridge/inspiration/search` | Search for content inspiration |
 | POST | `/api/bridge/inspiration/transcribe` | Transcribe a video by shortcode |
+| GET | `/api/bridge/hub/:handle/articles` | List hub articles (tree/flat) |
+| GET | `/api/bridge/hub/:handle/articles/:id` | Get single hub article |
+| GET | `/api/bridge/hub/:handle/search?q=...` | Search hub articles |
+| POST | `/api/bridge/hub/:handle/manage` | Create/update/delete/publish hub articles & folders |
+| POST | `/api/bridge/hub/:handle/edit` | Edit hub article content in-place |
 
 ### Activity Logs & Error Checking
 
@@ -314,6 +319,7 @@ All times in **milliseconds** (1s = 1000ms). Canvas origin: (0,0) = top-left.
 | `storystudio-pipeline` | AI B-roll pipeline (5 steps) |
 | `infrastructure` | Debug, metrics, screenshots, media import/analyze, project create/duplicate, UI actions, scene bundles |
 | `content-bridge` | Apply/remove images and captions from pipeline |
+| `hub` | **Creator Hub** — manage articles, folders, publish/edit content in a user's personal knowledge hub |
 | `project-and-export` | Save, export, resize, tracks, undo/redo |
 | `queries-and-state` | Read editor state, timeline, transcript, fonts |
 | `content-publishing` | **Full content pipeline** — create content, set metadata, upload video, configure channels, CTA, publish to IG/YT/LinkedIn, poll status. Sub-docs: `content-lifecycle.md`, `channel-configuration.md`, `instagram.md`, `youtube.md`, `linkedin.md`, `platform-rules.md`, `workflows.md` |
