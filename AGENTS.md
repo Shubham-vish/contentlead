@@ -65,6 +65,7 @@ TOKEN=$(echo $API | python3 -c "import sys,json; print(json.load(sys.stdin)['tok
 ```bash
 curl -s http://127.0.0.1:$PORT/api/health -H "Authorization: Bearer $TOKEN"
 # Check: editor.ready == true, media.serverActive == true
+# Also returns: cloud.authenticated (bool/null), autosave status, error counts, api.pendingCommands
 ```
 
 ### Step 3: Run unified diagnostics — FIX before proceeding
@@ -159,7 +160,7 @@ These endpoints are available on the Electron API server (in addition to `POST /
 
 | Endpoint | Method | Description |
 |---|---|---|
-| `/api/health` | GET | Health check — editor ready, media server status, error counts |
+| `/api/health` | GET | Health check — editor ready, media server status, cloud auth status, error counts |
 | `/api/diagnostics?full=true` | GET | Unified diagnostic check — console errors, scene errors, timeline issues |
 | `/api/screenshot` | GET | Capture screenshot of the Electron window (returns PNG) |
 | `/api/navigate` | POST | Navigate to a URL — `{url, waitForReady, autoRestore, timeoutMs}` |
@@ -167,16 +168,16 @@ These endpoints are available on the Electron API server (in addition to `POST /
 | `/api/tabs/new` | POST | Open a new tab — `{url}` or `{contentId}` |
 | `/api/tabs/:id/activate` | POST | Switch focus to a specific tab |
 | `/api/tabs/:id/close` | POST | Close a specific tab |
-| `/api/content/create` | POST | Create new content in CosmosDB — `{title, description}` → creates DB record + navigates to editor |
+| `/api/content/create` | POST | Create new content in CosmosDB — `{title, description, waitForReady?, timeoutMs?}` → creates DB record + navigates to editor. Returns `{contentId, tabId, editorReady}` |
 | `/api/content/list` | GET | List available content (DB + local autosaves) |
 | `/api/bridge/instagram/*` | GET/POST | MCP mirror bridge for Instagram accounts, publish/status, token validation, posts, and CTA automation (`update_cta` supports `messageBody` + `buttons[]`; publish status auto-syncs CTA draft → production) |
-| `/api/bridge/youtube/*` | POST | MCP mirror bridge for YouTube publishing |
-| `/api/bridge/content/*` | POST | MCP mirror bridge for content publish configuration |
-| `/api/bridge/context/*` | GET/POST | MCP mirror bridge for context store list/search/get/edit/manage |
+| `/api/bridge/publish/youtube` | POST | Legacy YouTube publishing endpoint |
+| `/api/bridge/content/publish-config` | POST | Content publish configuration (channel, privacy, schedule) |
+| `/api/bridge/context/list`, `search`, `get`, `edit` | GET/POST | Context store operations (list/search/get/edit/manage) |
 | `/api/bridge/hub/:handle/*` | GET/POST | **Creator Hub** — manage articles, folders, publish/edit in a user's hub. Load `hub` skill for full docs. |
-| `/api/project/create` | POST | Create local project file (autosave only, no DB) |
-| `/api/project/save` | POST | Save current project to file |
-| `/api/project/save-autosave` | POST | Save current project to canonical autosave file |
+| ~~`/api/project/create`~~ | ~~POST~~ | **REMOVED** — was local-only, caused "Content Not Found" confusion. Use `/api/content/create` instead |
+| `/api/project/save` | POST | Save current project to a specific file path (advanced). **Prefer `editor.save` for normal saves** |
+| `/api/project/save-autosave` | POST | Save to local autosave file only (no cloud sync). Use as fallback if `editor.save` fails |
 | `/api/media/import` | POST | Import media file — `{filePath}` → serves via media server |
 | `/api/media/analyze` | POST | Analyze media file metadata (duration, resolution, codec) |
 | `/api/render` | POST | Start render job; supports presets or `{renderType:"design", data:{...}, contentId, uploadToCloud:true}` to upload MP4 + thumbnail and update Content URLs |
@@ -192,8 +193,8 @@ To create new content programmatically:
 curl -s -X POST "http://127.0.0.1:$PORT/api/content/create" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"title": "My Video", "description": "A cool video"}'
-# Returns: {status, contentId, navigated}
-# ⚠️ Then wait 10-12s for DB content load (see Step 5)
+# Returns: {status, contentId, tabId, editorReady, navigated}
+# With waitForReady: true, blocks until editor is ready (eliminates Step 5 race condition)
 ```
 
 ## 🔍 MANDATORY Error Monitoring Protocol
@@ -538,12 +539,14 @@ cat ~/.skilltown-desktop/api.json
 ```bash
 curl http://127.0.0.1:$PORT/api/health -H "Authorization: Bearer $TOKEN"
 # → {"status":"healthy"|"degraded"|"error", "editor":{ready,contentId,stateVersion,capabilities},
-#    "navigation":{currentURL,appOrigin}, "media":{serverPort,serverActive},
+#    "navigation":{currentURL,appOrigin}, "cloud":{authenticated,user},
+#    "media":{serverPort,serverActive},
 #    "project":{autosaveExists,autosavePath}, "errors":{recentCount,totalBuffered}, "api":{port,uptime}}
 ```
 - `healthy` = editor ready, no recent errors
 - `degraded` = editor not ready OR recent errors exist
 - `error` = critical issues
+- `cloud.authenticated` = whether cloud session cookies are valid (cached 60s). Check this before using `/api/bridge/*` endpoints
 
 ### List available content
 ```bash
@@ -952,7 +955,7 @@ These are commonly useful commands not covered in the core sections above:
 | `editor.setOpacity` | Set item opacity | `{itemId, opacity: number}` |
 | `editor.setPlaybackRate` | Set video playback speed | `{itemId, rate: number}` |
 | `editor.addVideoSegments` | Add multiple trimmed segments from one source | `{url, segments: [{start, end, label?}], gap?, startAt?, width?, height?, volume?}` |
-| `editor.removeSegment` | Cut a time range, optionally ripple-shifting later items | `{from_ms, to_ms, ripple?: boolean}` |
+| `editor.removeSegment` | Cut a time range, optionally ripple-shifting later items | `{from, to, ripple?: boolean}` |
 | `editor.clearTimeline` | Clear all items, filtered types, or one track | `{types?: string[], trackId?: string}` |
 | `bulk.styleByType` | Apply one style payload to every item of a type | `{type: "caption"|"text"|"video", details: {...styling}}` |
 | `editor.addKeyframe` | Add animation keyframe | `{itemId, time, property, value}` |
@@ -990,7 +993,7 @@ These are commonly useful commands not covered in the core sections above:
 
 | Category | Commands |
 |---|---|
-| Text & captions | `editor.addText`, `editor.addCaption`, `editor.editItem` |
+| Text & captions | `editor.addText`, `editor.addCaption`, `editor.editItem`, `editor.editCaptionWord`, `editor.bulkReplaceText` |
 | Typography queries | `query.getAllText`, `query.listFonts`, `query.getVisibleText` |
 
 ### Media, audio, and validation
@@ -998,15 +1001,16 @@ These are commonly useful commands not covered in the core sections above:
 | Category | Commands |
 |---|---|
 | Add/replace media | `editor.addImage`, `editor.addVideo`, `editor.addVideoSegments`, `editor.addAudio`, `editor.replaceMedia` |
-| Media playback/style | `editor.setVolume`, `editor.setAudioGain`, `editor.setPlaybackRate`, `editor.setOpacity` |
-| Media checks | `media.validate`, `media.prepare`, `media.status`, `query.getAudioLoudness` |
+| Media playback/style | `editor.setVolume`, `editor.setAudioGain`, `editor.setPlaybackRate`, `editor.setOpacity`, `editor.setClipState` |
+| Audio processing | `audio.setEq`, `audio.removeEq`, `audio.duckMusic`, `audio.balanceVolumes`, `audio.reduceNoise`, `audio.saveNoiseProfile`, `audio.listNoiseProfiles`, `audio.reduceNoiseWithProfile` |
+| Media checks | `media.validate`, `media.prepare`, `media.status`, `media.detectFacesInFrames`, `query.getAudioLoudness` |
 
 ### Timeline, selection, and bulk changes
 
 | Category | Commands |
 |---|---|
-| Timeline edits | `editor.moveItem`, `editor.trimItem`, `editor.splitItem`, `editor.cutItem`, `editor.cloneItem`, `editor.removeSegment`, `editor.deleteItems`, `editor.purgeItems` |
-| Selection | `editor.select`, `editor.deselectAll` |
+| Timeline edits | `editor.moveItem`, `editor.trimItem`, `editor.splitItem`, `editor.cutItem`, `editor.cloneItem`, `editor.removeSegment`, `editor.deleteItems`, `editor.purgeItems`, `editor.cropItem`, `editor.previewRange` |
+| Selection & grouping | `editor.select`, `editor.deselectAll`, `editor.groupItems`, `editor.ungroupItems`, `editor.moveGroup` |
 | Cleanup & batching | `editor.clearTimeline`, `editor.removeGaps`, `editor.setMagnetic`, `bulk.deleteByType`, `bulk.styleByType`, `bulk.shiftAll`, `batch.execute` |
 | AI helpers | `ai.undoLastAction`, `ai.previewChange` |
 
@@ -1022,7 +1026,8 @@ These are commonly useful commands not covered in the core sections above:
 
 | Category | Commands |
 |---|---|
-| Track operations | `editor.reorderTracks`, `editor.muteTrack`, `editor.lockTrack`, `editor.hideTrack`, `editor.renameTrack` |
+| Track operations | `editor.reorderTracks`, `editor.muteTrack`, `editor.lockTrack`, `editor.hideTrack`, `editor.renameTrack`, `editor.moveTrack`, `editor.editTrack`, `editor.linkTracks`, `editor.unlinkTracks` |
+| Snapshots | `editor.createSnapshot`, `editor.listSnapshots`, `editor.restoreSnapshot`, `editor.renameSnapshot`, `editor.deleteSnapshot` |
 | Project commands | `editor.resize`, `editor.setBackground`, `editor.loadDesign`, `editor.save`, `editor.undo`, `editor.redo`, `editor.export`, `project.getFullState`, `project.saveAutosave`, `project.loadFullState` |
 | Render checks | `render.validate`, `render.verifyOutput` |
 
@@ -1030,7 +1035,7 @@ These are commonly useful commands not covered in the core sections above:
 
 | Category | Commands |
 |---|---|
-| Core state | `query.getEditorState`, `query.getTrackInfo`, `query.getTimelineItems`, `query.getItemProperties`, `query.getCurrentTime`, `query.getItemsAtTime`, `query.getDuration`, `query.getCanvasSize`, `query.getSelectedItems`, `query.getTranscript`, `query.getProjectInfo` |
+| Core state | `query.getEditorState`, `query.getTrackInfo`, `query.getTimelineItems`, `query.getItemProperties`, `query.getCurrentTime`, `query.getItemsAtTime`, `query.getDuration`, `query.getCanvasSize`, `query.getSelectedItems`, `query.getTranscript`, `query.getProjectInfo`, `query.getTranscriptionStatus` |
 | Diagnostics | `query.diagnoseScenes`, `query.validateTimeline`, `query.getSceneErrors`, `query.getMetrics`, `query.getCommandHistory`, `query.getCircuitBreakerStatus`, `query.capturePreviewFrame`, `query.diff`, `query.getAssets`, `query.listAnimationPresets` |
 
 ### Scenes and templates
@@ -1044,7 +1049,7 @@ These are commonly useful commands not covered in the core sections above:
 
 | Category | Commands |
 |---|---|
-| Content bridge | `content.getDetails`, `content.getTranscriptWords`, `content.updateMetadata`, `content.applyImage`, `content.removeImage`, `content.applyCaptions`, `content.removeCaptions` |
+| Content bridge | `content.getDetails`, `content.getTranscriptWords`, `content.updateMetadata`, `content.applyImage`, `content.removeImage`, `content.applyCaptions`, `content.removeCaptions`, `content.setTranscript` |
 | StoryStudio pipeline | `storystudio.getPipelineState`, `storystudio.getGroupings`, `storystudio.getDecisions`, `storystudio.generateGroupings`, `storystudio.generateDecisions`, `storystudio.generateStrings`, `storystudio.searchImages`, `storystudio.applyAssets` |
 
 ## Additional API Endpoints
@@ -2037,6 +2042,27 @@ The autosave file is what `POST /api/project/restore` reads. This bypasses the D
 
 ### Autosave timer
 The Electron main process runs an autosave timer that periodically captures state via IPC and writes to the `.skilltown` file. However, this timer may not be active for all content IDs. If `editor.save` fails and the autosave timer isn't running, call `project.saveAutosave`.
+
+### Save Endpoint Disambiguation
+
+| Method | What it does | When to use |
+|---|---|---|
+| `editor.save` (via `/api/execute`) | Saves to **cloud DB** (CosmosDB) | **Always use this as primary save** |
+| `POST /api/project/save-autosave` | Saves to **local** `.autosave.skilltown` file | Fallback when `editor.save` fails (e.g., large bundled scenes) |
+| `POST /api/project/save` | Saves to **arbitrary file path** | Developer/advanced use only — not for normal workflows |
+
+**Rule:** Use `editor.save`. If it fails, use `project.saveAutosave` as fallback. Never use `project/save` in automated workflows.
+
+### Load/Open Endpoint Disambiguation
+
+| Method | What it does | When to use |
+|---|---|---|
+| `POST /api/navigate` | Navigate to a content URL + optional `waitForReady` + `autoRestore` | **Primary way to open content** — handles everything |
+| `POST /api/project/restore` | Load autosave file by `contentId` into current editor | After navigating, if `autoRestore` wasn't used |
+| `POST /api/project/open` | Load a `.skilltown` file by file path | Only for opening exported project files |
+| `POST /api/project/import` | Load raw design JSON into current editor | Programmatic state injection (advanced) |
+
+**Rule:** Use `/api/navigate` with `autoRestore: true`. That handles navigation + editor wait + autosave restore in one call.
 
 ### Load / Restore
 After navigating to a content page, use `POST /api/project/restore` to reload the saved design:

@@ -212,7 +212,7 @@ Example:
 | Param | Type | Default | Description |
 |---|---|---|---|
 | `format` | `string` | `"mp4"` | Export format |
-| `project_name` | `string` | project title or default | Output name |
+| `projectName` | `string` | project title or default | Output name |
 
 Example:
 
@@ -221,7 +221,7 @@ Example:
   "type": "editor.export",
   "params": {
     "format": "mp4",
-    "project_name": "launch-recap-final"
+    "projectName": "launch-recap-final"
   }
 }
 ```
@@ -257,7 +257,7 @@ Select one or more items.
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `item_ids` | `array<string>` | required | Items to select |
+| `itemIds` | `array<string>` | required | Items to select |
 
 Example:
 
@@ -265,7 +265,7 @@ Example:
 {
   "type": "editor.select",
   "params": {
-    "item_ids": ["text_title", "image_bg"]
+    "itemIds": ["text_title", "image_bg"]
   }
 }
 ```
@@ -291,7 +291,7 @@ Example:
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `track_id` | `string` | required | Track to change |
+| `trackId` | `string` | required | Track to change |
 | `muted` | `boolean` | `true` when omitted by some clients | Whether the track is muted |
 
 Example:
@@ -300,7 +300,7 @@ Example:
 {
   "type": "editor.muteTrack",
   "params": {
-    "track_id": "track_music",
+    "trackId": "track_music",
     "muted": true
   }
 }
@@ -310,7 +310,7 @@ Example:
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `track_id` | `string` | required | Track to change |
+| `trackId` | `string` | required | Track to change |
 | `locked` | `boolean` | `true` when omitted by some clients | Whether the track is locked |
 
 Example:
@@ -319,7 +319,7 @@ Example:
 {
   "type": "editor.lockTrack",
   "params": {
-    "track_id": "track_main_video",
+    "trackId": "track_main_video",
     "locked": true
   }
 }
@@ -329,7 +329,7 @@ Example:
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `track_id` | `string` | required | Track to change |
+| `trackId` | `string` | required | Track to change |
 | `hidden` | `boolean` | `true` when omitted by some clients | Whether the track is hidden |
 
 Example:
@@ -338,7 +338,7 @@ Example:
 {
   "type": "editor.hideTrack",
   "params": {
-    "track_id": "track_overlays",
+    "trackId": "track_overlays",
     "hidden": true
   }
 }
@@ -348,7 +348,7 @@ Example:
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `track_id` | `string` | required | Track to rename |
+| `trackId` | `string` | required | Track to rename |
 | `name` | `string` | `"Track"` | New track label |
 
 Example:
@@ -357,7 +357,7 @@ Example:
 {
   "type": "editor.renameTrack",
   "params": {
-    "track_id": "track_music",
+    "trackId": "track_music",
     "name": "Background Music"
   }
 }
@@ -377,7 +377,7 @@ Example:
     "type": "editor.export",
     "params": {
       "format": "mp4",
-      "project_name": "final-cut"
+      "projectName": "final-cut"
     }
   }
 ]
@@ -408,14 +408,14 @@ Example:
   {
     "type": "editor.lockTrack",
     "params": {
-      "track_id": "track_main_video",
+      "trackId": "track_main_video",
       "locked": true
     }
   },
   {
     "type": "editor.select",
     "params": {
-      "item_ids": ["text_title"]
+      "itemIds": ["text_title"]
     }
   }
 ]

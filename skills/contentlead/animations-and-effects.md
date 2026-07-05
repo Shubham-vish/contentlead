@@ -34,9 +34,12 @@ Assign one animation preset to an item for `in`, `out`, or `loop` behavior.
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `item_id` | `string` | required | Target timeline item |
-| `type` | `string` | required | `in`, `out`, or `loop` |
-| `preset` | `string` | required | Preset name from the lists below |
+| `itemId` | `string` | required | Target timeline item |
+| `animationIn` | `string` | — | Enter animation preset name (e.g., `fadeIn`, `slideInLeft`) |
+| `animationOut` | `string` | — | Exit animation preset name (e.g., `fadeOut`, `scaleOut`) |
+| `duration` | `number` | `500` | Animation duration in milliseconds |
+
+> **Legacy format also accepted:** `{itemId, animationType: "in", type: "fadeIn"}` — but prefer the new format above.
 
 Example:
 
@@ -44,9 +47,9 @@ Example:
 {
   "type": "editor.setAnimation",
   "params": {
-    "item_id": "text_hero",
-    "type": "in",
-    "preset": "fadeIn"
+    "itemId": "text_hero",
+    "animationIn": "fadeIn",
+    "duration": 500
   }
 }
 ```
@@ -69,7 +72,7 @@ Remove one animation type from an item.
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `item_id` | `string` | required | Target timeline item |
+| `itemId` | `string` | required | Target timeline item |
 | `type` | `string` | required | `in`, `out`, or `loop` |
 
 Example:
@@ -78,7 +81,7 @@ Example:
 {
   "type": "editor.removeAnimation",
   "params": {
-    "item_id": "text_hero",
+    "itemId": "text_hero",
     "type": "loop"
   }
 }
@@ -90,7 +93,7 @@ Animate a specific property at a frame.
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `item_id` | `string` | required | Target timeline item |
+| `itemId` | `string` | required | Target timeline item |
 | `property` | `string` | required | `opacity`, `x`, `y`, or `scale` |
 | `value` | `number` | required | Property value at that frame |
 | `frame` | `number` | required | Frame number relative to item start |
@@ -102,7 +105,7 @@ Example:
 {
   "type": "editor.addKeyframe",
   "params": {
-    "item_id": "image_01",
+    "itemId": "image_01",
     "property": "opacity",
     "value": 0.35,
     "frame": 12,
@@ -117,7 +120,7 @@ Remove a keyframe from a property at a frame.
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `item_id` | `string` | required | Target timeline item |
+| `itemId` | `string` | required | Target timeline item |
 | `property` | `string` | required | `opacity`, `x`, `y`, or `scale` |
 | `frame` | `number` | required | Frame number to remove |
 
@@ -127,7 +130,7 @@ Example:
 {
   "type": "editor.removeKeyframe",
   "params": {
-    "item_id": "image_01",
+    "itemId": "image_01",
     "property": "opacity",
     "frame": 12
   }
@@ -140,7 +143,7 @@ Apply a visual effect to an item.
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `item_id` | `string` | required | Target timeline item |
+| `itemId` | `string` | required | Target timeline item |
 | `effect_type` | `string` | required | `blur`, `brightness`, `contrast`, `grayscale`, or `sepia` |
 
 Example:
@@ -149,7 +152,7 @@ Example:
 {
   "type": "editor.addEffect",
   "params": {
-    "item_id": "video_broll",
+    "itemId": "video_broll",
     "effect_type": "grayscale"
   }
 }
@@ -161,7 +164,7 @@ Remove one effect from an item.
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `item_id` | `string` | required | Target timeline item |
+| `itemId` | `string` | required | Target timeline item |
 | `effect_type` | `string` | required | Effect to remove |
 
 Example:
@@ -170,7 +173,7 @@ Example:
 {
   "type": "editor.removeEffect",
   "params": {
-    "item_id": "video_broll",
+    "itemId": "video_broll",
     "effect_type": "grayscale"
   }
 }
@@ -196,7 +199,7 @@ Example:
   {
     "type": "editor.setAnimation",
     "params": {
-      "item_id": "text_hero",
+      "itemId": "text_hero",
       "type": "in",
       "preset": "fadeIn"
     }
@@ -204,7 +207,7 @@ Example:
   {
     "type": "editor.setAnimation",
     "params": {
-      "item_id": "text_hero",
+      "itemId": "text_hero",
       "type": "out",
       "preset": "fadeOut"
     }
@@ -219,7 +222,7 @@ Example:
   {
     "type": "editor.setAnimation",
     "params": {
-      "item_id": "text_hero",
+      "itemId": "text_hero",
       "type": "in",
       "preset": "slideInLeft"
     }
@@ -227,7 +230,7 @@ Example:
   {
     "type": "editor.setAnimation",
     "params": {
-      "item_id": "text_hero",
+      "itemId": "text_hero",
       "type": "out",
       "preset": "slideOutRight"
     }
@@ -242,7 +245,7 @@ Example:
   {
     "type": "editor.setAnimation",
     "params": {
-      "item_id": "cta_button",
+      "itemId": "cta_button",
       "type": "in",
       "preset": "scaleIn"
     }
@@ -250,7 +253,7 @@ Example:
   {
     "type": "editor.setAnimation",
     "params": {
-      "item_id": "cta_button",
+      "itemId": "cta_button",
       "type": "out",
       "preset": "scaleOut"
     }
@@ -265,7 +268,7 @@ Example:
   {
     "type": "editor.setAnimation",
     "params": {
-      "item_id": "cta_button",
+      "itemId": "cta_button",
       "type": "in",
       "preset": "scaleIn"
     }
@@ -273,7 +276,7 @@ Example:
   {
     "type": "editor.setAnimation",
     "params": {
-      "item_id": "cta_button",
+      "itemId": "cta_button",
       "type": "loop",
       "preset": "heartbeatAnimationLoop"
     }
@@ -288,14 +291,14 @@ Example:
   {
     "type": "editor.addEffect",
     "params": {
-      "item_id": "video_broll",
+      "itemId": "video_broll",
       "effect_type": "grayscale"
     }
   },
   {
     "type": "editor.addEffect",
     "params": {
-      "item_id": "video_broll",
+      "itemId": "video_broll",
       "effect_type": "contrast"
     }
   }
@@ -309,7 +312,7 @@ Example:
   {
     "type": "editor.addKeyframe",
     "params": {
-      "item_id": "logo_01",
+      "itemId": "logo_01",
       "property": "opacity",
       "value": 0,
       "frame": 0,
@@ -319,7 +322,7 @@ Example:
   {
     "type": "editor.addKeyframe",
     "params": {
-      "item_id": "logo_01",
+      "itemId": "logo_01",
       "property": "opacity",
       "value": 1,
       "frame": 18,

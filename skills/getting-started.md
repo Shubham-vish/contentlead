@@ -61,6 +61,7 @@ Expected shape (v3):
 | `POST` | `/api/batch` | Yes | Execute many commands in order |
 | `GET` | `/api/skills` | Yes | List available skill docs |
 | `GET` | `/api/skills/:name` | Yes | Load one skill document by name |
+| `GET` | `/api/app/auth` | Yes | Check user login state (200 if logged in, 401 if not) |
 | `GET` | `/api/app/origin` | Yes | Get current app origin (cloud vs local dev) |
 | `POST` | `/api/app/set-origin` | Yes | Switch between cloud and local dev server |
 
@@ -83,6 +84,18 @@ Typical response:
 ```
 
 Fallback (no auth): `GET /api/info` — returns basic status.
+
+## User Login Check
+
+Before executing editor commands, verify the user is logged into the web app:
+
+```bash
+curl http://127.0.0.1:$PORT/api/app/auth -H "Authorization: ******"
+# Logged in:  200 → { "authenticated": true, "user": { "name": "...", "email": "..." } }
+# Not logged: 401 → { "authenticated": false, "user": null }
+```
+
+If `authenticated: false`, the user must sign in via the app UI first. The app auto-redirects to the login page on startup if no session exists. Login persists across app restarts (7-day refresh token).
 
 ## Origin Switching (Cloud ↔ Local Dev)
 

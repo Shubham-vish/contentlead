@@ -97,11 +97,11 @@ You need a project with the source video loaded to run autoCaption:
 
 For podcasts, interviews, and panel discussions, run hybrid speaker diarization to identify WHO said what. This enables better clip selection (balanced Q&A, best guest answers, etc.).
 
-**Desktop Command:**
+**Desktop Command (simple — recommended):**
 ```json
 {"type": "query.transcribeWithSpeakers", "params": {
   "trackItemId": "<video track item ID>",
-  "language": "en"
+  "quality": "balanced"
 }}
 ```
 
@@ -109,27 +109,95 @@ For podcasts, interviews, and panel discussions, run hybrid speaker diarization 
 ```json
 {"type": "query.transcribeWithSpeakers", "params": {
   "audioUrl": "<public URL to audio/video>",
-  "language": "en"
+  "quality": "best",
+  "language": "hi",
+  "outputScript": "latin"
 }}
 ```
+
+**Quality presets:**
+- `"fast"` — transcript only, no speakers. Use for quick previews.
+- `"balanced"` (default) — 1-pass transcription + speaker diarization. Good for most content.
+- `"best"` — 3-pass transcription + speakers. Use for final clip selection on important content.
 
 **Response:**
 ```json
 {
   "success": true,
-  "transcript": { "text": "...", "words": [{"word": "Hello", "start": 0.0, "end": 0.4}, ...] },
-  "diarization": {
-    "speakers": ["A", "B"],
-    "speaker_count": 2,
-    "dialogue": [
-      {"speaker": "A", "start": 0.0, "end": 3.4, "text": "What about crypto?", "word_count": 3},
-      {"speaker": "B", "start": 3.8, "end": 12.2, "text": "It's not something you can ban...", "word_count": 25}
+  "mode": "speaker",
+  "transcript": {
+    "text": "What about crypto? It's not something you can ban...",
+    "duration_sec": 145.2,
+    "language": "en",
+    "word_count": 353
+  },
+  "speakers": {
+    "count": 2,
+    "items": [
+      {"id": "spk_0", "word_count": 145, "total_speech_sec": 62.4},
+      {"id": "spk_1", "word_count": 198, "total_speech_sec": 78.8}
     ]
   },
-  "hybrid_words": [{"word": "What", "start": 0.0, "end": 0.4, "speaker": "A"}, ...],
-  "stats": {"whisper_time_sec": 9, "diarize_time_sec": 35, "total_words": 353, "matched_pct": 100}
+  "speakerTranscript": {
+    "dialogue": [
+      {"turn_index": 0, "speaker": "spk_0", "start_sec": 0.0, "end_sec": 3.4, "duration_sec": 3.4, "text": "What about crypto?", "word_count": 3},
+      {"turn_index": 1, "speaker": "spk_1", "start_sec": 3.8, "end_sec": 12.2, "duration_sec": 8.4, "text": "It's not something you can ban...", "word_count": 25}
+    ],
+    "words": [{"word": "What", "start_sec": 0.0, "end_sec": 0.4, "speaker": "spk_0"}, ...]
+  },
+  "warnings": [],
+  "stats": {"whisper_time_ms": 9000, "diarize_time_ms": 35000, "quality": "balanced"}
 }
 ```
+
+**Primary outputs:**
+- **For clip selection/scoring:** `result.speakerTranscript.dialogue` — turn-level data with speaker labels. Use this to identify interesting clips.
+- **For caption timing:** `result.speakerTranscript.words` — word-level timestamps from Azure Whisper. **⚠️ ALWAYS use this for caption placement. NEVER estimate word timing proportionally from turn-level `dialogue` entries.** Proportional estimation drifts 2-4 seconds on turns longer than 30s.
+
+### ⚠️ CRITICAL: Caption Timing — MUST Use Word-Level Timestamps
+
+The `speakerTranscript` response contains TWO arrays:
+- `dialogue[]` — turn-level: `{speaker, start_sec, end_sec, text}`. Good for **clip selection** (who said what, when).
+- `words[]` — word-level: `{word, start_sec, end_sec, speaker}`. **MANDATORY for caption timing.**
+
+**Why this matters:** A single dialogue turn can span 30-120 seconds. If you split that turn's text into 4-word caption chunks and distribute timing proportionally (`chunk_start = turn_start + (word_index / total_words) * turn_duration`), the captions will drift 2-4 seconds from actual speech. Real speech has pauses, emphasis, and speed changes that proportional math cannot capture.
+
+**Correct caption flow when using diarization data:**
+```python
+# 1. Get word-level timestamps from diarization response
+words = result['speakerTranscript']['words']
+# Each word: {"word": "crypto", "start_sec": 3.4, "end_sec": 3.8, "speaker": "spk_1"}
+
+# 2. Filter words for the clip's time range
+clip_start, clip_end = 432.2, 558.0  # seconds in source
+clip_words = [w for w in words if w['start_sec'] >= clip_start and w['end_sec'] <= clip_end]
+
+# 3. Group into 3-5 word chunks using REAL timestamps
+for i in range(0, len(clip_words), 4):
+    chunk = clip_words[i:i+4]
+    caption = {
+        'text': ' '.join(w['word'] for w in chunk),
+        'from': round((chunk[0]['start_sec'] - clip_start) * 1000),  # ms, relative to clip
+        'to': round((chunk[-1]['end_sec'] - clip_start) * 1000)
+    }
+
+# 4. Apply with content.applyCaptions
+{"type": "content.applyCaptions", "params": {"subtitles": captions}}
+```
+
+**DO NOT:**
+- ❌ Estimate word timing by dividing turn duration evenly across words
+- ❌ Use local Whisper as a fallback — Azure Whisper handles Hindi, Hinglish, transliteration, and all languages the platform supports
+- ❌ Skip the `words[]` array and only use `dialogue[]` for captions
+
+**If `speakerTranscript.words[]` is missing or empty** (edge case — API degradation):
+- Retry `query.transcribeWithSpeakers` with `quality: "best"`
+- If still missing, run `editor.autoCaption` on each individual clip project instead (this triggers a fresh Azure Whisper transcription on just that clip's audio)
+
+**Error handling:** Check `result.warnings` array. Possible codes:
+- `DIARIZATION_FAILED` — speakers unavailable but transcript exists (retryable)
+- `NO_SPEECH_DETECTED` — no speech found in audio (not retryable)
+- If `mode` is `"transcript_only"` when you requested `"speaker"`, diarization degraded gracefully.
 
 **How it works:** Runs Azure Whisper (word timestamps) + GPT-4o-transcribe-diarize (speaker segments) in parallel on the PrepWithAI backend, then merges by time overlap. ~97-100% word-to-speaker match rate.
 
@@ -138,15 +206,16 @@ For podcasts, interviews, and panel discussions, run hybrid speaker diarization 
 - You want to extract "best guest answers" or "best interviewer questions"
 - You want balanced clips (roughly equal speaking time per speaker)
 
-**When to skip:**
+**When to skip (use `quality: "fast"` or `mode: "transcript_only"`):**
 - Single-speaker content (vlog, tutorial, commentary)
 - Speed is critical and speaker info not needed
 
 **Using speaker context in scoring (Phase 2):**
-- Tag each clip with primary speaker: `"primary_speaker": "B"` (who speaks most in that clip)
+- Tag each clip with primary speaker: `"primary_speaker": "spk_1"` (who speaks most in that clip)
 - Prefer clips with speaker TRANSITIONS (question → answer) — they feel more dynamic
 - For interview content, the best clips usually start with host's question + guest's answer
 - Speaker ratio per clip: aim for 30-70% split (pure monologue clips are less engaging)
+- Use `speakers.items` to identify who talks more overall — usually the guest
 
 ---
 
@@ -187,6 +256,7 @@ Score each potential clip 0-100 using these 8 signals (ranked by impact):
   - Go longer (91–180s) only when a story arc needs full context
 - **Every clip must open with a strong HOOK** — a line that grabs attention within the first 3 seconds
 - **Never cut mid-sentence or mid-thought** — each clip must feel complete and self-contained
+- **Verify clip boundaries using word-level data:** After selecting a time range, check the actual words at the start and end. The clip should begin at a sentence/thought start and end at a sentence completion. Trim trailing filler words ("But", "So", "And") that start new sentences belonging to the next topic.
 - **Clips must not overlap significantly** (>50% overlap = drop the lower-scoring one)
 - **Score on viral potential, not general quality** — boring but accurate ≠ viral
 
@@ -202,8 +272,8 @@ For each clip, produce:
   "score": 87,
   "hook_sentence": "Here's what nobody in this industry will tell you publicly...",
   "virality_reason": "Opens with forbidden-knowledge hook, delivers a contrarian take with specific examples",
-  "primary_speaker": "B",
-  "speaker_ratio": {"A": 0.3, "B": 0.7}
+  "primary_speaker": "spk_1",
+  "speaker_ratio": {"spk_0": 0.3, "spk_1": 0.7}
 }
 ```
 
@@ -311,11 +381,32 @@ cropY = 0
 
 ### 3.5 Add captions to the clip
 
+**Option A (Preferred — when you have diarization word data):**
+
+If you ran `query.transcribeWithSpeakers` in Phase 1.5, you already have word-level timestamps. Use them directly — no need for a second transcription:
+
+```python
+# Filter speakerTranscript.words[] for this clip's time range
+clip_words = [w for w in all_words if w['start_sec'] >= clip_start and w['end_sec'] <= clip_end]
+
+# Group into 4-word chunks with REAL timestamps (see Phase 1.5 for full code)
+subtitles = build_captions_from_words(clip_words, clip_start)
+
+# Apply
+{"type": "content.applyCaptions", "params": {"subtitles": subtitles}}
+```
+
+**Option B (Fallback — no prior diarization, or words[] missing):**
+
+Run a fresh transcription on just this clip's audio:
+
 ```json
 {"type": "editor.autoCaption", "params": {"language": "en"}}
 ```
 
 Wait for transcription to complete (poll `query.getTranscriptionStatus`).
+
+**⚠️ NEVER use proportional word timing from turn-level dialogue data.** See the critical warning in Phase 1.5.
 
 ### 3.6 Save the clip project
 
@@ -582,6 +673,6 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/media/face-detect" \
 |---|---|---|
 | **Face-tracked reframing** | ✅ Implemented | `POST /api/media/face-detect` — Chrome Shape Detection API with skin-color fallback |
 | **Audio energy analysis** | ✅ Implemented | `POST /api/media/analyze` with `detectEnergy: true` — silence, RMS profile, peaks |
-| **Speaker diarization** | 🟢 Later | "Who said what" for multi-speaker content |
+| **Speaker diarization** | ✅ Done | "Who said what" for multi-speaker content — `query.transcribeWithSpeakers` |
 | **Batch render endpoint** | 🟡 Planned | Render N projects in one call |
 | **Auto-publish** | 🟢 Later | Post clips directly to IG/TikTok/YouTube |

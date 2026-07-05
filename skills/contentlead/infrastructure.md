@@ -109,32 +109,24 @@ curl -X POST http://127.0.0.1:$PORT/api/media/analyze \
 
 ## Project Lifecycle
 
-### POST /api/project/create
-Create a new empty project with optional dimensions.
-```bash
-curl -X POST http://127.0.0.1:$PORT/api/project/create \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"title": "My New Video", "width": 1080, "height": 1920, "fps": 30}'
-# → { contentId, title, navigatedTo }
-```
-
-### POST /api/project/duplicate
-Duplicate the currently loaded project.
-```bash
-curl -X POST http://127.0.0.1:$PORT/api/project/duplicate \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"title": "My Video — Copy"}'
-# → { newContentId, autosavePath }
-```
-
-### POST /api/content/create
-Create new content in the database and navigate to its editor.
+### POST /api/content/create (Primary — use this)
+Create new content in the **cloud database** and navigate to its editor.
 ```bash
 curl -X POST http://127.0.0.1:$PORT/api/content/create \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: <token>" -H "Content-Type: application/json" \
   -d '{"title": "New Content", "description": "Optional description"}'
-# → { contentId, navigatedTo }
+# Returns: { status, contentId, tabId, editorReady, navigated }
+
+# With waitForReady (blocks until editor is fully ready):
+curl -X POST http://127.0.0.1:$PORT/api/content/create \
+  -H "Authorization: <token>" -H "Content-Type: application/json" \
+  -d '{"title": "New Content", "waitForReady": true, "timeoutMs": 60000}'
+# Returns: { status, contentId, tabId, editorReady: true, navigated }
 ```
+
+> `/api/project/create` and `/api/project/duplicate` have been **REMOVED**.
+> They created local-only files that caused "Content Not Found" on the cloud frontend.
+> Always use `/api/content/create` instead.
 
 ## UI Automation
 
