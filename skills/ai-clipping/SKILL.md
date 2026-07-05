@@ -379,6 +379,28 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/content/create" \
 The `trim` values are in milliseconds — they select the source time range.
 `from: 0` places the clip at the start of the new project's timeline.
 
+### 3.3b Editorial Tightening (MANDATORY)
+
+**Before reframing or adding captions**, tighten the clip by removing filler content, dead air, and low-value speech. This is a separate phase documented in [`editorial-tightening.md`](./editorial-tightening.md).
+
+**Summary of what to cut:**
+1. **Silence gaps > 0.4s** → cut, keep 150ms breath
+2. **Standalone verbal tics** → "Right?", "You know?", "Like," (< 3 words)
+3. **Transition filler** → "And I can explain to you why" (adds no content)
+4. **Stuttering/false starts** → Keep only the final clean version
+5. **Pre-answer rambling** → Cut ramp-up, start from the real answer
+6. **Low-value cross-talk** → Casual "Yeah", "Mm-hmm" that doesn't add engagement
+7. **Verbose restatements** → Same info said twice in different words
+
+**What to KEEP:**
+- Genuine reactions ("You don't?!" = surprise = engagement gold)
+- Questions that create tension
+- Specific facts, numbers, opinions
+
+**Method:** Use `editor.addVideoSegments` with only the keep-segments (gap=0). See editorial-tightening.md for the full algorithm, scoring framework, and examples.
+
+**⚠️ CRITICAL ORDER:** Tighten BEFORE adding captions. Captions applied to a pre-tightened timeline will fragment and break when segments are later removed.
+
 ### 3.4 Vertical reframing
 
 **Option A (Recommended — Dynamic face-tracked reframing):**
