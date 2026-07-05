@@ -35,21 +35,27 @@ Slice a clip into two separate clips at a specific time.
 ```json
 { "type": "editor.splitItem", "params": {
   "itemId": "vid_abc",
-  "time": 4500,
+  "timeMs": 4500,
   "cascade": true 
 }}
 ```
 
 ### `editor.cutItem`
-Remove a specific time chunk out of the middle of a clip, resulting in two clips with a gap between them.
+Remove everything after (or before) a specific time, keeping one side. Use `cutMode` to control which side is kept.
 ```json
 { "type": "editor.cutItem", "params": {
   "itemId": "vid_abc",
-  "cutFrom": 3000,
-  "cutTo": 6000,
+  "timeMs": 3000,
+  "cutMode": "keep-left",
   "cascade": true
 }}
 ```
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `itemId` | `string` | required | Item to cut |
+| `timeMs` | `number` | required | Cut point in ms (absolute timeline time) |
+| `cutMode` | `string` | `"keep-left"` | `"keep-left"` or `"keep-right"` — which side to keep |
+| `cascade` | `boolean` | `true` | Also cut linked track items |
 
 ### ⚠️ Cascade Behavior (Linked Tracks)
 By default, `splitItem` and `cutItem` use `cascade: true`. If the item's track is linked to other tracks (via `editor.linkTracks`), the split/cut will **also** happen to any time-overlapping items on those linked tracks. Set `cascade: false` to only affect the specific `itemId`.

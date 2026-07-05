@@ -43,9 +43,10 @@ Recommended for mixing. Range: -60 dB to 0 dB.
 - Voiceover: `0` dB
 
 ### `query.getAudioLoudness`
-Measure LUFS and true peak of a timeline segment to verify levels.
+Get volume/gain info for specific audio items.
 ```json
-{ "type": "query.getAudioLoudness", "params": { "fromMs": 0, "toMs": 5000 } }
+{ "type": "query.getAudioLoudness", "params": { "itemId": "aud_123" } }
+// Or multiple: { "itemIds": ["aud_123", "aud_456"] }
 ```
 
 ## EQ & Audio Enhance
@@ -56,13 +57,13 @@ Apply a 3-band equalizer (Low, Mid, High gains in ±12 dB).
 { "type": "audio.setEq", "params": {
   "itemId": "vid_123",
   "enabled": true,
-  "preset": "vocal-boost", 
+  "preset": "voice-enhance", 
   "low": -2.0,
   "mid": 3.0,
   "high": 1.5
 }}
 ```
-*Valid presets: `flat`, `vocal-boost`, `bass-boost`, `treble-boost`, `podcast`, `reduce-rumble`.*
+*Valid presets: `flat`, `voice-enhance`, `bass-boost`, `podcast`, `warm`, `bright`, `de-mud`, `telephone`.*
 
 ### `audio.removeEq`
 ```json

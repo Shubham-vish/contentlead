@@ -117,7 +117,7 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
 
 ### Step 6: NOW you can start editing
 ```bash
-curl -s http://127.0.0.1:$PORT/api/skills/overview -H "Authorization: Bearer $TOKEN"
+curl -s http://127.0.0.1:$PORT/api/skills -H "Authorization: Bearer $TOKEN"
 ```
 
 ### ⚠️ CRITICAL: Always save before killing or restarting the app
@@ -172,7 +172,7 @@ These endpoints are available on the Electron API server (in addition to `POST /
 | `/api/content/list` | GET | List available content (DB + local autosaves) |
 | `/api/bridge/instagram/*` | GET/POST | MCP mirror bridge for Instagram accounts, publish/status, token validation, posts, and CTA automation (`update_cta` supports `messageBody` + `buttons[]`; publish status auto-syncs CTA draft → production) |
 | `/api/bridge/publish/youtube` | POST | Legacy YouTube publishing endpoint |
-| `/api/bridge/content/publish-config` | POST | Content publish configuration (channel, privacy, schedule) |
+| `/api/bridge/content/configure-publish` | POST | Content publish configuration (channel, privacy, schedule) |
 | `/api/bridge/context/list`, `search`, `get`, `edit` | GET/POST | Context store operations (list/search/get/edit/manage) |
 | `/api/bridge/hub/:handle/*` | GET/POST | **Creator Hub** — manage articles, folders, publish/edit in a user's hub. Load `hub` skill for full docs. |
 | ~~`/api/project/create`~~ | ~~POST~~ | **REMOVED** — was local-only, caused "Content Not Found" confusion. Use `/api/content/create` instead |
@@ -432,7 +432,7 @@ cat ~/.skilltown-desktop/api.json
 curl http://127.0.0.1:$PORT/api/info
 
 # 3. Load the overview skill for full capabilities
-curl http://127.0.0.1:$PORT/api/skills/overview -H "Authorization: Bearer $TOKEN"
+curl http://127.0.0.1:$PORT/api/skills -H "Authorization: Bearer $TOKEN"
 ```
 
 ## Skills System
@@ -503,7 +503,7 @@ AI Terminal → reads ~/.skilltown-desktop/api.json → gets port + token
            → curl POST /api/navigate → opens content in editor (auto-activates editor view)
            → curl POST /api/editor/wait-ready → waits for editor mount
            → curl POST /api/project/restore → restores saved project from autosave
-           → curl GET /api/skills/overview → understands capabilities
+           → curl GET /api/skills → understands capabilities
            → curl POST /api/execute → sends commands to editor
            → curl POST /api/scenes → create custom .tsx scenes
            → curl POST /api/scene-bundles/build → compile scenes with real imports

@@ -16,9 +16,7 @@ Add a video to the timeline.
   "src": "/Users/shubham/Downloads/broll.mp4",
   "from": 0,
   "durationMs": 4000,
-  "details": {
-    "volume": 0
-  }
+  "volume": 0
 }}
 ```
 

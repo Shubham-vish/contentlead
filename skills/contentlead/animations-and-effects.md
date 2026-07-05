@@ -73,7 +73,7 @@ Remove one animation type from an item.
 | Param | Type | Default | Description |
 |---|---|---|---|
 | `itemId` | `string` | required | Target timeline item |
-| `type` | `string` | required | `in`, `out`, or `loop` |
+| `animationType` | `string` | omit to remove all | `in`, `out`, or omit to remove both |
 
 Example:
 
@@ -82,7 +82,7 @@ Example:
   "type": "editor.removeAnimation",
   "params": {
     "itemId": "text_hero",
-    "type": "loop"
+    "animationType": "in"
   }
 }
 ```

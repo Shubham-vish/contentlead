@@ -29,19 +29,26 @@ Move an item to specific X/Y coordinates.
 ```json
 { "type": "editor.positionItem", "params": {
   "itemId": "clip_abc",
-  "top": 100,
-  "left": 200
+  "x": 200,
+  "y": 100
 }}
 ```
+| Param | Type | Description |
+|---|---|---|
+| `x` | `number` | Horizontal position (pixels from left) |
+| `y` | `number` | Vertical position (pixels from top) |
+| `width` | `number` | Optional — resize width |
+| `height` | `number` | Optional — resize height |
 
 ### `editor.alignItem`
 Snap an item to canvas edges or center.
 ```json
 { "type": "editor.alignItem", "params": {
   "itemId": "clip_abc",
-  "align": "center" // "top", "bottom", "left", "right", "center-horizontal", "center-vertical"
+  "align": "center"
 }}
 ```
+*Valid values: `center`, `centerH`, `centerV`, `left`, `right`, `top`, `bottom`*
 
 ## Transforms
 
@@ -50,10 +57,16 @@ Crop an image or video visually.
 ```json
 { "type": "editor.cropItem", "params": {
   "itemId": "clip_abc",
-  "crop": { "x": 100, "y": 100, "w": 800, "h": 600 }
+  "crop": { "x": 100, "y": 100, "width": 800, "height": 600 }
 }}
 ```
-*Note: Uses the in-editor crop math to reposition the media cleanly within the new container bounds.*
+| Param | Type | Description |
+|---|---|---|
+| `crop.x` | `number` | Crop origin X (source pixels, default 0) |
+| `crop.y` | `number` | Crop origin Y (source pixels, default 0) |
+| `crop.width` | `number` | Crop width (source pixels, required) |
+| `crop.height` | `number` | Crop height (source pixels, required) |
+| `preservePosition` | `boolean` | Default `true` — repositions item so cropped content stays visually fixed |
 
 ### `editor.rotateItem`
 ```json
@@ -79,6 +92,8 @@ You can also patch details directly:
 While `editor.reorderTracks` (see `track-management`) handles macro layer ordering (text > video > backgrounds), you can manually adjust z-index within a track.
 
 ### `editor.setZIndex`
+Change item layer order within its track. Uses direction-based movement, not absolute z-index values.
 ```json
-{ "type": "editor.setZIndex", "params": { "itemId": "clip_abc", "zIndex": 10 }}
+{ "type": "editor.setZIndex", "params": { "itemId": "clip_abc", "direction": "front" }}
 ```
+*Valid directions: `front`, `back`, `forward`, `backward`*

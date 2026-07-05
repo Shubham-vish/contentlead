@@ -51,14 +51,14 @@ Source Video → Transcribe → Score Virality → Extract Clips → Reframe 9:1
 # Import video file
 curl -s -X POST "http://127.0.0.1:$PORT/api/media/import" \
   -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
-  -d '{"filePath": "/Users/shubham/Movies/podcast-episode-42.mp4"}'
-# → {mediaUrl, fileName, duration, ...}
+  -d '{"path": "/Users/shubham/Movies/podcast-episode-42.mp4"}'
+# → {status, sourcePath, importedPath, mediaUrl, fileName, size, extension}
 
 # Get detailed metadata
 curl -s -X POST "http://127.0.0.1:$PORT/api/media/analyze" \
   -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
-  -d '{"filePath": "/Users/shubham/Movies/podcast-episode-42.mp4"}'
-# → {duration, width, height, fps, codec, scenes[], loudness{}}
+  -d '{"path": "/Users/shubham/Movies/podcast-episode-42.mp4"}'
+# → {filePath, analysis: {duration, durationMs, format, size, video, audio, sceneChanges, volume, energy}}
 ```
 
 ### 1.2 Transcribe the source video
@@ -127,9 +127,8 @@ For podcasts, interviews, and panel discussions, run hybrid speaker diarization 
   "mode": "speaker",
   "transcript": {
     "text": "What about crypto? It's not something you can ban...",
-    "duration_sec": 145.2,
-    "language": "en",
-    "word_count": 353
+    "word_count": 353,
+    "language": "en"
   },
   "speakers": {
     "count": 2,
@@ -530,7 +529,7 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/tabs/<tabId>/activate" \
 # Render current project
 curl -s -X POST "http://127.0.0.1:$PORT/api/render" \
   -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
-  -d '{"contentId": "<clipContentId>", "uploadToCloud": true}'
+  -d '{"renderType": "design", "data": "<design object from project.getFullState>", "contentId": "<clipContentId>", "uploadToCloud": true}'
 
 # Poll render status
 curl -s "http://127.0.0.1:$PORT/api/render/<jobId>" -H "Authorization: $TOKEN"
@@ -651,23 +650,22 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/media/face-detect" \
   "durationSec": 120,
   "framesAnalyzed": 120,
   "facesDetected": 108,
-  "method": "face-tracked",
   "segmentCount": 3,
   "segments": [
     {
       "startSec": 0, "endSec": 45.0, "startMs": 0, "endMs": 45000,
       "cropX": 200, "cropY": 0, "cropWidth": 608, "cropHeight": 1080,
-      "faceCenterX": 504, "method": "face-tracked"
+      "faceCenterX": 504
     },
     {
       "startSec": 45.0, "endSec": 90.0, "startMs": 45000, "endMs": 90000,
       "cropX": 656, "cropY": 0, "cropWidth": 608, "cropHeight": 1080,
-      "faceCenterX": 960, "method": "face-tracked"
+      "faceCenterX": 960
     },
     {
       "startSec": 90.0, "endSec": 121.0, "startMs": 90000, "endMs": 121000,
       "cropX": 1100, "cropY": 0, "cropWidth": 608, "cropHeight": 1080,
-      "faceCenterX": 1404, "method": "face-tracked"
+      "faceCenterX": 1404
     }
   ],
   "dominantCropX": 656,
@@ -772,4 +770,4 @@ Detect faces in captured preview frames using Chrome Shape Detection API (with s
 
 **Returns:** `{ frames: [{timeMs, faces: [{x, y, width, height}], method}] }`
 
-The `method` field indicates which detector was used: `"ShapeDetection"` (hardware-accelerated) or `"skinColor"` (fallback heuristic).
+The `detectionMethod` field indicates which detector was used: `"shape-detection-api"` (hardware-accelerated) or `"skin-color-heuristic"` (fallback).

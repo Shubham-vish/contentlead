@@ -212,7 +212,7 @@ Example:
 | Param | Type | Default | Description |
 |---|---|---|---|
 | `format` | `string` | `"mp4"` | Export format |
-| `projectName` | `string` | project title or default | Output name |
+| `projectName` | `string` | `"AI Export"` | Output name |
 
 Example:
 
