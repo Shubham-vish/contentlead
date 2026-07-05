@@ -93,3 +93,41 @@ Manually push a track to a specific layer.
 ```json
 { "type": "editor.moveTrack", "params": { "trackId": "track_abc", "index": 0 } }
 ```
+
+## Item Grouping
+
+Group items together to move them as a unit on the timeline. Groups are stored as `metadata.groupId` on each item.
+
+### `editor.groupItems`
+```json
+{ "type": "editor.groupItems", "params": {
+  "itemIds": ["text_title", "img_bg", "audio_sfx"],
+  "groupId": "intro_group"
+}}
+```
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `itemIds` | `string[]` | required | At least 2 item IDs to group |
+| `groupId` | `string` | auto-generated | Optional custom group ID |
+
+**Returns:** `{ groupId, itemIds, count }`
+
+### `editor.ungroupItems`
+```json
+{ "type": "editor.ungroupItems", "params": { "groupId": "intro_group" } }
+```
+
+### `editor.moveGroup`
+Move all items in a group by a time offset.
+```json
+{ "type": "editor.moveGroup", "params": {
+  "groupId": "intro_group",
+  "offsetMs": 5000
+}}
+```
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `groupId` | `string` | required | Group to move |
+| `offsetMs` | `number` | required | Time shift in ms (positive=forward, negative=backward) |
+
+**Returns:** `{ groupId, moved, offsetMs }`

@@ -466,3 +466,33 @@ Camera effects add 3D perspective transforms to video/image/scene items — zoom
 # - Dolly zoom: scale up while translating back
 # These are implemented in the scene JSX, not as a separate effect layer.
 ```
+
+## Transitions Between Items
+
+### `editor.addTransition`
+Add a transition between two specific adjacent items.
+```json
+{ "type": "editor.addTransition", "params": {
+  "fromId": "vid_001",
+  "toId": "vid_002",
+  "kind": "crossfade",
+  "duration": 500
+}}
+```
+
+### `editor.addTransitionBetween`
+Smart version — add a transition after an item (auto-finds the next clip on the same track).
+```json
+{ "type": "editor.addTransitionBetween", "params": {
+  "itemId": "vid_001",
+  "kind": "crossfade",
+  "duration": 500
+}}
+```
+
+### `editor.removeTransition`
+```json
+{ "type": "editor.removeTransition", "params": { "transitionId": "trans_abc" } }
+// OR by item pair:
+{ "type": "editor.removeTransition", "params": { "fromId": "vid_001", "toId": "vid_002" } }
+```

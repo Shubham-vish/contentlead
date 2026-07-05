@@ -87,6 +87,44 @@ The render pipeline now processes each audio item's effects (volume, EQ) INDIVID
 ### Multi-track SFX architecture
 `editor.addAudio` auto-splits SFX across separate tracks based on time-overlap detection. If you add 20 SFX close in time, expect 5-6 audio tracks in the timeline (by design — avoids overlap conflicts).
 
+## Auto-Mixing
+
+### `audio.duckMusic`
+Automatically lower music volume where narration/voiceover overlaps. Music tracks are detected by track name (contains "music" or "bg") or low volume (≤40).
+
+```json
+{ "type": "audio.duckMusic", "params": {
+  "duckDb": -12,
+  "musicVolume": 30
+}}
+```
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `duckDb` | `number` | `-12` | How much to reduce music (dB) during narration overlap |
+| `musicVolume` | `number` | `30` | Base music volume (0-100) when not ducking |
+
+**Returns:** `{ musicItems, narrationItems, ducked, duckedItemIds, duckAmountDb, musicVolume }`
+
+### `audio.balanceVolumes`
+Set all audio items to role-appropriate volumes. Roles are detected by track name ("music", "sfx", "bg").
+
+```json
+{ "type": "audio.balanceVolumes", "params": {
+  "musicVolume": 30,
+  "sfxVolume": 50,
+  "narrationVolume": 100
+}}
+```
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `musicVolume` | `number` | `30` | Target volume for music items |
+| `sfxVolume` | `number` | `50` | Target volume for SFX items |
+| `narrationVolume` | `number` | `100` | Target volume for narration/voiceover items |
+
+**Returns:** `{ adjusted: [{id, type, oldVolume, newVolume}] }`
+
 ## Noise Reduction (Main Process)
 
 Noise reduction uses ffmpeg to clean up audio files. These commands run in the Electron main process and require **local file paths** (not timeline item IDs or URLs). They write new cleaned files to disk.

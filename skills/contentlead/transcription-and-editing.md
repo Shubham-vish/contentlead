@@ -677,3 +677,20 @@ print('OK — no repetition')
 ```
 
 All produce the same result: a clip showing source 75-100s, with display duration auto-calculated as 25s.
+
+## Manual Transcript Management
+
+### `content.setTranscript`
+Set or replace the transcript for the current content. Use when you have an externally-generated transcript (e.g., from diarization) that you want to store on the content record.
+
+```json
+{ "type": "content.setTranscript", "params": {
+  "transcript": {
+    "text": "Full transcript text...",
+    "words": [
+      {"word": "Hello", "start": 0.0, "end": 0.5, "speaker": "Speaker 1"},
+      {"word": "world", "start": 0.5, "end": 1.0, "speaker": "Speaker 1"}
+    ]
+  }
+}}
+```

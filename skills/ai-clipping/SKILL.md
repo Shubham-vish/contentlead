@@ -172,23 +172,60 @@ words = result['speakerTranscript']['words']
 clip_start, clip_end = 432.2, 558.0  # seconds in source
 clip_words = [w for w in words if w['start_sec'] >= clip_start and w['end_sec'] <= clip_end]
 
-# 3. Group into 3-5 word chunks using REAL timestamps
-for i in range(0, len(clip_words), 4):
-    chunk = clip_words[i:i+4]
-    caption = {
-        'text': ' '.join(w['word'] for w in chunk),
-        'from': round((chunk[0]['start_sec'] - clip_start) * 1000),  # ms, relative to clip
+# 3. Group into 3-5 word chunks — BREAK at speaker transitions
+captions = []
+chunk = []
+prev_speaker = None
+for w in clip_words:
+    # Force break at speaker change
+    if prev_speaker and w['speaker'] != prev_speaker and chunk:
+        captions.append({
+            'text': ' '.join(cw['word'] for cw in chunk),
+            'from': round((chunk[0]['start_sec'] - clip_start) * 1000),
+            'to': round((chunk[-1]['end_sec'] - clip_start) * 1000)
+        })
+        chunk = []
+    chunk.append(w)
+    prev_speaker = w['speaker']
+    # Also break at ~4 words
+    if len(chunk) >= 4:
+        captions.append({
+            'text': ' '.join(cw['word'] for cw in chunk),
+            'from': round((chunk[0]['start_sec'] - clip_start) * 1000),
+            'to': round((chunk[-1]['end_sec'] - clip_start) * 1000)
+        })
+        chunk = []
+# flush remaining
+if chunk:
+    captions.append({
+        'text': ' '.join(cw['word'] for cw in chunk),
+        'from': round((chunk[0]['start_sec'] - clip_start) * 1000),
         'to': round((chunk[-1]['end_sec'] - clip_start) * 1000)
-    }
+    })
 
 # 4. Apply with content.applyCaptions
 {"type": "content.applyCaptions", "params": {"subtitles": captions}}
 ```
 
+### ⚠️ CRITICAL: Speaker-Aware Caption Breaks
+
+**Captions MUST break at speaker transitions.** In multi-speaker content (podcasts, interviews), never let one caption chunk contain words from two different speakers. For example:
+
+- ❌ BAD: `"dollar devalue? Well, like"` — mixes Speaker C's question ending with Speaker A's response start
+- ✅ GOOD: `"dollar devalue?"` (Speaker C) then `"Well, like everybody"` (Speaker A)
+
+The `words[]` array from `query.transcribeWithSpeakers` includes a `speaker` field on every word. **Always check for speaker changes** when grouping words into caption chunks. Force a chunk break whenever `word.speaker` changes, even if the chunk has fewer than 4 words.
+
+**Why this matters for viewer experience:**
+- Viewers associate on-screen text with the person currently speaking
+- Showing the next speaker's words before they start talking is confusing and feels broken
+- Short 1-2 word captions at speaker transitions are fine — they naturally match the conversational rhythm
+
 **DO NOT:**
 - ❌ Estimate word timing by dividing turn duration evenly across words
 - ❌ Use local Whisper as a fallback — Azure Whisper handles Hindi, Hinglish, transliteration, and all languages the platform supports
 - ❌ Skip the `words[]` array and only use `dialogue[]` for captions
+- ❌ Group words across speaker boundaries into the same caption chunk
 
 **If `speakerTranscript.words[]` is missing or empty** (edge case — API degradation):
 - Retry `query.transcribeWithSpeakers` with `quality: "best"`
@@ -343,22 +380,60 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/content/create" \
 The `trim` values are in milliseconds — they select the source time range.
 `from: 0` places the clip at the start of the new project's timeline.
 
-### 3.4 Vertical reframing (center crop)
+### 3.4 Vertical reframing
 
-For v1, use static center crop. This works well for talking-head content where the speaker is roughly centered:
+**Option A (Recommended — Dynamic face-tracked reframing):**
+
+Use the built-in reframe pipeline to dynamically pan the crop window to follow the active speaker's face:
+
+```bash
+# Run face detection + reframe on the source video
+curl -s -X POST "http://127.0.0.1:$PORT/api/media/reframe" \
+  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -d '{
+    "path": "/path/to/source-video.mp4",
+    "itemId": "<videoItemId>",
+    "preset": "smooth",
+    "apply": true,
+    "trimStartSec": 423.5,
+    "canvasWidth": 1080,
+    "canvasHeight": 1920
+  }'
+```
+
+**Presets:**
+| Preset | Use Case |
+|--------|----------|
+| `smooth` | Default — gentle pans, good for interviews/podcasts |
+| `responsive` | Faster tracking, for dynamic content with quick speaker switches |
+| `locked` | Minimal movement, holds position longer |
+| `cinematic` | Slow, intentional pans |
+| `vlogger` | Single-speaker focus, responsive to movement |
+
+The pipeline: extracts 1 frame/sec → detects faces via Chrome Shape Detection API → smooths positions (dead zones, min hold time, max speed) → generates keyframes → applies to video item.
+
+**Option B (Fallback — static center crop):**
+
+For v1 or when face detection isn't needed, use a static center crop. Works for talking-head content where the speaker is roughly centered:
 
 ```json
-// Get the video item ID from the addVideo response
-// Then crop to vertical: take the center 607px width from the 1080px-tall source
-// For 1920×1080 source → 9:16 crop = 607×1080 from center
 {"type": "editor.cropItem", "params": {
   "itemId": "<videoItemId>",
   "crop": {
-    "x": 656,
-    "y": 0,
-    "width": 607,
-    "height": 1080
+    "x": 656, "y": 0,
+    "width": 607, "height": 1080
   }
+}}
+```
+
+**Or use fill-canvas scaling** (scales video to fill vertical frame, crops sides):
+```json
+{"type": "editor.editItem", "params": {
+  "id": "<videoItemId>",
+  "updates": {"details": {
+    "crop": null,
+    "width": 3413, "height": 1920, "left": -1167, "top": 0
+  }}
 }}
 ```
 
@@ -676,3 +751,25 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/media/face-detect" \
 | **Speaker diarization** | ✅ Done | "Who said what" for multi-speaker content — `query.transcribeWithSpeakers` |
 | **Batch render endpoint** | 🟡 Planned | Render N projects in one call |
 | **Auto-publish** | 🟢 Later | Post clips directly to IG/TikTok/YouTube |
+
+## Face Detection (for Dynamic Reframing)
+
+### `media.detectFacesInFrames`
+Detect faces in captured preview frames using Chrome Shape Detection API (with skin-color heuristic fallback). Used by the AI clipping pipeline for smart vertical reframing — centering the crop on detected faces.
+
+```json
+{ "type": "media.detectFacesInFrames", "params": {
+  "frames": [
+    { "timeMs": 5000, "dataUrl": "data:image/png;base64,..." },
+    { "timeMs": 10000, "dataUrl": "data:image/png;base64,..." }
+  ]
+}}
+```
+
+| Param | Type | Description |
+|---|---|---|
+| `frames` | `array` | Array of `{timeMs, dataUrl}` objects — each a captured frame as a data URL |
+
+**Returns:** `{ frames: [{timeMs, faces: [{x, y, width, height}], method}] }`
+
+The `method` field indicates which detector was used: `"ShapeDetection"` (hardware-accelerated) or `"skinColor"` (fallback heuristic).
