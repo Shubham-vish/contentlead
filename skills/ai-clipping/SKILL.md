@@ -253,6 +253,44 @@ The `words[]` array from `query.transcribeWithSpeakers` includes a `speaker` fie
 - Speaker ratio per clip: aim for 30-70% split (pure monologue clips are less engaging)
 - Use `speakers.items` to identify who talks more overall — usually the guest
 
+### Caption Styling — Default Podcast Style
+
+After applying captions, style them with `bulk.styleByType` for a clean podcast/reel look:
+
+```json
+{"type": "bulk.styleByType", "params": {
+  "type": "caption",
+  "details": {
+    "fontSize": 72,
+    "fontFamily": "Montserrat",
+    "fontWeight": 800,
+    "width": 920,
+    "height": 180,
+    "top": 1300,
+    "left": 80,
+    "color": "#FFFFFF",
+    "appearedColor": "#CCCCCC",
+    "activeColor": "#FFD700",
+    "activeFillColor": "transparent",
+    "backgroundColor": "rgba(0,0,0,0.35)",
+    "borderColor": "#000000",
+    "borderWidth": 6,
+    "borderRadius": 12,
+    "textAlign": "center",
+    "textTransform": "uppercase",
+    "opacity": 100
+  }
+}}
+```
+
+**Style notes:**
+- **Montserrat 800-weight** — clean, modern, highly readable on mobile
+- **Gold (#FFD700) active word** — draws eye to current word being spoken
+- **Grey (#CCCCCC) appeared** — already-spoken words fade back
+- **Semi-transparent dark background** — ensures readability over any video content
+- **Position at `top: 1300`** — lower third of 1080×1920 canvas, below speaker's face
+- **Do NOT use Bangers font** — it's too stylized for podcast/interview content
+
 ---
 
 ## Phase 2: Score Virality (YOUR BRAIN)

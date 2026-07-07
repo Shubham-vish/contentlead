@@ -547,8 +547,10 @@ for i in range(0, len(mapped_words), 4):
 
 **Caption features:**
 - Word-level karaoke highlighting (active word changes color)
-- Default style: Bangers font, 120px, cyan active color, uppercase
-- Centered vertically by default (`top: (canvasHeight - fontSize) / 2`)
+- Default style: **Montserrat 800-weight**, 72px, gold (#FFD700) active color, grey (#CCCCCC) appeared color, uppercase
+- Position: lower third (`top: canvasHeight * 0.68`), centered horizontally with 80px margins
+- Semi-transparent dark background (`rgba(0,0,0,0.35)`) with 12px border radius
+- Black stroke (6px) for readability over video
 - Auto-creates a caption track
 
 ### Caption positioning

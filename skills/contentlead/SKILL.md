@@ -19,6 +19,7 @@ Every session must execute these steps before any editing commands.
 4. **Open Content:** 
    - List: `curl -s http://127.0.0.1:$PORT/api/content/list`
    - Open: `curl -s -X POST http://127.0.0.1:$PORT/api/navigate -d '{"url":"/content/<id>","waitForReady":true,"autoRestore":true}'`
+   - Multi-tab: `curl -s -X POST http://127.0.0.1:$PORT/api/tabs/<tabId>/navigate -d '{"url":"/content/<id>?view=editor","waitForReady":true,"autoRestore":true}'`
 5. **Verify Canvas:** Check dimensions with `query.getCanvasSize` before adding items.
 
 ## ⚠️ CRITICAL VISIBILITY RULE: Track Z-Order
