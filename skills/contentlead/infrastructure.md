@@ -45,6 +45,103 @@ curl "http://127.0.0.1:$PORT/api/diagnostics?full=true" -H "Authorization: Beare
 ```
 Use `?full=true` for deep scan (slower but more thorough).
 
+### GET /api/console-errors
+Last 100 browser console errors/warnings (circular buffer). Does not clear on read.
+```bash
+curl "http://127.0.0.1:$PORT/api/console-errors" -H "Authorization: ******"
+# -> [{"seq": 1, "level": "error", "message": "...", "source": "...", "timestamp": "..."}, ...]
+```
+Use `?since=<seq>` to get only errors after a known sequence number (for delta checks).
+
+### Error Information in Every Command Response
+
+**Every** `/api/execute` response automatically includes error monitoring data — no extra call needed:
+
+```json
+{
+  "status": "success",
+  "result": { ... },
+
+  "warnings": [
+    {"seq": 229, "level": "error",
+     "message": "Uncaught Error: ...",
+     "source": "some_module.js",
+     "timestamp": "2026-07-08T13:44:30Z"}
+  ],
+  "warningCount": 2,
+  "hasNewErrors": true,
+
+  "editorHealth": {
+    "status": "clean",
+    "commandSuccess": true,
+    "newConsoleErrors": 0,
+    "totalConsoleErrors": 25,
+    "currentSceneErrors": 0,
+    "errorGroups": [],
+    "firstError": null,
+    "hint": "GET /api/diagnostics for full details"
+  }
+}
+```
+
+**These fields are returned in every response automatically — no extra call needed.** The agent just reads them from the response it already has.
+
+| Field | What It Means |
+|---|---|
+| `editorHealth.newConsoleErrors` | Count of browser console errors during THIS command. **0 = clean.** |
+| `editorHealth.status` | `"clean"` or `"issues_found"` |
+| `hasNewErrors` | Boolean shortcut for quick checks |
+| `warnings[]` | Actual error messages with source file, timestamp, severity |
+| `editorHealth.totalConsoleErrors` | Total errors in buffer (includes old ones from before this command) |
+| `editorHealth.errorGroups` | Errors grouped by source+type for quick categorization |
+| `editorHealth.firstError` | First error message (truncated) for quick triage |
+
+**When to make extra calls (only if needed):**
+- `GET /api/diagnostics?full=true` — when `warnings[]` messages are unclear and you need more context
+- `GET /api/console-errors` — when you need the full historical error buffer (e.g. errors from before your session)
+- `query.diagnoseScenes` — when timeline behavior seems wrong (checks editor data model, not console)
+
+### query.diagnoseScenes (bridge command)
+Check all bundled/custom Remotion scenes for runtime rendering errors.
+```json
+{"type": "query.diagnoseScenes", "params": {}}
+```
+Returns: `{ count, errors, scenes }` — `count > 0` means a scene has bad props or broken code.
+
+## Media Validation Commands
+
+### `media.validate`
+Pre-flight check for a single URL — tests CORS, accessibility, content type, blob detection.
+```json
+{ "type": "media.validate", "params": { "url": "http://...", "type": "video" } }
+```
+**Returns:** `{ accessible, contentType, cors, warnings }` — run before `editor.addVideo`/`addImage`.
+
+### `media.status`
+Batch check ALL media items in the current project.
+```json
+{ "type": "media.status", "params": {} }
+```
+**Returns:** `{ totalMediaItems, brokenCount, items }` — use to find stale URLs or missing files.
+
+### `media.prepare`
+Batch URL accessibility check for multiple URLs at once.
+```json
+{ "type": "media.prepare", "params": { "urls": ["http://...", "http://..."] } }
+```
+
+### Common Error Categories
+
+| Category | Example Message | Cause | Action |
+|---|---|---|---|
+| **Firebase serialization** | `set failed: value contains a function` | Animation presets with JS function refs | Auto-stripped by `stripUndefined()` — safe to ignore |
+| **Animation invalid values** | `Invalid animation values: [object Object]` | Wrong composition data sent to renderer | Check preset name is valid |
+| **Font loading** | `DOMException` on font load | Caption fonts loading async | Expected, non-blocking — ignore |
+| **CSP / file:// blocked** | `net::ERR_BLOCKED_BY_CSP` | Video added with `file://` path | Use media server URL: `http://127.0.0.1:PORT/media?path=...` |
+| **SSE reconnect** | `net::ERR_FAILED` on `/api/events` | App restart during SSE connection | Expected during restarts — ignore |
+| **Scene errors** | `currentSceneErrors > 0` | Remotion scene has rendering errors | Check scene props and component code |
+
+
 ### GET /api/screenshot
 Capture the current preview frame as a base64 PNG.
 ```bash

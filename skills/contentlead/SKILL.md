@@ -22,6 +22,10 @@ Every session must execute these steps before any editing commands.
    - Multi-tab: `curl -s -X POST http://127.0.0.1:$PORT/api/tabs/<tabId>/navigate -d '{"url":"/content/<id>?view=editor","waitForReady":true,"autoRestore":true}'`
 5. **Verify Canvas:** Check dimensions with `query.getCanvasSize` before adding items.
 
+## ⚠️ Error Monitoring — Built Into Every Command
+
+Every `/api/execute` response includes `editorHealth` and `warnings[]` automatically. If `editorHealth.newConsoleErrors > 0` or `hasNewErrors: true`, the `warnings[]` array contains the actual error messages — no extra API call needed. Only use `GET /api/console-errors` or `GET /api/diagnostics?full=true` when you need historical context or deeper inspection. Load the `infrastructure` skill for full error monitoring docs.
+
 ## ⚠️ CRITICAL VISIBILITY RULE: Track Z-Order
 
 **Track 0 is the FRONT layer.** Higher track numbers (Track 1, 2, 3) are placed **BEHIND** Track 0.
@@ -49,6 +53,7 @@ If you add text on Track 2 and a video on Track 0, the text will be **invisible*
 | Project save/load, Export | `project-and-export` | `editor.save`, `editor.export`, `project.getFullState` |
 | Read timeline/editor state | `queries-and-state` | `query.getTimelineItems`, `query.getTrackInfo`, `query.getEditorState` |
 | Debugging, Logs, Arch | `infrastructure` | `GET /api/diagnostics`, `GET /api/console-errors` |
+| Testing / QA | `testing` | Agent-run contract, state, visual, and workflow tests |
 | Content metadata & bridge | `content-bridge` | `content.getDetails`, `content.updateMetadata`, `content.applyImage` |
 | Multi-tab collaboration | `multi-tab` | `GET /api/tabs`, `POST /api/tabs/new`, `tabId` on `/api/execute` |
 | **AI Viral Clipping** | `ai-clipping` | Transcribe → score virality → extract clips → reframe 9:16 → render |

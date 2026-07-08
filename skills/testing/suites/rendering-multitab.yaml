@@ -1,0 +1,355 @@
+version: 1
+suite:
+  id: rendering-multitab
+  name: Rendering & Multi-Tab Tests
+  description: >
+    Tests render capabilities, render job lifecycle, multi-tab project
+    management, tab routing, and snapshot CRUD operations.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-landscape
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+
+tests:
+  # ═══════════════════════════════════════════════════════════════════
+  #  RENDER CAPABILITIES
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: contract.render-capabilities
+    name: Check render dependencies (ffmpeg, Chrome)
+    category: contract
+    tags: [contract, render, capabilities, ffmpeg]
+    notes: >
+      This is an HTTP-only endpoint (GET /api/render/capabilities),
+      not a bridge command. Agent should use HTTP GET directly.
+    execute:
+      type: _http_get
+      endpoint: /api/render/capabilities
+    assert:
+      response:
+        - path: ffmpeg
+          exists: true
+        - path: chrome
+          exists: true
+
+  - id: contract.render-validate
+    name: Validate render readiness
+    category: contract
+    tags: [contract, render, validate]
+    execute:
+      type: render.validate
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  MULTI-TAB MANAGEMENT
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: contract.list-tabs
+    name: GET /api/tabs returns tab list
+    category: contract
+    tags: [contract, tabs, list]
+    notes: >
+      Uses HTTP GET /api/tabs endpoint directly, not bridge command.
+      Agent should verify response has activeTabId and tabs array.
+    execute:
+      type: _http_get
+      endpoint: /api/tabs
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: tabs
+          is_array: true
+          min_length: 1
+
+  - id: contract.create-new-tab
+    name: POST /api/content/create opens new project tab
+    category: contract
+    tags: [contract, tabs, create, project]
+    notes: >
+      Creates a new project which opens in a new tab.
+      Agent should POST to /api/content/create, verify the response,
+      then wait 10-12s for editor ready state.
+    execute:
+      type: _http_post
+      endpoint: /api/content/create
+      body:
+        title: "Multi-Tab Test Project"
+        description: "Created by automated test"
+    assert:
+      response:
+        - path: status
+          equals: created
+        - path: contentId
+          not_empty: true
+        - path: tabId
+          not_empty: true
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  PROJECT SNAPSHOTS
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.create-snapshot
+    name: Create project snapshot
+    category: state
+    tags: [state, project, snapshot]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Snapshot Test
+          from: 0
+          durationMs: 3000
+    execute:
+      type: editor.createSnapshot
+      params:
+        name: test-snapshot-v1
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.list-snapshots
+    name: List project snapshots
+    category: contract
+    tags: [contract, project, snapshot, list]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: List Snap
+          from: 0
+          durationMs: 3000
+      - id: create-snap
+        kind: command
+        type: editor.createSnapshot
+        params:
+          name: list-test-snap
+    execute:
+      type: editor.listSnapshots
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.autosave
+    name: project.saveAutosave saves recovery checkpoint
+    category: state
+    tags: [state, project, autosave]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Autosave Test
+          from: 0
+          durationMs: 3000
+    execute:
+      type: project.saveAutosave
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  PROJECT FULL STATE
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: contract.get-full-state
+    name: project.getFullState returns complete project data
+    category: contract
+    tags: [contract, project, state, export]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Full State
+          from: 0
+          durationMs: 3000
+    execute:
+      type: project.getFullState
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  ADVANCED QUERIES (previously untested)
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: contract.get-item-properties
+    name: query.getItemProperties returns full item details
+    category: contract
+    tags: [contract, query, item, properties]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Props Query
+          from: 0
+          durationMs: 3000
+    execute:
+      type: query.getItemProperties
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result.item.type
+          equals: text
+
+  - id: contract.get-items-at-time
+    name: query.getItemsAtTime returns items at specific timestamp
+    category: contract
+    tags: [contract, query, timeline, time]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Time Query
+          from: 0
+          durationMs: 3000
+    execute:
+      type: query.getItemsAtTime
+      params:
+        timeMs: 1000
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.list-transitions
+    name: query.listTransitions returns active transitions
+    category: contract
+    tags: [contract, query, transitions]
+    execute:
+      type: query.listTransitions
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.diagnose-scenes
+    name: query.diagnoseScenes checks for scene errors
+    category: contract
+    tags: [contract, query, scenes, diagnostics]
+    execute:
+      type: query.diagnoseScenes
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.seek-to-frame
+    name: editor.seekToFrame moves playhead
+    category: state
+    tags: [state, playback, seek, frame]
+    execute:
+      type: editor.seekToFrame
+      params:
+        frame: 30
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.preview-range
+    name: editor.previewRange sets in/out markers
+    category: state
+    tags: [state, playback, preview, range]
+    execute:
+      type: editor.previewRange
+      params:
+        from: 0
+        to: 3000
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.capture-preview-frame
+    name: query.capturePreviewFrame captures a screenshot
+    category: contract
+    tags: [contract, query, screenshot, capture]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Capture Frame
+          from: 0
+          durationMs: 3000
+    execute:
+      type: query.capturePreviewFrame
+      params:
+        format: png
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  CLEAR TIMELINE
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.clear-timeline
+    name: editor.clearTimeline removes all items
+    category: state
+    tags: [state, timeline, clear, destructive]
+    setup:
+      - id: add-text1
+        kind: command
+        type: editor.addText
+        params:
+          text: Will Be Cleared 1
+          from: 0
+          durationMs: 3000
+      - id: add-text2
+        kind: command
+        type: editor.addText
+        params:
+          text: Will Be Cleared 2
+          from: 3000
+          durationMs: 3000
+    execute:
+      type: editor.clearTimeline
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: timeline is empty
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              equals: 0
+
+  - id: contract.render-verify-output
+    name: render.verifyOutput checks render output
+    category: contract
+    tags: [contract, render, verify]
+    execute:
+      type: render.verifyOutput
+      params:
+        jobId: "nonexistent-job-id"
+    assert:
+      response:
+        - path: status
+          oneOf: [success, failed]

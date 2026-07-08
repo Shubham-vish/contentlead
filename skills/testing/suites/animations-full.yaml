@@ -1,0 +1,696 @@
+version: 1
+suite:
+  id: animations-full
+  name: Animations, Effects & Keyframes — Full Coverage
+  description: >
+    Extended tests for enter/exit/loop animation presets, keyframe property
+    animation, visual effects, and animation combinations. Tests both
+    application and removal, plus race-condition-aware in+out sequencing.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-landscape
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+
+tests:
+  # ═══════════════════════════════════════════════════════════════════
+  #  ENTER ANIMATION PRESETS
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.anim-in-fadein
+    name: "fadeIn entrance animation"
+    category: state
+    tags: [state, animation, enter, fade]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Fade In Test
+          from: 0
+          durationMs: 3000
+    execute:
+      type: editor.setAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationIn: fadeIn
+        duration: 500
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.anim-in-scalein
+    name: "scaleIn entrance animation"
+    category: state
+    tags: [state, animation, enter, scale]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Scale In Test
+          from: 0
+          durationMs: 3000
+    execute:
+      type: editor.setAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationIn: scaleIn
+        duration: 600
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.anim-in-slide-right
+    name: "slideInRight entrance animation"
+    category: state
+    tags: [state, animation, enter, slide]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Slide Right
+          from: 0
+          durationMs: 3000
+    execute:
+      type: editor.setAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationIn: slideInRight
+        duration: 500
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.anim-in-slide-up
+    name: "slideInTop entrance animation"
+    category: state
+    tags: [state, animation, enter, slide]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Slide Up
+          from: 0
+          durationMs: 3000
+    execute:
+      type: editor.setAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationIn: slideInTop
+        duration: 500
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.anim-in-typewriter
+    name: "typeWriterIn entrance animation"
+    category: state
+    tags: [state, animation, enter, typewriter]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Typewriter Effect
+          from: 0
+          durationMs: 4000
+    execute:
+      type: editor.setAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationIn: typeWriterIn
+        duration: 800
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  EXIT ANIMATION PRESETS
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.anim-out-fadeout
+    name: "fadeOut exit animation"
+    category: state
+    tags: [state, animation, exit, fade]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Fade Out Test
+          from: 0
+          durationMs: 3000
+    execute:
+      type: editor.setAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationOut: fadeOut
+        duration: 500
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.anim-out-slide-left
+    name: "slideOutLeft exit animation"
+    category: state
+    tags: [state, animation, exit, slide]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Slide Out Left
+          from: 0
+          durationMs: 3000
+    execute:
+      type: editor.setAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationOut: slideOutLeft
+        duration: 500
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  LOOP ANIMATION PRESETS
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.anim-loop-pulse
+    name: "pulseAnimationLoop continuous animation"
+    category: state
+    tags: [state, animation, loop, pulse]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Pulse Loop
+          from: 0
+          durationMs: 5000
+    execute:
+      type: editor.setAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationIn: pulseAnimationLoop
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.anim-loop-glitch
+    name: "glitchAnimationLoop continuous animation"
+    category: state
+    tags: [state, animation, loop, glitch]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Glitch Effect
+          from: 0
+          durationMs: 5000
+    execute:
+      type: editor.setAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationIn: glitchAnimationLoop
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.anim-loop-spin
+    name: "spinAnimationLoop continuous animation"
+    category: state
+    tags: [state, animation, loop, spin]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Spin
+          from: 0
+          durationMs: 5000
+    execute:
+      type: editor.setAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationIn: spinAnimationLoop
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  ANIMATION COMBINATIONS
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.anim-combo-fade-in-out
+    name: "Fade in + fade out (set separately)"
+    category: state
+    tags: [state, animation, combo, fade]
+    notes: >
+      MUST set in/out separately due to 40ms dispatch race condition.
+      Agent should set animationIn first, wait, then set animationOut.
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Fade Combo
+          from: 0
+          durationMs: 4000
+      - id: set-in
+        kind: command
+        type: editor.setAnimation
+        params:
+          itemId: "{{steps.add-text.result.itemId}}"
+          animationIn: fadeIn
+          duration: 500
+    execute:
+      type: editor.setAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationOut: fadeOut
+        duration: 500
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.anim-combo-slide-through
+    name: "Slide in left + slide out right"
+    category: state
+    tags: [state, animation, combo, slide]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Slide Through
+          from: 0
+          durationMs: 4000
+      - id: set-in
+        kind: command
+        type: editor.setAnimation
+        params:
+          itemId: "{{steps.add-text.result.itemId}}"
+          animationIn: slideInLeft
+          duration: 500
+    execute:
+      type: editor.setAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationOut: slideOutRight
+        duration: 500
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  REMOVE ANIMATIONS
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.remove-animation-in
+    name: Remove entrance animation
+    category: state
+    tags: [state, animation, remove]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Remove Test
+          from: 0
+          durationMs: 3000
+      - id: set-anim
+        kind: command
+        type: editor.setAnimation
+        params:
+          itemId: "{{steps.add-text.result.itemId}}"
+          animationIn: fadeIn
+          duration: 500
+    execute:
+      type: editor.removeAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationType: in
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.remove-animation-all
+    name: Remove all animations from item
+    category: state
+    tags: [state, animation, remove, all]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Remove All
+          from: 0
+          durationMs: 3000
+      - id: set-in
+        kind: command
+        type: editor.setAnimation
+        params:
+          itemId: "{{steps.add-text.result.itemId}}"
+          animationIn: scaleIn
+    execute:
+      type: editor.removeAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  KEYFRAME ANIMATION
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.keyframe-opacity
+    name: Add opacity keyframes (fade animation)
+    category: state
+    tags: [state, keyframe, opacity]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Keyframe Test
+          from: 0
+          durationMs: 3000
+      - id: kf1
+        kind: command
+        type: editor.addKeyframe
+        params:
+          itemId: "{{steps.add-text.result.itemId}}"
+          property: opacity
+          value: 0
+          frame: 0
+    execute:
+      type: editor.addKeyframe
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        property: opacity
+        value: 1
+        frame: 30
+        easing: easeOut
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.keyframe-position
+    name: Animate X/Y position with keyframes
+    category: state
+    tags: [state, keyframe, position, x, y]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Moving
+          from: 0
+          durationMs: 3000
+      - id: kfx0
+        kind: command
+        type: editor.addKeyframe
+        params:
+          itemId: "{{steps.add-text.result.itemId}}"
+          property: x
+          value: 0
+          frame: 0
+      - id: kfy0
+        kind: command
+        type: editor.addKeyframe
+        params:
+          itemId: "{{steps.add-text.result.itemId}}"
+          property: y
+          value: 0
+          frame: 0
+    execute:
+      type: editor.addKeyframe
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        property: x
+        value: 500
+        frame: 60
+        easing: easeInOut
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.keyframe-scale
+    name: Animate scale with keyframes
+    category: state
+    tags: [state, keyframe, scale]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Scale KF
+          from: 0
+          durationMs: 3000
+      - id: kf0
+        kind: command
+        type: editor.addKeyframe
+        params:
+          itemId: "{{steps.add-text.result.itemId}}"
+          property: scale
+          value: 0.5
+          frame: 0
+    execute:
+      type: editor.addKeyframe
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        property: scale
+        value: 1.5
+        frame: 45
+        easing: easeIn
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.keyframe-remove
+    name: Remove a keyframe
+    category: state
+    tags: [state, keyframe, remove]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Remove KF
+          from: 0
+          durationMs: 3000
+      - id: add-kf
+        kind: command
+        type: editor.addKeyframe
+        params:
+          itemId: "{{steps.add-text.result.itemId}}"
+          property: opacity
+          value: 0
+          frame: 0
+    execute:
+      type: editor.removeKeyframe
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        property: opacity
+        frame: 0
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  VISUAL EFFECTS
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.effect-blur
+    name: Apply blur effect
+    category: state
+    tags: [state, effect, blur]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Blur Me
+          from: 0
+          durationMs: 3000
+    execute:
+      type: editor.addEffect
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        effect_type: blur
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.effect-grayscale
+    name: Apply grayscale effect
+    category: state
+    tags: [state, effect, grayscale]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Gray
+          from: 0
+          durationMs: 3000
+    execute:
+      type: editor.addEffect
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        effect_type: grayscale
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.effect-sepia
+    name: Apply sepia effect
+    category: state
+    tags: [state, effect, sepia]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Sepia
+          from: 0
+          durationMs: 3000
+    execute:
+      type: editor.addEffect
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        effect_type: sepia
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.effect-brightness
+    name: Apply brightness effect
+    category: state
+    tags: [state, effect, brightness]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Bright
+          from: 0
+          durationMs: 3000
+    execute:
+      type: editor.addEffect
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        effect_type: brightness
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.effect-contrast
+    name: Apply contrast effect
+    category: state
+    tags: [state, effect, contrast]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Contrast
+          from: 0
+          durationMs: 3000
+    execute:
+      type: editor.addEffect
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        effect_type: contrast
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.effect-remove
+    name: Remove effect from item
+    category: state
+    tags: [state, effect, remove]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Remove Effect
+          from: 0
+          durationMs: 3000
+      - id: add-eff
+        kind: command
+        type: editor.addEffect
+        params:
+          itemId: "{{steps.add-text.result.itemId}}"
+          effect_type: blur
+    execute:
+      type: editor.removeEffect
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        effect_type: blur
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  ANIMATION + EFFECT COMBINATION
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: workflow.anim-plus-effect
+    name: "Retro style: fadeIn + sepia effect"
+    category: workflow
+    tags: [workflow, animation, effect, combo]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: "Retro Title"
+          from: 0
+          durationMs: 5000
+      - id: set-anim
+        kind: command
+        type: editor.setAnimation
+        params:
+          itemId: "{{steps.add-text.result.itemId}}"
+          animationIn: fadeIn
+          duration: 800
+    execute:
+      type: editor.addEffect
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        effect_type: sepia
+    assert:
+      response:
+        - path: status
+          equals: success

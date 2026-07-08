@@ -178,3 +178,22 @@ Shift all items to the left to close any empty space on the timeline.
 ```json
 { "type": "editor.removeGaps", "params": { "trackId": "track_video" } }
 ```
+
+### `editor.cloneItem`
+Duplicate an item on the timeline. The clone is placed immediately after the original.
+```json
+{ "type": "editor.cloneItem", "params": { "itemId": "text_abc" } }
+```
+**Returns:** `{ clonedItemId, from, to }`
+
+### `editor.setMagnetic`
+Enable/disable magnetic snapping when dragging items on the timeline.
+```json
+{ "type": "editor.setMagnetic", "params": { "enabled": true } }
+```
+
+### `editor.relinkMedia`
+Update the source file for a media item (image/video/audio). Used to fix broken media references or swap assets.
+```json
+{ "type": "editor.relinkMedia", "params": { "itemId": "video_abc", "src": "/path/to/new-file.mp4" } }
+```

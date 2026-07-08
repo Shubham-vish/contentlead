@@ -1,0 +1,110 @@
+version: 1
+suite:
+  id: storystudio
+  name: StoryStudio Pipeline Commands
+  description: >
+    Contract tests for the StoryStudio B-roll automation pipeline.
+    These commands operate on content transcript/groupings/decisions data.
+    Most return current pipeline state without requiring the StoryStudio panel.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-portrait
+
+tests:
+  - id: contract.get-pipeline-state
+    name: storystudio.getPipelineState returns pipeline overview
+    category: contract
+    tags: [contract, storystudio, pipeline]
+    execute:
+      type: storystudio.getPipelineState
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.get-groupings
+    name: storystudio.getGroupings returns sentence groupings
+    category: contract
+    tags: [contract, storystudio, groupings]
+    execute:
+      type: storystudio.getGroupings
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.get-decisions
+    name: storystudio.getDecisions returns image decisions
+    category: contract
+    tags: [contract, storystudio, decisions]
+    execute:
+      type: storystudio.getDecisions
+      params:
+        sentenceId: "test-sentence-1"
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.generate-groupings
+    name: storystudio.generateGroupings processes transcript into groups
+    category: contract
+    tags: [contract, storystudio, groupings, generate]
+    execute:
+      type: storystudio.generateGroupings
+      params: {}
+    assert:
+      response:
+        - path: status
+          oneOf: [success, failed]
+
+  - id: contract.generate-decisions
+    name: storystudio.generateDecisions creates editing decisions
+    category: contract
+    tags: [contract, storystudio, decisions, generate]
+    execute:
+      type: storystudio.generateDecisions
+      params: {}
+    assert:
+      response:
+        - path: status
+          oneOf: [success, failed]
+
+  - id: contract.generate-strings
+    name: storystudio.generateStrings creates search/prompt strings
+    category: contract
+    tags: [contract, storystudio, strings, generate]
+    execute:
+      type: storystudio.generateStrings
+      params:
+        outputType: search_query
+    assert:
+      response:
+        - path: status
+          oneOf: [success, failed]
+
+  - id: contract.search-images
+    name: storystudio.searchImages searches for B-roll images
+    category: contract
+    tags: [contract, storystudio, images, search]
+    execute:
+      type: storystudio.searchImages
+      params: {}
+    assert:
+      response:
+        - path: status
+          oneOf: [success, failed]
+
+  - id: contract.apply-assets
+    name: storystudio.applyAssets places assets on timeline
+    category: contract
+    tags: [contract, storystudio, assets, apply]
+    execute:
+      type: storystudio.applyAssets
+      params: {}
+    assert:
+      response:
+        - path: status
+          oneOf: [success, failed]

@@ -1,0 +1,521 @@
+version: 1
+suite:
+  id: remotion-scenes
+  name: Remotion Scene Integration Tests
+  description: >
+    Comprehensive tests for all 3 scene types: Library (pre-built), Custom (sandbox JSX),
+    and Bundled (esbuild-compiled TSX). Tests scene listing, adding, props inspection,
+    props update, preview, and state verification. Requires editor with loaded project.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-landscape
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+
+tests:
+  # ═══════════════════════════════════════════════════════════════════
+  #  LIBRARY SCENES — pre-built from the 159-scene catalog
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: contract.list-scenes-default
+    name: scene.listScenes returns scene catalog
+    category: contract
+    tags: [contract, scenes, list, library]
+    execute:
+      type: scene.listScenes
+      params:
+        limit: 20
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result
+          is_array: true
+          min_length: 1
+
+  - id: contract.list-scenes-by-category
+    name: scene.listScenes filters by category
+    category: contract
+    tags: [contract, scenes, list, filter]
+    execute:
+      type: scene.listScenes
+      params:
+        category: chart
+        limit: 10
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result
+          is_array: true
+          min_length: 1
+
+  - id: contract.list-scenes-search
+    name: scene.listScenes searches by keyword
+    category: contract
+    tags: [contract, scenes, search]
+    execute:
+      type: scene.listScenes
+      params:
+        search: pie
+        limit: 5
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.get-scene-props
+    name: scene.getSceneProps returns available props
+    category: contract
+    tags: [contract, scenes, props, schema]
+    setup:
+      - id: find-scene
+        kind: command
+        type: scene.listScenes
+        params:
+          category: chart
+          limit: 1
+    execute:
+      type: scene.getSceneProps
+      params:
+        sceneId: "{{steps.find-scene.result[0].id}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.add-library-scene-chart
+    name: Add a chart scene from library to timeline
+    category: state
+    tags: [state, scenes, library, chart]
+    setup:
+      - id: resize-landscape
+        kind: command
+        type: editor.resize
+        params:
+          width: 1920
+          height: 1080
+    execute:
+      type: scene.addLibraryScene
+      params:
+        sceneId: PieChartScene
+        from: 0
+        durationMs: 5000
+        sceneProps:
+          title: Test Chart
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: scene appears on timeline
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              gte: 1
+
+  - id: state.add-library-scene-portrait
+    name: Add library scene with portrait canvas
+    category: state
+    tags: [state, scenes, library, portrait]
+    setup:
+      - id: resize-portrait
+        kind: command
+        type: editor.resize
+        params:
+          width: 1080
+          height: 1920
+    execute:
+      type: scene.addLibraryScene
+      params:
+        sceneId: NumberTickerScene
+        from: 0
+        durationMs: 4000
+        sceneProps:
+          value: 42
+          label: Test Metric
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.update-scene-props
+    name: Update scene props after adding
+    category: state
+    tags: [state, scenes, props, update]
+    setup:
+      - id: add-scene
+        kind: command
+        type: scene.addLibraryScene
+        params:
+          sceneId: PieChartScene
+          from: 0
+          durationMs: 5000
+    execute:
+      type: scene.updateSceneProps
+      params:
+        itemId: "{{steps.add-scene.result.itemId}}"
+        sceneProps:
+          title: Updated Title
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  CUSTOM SCENES — sandbox JSX, no imports, globals only
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.add-custom-scene-basic
+    name: Add basic custom JSX scene
+    category: state
+    tags: [state, scenes, custom, jsx]
+    execute:
+      type: scene.addCustomScene
+      params:
+        code: |
+          const Scene = () => {
+            const frame = useCurrentFrame();
+            const opacity = interpolate(frame, [0, 30], [0, 1], { extrapolateRight: 'clamp' });
+            return (
+              <AbsoluteFill style={{ backgroundColor: '#1a1a2e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ opacity, color: 'white', fontSize: 72, fontWeight: 900 }}>
+                  Test Scene
+                </div>
+              </AbsoluteFill>
+            );
+          };
+        name: test-custom-basic
+        from: 0
+        durationMs: 3000
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: custom scene on timeline
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              gte: 1
+
+  - id: state.add-custom-scene-animation
+    name: Custom scene with spring animation
+    category: state
+    tags: [state, scenes, custom, animation, spring]
+    execute:
+      type: scene.addCustomScene
+      params:
+        code: |
+          const Scene = () => {
+            const frame = useCurrentFrame();
+            const { fps } = useVideoConfig();
+            const scale = spring({ frame, fps, config: { damping: 200 } });
+            return (
+              <AbsoluteFill style={{ backgroundColor: '#0a0a2e', justifyContent: 'center', alignItems: 'center' }}>
+                <div style={{
+                  transform: `scale(${scale})`,
+                  color: '#FFD700',
+                  fontSize: 96,
+                  fontWeight: 900
+                }}>
+                  Spring!
+                </div>
+              </AbsoluteFill>
+            );
+          };
+        name: test-spring-anim
+        from: 3000
+        durationMs: 3000
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.add-custom-scene-sequence
+    name: Custom scene with Sequence timing
+    category: state
+    tags: [state, scenes, custom, sequence]
+    execute:
+      type: scene.addCustomScene
+      params:
+        code: |
+          const Scene = () => {
+            return (
+              <AbsoluteFill style={{ backgroundColor: '#2d2d44', justifyContent: 'center', alignItems: 'center' }}>
+                <Sequence from={0} durationInFrames={30}>
+                  <div style={{ color: 'white', fontSize: 48 }}>Part 1</div>
+                </Sequence>
+                <Sequence from={30} durationInFrames={30}>
+                  <div style={{ color: '#FFD700', fontSize: 48 }}>Part 2</div>
+                </Sequence>
+              </AbsoluteFill>
+            );
+          };
+        name: test-sequence
+        from: 0
+        durationMs: 2000
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.preview-code
+    name: scene.previewCode previews without adding to timeline
+    category: contract
+    tags: [contract, scenes, custom, preview]
+    execute:
+      type: scene.previewCode
+      params:
+        code: |
+          const Scene = () => {
+            return (
+              <AbsoluteFill style={{ backgroundColor: 'blue', justifyContent: 'center', alignItems: 'center' }}>
+                <div style={{ color: 'white', fontSize: 64 }}>Preview Only</div>
+              </AbsoluteFill>
+            );
+          };
+        name: preview-test
+        duration_frames: 90
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  BUNDLED SCENES — esbuild compiled TSX with real imports
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.add-bundled-scene-basic
+    name: Add bundled scene with real imports
+    category: state
+    tags: [state, scenes, bundled, esbuild, imports]
+    execute:
+      type: scene.addBundledScene
+      params:
+        source: |
+          import { AbsoluteFill, useCurrentFrame, interpolate, Easing } from 'remotion';
+
+          export default function Scene() {
+            const frame = useCurrentFrame();
+            const opacity = interpolate(frame, [0, 30], [0, 1], {
+              extrapolateRight: 'clamp',
+              easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+            });
+            return (
+              <AbsoluteFill style={{ backgroundColor: '#0f0f23', justifyContent: 'center', alignItems: 'center' }}>
+                <div style={{ opacity, color: '#00ff88', fontSize: 64, fontWeight: 700 }}>
+                  Bundled Scene
+                </div>
+              </AbsoluteFill>
+            );
+          }
+        name: test-bundled-basic
+        from: 0
+        durationMs: 4000
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: bundled scene on timeline
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              gte: 1
+
+  - id: state.add-bundled-scene-noise
+    name: Bundled scene with @remotion/noise import
+    category: state
+    tags: [state, scenes, bundled, noise, import]
+    execute:
+      type: scene.addBundledScene
+      params:
+        source: |
+          import { AbsoluteFill, useCurrentFrame, useVideoConfig } from 'remotion';
+          import { noise2D } from '@remotion/noise';
+
+          export default function Scene() {
+            const frame = useCurrentFrame();
+            const { fps } = useVideoConfig();
+            const t = frame / fps;
+            const n = noise2D('seed', t * 0.5, 0);
+            const hue = Math.floor((n + 1) * 180);
+            return (
+              <AbsoluteFill style={{ backgroundColor: `hsl(${hue}, 70%, 20%)`, justifyContent: 'center', alignItems: 'center' }}>
+                <div style={{ color: 'white', fontSize: 48 }}>Noise: {n.toFixed(2)}</div>
+              </AbsoluteFill>
+            );
+          }
+        name: test-bundled-noise
+        from: 0
+        durationMs: 5000
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.add-bundled-scene-shapes
+    name: Bundled scene with @remotion/shapes
+    category: state
+    tags: [state, scenes, bundled, shapes, import]
+    execute:
+      type: scene.addBundledScene
+      params:
+        source: |
+          import { AbsoluteFill, useCurrentFrame, spring, useVideoConfig } from 'remotion';
+          import { Pie } from '@remotion/shapes';
+
+          export default function Scene() {
+            const frame = useCurrentFrame();
+            const { fps } = useVideoConfig();
+            const progress = spring({ frame, fps, config: { damping: 200 } });
+            return (
+              <AbsoluteFill style={{ backgroundColor: '#1a1a2e', justifyContent: 'center', alignItems: 'center' }}>
+                <Pie radius={150} progress={progress} fill="#FFD700" />
+              </AbsoluteFill>
+            );
+          }
+        name: test-bundled-shapes
+        from: 0
+        durationMs: 3000
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  SCENE STATE INSPECTION
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.scene-metadata-preserved
+    name: Scene metadata is preserved in timeline item
+    category: state
+    tags: [state, scenes, metadata]
+    setup:
+      - id: add-scene
+        kind: command
+        type: scene.addCustomScene
+        params:
+          code: |
+            const Scene = () => {
+              return (
+                <AbsoluteFill style={{ backgroundColor: 'red' }}>
+                  <div style={{ color: 'white', fontSize: 48 }}>Metadata Test</div>
+                </AbsoluteFill>
+              );
+            };
+          name: metadata-test
+          from: 0
+          durationMs: 3000
+    execute:
+      type: query.getItemProperties
+      params:
+        itemId: "{{steps.add-scene.result.itemId}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result.item.type
+          equals: template
+
+  - id: contract.get-scene-source
+    name: scene.getSceneSource returns code for custom scene
+    category: contract
+    tags: [contract, scenes, source]
+    setup:
+      - id: add-scene
+        kind: command
+        type: scene.addCustomScene
+        params:
+          code: |
+            const Scene = () => {
+              return (
+                <AbsoluteFill style={{ backgroundColor: '#333' }}>
+                  <div style={{ color: 'white' }}>Source Test</div>
+                </AbsoluteFill>
+              );
+            };
+          name: source-test
+          from: 0
+          durationMs: 3000
+    execute:
+      type: scene.getSceneSource
+      params:
+        itemId: "{{steps.add-scene.result.itemId}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  MULTI-SCENE WORKFLOW
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: workflow.multiple-scenes-sequential
+    name: Add multiple scenes sequentially on timeline
+    category: workflow
+    tags: [workflow, scenes, multi, timeline]
+    setup:
+      - id: scene1
+        kind: command
+        type: scene.addLibraryScene
+        params:
+          sceneId: PieChartScene
+          from: 0
+          durationMs: 3000
+      - id: scene2
+        kind: command
+        type: scene.addCustomScene
+        params:
+          code: |
+            const Scene = () => {
+              return (
+                <AbsoluteFill style={{ backgroundColor: '#2a2a4a', justifyContent: 'center', alignItems: 'center' }}>
+                  <div style={{ color: '#FFD700', fontSize: 64 }}>Middle</div>
+                </AbsoluteFill>
+              );
+            };
+          name: middle-scene
+          from: 3000
+          durationMs: 3000
+    execute:
+      type: scene.addLibraryScene
+      params:
+        sceneId: NumberTickerScene
+        from: 6000
+        durationMs: 3000
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: all 3 scenes on timeline
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              gte: 3
+
+  - id: contract.template-build-from-json
+    name: template.buildFromJSON builds multi-scene from JSON
+    category: contract
+    tags: [contract, template, scene, json]
+    execute:
+      type: template.buildFromJSON
+      params:
+        scenes:
+          - sceneId: LineChartScene
+            durationMs: 3000
+            sceneProps:
+              title: Test Chart
+              dataPoints: [10, 20, 30, 40]
+              xLabels: ["Q1", "Q2", "Q3", "Q4"]
+        gap: 0
+        startFrom: 0
+    assert:
+      response:
+        - path: status
+          equals: success

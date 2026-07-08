@@ -79,3 +79,24 @@ Apply styling to all text or caption items at once.
   "details": { "fontFamily": "Montserrat", "color": "#EAEAEA" }
 }}
 ```
+
+### `editor.editCaptionWord`
+Edit a specific word in a caption item (fix typos, change individual words).
+```json
+{ "type": "editor.editCaptionWord", "params": {
+  "itemId": "caption_abc",
+  "wordIndex": 2,
+  "newText": "corrected"
+}}
+```
+
+### `editor.bulkReplaceText`
+Find and replace text across all text/caption items on the timeline.
+```json
+{ "type": "editor.bulkReplaceText", "params": {
+  "find": "old text",
+  "replace": "new text",
+  "caseSensitive": false
+}}
+```
+**Returns:** `{ replacedCount, items }` — number of items modified.

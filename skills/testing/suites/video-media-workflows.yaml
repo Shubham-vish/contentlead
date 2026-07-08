@@ -1,0 +1,461 @@
+version: 1
+suite:
+  id: video-media-workflows
+  name: Video & Media Workflow Tests
+  description: >
+    Tests video addition with trim, multi-segment insertion, chroma-key,
+    media replacement, image operations, and transform workflows.
+    Requires test media in SkillTown-Desktop/test-assets/.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-landscape
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+  assets:
+    test_video: /Users/shubham/Codes/SkillTown-Desktop/test-assets/test-video-1080p.mp4
+    test_clip: /Users/shubham/Codes/SkillTown-Desktop/test-assets/test-clip-720p.mp4
+    test_image: /Users/shubham/Codes/SkillTown-Desktop/test-assets/test-image-1080p.png
+    test_image_portrait: /Users/shubham/Codes/SkillTown-Desktop/test-assets/test-image-portrait.png
+    test_music: /Users/shubham/Codes/SkillTown-Desktop/test-assets/test-music.m4a
+    test_voice: /Users/shubham/Codes/SkillTown-Desktop/test-assets/test-voice.m4a
+
+tests:
+  # ═══════════════════════════════════════════════════════════════════
+  #  VIDEO — Trim at Creation
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.add-video-with-trim
+    name: Add video with trim range (seconds 1-3)
+    category: state
+    tags: [state, video, trim, media]
+    execute:
+      type: editor.addVideo
+      params:
+        src: "{{assets.test_video}}"
+        from: 0
+        trim:
+          from: 1000
+          to: 3000
+        duration: 2000
+        width: 1920
+        height: 1080
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: trimmed video on timeline with correct duration
+          type: query.getItemProperties
+          params:
+            itemId: "{{steps.execute.result.itemId}}"
+          assertions:
+            - path: result.item.type
+              equals: video
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  VIDEO — Multi-segment Extraction
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.add-video-segments
+    name: Extract multiple segments from one source
+    category: state
+    tags: [state, video, segments, multi]
+    execute:
+      type: editor.addVideoSegments
+      params:
+        url: "{{assets.test_video}}"
+        segments:
+          - start: 0
+            end: 1500
+            label: intro
+          - start: 2000
+            end: 4000
+            label: middle
+          - start: 4000
+            end: 5000
+            label: ending
+        gap: 0
+        startAt: 0
+        volume: 100
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: 3 video segments on timeline
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              gte: 3
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  VIDEO — Playback Rate / Clip State
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.set-clip-state-mute
+    name: Mute video clip audio
+    category: state
+    tags: [state, video, mute, clip]
+    setup:
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          src: "{{assets.test_video}}"
+          from: 0
+          duration: 5000
+          width: 1920
+          height: 1080
+    execute:
+      type: editor.setClipState
+      params:
+        itemId: "{{steps.add-video.result.itemId}}"
+        enabled: true
+        muted: true
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  VIDEO — Chroma Key (Green Screen)
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.chroma-key-enable
+    name: Enable chroma key via editItem
+    category: state
+    tags: [state, video, chroma, greenscreen]
+    setup:
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          src: "{{assets.test_video}}"
+          from: 0
+          duration: 5000
+          width: 1920
+          height: 1080
+    execute:
+      type: editor.editItem
+      params:
+        id: "{{steps.add-video.result.itemId}}"
+        updates:
+          details:
+            chromaKey:
+              enabled: true
+              keyColor: "#00ff00"
+              similarity: 0.4
+              smoothness: 0.1
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  IMAGE — Add, Style, Replace
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.add-image-basic
+    name: Add image to timeline
+    category: state
+    tags: [state, image, add, media]
+    execute:
+      type: editor.addImage
+      params:
+        url: "{{assets.test_image}}"
+        from: 0
+        duration: 3000
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: image item on timeline
+          type: query.getItemProperties
+          params:
+            itemId: "{{steps.execute.result.itemId}}"
+          assertions:
+            - path: result.item.type
+              equals: image
+
+  - id: state.add-image-portrait
+    name: Add portrait image
+    category: state
+    tags: [state, image, portrait]
+    execute:
+      type: editor.addImage
+      params:
+        url: "{{assets.test_image_portrait}}"
+        from: 0
+        duration: 3000
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.image-style-border
+    name: Style image with border and opacity
+    category: state
+    tags: [state, image, style, border]
+    setup:
+      - id: add-img
+        kind: command
+        type: editor.addImage
+        params:
+          url: "{{assets.test_image}}"
+          from: 0
+          duration: 3000
+    execute:
+      type: editor.editItem
+      params:
+        id: "{{steps.add-img.result.itemId}}"
+        updates:
+          details:
+            borderWidth: 4
+            borderColor: "#FF0000"
+            borderRadius: 16
+            opacity: 80
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.replace-image-media
+    name: Replace image source with different image
+    category: state
+    tags: [state, image, replace, media]
+    setup:
+      - id: add-img
+        kind: command
+        type: editor.addImage
+        params:
+          url: "{{assets.test_image}}"
+          from: 0
+          duration: 3000
+    execute:
+      type: editor.replaceMedia
+      params:
+        itemId: "{{steps.add-img.result.itemId}}"
+        src: "{{assets.test_image_portrait}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  CANVAS TRANSFORMS — Align, Rotate, Background
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.align-item-center
+    name: Align item to canvas center
+    category: state
+    tags: [state, canvas, align, position]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Align Test
+          from: 0
+          durationMs: 3000
+    execute:
+      type: editor.alignItem
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        align: center
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.align-item-left
+    name: Align item to left edge
+    category: state
+    tags: [state, canvas, align, left]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Left Aligned
+          from: 0
+          durationMs: 3000
+    execute:
+      type: editor.alignItem
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        align: left
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.rotate-item
+    name: Rotate item by 45 degrees
+    category: state
+    tags: [state, canvas, rotate, transform]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Rotated
+          from: 0
+          durationMs: 3000
+    execute:
+      type: editor.rotateItem
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        angle: 45
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.set-background-color
+    name: Set canvas background color
+    category: state
+    tags: [state, canvas, background]
+    execute:
+      type: editor.setBackground
+      params:
+        type: color
+        value: "#0a0a2e"
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  AUDIO — Add, Volume, Ducking, Noise
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.add-audio-with-volume
+    name: Add audio and set volume
+    category: state
+    tags: [state, audio, add, volume]
+    setup:
+      - id: add-aud
+        kind: command
+        type: editor.addAudio
+        params:
+          src: "{{assets.test_music}}"
+          from: 0
+          duration: 5000
+    execute:
+      type: editor.setVolume
+      params:
+        itemId: "{{steps.add-aud.result.itemId}}"
+        volume: 30
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.audio-duck-music
+    name: Duck music under narration
+    category: state
+    tags: [state, audio, duck, mix]
+    notes: >
+      Requires both a voice and music track. Ducking reduces
+      music volume during speech segments.
+    setup:
+      - id: add-voice
+        kind: command
+        type: editor.addAudio
+        params:
+          src: "{{assets.test_voice}}"
+          from: 0
+          duration: 3000
+      - id: add-music
+        kind: command
+        type: editor.addAudio
+        params:
+          src: "{{assets.test_music}}"
+          from: 0
+          duration: 5000
+    execute:
+      type: audio.duckMusic
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  TEXT — Styled Titles and Positioning
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: state.add-styled-title
+    name: Add styled title with custom font
+    category: state
+    tags: [state, text, title, style]
+    execute:
+      type: editor.addText
+      params:
+        text: "Breaking News"
+        from: 0
+        durationMs: 4000
+        details:
+          fontSize: 72
+          color: "#FFFFFF"
+          fontFamily: Montserrat
+          fontWeight: 700
+          textAlign: center
+          backgroundColor: "rgba(0,0,0,0.5)"
+          borderRadius: 12
+        autoReorder: true
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.add-lower-third
+    name: Add lower-third text overlay
+    category: state
+    tags: [state, text, lowerthird, overlay]
+    execute:
+      type: editor.addText
+      params:
+        text: "John Doe — CEO, TechCorp"
+        from: 1000
+        durationMs: 5000
+        details:
+          fontSize: 36
+          color: "#FFFFFF"
+          fontFamily: Inter
+          fontWeight: 500
+          backgroundColor: "rgba(0,0,0,0.7)"
+          borderRadius: 8
+          top: "850"
+          left: "50"
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.add-manual-karaoke-caption
+    name: Add manual caption with word timing
+    category: state
+    tags: [state, text, caption, karaoke, timing]
+    execute:
+      type: editor.addCaption
+      params:
+        from: 0
+        durationMs: 3000
+        details:
+          words:
+            - word: Hello
+              start: 0
+              end: 500
+            - word: beautiful
+              start: 500
+              end: 1200
+            - word: world
+              start: 1200
+              end: 1800
+        autoReorder: true
+    assert:
+      response:
+        - path: status
+          equals: success

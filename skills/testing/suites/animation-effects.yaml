@@ -1,0 +1,299 @@
+version: 1
+suite:
+  id: animation-effects
+  name: Animation and effects commands
+  description: Tests animation presets, keyframes, and visual effects.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-portrait
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+
+tests:
+  # ── Animations ─────────────────────────────────────────────────
+
+  - id: state.set-animation-in
+    name: editor.setAnimation applies entry animation
+    category: state
+    tags: [state, animation, in]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Animate Me
+          from: 0
+          to: 5000
+          fontSize: 48
+    execute:
+      type: editor.setAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationType: in
+        type: fadeIn
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: editorHealth.commandSuccess
+          equals: true
+
+  - id: state.set-animation-out
+    name: editor.setAnimation applies exit animation
+    category: state
+    tags: [state, animation, out]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Animate Out
+          from: 0
+          to: 5000
+    execute:
+      type: editor.setAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationType: out
+        type: fadeOut
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.remove-animation
+    name: editor.removeAnimation clears animation
+    category: state
+    tags: [state, animation, remove]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Remove Anim
+          from: 0
+          to: 5000
+      - id: set-anim
+        kind: command
+        type: editor.setAnimation
+        params:
+          itemId: "{{steps.add-text.result.itemId}}"
+          animationType: in
+          type: fadeIn
+    execute:
+      type: editor.removeAnimation
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        animationType: in
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Keyframes ──────────────────────────────────────────────────
+
+  - id: state.add-keyframe
+    name: editor.addKeyframe creates a keyframe
+    category: state
+    tags: [state, keyframe]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Keyframe Test
+          from: 0
+          to: 5000
+    execute:
+      type: editor.addKeyframe
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        property: opacity
+        value: 50
+        frame: 30
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.remove-keyframe
+    name: editor.removeKeyframe deletes a keyframe
+    category: state
+    tags: [state, keyframe, remove]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Remove KF
+          from: 0
+          to: 5000
+      - id: add-kf
+        kind: command
+        type: editor.addKeyframe
+        params:
+          itemId: "{{steps.add-text.result.itemId}}"
+          property: opacity
+          value: 50
+          frame: 30
+    execute:
+      type: editor.removeKeyframe
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        property: opacity
+        frame: 30
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Effects ────────────────────────────────────────────────────
+
+  - id: state.add-effect
+    name: editor.addEffect applies visual effect
+    category: state
+    tags: [state, effect]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Effect Test
+          from: 0
+          to: 5000
+    execute:
+      type: editor.addEffect
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        effectType: blur
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.remove-effect
+    name: editor.removeEffect clears effect
+    category: state
+    tags: [state, effect, remove]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Remove FX
+          from: 0
+          to: 5000
+      - id: add-fx
+        kind: command
+        type: editor.addEffect
+        params:
+          itemId: "{{steps.add-text.result.itemId}}"
+          effectType: blur
+    execute:
+      type: editor.removeEffect
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        effectType: blur
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Transitions (explicit) ─────────────────────────────────────
+
+  - id: state.add-transition-explicit
+    name: editor.addTransition adds transition between two items
+    category: state
+    tags: [state, transition]
+    setup:
+      - id: add-text-a
+        kind: command
+        type: editor.addText
+        params:
+          text: Clip A
+          from: 0
+          to: 3000
+      - id: add-text-b
+        kind: command
+        type: editor.addText
+        params:
+          text: Clip B
+          from: 3000
+          to: 6000
+    execute:
+      type: editor.addTransition
+      params:
+        fromId: "{{steps.add-text-a.result.itemId}}"
+        toId: "{{steps.add-text-b.result.itemId}}"
+        kind: fade
+        duration: 500
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.add-transition-between
+    name: editor.addTransitionBetween auto-finds next clip
+    category: state
+    tags: [state, transition]
+    setup:
+      - id: add-text-a
+        kind: command
+        type: editor.addText
+        params:
+          text: Clip X
+          from: 0
+          to: 3000
+      - id: add-text-b
+        kind: command
+        type: editor.addText
+        params:
+          text: Clip Y
+          from: 3000
+          to: 6000
+    execute:
+      type: editor.addTransitionBetween
+      params:
+        itemId: "{{steps.add-text-a.result.itemId}}"
+        kind: slide
+        duration: 500
+        direction: from-left
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.remove-transition
+    name: editor.removeTransition removes an applied transition
+    category: state
+    tags: [state, transition]
+    setup:
+      - id: add-text-a
+        kind: command
+        type: editor.addText
+        params:
+          text: From Clip
+          from: 0
+          to: 3000
+      - id: add-text-b
+        kind: command
+        type: editor.addText
+        params:
+          text: To Clip
+          from: 3000
+          to: 6000
+      - id: add-trans
+        kind: command
+        type: editor.addTransition
+        params:
+          fromId: "{{steps.add-text-a.result.itemId}}"
+          toId: "{{steps.add-text-b.result.itemId}}"
+          kind: fade
+          duration: 500
+    execute:
+      type: editor.removeTransition
+      params:
+        fromId: "{{steps.add-text-a.result.itemId}}"
+    assert:
+      response:
+        - path: status
+          equals: success

@@ -1,0 +1,492 @@
+version: 1
+suite:
+  id: canvas-media
+  name: Canvas positioning, media properties, and visual commands
+  description: Tests positioning, rotation, alignment, z-index, opacity, volume, playback rate, crop, and clip state.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-portrait
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+  assets:
+    talking_head_video: REQUIRED_ABSOLUTE_PATH_TO_16x9_TALKING_HEAD_MP4
+
+tests:
+  # ── Canvas Positioning ─────────────────────────────────────────
+
+  - id: state.position-item
+    name: editor.positionItem moves item on canvas
+    category: state
+    tags: [state, canvas, position]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Position Test
+          from: 0
+          to: 3000
+    execute:
+      type: editor.positionItem
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        x: 100
+        y: 200
+        width: 500
+        height: 100
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.align-center
+    name: editor.alignItem centers item
+    category: state
+    tags: [state, canvas, align]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Align Test
+          from: 0
+          to: 3000
+    execute:
+      type: editor.alignItem
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        alignment: center
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: editorHealth.commandSuccess
+          equals: true
+
+  - id: state.align-all-directions
+    name: editor.alignItem works for all directions
+    category: state
+    tags: [state, canvas, align]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Multi Align
+          from: 0
+          to: 3000
+    notes: Agent should test left, right, top, bottom, center in sequence on same item
+    execute:
+      type: editor.alignItem
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        alignment: left
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.rotate-item
+    name: editor.rotateItem sets rotation angle
+    category: state
+    tags: [state, canvas, rotate]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Rotate Test
+          from: 0
+          to: 3000
+    execute:
+      type: editor.rotateItem
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        angle: 45
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.set-zindex-front
+    name: editor.setZIndex moves item to front
+    category: state
+    tags: [state, canvas, zindex]
+    setup:
+      - id: add-text-a
+        kind: command
+        type: editor.addText
+        params:
+          text: Back Item
+          from: 0
+          to: 3000
+      - id: add-text-b
+        kind: command
+        type: editor.addText
+        params:
+          text: Front Item
+          from: 0
+          to: 3000
+    execute:
+      type: editor.setZIndex
+      params:
+        itemId: "{{steps.add-text-a.result.itemId}}"
+        direction: front
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Media Properties ───────────────────────────────────────────
+
+  - id: state.set-opacity
+    name: editor.setOpacity changes item transparency
+    category: state
+    tags: [state, media, opacity]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Opacity Test
+          from: 0
+          to: 3000
+    execute:
+      type: editor.setOpacity
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        opacity: 50
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.set-volume
+    name: editor.setVolume adjusts clip volume
+    category: state
+    tags: [state, media, volume]
+    requiresAssets: [talking_head_video]
+    setup:
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          url: "{{assets.talking_head_video}}"
+          from: 0
+          duration: 5000
+    execute:
+      type: editor.setVolume
+      params:
+        itemId: "{{steps.add-video.result.itemId}}"
+        volume: 75
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.set-playback-rate
+    name: editor.setPlaybackRate changes speed
+    category: state
+    tags: [state, media, speed]
+    requiresAssets: [talking_head_video]
+    setup:
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          url: "{{assets.talking_head_video}}"
+          from: 0
+          duration: 5000
+    execute:
+      type: editor.setPlaybackRate
+      params:
+        itemId: "{{steps.add-video.result.itemId}}"
+        rate: 2
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.set-clip-state-disabled
+    name: editor.setClipState disables a clip
+    category: state
+    tags: [state, media, clipstate]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Disable Me
+          from: 0
+          to: 3000
+    execute:
+      type: editor.setClipState
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        enabled: false
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.set-clip-state-muted
+    name: editor.setClipState mutes a clip
+    category: state
+    tags: [state, media, clipstate, mute]
+    requiresAssets: [talking_head_video]
+    setup:
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          url: "{{assets.talking_head_video}}"
+          from: 0
+          duration: 5000
+    execute:
+      type: editor.setClipState
+      params:
+        itemId: "{{steps.add-video.result.itemId}}"
+        muted: true
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Crop ───────────────────────────────────────────────────────
+
+  - id: state.crop-item
+    name: editor.cropItem applies crop metadata
+    category: state
+    tags: [state, media, crop]
+    requiresAssets: [talking_head_video]
+    setup:
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          url: "{{assets.talking_head_video}}"
+          from: 0
+          duration: 5000
+          width: 1920
+          height: 1080
+    execute:
+      type: editor.cropItem
+      params:
+        itemId: "{{steps.add-video.result.itemId}}"
+        crop:
+          x: 656
+          y: 0
+          width: 608
+          height: 1080
+        preservePosition: true
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: editorHealth.commandSuccess
+          equals: true
+      state:
+        - label: crop stored on item
+          type: query.getItemProperties
+          params:
+            itemId: "{{steps.add-video.result.itemId}}"
+          assertions:
+            - path: result.item.details.crop.width
+              equals: 608
+            - path: result.item.details.crop.height
+              equals: 1080
+
+  # ── Resize ─────────────────────────────────────────────────────
+
+  - id: state.resize-portrait
+    name: editor.resize to 1080x1920
+    category: state
+    tags: [state, canvas, resize]
+    execute:
+      type: editor.resize
+      params:
+        width: 1080
+        height: 1920
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: canvas is portrait
+          type: query.getCanvasSize
+          params: {}
+          assertions:
+            - path: result.width
+              equals: 1080
+            - path: result.height
+              equals: 1920
+
+  - id: state.resize-landscape
+    name: editor.resize to 1920x1080
+    category: state
+    tags: [state, canvas, resize]
+    execute:
+      type: editor.resize
+      params:
+        width: 1920
+        height: 1080
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: canvas is landscape
+          type: query.getCanvasSize
+          params: {}
+          assertions:
+            - path: result.width
+              equals: 1920
+            - path: result.height
+              equals: 1080
+
+  - id: state.resize-square
+    name: editor.resize to 1080x1080
+    category: state
+    tags: [state, canvas, resize]
+    execute:
+      type: editor.resize
+      params:
+        width: 1080
+        height: 1080
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: canvas is square
+          type: query.getCanvasSize
+          params: {}
+          assertions:
+            - path: result.width
+              equals: 1080
+            - path: result.height
+              equals: 1080
+
+  # ── Playback ───────────────────────────────────────────────────
+
+  - id: contract.play
+    name: editor.play starts playback
+    category: contract
+    tags: [contract, playback]
+    execute:
+      type: editor.play
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+    teardown:
+      - kind: command
+        type: editor.pause
+        params: {}
+
+  - id: contract.pause
+    name: editor.pause stops playback
+    category: contract
+    tags: [contract, playback]
+    execute:
+      type: editor.pause
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.seek-to
+    name: editor.seekTo moves playhead
+    category: state
+    tags: [state, playback, seek]
+    execute:
+      type: editor.seekTo
+      params:
+        time: 5000
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: playhead at 5s
+          type: query.getCurrentTime
+          params: {}
+          assertions:
+            - path: result
+              gte: 4900
+            - path: result
+              lte: 5100
+
+  # ── Magnetic Snap ──────────────────────────────────────────────
+
+  - id: contract.set-magnetic
+    name: editor.setMagnetic toggles snap mode
+    category: contract
+    tags: [contract, snap]
+    execute:
+      type: editor.setMagnetic
+      params:
+        enabled: true
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Media Validation ───────────────────────────────────────────
+
+  - id: contract.media-validate
+    name: media.validate checks URL accessibility
+    category: contract
+    tags: [contract, media]
+    execute:
+      type: media.validate
+      params:
+        url: https://picsum.photos/200
+        type: image
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.media-status
+    name: media.status returns project media health
+    category: contract
+    tags: [contract, media]
+    execute:
+      type: media.status
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.media-prepare
+    name: media.prepare batch checks URL accessibility
+    category: contract
+    tags: [contract, media]
+    execute:
+      type: media.prepare
+      params:
+        urls:
+          - https://picsum.photos/200
+          - https://picsum.photos/300
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.detect-faces-empty
+    name: media.detectFacesInFrames handles empty frames array
+    category: contract
+    tags: [contract, media, face-detect]
+    execute:
+      type: media.detectFacesInFrames
+      params:
+        frames: []
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result.frames
+          exists: true

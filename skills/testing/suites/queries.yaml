@@ -1,0 +1,441 @@
+version: 1
+suite:
+  id: queries
+  name: Query commands contract + state tests
+  description: Validates all query.* commands return correct response shapes and data.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-portrait
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+
+tests:
+  # ── Canvas & Project Info ──────────────────────────────────────
+
+  - id: contract.canvas-size
+    name: query.getCanvasSize returns width/height
+    category: contract
+    tags: [contract, query, canvas]
+    execute:
+      type: query.getCanvasSize
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result.width
+          type: number
+        - path: result.height
+          type: number
+        - path: result.width
+          gte: 100
+        - path: result.height
+          gte: 100
+
+  - id: contract.duration
+    name: query.getDuration returns total duration
+    category: contract
+    tags: [contract, query, duration]
+    execute:
+      type: query.getDuration
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result
+          type: number
+
+  - id: contract.current-time
+    name: query.getCurrentTime returns playhead position
+    category: contract
+    tags: [contract, query, playback]
+    execute:
+      type: query.getCurrentTime
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result
+          type: number
+
+  - id: contract.project-info
+    name: query.getProjectInfo returns project metadata
+    category: contract
+    tags: [contract, query, project]
+    execute:
+      type: query.getProjectInfo
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result
+          exists: true
+
+  - id: contract.editor-state-summary
+    name: query.getEditorState scope=summary returns summary
+    category: contract
+    tags: [contract, query, state]
+    execute:
+      type: query.getEditorState
+      params:
+        scope: summary
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result
+          exists: true
+
+  # ── Timeline & Track Queries ───────────────────────────────────
+
+  - id: contract.timeline-items-empty
+    name: query.getTimelineItems on empty timeline
+    category: contract
+    tags: [contract, query, timeline]
+    execute:
+      type: query.getTimelineItems
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result
+          type: array
+
+  - id: state.timeline-items-with-content
+    name: query.getTimelineItems returns added items
+    category: state
+    tags: [state, query, timeline]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Timeline Query Test
+          from: 0
+          to: 3000
+    execute:
+      type: query.getTimelineItems
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result
+          type: array
+        - path: result.count
+          gte: 1
+
+  - id: state.timeline-items-type-filter
+    name: query.getTimelineItems filters by type
+    category: state
+    tags: [state, query, timeline, filter]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Text Item
+          from: 0
+          to: 2000
+      - id: add-caption
+        kind: command
+        type: editor.addCaption
+        params:
+          text: Caption Item
+          from: 2500
+          to: 4000
+    execute:
+      type: query.getTimelineItems
+      params:
+        type: text
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result.count
+          equals: 1
+
+  - id: contract.track-info
+    name: query.getTrackInfo returns track structure
+    category: contract
+    tags: [contract, query, tracks]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Track Test
+          from: 0
+          to: 2000
+    execute:
+      type: query.getTrackInfo
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result
+          type: array
+        - path: result.count
+          gte: 1
+
+  - id: contract.selected-items-empty
+    name: query.getSelectedItems on empty selection
+    category: contract
+    tags: [contract, query, selection]
+    execute:
+      type: query.getSelectedItems
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.all-text
+    name: query.getAllText returns text content
+    category: contract
+    tags: [contract, query, text]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Hello World
+          from: 0
+          to: 2000
+    execute:
+      type: query.getAllText
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result
+          exists: true
+
+  - id: contract.visible-text
+    name: query.getVisibleText returns text at specific time
+    category: contract
+    tags: [contract, query, text]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Visible Text
+          from: 0
+          to: 5000
+    execute:
+      type: query.getVisibleText
+      params:
+        timeMs: 1000
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Full State & Validation ────────────────────────────────────
+
+  - id: contract.full-state
+    name: project.getFullState returns complete design
+    category: contract
+    tags: [contract, query, state, project]
+    execute:
+      type: project.getFullState
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result
+          exists: true
+
+  - id: contract.validate-timeline
+    name: query.validateTimeline returns health check
+    category: contract
+    tags: [contract, query, validation]
+    execute:
+      type: query.validateTimeline
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.command-history
+    name: query.getCommandHistory returns recent commands
+    category: contract
+    tags: [contract, query, history]
+    execute:
+      type: query.getCommandHistory
+      params:
+        limit: 5
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.metrics
+    name: query.getMetrics returns execution stats
+    category: contract
+    tags: [contract, query, metrics]
+    execute:
+      type: query.getMetrics
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.scene-errors
+    name: query.getSceneErrors returns error registry
+    category: contract
+    tags: [contract, query, errors]
+    execute:
+      type: query.getSceneErrors
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.circuit-breaker
+    name: query.getCircuitBreakerStatus returns breaker state
+    category: contract
+    tags: [contract, query, circuit]
+    execute:
+      type: query.getCircuitBreakerStatus
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.assets
+    name: query.getAssets returns media assets
+    category: contract
+    tags: [contract, query, media]
+    execute:
+      type: query.getAssets
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.diff
+    name: query.diff returns state changes
+    category: contract
+    tags: [contract, query, diff]
+    execute:
+      type: query.diff
+      params:
+        sinceVersion: 0
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Fonts & Animation Presets ──────────────────────────────────
+
+  - id: contract.list-fonts
+    name: query.listFonts returns available fonts
+    category: contract
+    tags: [contract, query, fonts]
+    execute:
+      type: query.listFonts
+      params:
+        limit: 10
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result
+          type: array
+        - path: result.count
+          gte: 1
+
+  - id: contract.animation-presets
+    name: query.listAnimationPresets returns presets
+    category: contract
+    tags: [contract, query, animation]
+    execute:
+      type: query.listAnimationPresets
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Content Queries ────────────────────────────────────────────
+
+  - id: contract.content-details
+    name: content.getDetails returns content metadata
+    category: contract
+    tags: [contract, query, content]
+    execute:
+      type: content.getDetails
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.transcription-status
+    name: query.getTranscriptionStatus returns status
+    category: contract
+    tags: [contract, query, transcription]
+    execute:
+      type: query.getTranscriptionStatus
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Reframe Presets ────────────────────────────────────────────
+
+  - id: contract.reframe-presets
+    name: reframe.listPresets returns preset list
+    category: contract
+    tags: [contract, query, reframe]
+    execute:
+      type: reframe.listPresets
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result
+          type: array
+        - path: result.count
+          gte: 3
+
+  # ── Diagnostics ────────────────────────────────────────────────
+
+  - id: contract.diagnose-scenes
+    name: query.diagnoseScenes checks scenes for runtime errors
+    category: contract
+    tags: [contract, diagnostics]
+    execute:
+      type: query.diagnoseScenes
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.get-transcript
+    name: query.getTranscript returns transcript data
+    category: contract
+    tags: [contract, transcript]
+    execute:
+      type: query.getTranscript
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success

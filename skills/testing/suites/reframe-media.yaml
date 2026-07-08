@@ -1,0 +1,183 @@
+version: 1
+suite:
+  id: reframe-media
+  name: Reframe, media validation, and face detection
+  description: Tests reframe pipeline, media validation, and face detection commands.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-portrait
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+  assets:
+    talking_head_video: REQUIRED_ABSOLUTE_PATH_TO_16x9_TALKING_HEAD_MP4
+
+tests:
+  # ── Reframe ────────────────────────────────────────────────────
+
+  - id: contract.reframe-presets
+    name: reframe presets available via HTTP endpoint
+    category: contract
+    tags: [contract, reframe]
+    setup:
+      - id: fetch-presets
+        kind: http
+        method: GET
+        path: /api/media/reframe/presets
+    notes: |
+      reframe.listPresets is an HTTP endpoint, not a bridge command.
+      Agent should GET /api/media/reframe/presets and verify it returns preset array.
+    execute:
+      type: query.getCanvasSize
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: workflow.reframe-apply-auto
+    name: reframe.apply with layout=auto detects and reframes
+    category: workflow
+    tags: [workflow, reframe, visual]
+    requiresAssets: [talking_head_video]
+    setup:
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          url: "{{assets.talking_head_video}}"
+          from: 0
+          duration: 8000
+          width: 1920
+          height: 1080
+    execute:
+      type: reframe.apply
+      params:
+        itemId: "{{steps.add-video.result.itemId}}"
+        layout: auto
+        startSec: 0
+        endSec: 8
+        sampleRate: 2
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result.itemId
+          exists: true
+        - path: result.faceDetection.framesAnalyzed
+          gte: 1
+      state:
+        - label: video items exist after reframe
+          type: query.getTimelineItems
+          params:
+            type: video
+          assertions:
+            - path: result.count
+              gte: 1
+      visual:
+        seekMs: 2000
+        screenshot: reframe-auto.png
+        criteria:
+          - Primary speaker face is visible and not cropped at edges.
+          - Speaker is roughly centered or intentionally framed in portrait canvas.
+          - No large empty bars or dead space.
+          - Composition looks usable for a vertical reel.
+
+  - id: workflow.reframe-follow
+    name: reframe.apply with layout=follow for single speaker
+    category: workflow
+    tags: [workflow, reframe, follow]
+    requiresAssets: [talking_head_video]
+    setup:
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          url: "{{assets.talking_head_video}}"
+          from: 0
+          duration: 8000
+          width: 1920
+          height: 1080
+    execute:
+      type: reframe.apply
+      params:
+        itemId: "{{steps.add-video.result.itemId}}"
+        layout: follow
+        preset: smooth
+        startSec: 0
+        endSec: 8
+        sampleRate: 2
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.reframe-generate-keyframes
+    name: reframe.generateKeyframes from pre-computed segments
+    category: state
+    tags: [state, reframe, keyframes]
+    requiresAssets: [talking_head_video]
+    setup:
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          url: "{{assets.talking_head_video}}"
+          from: 0
+          duration: 5000
+          width: 1920
+          height: 1080
+    execute:
+      type: reframe.generateKeyframes
+      params:
+        itemId: "{{steps.add-video.result.itemId}}"
+        segments:
+          - startSec: 0
+            endSec: 2.5
+            cropX: 400
+            faceCenterX: 704
+          - startSec: 2.5
+            endSec: 5
+            cropX: 656
+            faceCenterX: 960
+        sourceWidth: 1920
+        sourceHeight: 1080
+        canvasWidth: 1080
+        canvasHeight: 1920
+        preset: smooth
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Media Validation ───────────────────────────────────────────
+
+  - id: contract.media-status
+    name: media.status checks all project media sources
+    category: contract
+    tags: [contract, media, validation]
+    execute:
+      type: media.status
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.render-validate
+    name: render.validate runs pre-render checks
+    category: contract
+    tags: [contract, render, validation]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Render Check
+          from: 0
+          to: 3000
+    execute:
+      type: render.validate
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success

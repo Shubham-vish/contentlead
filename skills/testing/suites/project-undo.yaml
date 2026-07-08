@@ -1,0 +1,394 @@
+version: 1
+suite:
+  id: project-undo
+  name: Project management — save, undo, redo, load design, snapshots
+  description: Tests project state management and undo/redo functionality.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-portrait
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+
+tests:
+  # ── Undo / Redo ────────────────────────────────────────────────
+
+  - id: state.undo-after-add
+    name: editor.undo reverts last add
+    category: state
+    tags: [state, undo]
+    # NOTE: undo/redo tests are order-sensitive. The loadDesign reset between
+    # tests clears the undo stack, so setup steps must create undo-able state first.
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Undo Me
+          from: 0
+          to: 3000
+    execute:
+      type: editor.undo
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: item removed by undo
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              equals: 0
+
+  - id: state.redo-after-undo
+    name: editor.redo restores undone action
+    category: state
+    tags: [state, redo]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Redo Me
+          from: 0
+          to: 3000
+      - id: undo-it
+        kind: command
+        type: editor.undo
+        params: {}
+    execute:
+      type: editor.redo
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: item restored by redo
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              gte: 1
+
+  # ── Save ───────────────────────────────────────────────────────
+
+  - id: contract.save
+    name: editor.save persists project
+    category: contract
+    tags: [contract, save, project]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Save Test
+          from: 0
+          to: 3000
+    execute:
+      type: editor.save
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Load Design ────────────────────────────────────────────────
+
+  - id: state.load-design-portrait
+    name: editor.loadDesign loads empty portrait
+    category: state
+    tags: [state, project, load]
+    execute:
+      type: editor.loadDesign
+      params:
+        design:
+          trackItemsMap: {}
+          trackItemDetailsMap: {}
+          tracks: []
+          trackItemIds: []
+          transitionsMap: {}
+          transitionIds: []
+          size:
+            width: 1080
+            height: 1920
+          duration: 60000
+          fps: 30
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: canvas is portrait
+          type: query.getCanvasSize
+          params: {}
+          assertions:
+            - path: result.width
+              equals: 1080
+            - path: result.height
+              equals: 1920
+        - label: timeline is empty
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              equals: 0
+
+  - id: state.load-design-landscape
+    name: editor.loadDesign loads empty landscape
+    category: state
+    tags: [state, project, load]
+    execute:
+      type: editor.loadDesign
+      params:
+        design:
+          trackItemsMap: {}
+          trackItemDetailsMap: {}
+          tracks: []
+          trackItemIds: []
+          transitionsMap: {}
+          transitionIds: []
+          size:
+            width: 1920
+            height: 1080
+          duration: 60000
+          fps: 30
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: canvas is landscape
+          type: query.getCanvasSize
+          params: {}
+          assertions:
+            - path: result.width
+              equals: 1920
+            - path: result.height
+              equals: 1080
+
+  # ── Full State Round-Trip ──────────────────────────────────────
+
+  - id: state.full-state-roundtrip
+    name: project.getFullState → project.loadFullState preserves state
+    category: state
+    tags: [state, project, roundtrip]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Round Trip
+          from: 0
+          to: 3000
+          fontSize: 48
+          color: "#ff0000"
+      - id: capture-state
+        kind: command
+        type: project.getFullState
+        params: {}
+    notes: |
+      Agent should:
+      1. Capture full state after adding text
+      2. Clear the timeline
+      3. Load the captured state back
+      4. Verify the text item exists with same properties
+    execute:
+      type: editor.clearTimeline
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: timeline cleared
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              equals: 0
+
+  # ── Snapshots ──────────────────────────────────────────────────
+
+  - id: contract.list-snapshots
+    name: editor.listSnapshots returns snapshot list
+    category: contract
+    tags: [contract, snapshots]
+    execute:
+      type: editor.listSnapshots
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.create-snapshot
+    name: editor.createSnapshot creates a design snapshot
+    category: state
+    tags: [state, snapshots]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Snapshot Test
+          from: 0
+          to: 3000
+    execute:
+      type: editor.createSnapshot
+      params:
+        label: Test Snapshot
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Content Metadata ───────────────────────────────────────────
+
+  - id: state.update-metadata
+    name: content.updateMetadata updates title
+    category: state
+    tags: [state, content, metadata]
+    execute:
+      type: content.updateMetadata
+      params:
+        updates:
+          title: Test Title Updated
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── AI Undo ────────────────────────────────────────────────────
+
+  - id: contract.ai-undo
+    name: ai.undoLastAction undoes with context
+    category: contract
+    tags: [contract, ai, undo]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: AI Undo Test
+          from: 0
+          to: 3000
+    execute:
+      type: ai.undoLastAction
+      params:
+        steps: 1
+        includeContext: true
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Snapshot Lifecycle ─────────────────────────────────────────
+
+  - id: state.snapshot-rename
+    name: editor.renameSnapshot renames an existing snapshot
+    category: state
+    tags: [state, snapshots]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Snapshot Rename
+          from: 0
+          to: 3000
+      - id: create-snap
+        kind: command
+        type: editor.createSnapshot
+        params:
+          label: Original Name
+    execute:
+      type: editor.renameSnapshot
+      params:
+        snapshotId: "{{steps.create-snap.result.snapshot.id}}"
+        label: Renamed Snapshot
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.snapshot-restore
+    name: editor.restoreSnapshot restores a saved snapshot
+    category: state
+    tags: [state, snapshots]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Restore Test
+          from: 0
+          to: 3000
+      - id: create-snap
+        kind: command
+        type: editor.createSnapshot
+        params:
+          label: Restore Point
+      - id: clear
+        kind: command
+        type: editor.clearTimeline
+        params: {}
+    execute:
+      type: editor.restoreSnapshot
+      params:
+        snapshotId: "{{steps.create-snap.result.snapshot.id}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.snapshot-delete
+    name: editor.deleteSnapshot removes a snapshot
+    category: state
+    tags: [state, snapshots]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Delete Snap
+          from: 0
+          to: 3000
+      - id: create-snap
+        kind: command
+        type: editor.createSnapshot
+        params:
+          label: Delete Me
+    execute:
+      type: editor.deleteSnapshot
+      params:
+        snapshotId: "{{steps.create-snap.result.snapshot.id}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.load-full-state
+    name: project.loadFullState loads a saved state
+    category: contract
+    tags: [contract, project, state]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: State Test
+          from: 0
+          to: 3000
+      - id: save-state
+        kind: command
+        type: project.getFullState
+        params: {}
+    execute:
+      type: project.loadFullState
+      params:
+        design: "{{steps.save-state.result.project.design}}"
+    assert:
+      response:
+        - path: status
+          equals: success

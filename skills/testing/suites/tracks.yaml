@@ -1,0 +1,285 @@
+version: 1
+suite:
+  id: tracks
+  name: Track operations — mute, lock, hide, rename, move, link, edit
+  description: Tests all track management commands.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-portrait
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+
+tests:
+  # ── Track Metadata ─────────────────────────────────────────────
+
+  - id: state.mute-track
+    name: editor.muteTrack mutes a track
+    category: state
+    tags: [state, tracks, mute]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Track Test
+          from: 0
+          to: 3000
+      - id: get-tracks
+        kind: command
+        type: query.getTrackInfo
+        params: {}
+    execute:
+      type: editor.muteTrack
+      params:
+        trackId: "{{steps.get-tracks.result.tracks[0].id}}"
+        muted: true
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.unmute-track
+    name: editor.muteTrack unmutes a track
+    category: state
+    tags: [state, tracks, mute]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Unmute Test
+          from: 0
+          to: 3000
+      - id: get-tracks
+        kind: command
+        type: query.getTrackInfo
+        params: {}
+      - id: mute-it
+        kind: command
+        type: editor.muteTrack
+        params:
+          trackId: "{{steps.get-tracks.result.tracks[0].id}}"
+          muted: true
+    execute:
+      type: editor.muteTrack
+      params:
+        trackId: "{{steps.get-tracks.result.tracks[0].id}}"
+        muted: false
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.lock-track
+    name: editor.lockTrack locks a track
+    category: state
+    tags: [state, tracks, lock]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Lock Test
+          from: 0
+          to: 3000
+      - id: get-tracks
+        kind: command
+        type: query.getTrackInfo
+        params: {}
+    execute:
+      type: editor.lockTrack
+      params:
+        trackId: "{{steps.get-tracks.result.tracks[0].id}}"
+        locked: true
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.hide-track
+    name: editor.hideTrack hides a track
+    category: state
+    tags: [state, tracks, hide]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Hide Test
+          from: 0
+          to: 3000
+      - id: get-tracks
+        kind: command
+        type: query.getTrackInfo
+        params: {}
+    execute:
+      type: editor.hideTrack
+      params:
+        trackId: "{{steps.get-tracks.result.tracks[0].id}}"
+        hidden: true
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.rename-track
+    name: editor.renameTrack changes track name
+    category: state
+    tags: [state, tracks, rename]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Rename Test
+          from: 0
+          to: 3000
+      - id: get-tracks
+        kind: command
+        type: query.getTrackInfo
+        params: {}
+    execute:
+      type: editor.renameTrack
+      params:
+        trackId: "{{steps.get-tracks.result.tracks[0].id}}"
+        name: My Custom Track
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.move-track
+    name: editor.moveTrack reorders tracks
+    category: state
+    tags: [state, tracks, order]
+    setup:
+      - id: add-text-a
+        kind: command
+        type: editor.addText
+        params:
+          text: Track A
+          from: 0
+          to: 2000
+      - id: add-caption
+        kind: command
+        type: editor.addCaption
+        params:
+          text: Track B
+          from: 2500
+          to: 4000
+      - id: get-tracks
+        kind: command
+        type: query.getTrackInfo
+        params: {}
+    execute:
+      type: editor.moveTrack
+      params:
+        trackId: "{{steps.get-tracks.result.tracks[0].id}}"
+        index: 1
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.edit-track-metadata
+    name: editor.editTrack modifies track metadata
+    category: state
+    tags: [state, tracks, metadata]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Track Meta
+          from: 0
+          to: 3000
+      - id: get-tracks
+        kind: command
+        type: query.getTrackInfo
+        params: {}
+    execute:
+      type: editor.editTrack
+      params:
+        trackId: "{{steps.get-tracks.result.tracks[0].id}}"
+        metadata:
+          audioRole: voice
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Track Linking ──────────────────────────────────────────────
+
+  - id: state.link-tracks
+    name: editor.linkTracks creates a link group
+    category: state
+    tags: [state, tracks, link]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Link A
+          from: 0
+          to: 3000
+      - id: add-caption
+        kind: command
+        type: editor.addCaption
+        params:
+          text: Link B
+          from: 0
+          to: 3000
+      - id: get-tracks
+        kind: command
+        type: query.getTrackInfo
+        params: {}
+    execute:
+      type: editor.linkTracks
+      params:
+        trackIds:
+          - "{{steps.get-tracks.result.tracks[0].id}}"
+          - "{{steps.get-tracks.result.tracks[1].id}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.unlink-tracks
+    name: editor.unlinkTracks removes link group
+    category: state
+    tags: [state, tracks, unlink]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Unlink A
+          from: 0
+          to: 3000
+      - id: add-caption
+        kind: command
+        type: editor.addCaption
+        params:
+          text: Unlink B
+          from: 0
+          to: 3000
+      - id: get-tracks
+        kind: command
+        type: query.getTrackInfo
+        params: {}
+      - id: link-them
+        kind: command
+        type: editor.linkTracks
+        params:
+          trackIds:
+            - "{{steps.get-tracks.result.tracks[0].id}}"
+            - "{{steps.get-tracks.result.tracks[1].id}}"
+    execute:
+      type: editor.unlinkTracks
+      params:
+        trackIds:
+          - "{{steps.get-tracks.result.tracks[0].id}}"
+          - "{{steps.get-tracks.result.tracks[1].id}}"
+    assert:
+      response:
+        - path: status
+          equals: success

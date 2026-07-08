@@ -1,0 +1,180 @@
+version: 1
+suite:
+  id: audio
+  name: Audio commands — EQ, gain, noise reduction, loudness
+  description: Tests audio processing bridge commands.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-landscape
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+  assets:
+    voice_video: REQUIRED_ABSOLUTE_PATH_TO_VIDEO_WITH_SPEECH
+
+tests:
+  # ── EQ ─────────────────────────────────────────────────────────
+
+  - id: state.set-eq-preset
+    name: audio.setEq applies a preset
+    category: state
+    tags: [state, audio, eq]
+    requiresAssets: [voice_video]
+    setup:
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          url: "{{assets.voice_video}}"
+          from: 0
+          duration: 5000
+    execute:
+      type: audio.setEq
+      params:
+        itemId: "{{steps.add-video.result.itemId}}"
+        preset: voice-enhance
+        enabled: true
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: editorHealth.commandSuccess
+          equals: true
+      state:
+        - label: EQ stored on item
+          type: query.getItemProperties
+          params:
+            itemId: "{{steps.add-video.result.itemId}}"
+          assertions:
+            - path: result.item.details.eq.enabled
+              equals: true
+            - path: result.item.details.eq.preset
+              equals: voice-enhance
+
+  - id: state.set-eq-custom
+    name: audio.setEq with custom band values
+    category: state
+    tags: [state, audio, eq]
+    requiresAssets: [voice_video]
+    setup:
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          url: "{{assets.voice_video}}"
+          from: 0
+          duration: 5000
+    execute:
+      type: audio.setEq
+      params:
+        itemId: "{{steps.add-video.result.itemId}}"
+        low: -3
+        mid: 5
+        high: 2
+        enabled: true
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: custom EQ bands stored
+          type: query.getItemProperties
+          params:
+            itemId: "{{steps.add-video.result.itemId}}"
+          assertions:
+            - path: result.item.details.eq.low
+              equals: -3
+            - path: result.item.details.eq.mid
+              equals: 5
+            - path: result.item.details.eq.high
+              equals: 2
+
+  - id: state.remove-eq
+    name: audio.removeEq clears EQ settings
+    category: state
+    tags: [state, audio, eq]
+    requiresAssets: [voice_video]
+    setup:
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          url: "{{assets.voice_video}}"
+          from: 0
+          duration: 5000
+      - id: set-eq
+        kind: command
+        type: audio.setEq
+        params:
+          itemId: "{{steps.add-video.result.itemId}}"
+          preset: voice-enhance
+          enabled: true
+    execute:
+      type: audio.removeEq
+      params:
+        itemId: "{{steps.add-video.result.itemId}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Audio Gain ─────────────────────────────────────────────────
+
+  - id: state.set-audio-gain
+    name: editor.setAudioGain adjusts gain in dB
+    category: state
+    tags: [state, audio, gain]
+    requiresAssets: [voice_video]
+    setup:
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          url: "{{assets.voice_video}}"
+          from: 0
+          duration: 5000
+    execute:
+      type: editor.setAudioGain
+      params:
+        itemIds:
+          - "{{steps.add-video.result.itemId}}"
+        gainDb: -6
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.get-audio-loudness
+    name: query.getAudioLoudness returns volume info
+    category: state
+    tags: [state, audio, loudness]
+    requiresAssets: [voice_video]
+    setup:
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          url: "{{assets.voice_video}}"
+          from: 0
+          duration: 5000
+    execute:
+      type: query.getAudioLoudness
+      params:
+        itemIds:
+          - "{{steps.add-video.result.itemId}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Noise Profiles ─────────────────────────────────────────────
+
+  - id: contract.list-noise-profiles
+    name: audio.listNoiseProfiles returns profile list
+    category: contract
+    tags: [contract, audio, noise]
+    execute:
+      type: audio.listNoiseProfiles
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success

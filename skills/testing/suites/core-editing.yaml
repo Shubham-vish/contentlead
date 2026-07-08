@@ -1,0 +1,767 @@
+version: 1
+suite:
+  id: core-editing
+  name: Core editing commands — add, edit, delete, move, split, trim, clone
+  description: Tests the fundamental timeline manipulation commands that every AI workflow depends on.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-portrait
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+  assets:
+    test_image: /Users/shubham/Codes/SkillTown-Desktop/test-assets/test-image-1080p.png
+
+tests:
+  # ── Add Items ──────────────────────────────────────────────────
+
+  - id: state.add-text
+    name: editor.addText creates a text item on timeline
+    category: state
+    tags: [state, add, text]
+    execute:
+      type: editor.addText
+      params:
+        text: Test Title
+        from: 0
+        to: 3000
+        fontSize: 48
+        color: "#ffffff"
+        fontFamily: Montserrat
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result.itemId
+          exists: true
+        - path: editorHealth.commandSuccess
+          equals: true
+      state:
+        - label: text item exists on timeline
+          type: query.getItemProperties
+          params:
+            itemId: "{{execute.result.itemId}}"
+          assertions:
+            - path: result.item.type
+              equals: text
+            - path: result.item.details.text
+              equals: Test Title
+            - path: result.item.details.fontSize
+              equals: 48
+            - path: result.item.details.color
+              equals: "#ffffff"
+
+  - id: state.add-text-positioned
+    name: editor.addText with custom position
+    category: state
+    tags: [state, add, text, position]
+    execute:
+      type: editor.addText
+      params:
+        text: Positioned Text
+        from: 1000
+        to: 4000
+        fontSize: 36
+        color: "#ff0000"
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result.itemId
+          exists: true
+      state:
+        - label: text at correct time range
+          type: query.getItemProperties
+          params:
+            itemId: "{{execute.result.itemId}}"
+          assertions:
+            - path: result.item.display.from
+              equals: 1000
+            - path: result.item.display.to
+              equals: 4000
+
+  - id: state.add-caption
+    name: editor.addCaption creates a caption item
+    category: state
+    tags: [state, add, caption]
+    execute:
+      type: editor.addCaption
+      params:
+        text: Test Caption
+        from: 0
+        to: 2000
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result.itemId
+          exists: true
+      state:
+        - label: caption exists
+          type: query.getTimelineItems
+          params:
+            type: caption
+          assertions:
+            - path: result.count
+              gte: 1
+
+  - id: state.add-image
+    name: editor.addImage creates an image item
+    category: state
+    tags: [state, add, image]
+    requiresAssets: [test_image]
+    execute:
+      type: editor.addImage
+      params:
+        url: "{{assets.test_image}}"
+        from: 0
+        to: 3000
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result.itemId
+          exists: true
+
+  # ── Edit Items ─────────────────────────────────────────────────
+
+  - id: state.edit-text-details
+    name: editor.editItem updates text properties
+    category: state
+    tags: [state, edit, text]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Original Text
+          from: 0
+          to: 3000
+          fontSize: 36
+          color: "#ffffff"
+    execute:
+      type: editor.editItem
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        details:
+          text: Modified Text
+          color: "#00ff00"
+          fontSize: 72
+          fontWeight: 700
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: editorHealth.commandSuccess
+          equals: true
+      state:
+        - label: text properties updated
+          type: query.getItemProperties
+          params:
+            itemId: "{{steps.add-text.result.itemId}}"
+          assertions:
+            - path: result.item.details.text
+              equals: Modified Text
+            - path: result.item.details.color
+              equals: "#00ff00"
+            - path: result.item.details.fontSize
+              equals: 72
+
+  - id: state.edit-display-timing
+    name: editor.editItem updates display timing
+    category: state
+    tags: [state, edit, timing]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Timing Test
+          from: 0
+          to: 3000
+    execute:
+      type: editor.editItem
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        display:
+          from: 1000
+          to: 5000
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: display timing updated
+          type: query.getItemProperties
+          params:
+            itemId: "{{steps.add-text.result.itemId}}"
+          assertions:
+            - path: result.item.display.from
+              equals: 1000
+            - path: result.item.display.to
+              equals: 5000
+
+  - id: state.edit-metadata
+    name: editor.editItem updates metadata
+    category: state
+    tags: [state, edit, metadata]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Metadata Test
+          from: 0
+          to: 2000
+    execute:
+      type: editor.editItem
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        metadata:
+          customTag: test-value
+          priority: 1
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.edit-caption-word
+    name: editor.editCaptionWord updates a single word
+    category: state
+    tags: [state, edit, caption]
+    setup:
+      - id: add-caption
+        kind: command
+        type: editor.addCaption
+        params:
+          text: Hello World Test
+          from: 0
+          to: 3000
+    execute:
+      type: editor.editCaptionWord
+      params:
+        itemId: "{{steps.add-caption.result.itemId}}"
+        wordIndex: 1
+        text: Universe
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: state.bulk-replace-text
+    name: editor.bulkReplaceText finds and replaces across items
+    category: state
+    tags: [state, edit, bulk, text]
+    setup:
+      - id: add-text-a
+        kind: command
+        type: editor.addText
+        params:
+          text: Hello World
+          from: 0
+          to: 2000
+      - id: add-text-b
+        kind: command
+        type: editor.addText
+        params:
+          text: Hello Universe
+          from: 2500
+          to: 4500
+    execute:
+      type: editor.bulkReplaceText
+      params:
+        find: Hello
+        replace: Goodbye
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Move Items ─────────────────────────────────────────────────
+
+  - id: state.move-item
+    name: editor.moveItem repositions item on timeline
+    category: state
+    tags: [state, move, timeline]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Move Test
+          from: 0
+          to: 3000
+    execute:
+      type: editor.moveItem
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        from: 5000
+        to: 8000
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: item moved to new position
+          type: query.getItemProperties
+          params:
+            itemId: "{{steps.add-text.result.itemId}}"
+          assertions:
+            - path: result.item.display.from
+              equals: 5000
+
+  # ── Delete Items ───────────────────────────────────────────────
+
+  - id: state.delete-single
+    name: editor.deleteItems removes one item
+    category: state
+    tags: [state, delete]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Delete Me
+          from: 0
+          to: 2000
+    execute:
+      type: editor.deleteItems
+      params:
+        itemIds:
+          - "{{steps.add-text.result.itemId}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: timeline is empty after delete
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              equals: 0
+
+  - id: state.delete-multiple
+    name: editor.deleteItems removes multiple items
+    category: state
+    tags: [state, delete, multi]
+    setup:
+      - id: add-a
+        kind: command
+        type: editor.addText
+        params:
+          text: Item A
+          from: 0
+          to: 2000
+      - id: add-b
+        kind: command
+        type: editor.addText
+        params:
+          text: Item B
+          from: 3000
+          to: 5000
+      - id: add-c
+        kind: command
+        type: editor.addText
+        params:
+          text: Keep Me
+          from: 6000
+          to: 8000
+    execute:
+      type: editor.deleteItems
+      params:
+        itemIds:
+          - "{{steps.add-a.result.itemId}}"
+          - "{{steps.add-b.result.itemId}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: only item C remains
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              equals: 1
+
+  # ── Split & Cut ────────────────────────────────────────────────
+
+  - id: state.split-item
+    name: editor.splitItem creates two items from one
+    category: state
+    tags: [state, split]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Split Me
+          from: 0
+          to: 6000
+    execute:
+      type: editor.splitItem
+      params:
+        itemIds:
+          - "{{steps.add-text.result.itemId}}"
+        timeMs: 3000
+        cascade: false
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: two text items after split
+          type: query.getTimelineItems
+          params:
+            type: text
+          assertions:
+            - path: result.count
+              equals: 2
+
+  - id: state.cut-keep-left
+    name: editor.cutItem keeps left portion
+    category: state
+    tags: [state, cut]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Cut Left
+          from: 0
+          to: 6000
+    execute:
+      type: editor.cutItem
+      params:
+        itemIds:
+          - "{{steps.add-text.result.itemId}}"
+        timeMs: 3000
+        cutMode: keep-left
+        cascade: false
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: remaining item ends at cut point
+          type: query.getTimelineItems
+          params:
+            type: text
+          assertions:
+            - path: result.count
+              equals: 1
+
+  - id: state.cut-keep-right
+    name: editor.cutItem keeps right portion
+    category: state
+    tags: [state, cut]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Cut Right
+          from: 0
+          to: 6000
+    execute:
+      type: editor.cutItem
+      params:
+        itemIds:
+          - "{{steps.add-text.result.itemId}}"
+        timeMs: 3000
+        cutMode: keep-right
+        cascade: false
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: remaining item starts at cut point
+          type: query.getTimelineItems
+          params:
+            type: text
+          assertions:
+            - path: result.count
+              equals: 1
+
+  # ── Clone ──────────────────────────────────────────────────────
+
+  - id: state.clone-item
+    name: editor.cloneItem duplicates an item
+    category: state
+    tags: [state, clone]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Clone Me
+          from: 0
+          to: 3000
+          fontSize: 48
+          color: "#ff0000"
+    execute:
+      type: editor.cloneItem
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: two text items after clone
+          type: query.getTimelineItems
+          params:
+            type: text
+          assertions:
+            - path: result.count
+              equals: 2
+
+  # ── Clear Timeline ─────────────────────────────────────────────
+
+  - id: state.clear-timeline-all
+    name: editor.clearTimeline removes everything
+    category: state
+    tags: [state, clear]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Item 1
+          from: 0
+          to: 2000
+      - id: add-caption
+        kind: command
+        type: editor.addCaption
+        params:
+          text: Caption 1
+          from: 2500
+          to: 4000
+    execute:
+      type: editor.clearTimeline
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: timeline empty
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              equals: 0
+
+  - id: state.clear-timeline-by-type
+    name: editor.clearTimeline removes only specified type
+    category: state
+    tags: [state, clear, filter]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Keep Me
+          from: 0
+          to: 2000
+      - id: add-caption
+        kind: command
+        type: editor.addCaption
+        params:
+          text: Remove Me
+          from: 2500
+          to: 4000
+    execute:
+      type: editor.clearTimeline
+      params:
+        types:
+          - caption
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: text remains, captions gone
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              equals: 1
+
+  # ── Remove Segment ─────────────────────────────────────────────
+
+  - id: state.remove-segment
+    name: editor.removeSegment cuts out a time range
+    category: state
+    tags: [state, segment, ripple]
+    setup:
+      - id: add-text-a
+        kind: command
+        type: editor.addText
+        params:
+          text: Before Gap
+          from: 0
+          to: 3000
+      - id: add-text-b
+        kind: command
+        type: editor.addText
+        params:
+          text: After Gap
+          from: 6000
+          to: 9000
+    execute:
+      type: editor.removeSegment
+      params:
+        from_ms: 3000
+        to_ms: 6000
+        ripple: true
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Remove Gaps ────────────────────────────────────────────────
+
+  - id: state.remove-gaps
+    name: editor.removeGaps closes timeline gaps
+    category: state
+    tags: [state, gaps]
+    setup:
+      - id: add-text-a
+        kind: command
+        type: editor.addText
+        params:
+          text: First
+          from: 0
+          to: 2000
+      - id: add-text-b
+        kind: command
+        type: editor.addText
+        params:
+          text: Second
+          from: 5000
+          to: 7000
+    execute:
+      type: editor.removeGaps
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Trim Item ──────────────────────────────────────────────────
+
+  - id: state.trim-item
+    name: editor.trimItem changes item duration
+    category: state
+    tags: [state, trim]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Trim Me
+          from: 0
+          to: 5000
+    execute:
+      type: editor.trimItem
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        trim:
+          from: 1000
+          to: 4000
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Export & Template ───────────────────────────────────────────
+
+  - id: contract.editor-export
+    name: editor.export returns export data
+    category: contract
+    tags: [contract, export]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Export Test
+          from: 0
+          to: 3000
+    execute:
+      type: editor.export
+      params: {}
+    assert:
+      response:
+        - path: status
+          oneOf: [success, failed]
+
+  - id: contract.editor-add-template
+    name: editor.addTemplate dispatches template item
+    category: contract
+    tags: [contract, template]
+    execute:
+      type: editor.addTemplate
+      params:
+        from: 0
+        to: 3000
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result.itemId
+          exists: true
+
+  - id: contract.editor-relink-media
+    name: editor.relinkMedia updates item src
+    category: contract
+    tags: [contract, media, relink]
+    setup:
+      - id: add-img
+        kind: command
+        type: editor.addImage
+        params:
+          src: https://picsum.photos/400/300
+          from: 0
+          duration: 3000
+    execute:
+      type: editor.relinkMedia
+      params:
+        itemId: "{{steps.add-img.result.itemId}}"
+        src: https://picsum.photos/500/400
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.editor-seek
+    name: editor.seek alias works
+    category: contract
+    tags: [contract, playback, seek]
+    execute:
+      type: editor.seekTo
+      params:
+        timeMs: 1000
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.ai-preview-change
+    name: ai.previewChange previews without applying
+    category: contract
+    tags: [contract, ai, preview]
+    execute:
+      type: ai.previewChange
+      params:
+        commands:
+          - type: editor.addText
+            params:
+              text: Preview Only
+              from: 0
+              to: 3000
+    assert:
+      response:
+        - path: status
+          equals: success

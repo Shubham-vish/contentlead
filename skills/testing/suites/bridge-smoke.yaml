@@ -1,0 +1,316 @@
+version: 1
+suite:
+  id: bridge-smoke
+  name: Bridge smoke suite
+  description: Mixed contract, state, visual, and workflow checks for representative editor bridge commands.
+  defaults:
+    isolation: reset-design
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+    resetPreset: empty-portrait
+    diagnosticsAfterEachTest: true
+  assets:
+    talking_head_video: REQUIRED_ABSOLUTE_PATH_TO_16x9_TALKING_HEAD_MP4
+    voice_video: REQUIRED_ABSOLUTE_PATH_TO_VIDEO_WITH_CLEAR_SPEECH_AUDIO
+
+tests:
+  - id: contract.canvas-size
+    name: query.getCanvasSize returns width and height
+    category: contract
+    tags: [contract, query, smoke]
+    resetPreset: empty-portrait
+    execute:
+      type: query.getCanvasSize
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result.width
+          type: number
+        - path: result.height
+          type: number
+        - path: result.width
+          gte: 100
+        - path: result.height
+          gte: 100
+
+  - id: state.resize-landscape
+    name: editor.resize updates canvas dimensions
+    category: state
+    tags: [state, canvas, resize]
+    resetPreset: empty-portrait
+    execute:
+      type: editor.resize
+      params:
+        width: 1920
+        height: 1080
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: editorHealth.commandSuccess
+          equals: true
+      state:
+        - label: canvas size after resize
+          type: query.getCanvasSize
+          params: {}
+          assertions:
+            - path: result.width
+              equals: 1920
+            - path: result.height
+              equals: 1080
+
+  - id: state.edit-text
+    name: editor.editItem updates text details
+    category: state
+    tags: [state, text, editItem]
+    resetPreset: empty-portrait
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Hello Test
+          from: 0
+          to: 3000
+          fontSize: 48
+          color: "#ffffff"
+    execute:
+      type: editor.editItem
+      params:
+        itemId: "{{steps.add-text.result.itemId}}"
+        details:
+          text: Updated Title
+          color: "#ffcc00"
+          fontSize: 72
+          fontWeight: 700
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: editorHealth.commandSuccess
+          equals: true
+      state:
+        - label: edited text item properties
+          type: query.getItemProperties
+          params:
+            itemId: "{{steps.add-text.result.itemId}}"
+          assertions:
+            - path: result.item.details.text
+              equals: Updated Title
+            - path: result.item.details.color
+              equals: "#ffcc00"
+            - path: result.item.details.fontSize
+              equals: 72
+
+  - id: state.bulk-style-text
+    name: bulk.styleByType updates all text items
+    category: state
+    tags: [state, bulk, text]
+    resetPreset: empty-portrait
+    setup:
+      - id: add-text-a
+        kind: command
+        type: editor.addText
+        params:
+          text: Alpha
+          from: 0
+          to: 2000
+          color: "#ffffff"
+      - id: add-text-b
+        kind: command
+        type: editor.addText
+        params:
+          text: Beta
+          from: 2500
+          to: 4500
+          color: "#ffffff"
+    execute:
+      type: bulk.styleByType
+      params:
+        type: text
+        details:
+          color: "#00ff88"
+          fontFamily: Inter
+          fontWeight: 800
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: text items after bulk style
+          type: query.getTimelineItems
+          params:
+            type: text
+          assertions:
+            - path: result
+              type: array
+            - path: result.count
+              gte: 2
+            - path: result.items[*].details.color
+              contains: "#00ff88"
+
+  - id: visual.crop-video
+    name: editor.cropItem applies portrait crop to a landscape video
+    category: visual
+    tags: [visual, media, crop, video]
+    requiresAssets: [talking_head_video]
+    resetPreset: empty-portrait
+    setup:
+      - id: analyze-video
+        kind: http
+        method: POST
+        path: /api/media/analyze
+        body:
+          path: "{{assets.talking_head_video}}"
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          src: "{{assets.talking_head_video}}"
+          from: 0
+          durationMs: 5000
+          width: "{{steps.analyze-video.analysis.video.width}}"
+          height: "{{steps.analyze-video.analysis.video.height}}"
+          duration: "{{steps.analyze-video.analysis.durationMs}}"
+    execute:
+      type: editor.cropItem
+      params:
+        itemId: "{{steps.add-video.result.itemId}}"
+        crop:
+          x: 656
+          y: 0
+          width: 608
+          height: 1080
+        preservePosition: true
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: editorHealth.commandSuccess
+          equals: true
+      state:
+        - label: cropped video item properties
+          type: query.getItemProperties
+          params:
+            itemId: "{{steps.add-video.result.itemId}}"
+          assertions:
+            - path: result.details.crop.width
+              equals: 608
+            - path: result.details.crop.height
+              equals: 1080
+      visual:
+        seekMs: 1000
+        screenshot: crop-video.png
+        criteria:
+          - Main subject is visible inside the 9:16 frame.
+          - Head/face is not cut off at left or right edge.
+          - Frame is mostly filled by image content, not large empty margins.
+          - Crop looks like an intentional vertical talking-head crop, not a random side slice.
+
+  - id: state.audio-eq
+    name: audio.setEq persists EQ settings on an item
+    category: state
+    tags: [state, audio, eq]
+    requiresAssets: [voice_video]
+    resetPreset: empty-landscape
+    setup:
+      - id: analyze-av
+        kind: http
+        method: POST
+        path: /api/media/analyze
+        body:
+          path: "{{assets.voice_video}}"
+      - id: add-av
+        kind: command
+        type: editor.addVideo
+        params:
+          src: "{{assets.voice_video}}"
+          from: 0
+          durationMs: 5000
+          width: "{{steps.analyze-av.analysis.video.width}}"
+          height: "{{steps.analyze-av.analysis.video.height}}"
+          duration: "{{steps.analyze-av.analysis.durationMs}}"
+    execute:
+      type: audio.setEq
+      params:
+        itemId: "{{steps.add-av.result.itemId}}"
+        enabled: true
+        preset: voice-enhance
+        low: -2
+        mid: 3
+        high: 1.5
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: editorHealth.commandSuccess
+          equals: true
+      state:
+        - label: EQ settings on item
+          type: query.getItemProperties
+          params:
+            itemId: "{{steps.add-av.result.itemId}}"
+          assertions:
+            - path: result.details.eq.enabled
+              equals: true
+            - path: result.details.eq.preset
+              equals: voice-enhance
+            - path: result.details.eq.mid
+              equals: 3
+
+  - id: workflow.reframe-auto
+    name: reframe.apply recenters talking-head video for portrait output
+    category: workflow
+    tags: [workflow, reframe, portrait, visual]
+    requiresAssets: [talking_head_video]
+    resetPreset: empty-portrait
+    setup:
+      - id: analyze-video
+        kind: http
+        method: POST
+        path: /api/media/analyze
+        body:
+          path: "{{assets.talking_head_video}}"
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          src: "{{assets.talking_head_video}}"
+          from: 0
+          durationMs: 8000
+          width: "{{steps.analyze-video.analysis.video.width}}"
+          height: "{{steps.analyze-video.analysis.video.height}}"
+          duration: "{{steps.analyze-video.analysis.durationMs}}"
+    execute:
+      type: reframe.apply
+      params:
+        itemId: "{{steps.add-video.result.itemId}}"
+        layout: auto
+        startSec: 0
+        endSec: 8
+        sampleRate: 2
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result.itemId
+          exists: true
+        - path: result.faceDetection.framesAnalyzed
+          gte: 1
+      state:
+        - label: timeline videos after reframe
+          type: query.getTimelineItems
+          params:
+            type: video
+          assertions:
+            - path: result.count
+              gte: 1
+      visual:
+        seekMs: 2000
+        screenshot: reframe-auto.png
+        criteria:
+          - Primary speaker is visually centered or intentionally framed.
+          - Eyes/face are fully visible in portrait composition.
+          - If split layout was chosen, both speakers appear in separate halves.
+          - Composition looks usable for a reel/short without manual recropping.

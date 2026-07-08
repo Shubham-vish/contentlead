@@ -1,0 +1,604 @@
+version: 1
+suite:
+  id: llm-subjective
+  name: LLM-Driven Subjective Tests
+  description: >
+    Tests that require AI agent judgment — visual quality, creative output,
+    workflow completeness, and end-to-end scenarios. The agent executes
+    multi-step workflows, captures screenshots, and evaluates output quality
+    using its own reasoning (no external LLM API needed).
+    
+    These tests have NO hard assertions — the agent judges pass/fail based on:
+    - Screenshot visual inspection (does it look right?)
+    - State coherence (is the timeline structured correctly?)
+    - Creative quality (does the output match the intent?)
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-portrait
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+
+tests:
+  # ═══════════════════════════════════════════════════════════════════
+  #  VISUAL QUALITY — Scene Rendering
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: visual.custom-scene-renders
+    name: "VISUAL: Custom scene renders correctly on canvas"
+    category: visual
+    tags: [visual, scene, custom, screenshot]
+    judge: llm
+    steps:
+      - action: resize canvas to 1080x1920 (portrait)
+        command:
+          type: editor.resize
+          params: { width: 1080, height: 1920 }
+      - action: add custom scene with animated text
+        command:
+          type: scene.addCustomScene
+          params:
+            code: |
+              const Scene = () => {
+                const frame = useCurrentFrame();
+                const opacity = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+                const scale = spring({ frame, fps: 30, config: { damping: 200 } });
+                return (
+                  <AbsoluteFill style={{ backgroundColor: '#1a1a2e', justifyContent: 'center', alignItems: 'center' }}>
+                    <div style={{
+                      opacity,
+                      transform: `scale(${scale})`,
+                      color: '#FFD700',
+                      fontSize: 64,
+                      fontWeight: 900,
+                      textAlign: 'center',
+                      padding: '20px'
+                    }}>
+                      Visual Test Scene
+                    </div>
+                  </AbsoluteFill>
+                );
+              };
+            name: visual-test
+            from: 0
+            durationMs: 3000
+      - action: seek to frame 30 (1 second in)
+        command:
+          type: editor.seekToFrame
+          params: { frame: 30 }
+      - action: capture screenshot
+        command:
+          type: query.capturePreviewFrame
+          params: { format: png }
+    criteria: |
+      PASS if:
+      - Screenshot shows dark background (#1a1a2e or similar dark color)
+      - Gold/yellow text "Visual Test Scene" is visible and centered
+      - Text appears at full opacity (we're at frame 30, fade should be done)
+      - Canvas is portrait orientation (taller than wide)
+      FAIL if:
+      - White/blank canvas
+      - No text visible
+      - Error indicators visible
+      - Completely wrong layout
+
+  - id: visual.library-chart-scene
+    name: "VISUAL: Library chart scene displays data correctly"
+    category: visual
+    tags: [visual, scene, library, chart, data-viz]
+    judge: llm
+    steps:
+      - action: resize to landscape
+        command:
+          type: editor.resize
+          params: { width: 1920, height: 1080 }
+      - action: add pie chart scene with custom data
+        command:
+          type: scene.addLibraryScene
+          params:
+            sceneId: PieChartScene
+            from: 0
+            durationMs: 5000
+            sceneProps:
+              title: "Revenue by Region"
+              segments:
+                - label: North
+                  value: 40
+                  color: "#FF6384"
+                - label: South
+                  value: 25
+                  color: "#36A2EB"
+                - label: East
+                  value: 20
+                  color: "#FFCE56"
+                - label: West
+                  value: 15
+                  color: "#4BC0C0"
+      - action: seek to animation midpoint
+        command:
+          type: editor.seekToFrame
+          params: { frame: 60 }
+      - action: capture screenshot
+        command:
+          type: query.capturePreviewFrame
+          params: { format: png }
+    criteria: |
+      PASS if:
+      - A pie chart or donut chart is visible
+      - Multiple colored segments are distinguishable
+      - Title text "Revenue by Region" is visible (or at least chart has labels)
+      - The scene fills the canvas without weird letterboxing
+      FAIL if:
+      - Blank/white canvas
+      - Error message or broken scene indicator
+      - Wrong aspect ratio (portrait instead of landscape)
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  VISUAL QUALITY — Animations
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: visual.animation-at-midpoint
+    name: "VISUAL: Animation appears correct at midpoint"
+    category: visual
+    tags: [visual, animation, fade, screenshot]
+    judge: llm
+    steps:
+      - action: add text item
+        command:
+          type: editor.addText
+          params:
+            text: "Animated Title"
+            from: 0
+            durationMs: 4000
+            details:
+              fontSize: 72
+              color: "#FFFFFF"
+              fontFamily: Montserrat
+              fontWeight: 800
+      - action: apply fadeIn animation (1 second = 30 frames)
+        command:
+          type: editor.setAnimation
+          params:
+            itemId: "{{previous.result.itemId}}"
+            animationIn: fadeIn
+            duration: 1000
+      - action: seek to midpoint of fade (15 frames = 0.5s)
+        command:
+          type: editor.seekToFrame
+          params: { frame: 15 }
+      - action: capture screenshot
+        command:
+          type: query.capturePreviewFrame
+          params: { format: png }
+    criteria: |
+      PASS if:
+      - Text "Animated Title" is partially visible (semi-transparent)
+      - It's clearly mid-fade (not fully invisible, not fully opaque)
+      - The text appears white on dark canvas
+      FAIL if:
+      - Text is completely invisible
+      - Text is fully opaque (fade not working)
+      - No text at all
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  WORKFLOW — Complete Video Assembly
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: workflow.assemble-video-with-text
+    name: "WORKFLOW: Assemble video with title overlay"
+    category: workflow
+    tags: [workflow, video, text, overlay, e2e]
+    judge: llm
+    assets_required: true
+    steps:
+      - action: add test video to timeline
+        command:
+          type: editor.addVideo
+          params:
+            src: /Users/shubham/Codes/SkillTown-Desktop/test-assets/test-video-1080p.mp4
+            from: 0
+            duration: 5000
+            width: 1920
+            height: 1080
+      - action: add title text overlay
+        command:
+          type: editor.addText
+          params:
+            text: "BREAKING NEWS"
+            from: 500
+            durationMs: 3000
+            details:
+              fontSize: 64
+              color: "#FFFFFF"
+              fontFamily: Montserrat
+              fontWeight: 800
+              backgroundColor: "rgba(255,0,0,0.8)"
+              borderRadius: 8
+              textAlign: center
+            autoReorder: true
+      - action: apply fadeIn to title
+        command:
+          type: editor.setAnimation
+          params:
+            itemId: "{{previous.result.itemId}}"
+            animationIn: fadeIn
+            duration: 500
+      - action: verify timeline has both items
+        command:
+          type: query.getTimelineItems
+          params: {}
+      - action: seek to 1 second
+        command:
+          type: editor.seekToFrame
+          params: { frame: 30 }
+      - action: capture screenshot
+        command:
+          type: query.capturePreviewFrame
+          params: { format: png }
+    criteria: |
+      PASS if:
+      - Timeline has at least 2 items (video + text)
+      - Video is on the timeline at position 0
+      - Text overlay appears above the video
+      - Screenshot shows video content with text overlay
+      FAIL if:
+      - Only 1 item on timeline
+      - Text is behind/invisible under video
+      - Blank canvas
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  WORKFLOW — Multi-Scene Presentation
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: workflow.multi-scene-presentation
+    name: "WORKFLOW: Build 3-scene presentation sequence"
+    category: workflow
+    tags: [workflow, scenes, multi, presentation, e2e]
+    judge: llm
+    steps:
+      - action: resize to landscape
+        command:
+          type: editor.resize
+          params: { width: 1920, height: 1080 }
+      - action: "add opener scene (0-4s)"
+        command:
+          type: scene.addCustomScene
+          params:
+            code: |
+              const Scene = () => {
+                const frame = useCurrentFrame();
+                const scale = spring({ frame, fps: 30, config: { damping: 200 } });
+                return (
+                  <AbsoluteFill style={{ backgroundColor: '#0a192f', justifyContent: 'center', alignItems: 'center' }}>
+                    <div style={{ transform: `scale(${scale})`, color: '#64ffda', fontSize: 72, fontWeight: 900 }}>
+                      Welcome
+                    </div>
+                  </AbsoluteFill>
+                );
+              };
+            name: opener
+            from: 0
+            durationMs: 4000
+      - action: "add content scene (4-8s)"
+        command:
+          type: scene.addCustomScene
+          params:
+            code: |
+              const Scene = () => {
+                const frame = useCurrentFrame();
+                const opacity = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+                return (
+                  <AbsoluteFill style={{ backgroundColor: '#112240', justifyContent: 'center', alignItems: 'center' }}>
+                    <div style={{ opacity, color: '#ccd6f6', fontSize: 48, fontWeight: 400, textAlign: 'center', maxWidth: '80%' }}>
+                      Key Insight: AI agents can test themselves
+                    </div>
+                  </AbsoluteFill>
+                );
+              };
+            name: content
+            from: 4000
+            durationMs: 4000
+      - action: "add closer scene (8-12s)"
+        command:
+          type: scene.addCustomScene
+          params:
+            code: |
+              const Scene = () => {
+                const frame = useCurrentFrame();
+                const opacity = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+                return (
+                  <AbsoluteFill style={{ backgroundColor: '#0a192f', justifyContent: 'center', alignItems: 'center' }}>
+                    <div style={{ opacity, color: '#64ffda', fontSize: 36, fontWeight: 700 }}>
+                      Thank You
+                    </div>
+                  </AbsoluteFill>
+                );
+              };
+            name: closer
+            from: 8000
+            durationMs: 4000
+      - action: verify all 3 scenes on timeline
+        command:
+          type: query.getTimelineItems
+          params: {}
+    criteria: |
+      PASS if:
+      - Timeline has exactly 3 items (3 scenes)
+      - Items are sequential (0-4s, 4-8s, 8-12s) — no overlaps
+      - Each scene is of type "template" (Remotion scene)
+      - Total timeline duration is approximately 12 seconds
+      FAIL if:
+      - Fewer than 3 items
+      - Items overlap or have wrong timing
+      - Any scene failed to add (status != success)
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  WORKFLOW — Styled Caption Sequence
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: workflow.styled-caption-sequence
+    name: "WORKFLOW: Create styled caption track"
+    category: workflow
+    tags: [workflow, caption, style, bulk, e2e]
+    judge: llm
+    steps:
+      - action: add video background
+        command:
+          type: scene.addCustomScene
+          params:
+            code: |
+              const Scene = () => {
+                return (
+                  <AbsoluteFill style={{ backgroundColor: '#1a1a2e' }} />
+                );
+              };
+            name: bg
+            from: 0
+            durationMs: 10000
+      - action: add manual caption 1
+        command:
+          type: editor.addCaption
+          params:
+            from: 0
+            durationMs: 2500
+            details:
+              words:
+                - { word: "Hello", start: 0, end: 400 }
+                - { word: "and", start: 400, end: 600 }
+                - { word: "welcome", start: 600, end: 1200 }
+                - { word: "to", start: 1200, end: 1400 }
+                - { word: "our", start: 1400, end: 1700 }
+                - { word: "show", start: 1700, end: 2200 }
+            autoReorder: true
+      - action: add manual caption 2
+        command:
+          type: editor.addCaption
+          params:
+            from: 2500
+            durationMs: 2500
+            details:
+              words:
+                - { word: "Today", start: 0, end: 500 }
+                - { word: "we", start: 500, end: 700 }
+                - { word: "discuss", start: 700, end: 1200 }
+                - { word: "testing", start: 1200, end: 2000 }
+            autoReorder: true
+      - action: style all captions with podcast style
+        command:
+          type: bulk.styleByType
+          params:
+            type: caption
+            details:
+              fontSize: 64
+              fontFamily: Montserrat
+              fontWeight: 800
+              color: "#FFFFFF"
+              activeColor: "#FFD700"
+              backgroundColor: "rgba(0,0,0,0.35)"
+              textAlign: center
+              textTransform: uppercase
+      - action: verify captions on timeline
+        command:
+          type: query.getTimelineItems
+          params: {}
+    criteria: |
+      PASS if:
+      - At least 2 caption items on timeline
+      - Captions have word-level timing data
+      - bulk.styleByType succeeded (captions are styled)
+      - Captions are above the background scene (correct z-order)
+      FAIL if:
+      - No captions on timeline
+      - Style command failed
+      - Captions have no word data
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  WORKFLOW — Video with Audio Mix
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: workflow.video-audio-mix
+    name: "WORKFLOW: Video with background music mix"
+    category: workflow
+    tags: [workflow, video, audio, mix, volume, e2e]
+    judge: llm
+    assets_required: true
+    steps:
+      - action: add video with audio
+        command:
+          type: editor.addVideo
+          params:
+            src: /Users/shubham/Codes/SkillTown-Desktop/test-assets/test-video-1080p.mp4
+            from: 0
+            duration: 5000
+            width: 1920
+            height: 1080
+      - action: add background music
+        command:
+          type: editor.addAudio
+          params:
+            src: /Users/shubham/Codes/SkillTown-Desktop/test-assets/test-music.m4a
+            from: 0
+            duration: 5000
+      - action: lower music volume
+        command:
+          type: editor.setVolume
+          params:
+            itemId: "{{previous.result.itemId}}"
+            volume: 20
+      - action: apply EQ to music
+        command:
+          type: audio.setEq
+          params:
+            itemId: "{{previous_step.itemId}}"
+            preset: warm
+      - action: verify track structure
+        command:
+          type: query.getTrackInfo
+          params: {}
+    criteria: |
+      PASS if:
+      - At least 2 tracks exist (video track + audio track)
+      - Video and audio items both present
+      - Volume was set successfully
+      - EQ was applied successfully
+      FAIL if:
+      - Only 1 item on timeline
+      - Volume or EQ commands failed
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  WORKFLOW — Bundled Scene with Import
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: visual.bundled-scene-with-noise
+    name: "VISUAL: Bundled scene with @remotion/noise renders"
+    category: visual
+    tags: [visual, scene, bundled, noise, import]
+    judge: llm
+    steps:
+      - action: resize to landscape
+        command:
+          type: editor.resize
+          params: { width: 1920, height: 1080 }
+      - action: add bundled scene with noise-based background
+        command:
+          type: scene.addBundledScene
+          params:
+            source: |
+              import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate } from 'remotion';
+              import { noise2D } from '@remotion/noise';
+
+              export default function Scene() {
+                const frame = useCurrentFrame();
+                const { fps, width, height } = useVideoConfig();
+                const t = frame / fps;
+                
+                const cells = [];
+                const gridSize = 8;
+                for (let x = 0; x < gridSize; x++) {
+                  for (let y = 0; y < gridSize; y++) {
+                    const n = noise2D('grid', x * 0.3 + t * 0.5, y * 0.3 + t * 0.3);
+                    const hue = Math.floor((n + 1) * 120 + 200);
+                    const lightness = Math.floor((n + 1) * 20 + 10);
+                    cells.push(
+                      <div key={`${x}-${y}`} style={{
+                        position: 'absolute',
+                        left: `${(x / gridSize) * 100}%`,
+                        top: `${(y / gridSize) * 100}%`,
+                        width: `${100 / gridSize}%`,
+                        height: `${100 / gridSize}%`,
+                        backgroundColor: `hsl(${hue}, 60%, ${lightness}%)`,
+                        transition: 'background-color 0.1s',
+                      }} />
+                    );
+                  }
+                }
+                
+                const opacity = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+                
+                return (
+                  <AbsoluteFill>
+                    {cells}
+                    <div style={{
+                      position: 'absolute',
+                      inset: 0,
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      opacity,
+                    }}>
+                      <div style={{ color: 'white', fontSize: 64, fontWeight: 900, textShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>
+                        Noise Grid
+                      </div>
+                    </div>
+                  </AbsoluteFill>
+                );
+              }
+            name: noise-grid
+            from: 0
+            durationMs: 5000
+      - action: seek to 1 second
+        command:
+          type: editor.seekToFrame
+          params: { frame: 30 }
+      - action: capture screenshot
+        command:
+          type: query.capturePreviewFrame
+          params: { format: png }
+    criteria: |
+      PASS if:
+      - Scene renders without error
+      - A grid pattern with varying colors is visible
+      - "Noise Grid" text is visible in center
+      - Colors appear to be noise-generated (varied, not uniform)
+      FAIL if:
+      - Blank/white canvas
+      - Error message or compilation error
+      - Scene didn't add to timeline
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  WORKFLOW — Crop & Reframe for Vertical
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: workflow.vertical-reframe
+    name: "WORKFLOW: Reframe landscape video to vertical"
+    category: workflow
+    tags: [workflow, video, reframe, vertical, crop]
+    judge: llm
+    assets_required: true
+    steps:
+      - action: resize canvas to 1080x1920 (9:16 vertical)
+        command:
+          type: editor.resize
+          params: { width: 1080, height: 1920 }
+      - action: add landscape video
+        command:
+          type: editor.addVideo
+          params:
+            src: /Users/shubham/Codes/SkillTown-Desktop/test-assets/test-video-1080p.mp4
+            from: 0
+            duration: 5000
+            width: 1920
+            height: 1080
+      - action: "crop to 9:16 center (607px wide, centered at x=656)"
+        command:
+          type: editor.cropItem
+          params:
+            itemId: "{{previous.result.itemId}}"
+            crop: { x: 656, y: 0, width: 607, height: 1080 }
+      - action: verify crop applied
+        command:
+          type: query.getItemProperties
+          params:
+            itemId: "{{previous_step.itemId}}"
+      - action: capture screenshot
+        command:
+          type: query.capturePreviewFrame
+          params: { format: png }
+    criteria: |
+      PASS if:
+      - Video is on timeline
+      - Crop was applied successfully
+      - Canvas is 1080x1920 (portrait)
+      - Video fills the vertical frame (center-cropped)
+      FAIL if:
+      - Crop failed
+      - Video appears letterboxed or distorted
+      - Canvas is still landscape

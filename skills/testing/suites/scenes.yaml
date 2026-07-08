@@ -1,0 +1,151 @@
+version: 1
+suite:
+  id: scenes
+  name: Scene/Remotion commands
+  description: Tests scene listing, adding library scenes, and custom scenes.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-portrait
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+
+tests:
+  # ── List Scenes ────────────────────────────────────────────────
+
+  - id: contract.list-scenes
+    name: scene.listScenes returns available templates
+    category: contract
+    tags: [contract, scenes, list]
+    execute:
+      type: scene.listScenes
+      params:
+        limit: 10
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.list-scenes-search
+    name: scene.listScenes with search filter
+    category: contract
+    tags: [contract, scenes, search]
+    execute:
+      type: scene.listScenes
+      params:
+        search: text
+        limit: 5
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Add Library Scene ──────────────────────────────────────────
+
+  - id: state.add-library-scene
+    name: scene.addLibraryScene adds a scene to timeline
+    category: state
+    tags: [state, scenes, add]
+    notes: |
+      Agent should first call scene.listScenes to get a valid scene_id,
+      then use that ID here. If no scenes are available, mark SKIP.
+    setup:
+      - id: list-scenes
+        kind: command
+        type: scene.listScenes
+        params:
+          limit: 1
+    execute:
+      type: scene.addLibraryScene
+      params:
+        scene_id: "{{steps.list-scenes.result[0].id}}"
+        from_ms: 0
+        duration_ms: 5000
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: scene item on timeline
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              gte: 1
+
+  # ── Add Custom Scene ───────────────────────────────────────────
+
+  - id: state.add-custom-scene
+    name: scene.addCustomScene adds JSX scene
+    category: state
+    tags: [state, scenes, custom]
+    execute:
+      type: scene.addCustomScene
+      params:
+        code: |
+          const { AbsoluteFill } = require("remotion");
+          const TestScene = () => {
+            return (
+              <AbsoluteFill style={{ backgroundColor: "#1a1a2e", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <h1 style={{ color: "white", fontSize: 72 }}>Test Scene</h1>
+              </AbsoluteFill>
+            );
+          };
+          module.exports = TestScene;
+        name: test-scene
+        from_ms: 0
+        duration_ms: 3000
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Scene Props ────────────────────────────────────────────────
+
+  - id: state.update-scene-props
+    name: scene.updateSceneProps modifies scene parameters
+    category: state
+    tags: [state, scenes, props]
+    notes: |
+      Agent should add a library scene first, then update its props.
+      If no scenes are available, mark SKIP.
+    setup:
+      - id: list-scenes
+        kind: command
+        type: scene.listScenes
+        params:
+          limit: 1
+      - id: add-scene
+        kind: command
+        type: scene.addLibraryScene
+        params:
+          scene_id: "{{steps.list-scenes.result[0].id}}"
+          from_ms: 0
+          duration_ms: 5000
+    execute:
+      type: scene.updateSceneProps
+      params:
+        itemId: "{{steps.add-scene.result.itemId}}"
+        sceneProps:
+          title: Updated Title
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Preview Code ───────────────────────────────────────────────
+
+  - id: contract.preview-code
+    name: scene.previewCode previews without adding
+    category: contract
+    tags: [contract, scenes, preview]
+    execute:
+      type: scene.previewCode
+      params:
+        code: |
+          const { AbsoluteFill } = require("remotion");
+          module.exports = () => <AbsoluteFill style={{backgroundColor:"blue"}} />;
+        name: preview-test
+        duration_frames: 90
+    assert:
+      response:
+        - path: status
+          equals: success

@@ -496,3 +496,12 @@ Smart version — add a transition after an item (auto-finds the next clip on th
 // OR by item pair:
 { "type": "editor.removeTransition", "params": { "fromId": "vid_001", "toId": "vid_002" } }
 ```
+
+## Preset Discovery
+
+### `query.listAnimationPresets`
+List all available animation presets (enter, exit, loop) with their names.
+```json
+{ "type": "query.listAnimationPresets", "params": {} }
+```
+**Returns:** `{ presets: { in: [...], out: [...], loop: [...] } }` — use these names in `editor.setAnimation`.

@@ -1,0 +1,243 @@
+version: 1
+suite:
+  id: error-monitoring
+  name: Error Monitoring & Diagnostics
+  description: >
+    Tests that verify the error monitoring infrastructure works and
+    that common operations don't produce console errors. Each test
+    performs an action, then checks /api/console-errors and /api/diagnostics
+    for new errors that shouldn't be there.
+    
+    These tests help catch regressions where commands "succeed" at the API
+    level but cause console errors in the renderer.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-landscape
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+
+tests:
+  # ═══════════════════════════════════════════════════════════════════
+  #  DIAGNOSTICS ENDPOINT
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: contract.diagnostics-endpoint
+    name: GET /api/diagnostics returns structured health data
+    category: contract
+    tags: [contract, diagnostics, health]
+    execute:
+      type: _http_get
+      endpoint: /api/diagnostics
+    assert:
+      response:
+        - path: consoleErrors
+          exists: true
+        - path: sceneErrors
+          exists: true
+        - path: timeline
+          exists: true
+
+  - id: contract.console-errors-endpoint
+    name: GET /api/console-errors returns buffered errors
+    category: contract
+    tags: [contract, diagnostics, errors]
+    execute:
+      type: _http_get
+      endpoint: /api/console-errors
+    assert:
+      response:
+        - path: entries
+          is_array: true
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  ERROR-FREE OPERATIONS
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: errorfree.add-text-no-errors
+    name: "CLEAN: Adding text produces no new console errors"
+    category: state
+    tags: [state, errorfree, text]
+    judge: llm
+    steps:
+      - action: "Record baseline error count"
+        command:
+          type: _http_get
+          endpoint: /api/console-errors
+      - action: "Add a text item"
+        command:
+          type: editor.addText
+          params:
+            text: Error Check
+            from: 0
+            durationMs: 3000
+      - action: "Wait 2 seconds for any async errors"
+        sleep: 2000
+      - action: "Check for new errors"
+        command:
+          type: _http_get
+          endpoint: /api/console-errors
+    criteria: |
+      PASS if:
+      - No new ERROR-level entries appeared after adding text
+      - Warnings about fonts or Remotion license are acceptable (known)
+      FAIL if:
+      - New ERROR-level entries appeared that reference the text item
+      - "Invalid animation values" errors appeared
+      - "NaN" CSS property errors appeared
+
+  - id: errorfree.animation-no-errors
+    name: "CLEAN: Setting fadeIn animation produces no console errors"
+    category: state
+    tags: [state, errorfree, animation]
+    judge: llm
+    steps:
+      - action: "Record baseline error count"
+        command:
+          type: _http_get
+          endpoint: /api/console-errors
+      - action: "Add text and set fadeIn animation"
+        command:
+          type: editor.addText
+          params:
+            text: Anim Check
+            from: 0
+            durationMs: 3000
+      - action: "Apply fadeIn animation"
+        command:
+          type: editor.setAnimation
+          params:
+            itemId: "{{previous.result.itemId}}"
+            animationIn: fadeIn
+            duration: 500
+      - action: "Wait for animation render cycle"
+        sleep: 2000
+      - action: "Check for new errors"
+        command:
+          type: _http_get
+          endpoint: /api/console-errors
+    criteria: |
+      PASS if:
+      - No new "Invalid animation values" errors
+      - No "NaN" CSS property errors
+      - fadeIn is a basic preset — should produce zero renderer errors
+      FAIL if:
+      - Any animation-related error appeared
+
+  - id: errorfree.loop-animation-no-errors
+    name: "CLEAN: Setting pulseAnimationLoop produces no console errors"
+    category: state
+    tags: [state, errorfree, animation, loop]
+    judge: llm
+    steps:
+      - action: "Record baseline error count"
+        command:
+          type: _http_get
+          endpoint: /api/console-errors
+      - action: "Add text"
+        command:
+          type: editor.addText
+          params:
+            text: Loop Check
+            from: 0
+            durationMs: 5000
+      - action: "Apply pulseAnimationLoop"
+        command:
+          type: editor.setAnimation
+          params:
+            itemId: "{{previous.result.itemId}}"
+            animationIn: pulseAnimationLoop
+      - action: "Wait for render cycle"
+        sleep: 2000
+      - action: "Check for new errors"
+        command:
+          type: _http_get
+          endpoint: /api/console-errors
+    criteria: |
+      PASS if:
+      - No new "Invalid animation values" errors
+      - pulseAnimationLoop is dispatched as loop slot, not in
+      - Animation renders without NaN/object errors
+      FAIL if:
+      - "Invalid animation values: [object Object]" appears
+      - NaN opacity/transform errors appear
+
+  - id: errorfree.scene-no-errors
+    name: "CLEAN: Adding custom scene produces no scene errors"
+    category: state
+    tags: [state, errorfree, scene]
+    judge: llm
+    steps:
+      - action: "Record baseline"
+        command:
+          type: _http_get
+          endpoint: /api/diagnostics
+      - action: "Add custom scene"
+        command:
+          type: scene.addCustomScene
+          params:
+            code: |
+              const Scene = () => {
+                return (
+                  <AbsoluteFill style={{ backgroundColor: '#1a1a2e', justifyContent: 'center', alignItems: 'center' }}>
+                    <div style={{ color: 'white', fontSize: 48 }}>Error Free</div>
+                  </AbsoluteFill>
+                );
+              };
+            name: error-check
+            from: 0
+            durationMs: 3000
+      - action: "Wait for scene render"
+        sleep: 3000
+      - action: "Check diagnostics"
+        command:
+          type: _http_get
+          endpoint: /api/diagnostics
+    criteria: |
+      PASS if:
+      - sceneErrors.errorCount is 0 (or same as baseline)
+      - No compilation errors for the scene
+      FAIL if:
+      - sceneErrors shows new errors
+      - Scene failed to compile
+
+  - id: errorfree.video-media-url
+    name: "CLEAN: Video added via media server URL produces no CSP errors"
+    category: state
+    tags: [state, errorfree, video, media, csp]
+    judge: llm
+    assets_required: true
+    steps:
+      - action: "Import video through media server"
+        command:
+          type: _http_post
+          endpoint: /api/media/import
+          body:
+            path: /Users/shubham/Codes/SkillTown-Desktop/test-assets/test-video-1080p.mp4
+      - action: "Record baseline errors"
+        command:
+          type: _http_get
+          endpoint: /api/console-errors
+      - action: "Add video using media server URL (not file:// path)"
+        command:
+          type: editor.addVideo
+          params:
+            src: "{{previous_step.mediaUrl}}"
+            from: 0
+            duration: 5000
+            width: 1920
+            height: 1080
+      - action: "Wait for video load"
+        sleep: 3000
+      - action: "Check for CSP violations"
+        command:
+          type: _http_get
+          endpoint: /api/console-errors
+    criteria: |
+      PASS if:
+      - No new CSP violation errors
+      - No "net::ERR_FAILED" for the video URL
+      - Video loads without fetch failures
+      FAIL if:
+      - CSP blocks the video URL
+      - "Refused to connect" errors for the video
+      Note: Using mediaUrl from import (http://127.0.0.1:PORT/media?path=...)
+      should avoid CSP issues. If file:// was used, CSP errors are expected.

@@ -1,0 +1,284 @@
+version: 1
+suite:
+  id: captions-content
+  name: Caption pipeline and content management
+  description: Tests caption application, removal, and content transcript operations.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-portrait
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+  assets:
+    voice_video: REQUIRED_ABSOLUTE_PATH_TO_VIDEO_WITH_SPEECH
+
+tests:
+  # ── Apply Captions ─────────────────────────────────────────────
+
+  - id: state.apply-captions
+    name: content.applyCaptions adds caption items from subtitles array
+    category: state
+    tags: [state, caption, apply]
+    execute:
+      type: content.applyCaptions
+      params:
+        subtitles:
+          - text: Hello world
+            from: 0
+            to: 1500
+          - text: this is a test
+            from: 1500
+            to: 3000
+          - text: of captions
+            from: 3000
+            to: 4500
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: caption items created
+          type: query.getTimelineItems
+          params:
+            type: caption
+          assertions:
+            - path: result.count
+              gte: 1
+
+  - id: state.apply-captions-styled
+    name: content.applyCaptions + bulk.styleByType for podcast look
+    category: state
+    tags: [state, caption, style, workflow]
+    setup:
+      - id: apply-caps
+        kind: command
+        type: content.applyCaptions
+        params:
+          subtitles:
+            - text: Welcome back
+              from: 0
+              to: 1500
+            - text: to the show
+              from: 1500
+              to: 3000
+    execute:
+      type: bulk.styleByType
+      params:
+        type: caption
+        details:
+          fontSize: 72
+          fontFamily: Montserrat
+          fontWeight: 800
+          color: "#FFFFFF"
+          activeColor: "#FFD700"
+          backgroundColor: "rgba(0,0,0,0.35)"
+          textAlign: center
+          textTransform: uppercase
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Remove Captions ────────────────────────────────────────────
+
+  - id: state.remove-captions
+    name: content.removeCaptions clears all captions
+    category: state
+    tags: [state, caption, remove]
+    setup:
+      - id: apply-caps
+        kind: command
+        type: content.applyCaptions
+        params:
+          subtitles:
+            - text: Remove me
+              from: 0
+              to: 2000
+            - text: And me too
+              from: 2000
+              to: 4000
+    execute:
+      type: content.removeCaptions
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: no captions remain
+          type: query.getTimelineItems
+          params:
+            type: caption
+          assertions:
+            - path: result.count
+              equals: 0
+
+  # ── Auto Caption (requires media) ──────────────────────────────
+
+  - id: workflow.auto-caption
+    name: editor.autoCaption transcribes and adds captions
+    category: workflow
+    tags: [workflow, caption, transcription]
+    requiresAssets: [voice_video]
+    timeout: 120000
+    setup:
+      - id: add-video
+        kind: command
+        type: editor.addVideo
+        params:
+          url: "{{assets.voice_video}}"
+          from: 0
+          duration: 10000
+    execute:
+      type: editor.autoCaption
+      params:
+        trackItemId: "{{steps.add-video.result.itemId}}"
+        language: en
+    assert:
+      response:
+        - path: status
+          equals: success
+    notes: |
+      Agent should poll query.getTranscriptionStatus until completed,
+      then verify captions exist on the timeline.
+
+  # ── Transcript Queries ─────────────────────────────────────────
+
+  - id: contract.transcript-status
+    name: query.getTranscriptionStatus returns current status
+    category: contract
+    tags: [contract, transcription]
+    execute:
+      type: query.getTranscriptionStatus
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.transcript-words
+    name: content.getTranscriptWords returns word data
+    category: contract
+    tags: [contract, transcript]
+    execute:
+      type: content.getTranscriptWords
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Visual: Caption Placement ──────────────────────────────────
+
+  - id: visual.caption-placement
+    name: Captions are readable and in safe area
+    category: visual
+    tags: [visual, caption, placement]
+    setup:
+      - id: apply-caps
+        kind: command
+        type: content.applyCaptions
+        params:
+          subtitles:
+            - text: Visual caption test
+              from: 0
+              to: 2000
+            - text: checking placement
+              from: 2000
+              to: 4000
+      - id: style-caps
+        kind: command
+        type: bulk.styleByType
+        params:
+          type: caption
+          details:
+            fontSize: 72
+            fontFamily: Montserrat
+            fontWeight: 800
+            color: "#FFFFFF"
+            backgroundColor: "rgba(0,0,0,0.5)"
+            textAlign: center
+    assert:
+      visual:
+        seekMs: 1000
+        screenshot: caption-placement.png
+        criteria:
+          - Caption text is visible and readable against the background.
+          - Text is not clipped at any screen edge.
+          - Text occupies the lower portion of the 9:16 frame (not overlapping top area).
+          - Font size looks appropriate for a mobile phone viewing experience.
+          - Background contrast makes text easily readable.
+
+  # ── Content Details ────────────────────────────────────────────
+
+  - id: contract.content-details
+    name: content.getDetails returns project metadata
+    category: contract
+    tags: [contract, content]
+    execute:
+      type: content.getDetails
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result
+          exists: true
+
+  # ── Content Bridge ─────────────────────────────────────────────
+
+  - id: contract.apply-image
+    name: content.applyImage applies an image to content
+    category: contract
+    tags: [contract, content, image]
+    execute:
+      type: content.applyImage
+      params:
+        imageUrl: https://picsum.photos/400/300
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.remove-image
+    name: content.removeImage removes applied image
+    category: contract
+    tags: [contract, content, image]
+    setup:
+      - id: apply-img
+        kind: command
+        type: content.applyImage
+        params:
+          imageUrl: https://picsum.photos/400/300
+    execute:
+      type: content.removeImage
+      params:
+        imageId: "{{steps.apply-img.result.trackItemId}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.set-transcript
+    name: content.setTranscript sets transcript words
+    category: contract
+    tags: [contract, content, transcript]
+    execute:
+      type: content.setTranscript
+      params:
+        transcriptWords:
+          - word: "This"
+            start: 0
+            end: 0.3
+          - word: "is"
+            start: 0.3
+            end: 0.5
+          - word: "a"
+            start: 0.5
+            end: 0.6
+          - word: "test"
+            start: 0.6
+            end: 1.0
+        transcriptText: "This is a test"
+    assert:
+      response:
+        - path: status
+          equals: success

@@ -91,3 +91,48 @@ Capture the current canvas as a PNG data URL.
 ```json
 { "type": "query.capturePreviewFrame", "params": {} }
 ```
+
+## Additional Queries
+
+These are straightforward — naming tells you what they do:
+
+| Command | Params | Returns |
+|---|---|---|
+| `query.getCurrentTime` | `{}` | Current playback position in ms |
+| `query.getSelectedItems` | `{}` | `{ selectedIds, count, items }` |
+| `query.getAllText` | `{}` | All text/caption content with timing |
+| `query.getVisibleText` | `{ timeMs }` | Text items visible at that time |
+| `query.getProjectInfo` | `{}` | Project metadata (contentId, title, counts) |
+| `query.listFonts` | `{}` | Available fonts |
+| `query.listAnimationPresets` | `{}` | Animation presets (in/out/loop) — use before `setAnimation` |
+| `query.getAssets` | `{}` | All registered media assets |
+| `query.diff` | `{ sinceVersion }` | State diffs since a version number |
+
+## Diagnostics & Health
+
+Commands for detecting issues that aren't visible in normal responses:
+
+### `query.validateTimeline`
+Full timeline health check — orphaned items, gaps, track order, audio overlap.
+```json
+{ "type": "query.validateTimeline", "params": {} }
+```
+**Returns:** `{ valid, issues[], itemCount, trackCount }`
+
+### `query.getSceneErrors`
+Get runtime errors from Remotion scenes (scenes crash silently — this is how you detect them).
+```json
+{ "type": "query.getSceneErrors", "params": {} }
+```
+
+### `query.getCircuitBreakerStatus`
+Check if any command types are circuit-broken (3 consecutive failures → 30s cooldown).
+```json
+{ "type": "query.getCircuitBreakerStatus", "params": {} }
+```
+
+### `query.getCommandHistory` / `query.getMetrics`
+Debugging tools — recent command log and success/fail/timing stats.
+```json
+{ "type": "query.getCommandHistory", "params": { "count": 20 } }
+```

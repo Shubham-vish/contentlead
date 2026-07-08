@@ -1,0 +1,232 @@
+version: 1
+suite:
+  id: bulk-batch
+  name: Bulk operations and batch execution
+  description: Tests bulk styling, deletion, shifting, and batch command execution.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-portrait
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+
+tests:
+  # ── Bulk Style ─────────────────────────────────────────────────
+
+  - id: state.bulk-style-text
+    name: bulk.styleByType styles all text items
+    category: state
+    tags: [state, bulk, text, style]
+    setup:
+      - id: add-a
+        kind: command
+        type: editor.addText
+        params:
+          text: Alpha
+          from: 0
+          to: 2000
+          color: "#ffffff"
+      - id: add-b
+        kind: command
+        type: editor.addText
+        params:
+          text: Beta
+          from: 2500
+          to: 4500
+          color: "#ffffff"
+    execute:
+      type: bulk.styleByType
+      params:
+        type: text
+        details:
+          color: "#00ff88"
+          fontFamily: Inter
+          fontWeight: 800
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: both items restyled
+          type: query.getItemProperties
+          params:
+            itemId: "{{steps.add-a.result.itemId}}"
+          assertions:
+            - path: result.item.details.color
+              equals: "#00ff88"
+            - path: result.item.details.fontFamily
+              equals: Inter
+        - label: second item also restyled
+          type: query.getItemProperties
+          params:
+            itemId: "{{steps.add-b.result.itemId}}"
+          assertions:
+            - path: result.item.details.color
+              equals: "#00ff88"
+
+  - id: state.bulk-style-caption
+    name: bulk.styleByType styles all captions
+    category: state
+    tags: [state, bulk, caption, style]
+    setup:
+      - id: add-cap-a
+        kind: command
+        type: editor.addCaption
+        params:
+          text: Cap One
+          from: 0
+          to: 2000
+      - id: add-cap-b
+        kind: command
+        type: editor.addCaption
+        params:
+          text: Cap Two
+          from: 2500
+          to: 4500
+    execute:
+      type: bulk.styleByType
+      params:
+        type: caption
+        details:
+          fontSize: 72
+          fontFamily: Montserrat
+          fontWeight: 800
+          color: "#FFD700"
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Bulk Delete ────────────────────────────────────────────────
+
+  - id: state.bulk-delete-text
+    name: bulk.deleteByType removes all text items
+    category: state
+    tags: [state, bulk, delete]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Delete All Text
+          from: 0
+          to: 2000
+      - id: add-caption
+        kind: command
+        type: editor.addCaption
+        params:
+          text: Keep This Caption
+          from: 3000
+          to: 5000
+    execute:
+      type: bulk.deleteByType
+      params:
+        type: text
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: text gone, caption remains
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              equals: 1
+
+  - id: state.bulk-delete-caption
+    name: bulk.deleteByType removes all captions
+    category: state
+    tags: [state, bulk, delete, caption]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Keep This
+          from: 0
+          to: 2000
+      - id: add-cap
+        kind: command
+        type: editor.addCaption
+        params:
+          text: Delete Me
+          from: 3000
+          to: 5000
+    execute:
+      type: bulk.deleteByType
+      params:
+        type: caption
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: caption gone, text remains
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              equals: 1
+
+  # ── Bulk Shift ─────────────────────────────────────────────────
+
+  - id: state.bulk-shift-all
+    name: bulk.shiftAll moves all items by offset
+    category: state
+    tags: [state, bulk, shift]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Shift Me
+          from: 0
+          to: 3000
+    execute:
+      type: bulk.shiftAll
+      params:
+        shift_ms: 5000
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: item shifted forward
+          type: query.getItemProperties
+          params:
+            itemId: "{{steps.add-text.result.itemId}}"
+          assertions:
+            - path: result.item.display.from
+              equals: 5000
+
+  # ── Batch Execute ──────────────────────────────────────────────
+
+  - id: state.batch-execute
+    name: batch.execute runs multiple commands atomically
+    category: state
+    tags: [state, batch, multi]
+    execute:
+      type: batch.execute
+      params:
+        commands:
+          - type: editor.addText
+            params:
+              text: Batch Item 1
+              from: 0
+              to: 2000
+          - type: editor.addText
+            params:
+              text: Batch Item 2
+              from: 3000
+              to: 5000
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: both items created
+          type: query.getTimelineItems
+          params:
+            type: text
+          assertions:
+            - path: result.count
+              equals: 2

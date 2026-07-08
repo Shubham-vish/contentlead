@@ -288,46 +288,6 @@ Never run steps out of order. If groupings are stale, regenerate groupings first
 
 ---
 
-## Additional StoryStudio Command Details
-
-### `storystudio.getPipelineState`
-
-Returns a quick summary of transcript, grouping, decision, prompt, image, and SFX progress.
-
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `mode` | `string` | `"standard"` | Pipeline mode |
-| `trackId` | `string` | current/default track | Optional track scope |
-
-### `storystudio.getGroupings`
-
-Return grouped transcript sentences with timing, word counts, and decision summaries.
-
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `mode` | `string` | `"standard"` | Pipeline mode |
-| `trackId` | `string` | current/default track | Optional track scope |
-
-### `storystudio.getDecisions`
-
-Return the full decision payload for one sentence.
-
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `sentenceId` | `string` | required | Sentence/group identifier |
-| `mode` | `string` | `"standard"` | Pipeline mode |
-| `trackId` | `string` | current/default track | Optional track scope |
-
-```json
-{
-  "type": "storystudio.getDecisions",
-  "params": {
-    "sentenceId": "sent_1",
-    "mode": "standard"
-  }
-}
-```
-
 ### `storystudio.generateGroupings`
 
 Generate sentence groupings from transcript words.

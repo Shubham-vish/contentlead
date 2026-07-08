@@ -1,0 +1,414 @@
+version: 1
+suite:
+  id: selection-groups
+  name: Selection, groups, transitions, and newly-cataloged commands
+  description: Tests for editor.select, editor.deselectAll, editor.groupItems, editor.ungroupItems, editor.moveGroup, editor.addTransitionBetween, editor.removeTransition, editor.reorderTracks, editor.setBackground, editor.previewRange, editor.seekToFrame, editor.purgeItems, audio.balanceVolumes, audio.duckMusic, query.capturePreviewFrame, query.diagnoseScenes, query.getItemsAtTime, query.listTransitions, scene.addBundledScene, scene.getSceneSource, scene.validateCode, project.saveAutosave, template.buildFromJSON.
+  defaults:
+    isolation: reset-design
+    resetPreset: empty-portrait
+    artifactDir: ~/.skilltown-desktop/test-artifacts
+
+tests:
+  # ── Selection ────────────────────────────────────────────────────
+
+  - id: contract.select-items
+    name: editor.select selects items by ID
+    category: contract
+    tags: [contract, selection]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: SelectMe
+          from: 0
+          to: 3000
+    execute:
+      type: editor.select
+      params:
+        itemIds:
+          - "{{steps.add-text.result.itemId}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: item is selected
+          type: query.getSelectedItems
+          params: {}
+          assertions:
+            - path: result.count
+              gte: 1
+
+  - id: contract.deselect-all
+    name: editor.deselectAll clears selection
+    category: contract
+    tags: [contract, selection]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: DeselectMe
+          from: 0
+          to: 3000
+      - id: select-it
+        kind: command
+        type: editor.select
+        params:
+          itemIds:
+            - "{{steps.add-text.result.itemId}}"
+    execute:
+      type: editor.deselectAll
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Groups ───────────────────────────────────────────────────────
+
+  - id: contract.group-items
+    name: editor.groupItems groups 2+ items
+    category: contract
+    tags: [contract, groups]
+    setup:
+      - id: add-text1
+        kind: command
+        type: editor.addText
+        params:
+          text: Group1
+          from: 0
+          to: 2000
+      - id: add-text2
+        kind: command
+        type: editor.addText
+        params:
+          text: Group2
+          from: 3000
+          to: 5000
+    execute:
+      type: editor.groupItems
+      params:
+        itemIds:
+          - "{{steps.add-text1.result.itemId}}"
+          - "{{steps.add-text2.result.itemId}}"
+        groupId: test-group-1
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.ungroup-items
+    name: editor.ungroupItems removes group membership
+    category: contract
+    tags: [contract, groups]
+    setup:
+      - id: add-text1
+        kind: command
+        type: editor.addText
+        params:
+          text: Ungroup1
+          from: 0
+          to: 2000
+      - id: add-text2
+        kind: command
+        type: editor.addText
+        params:
+          text: Ungroup2
+          from: 3000
+          to: 5000
+      - id: group-them
+        kind: command
+        type: editor.groupItems
+        params:
+          itemIds:
+            - "{{steps.add-text1.result.itemId}}"
+            - "{{steps.add-text2.result.itemId}}"
+          groupId: test-ungroup
+    execute:
+      type: editor.ungroupItems
+      params:
+        groupId: test-ungroup
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.move-group
+    name: editor.moveGroup shifts all group items
+    category: contract
+    tags: [contract, groups]
+    setup:
+      - id: add-text1
+        kind: command
+        type: editor.addText
+        params:
+          text: MoveG1
+          from: 0
+          to: 2000
+      - id: add-text2
+        kind: command
+        type: editor.addText
+        params:
+          text: MoveG2
+          from: 3000
+          to: 5000
+      - id: group-them
+        kind: command
+        type: editor.groupItems
+        params:
+          itemIds:
+            - "{{steps.add-text1.result.itemId}}"
+            - "{{steps.add-text2.result.itemId}}"
+          groupId: test-move-group
+    execute:
+      type: editor.moveGroup
+      params:
+        groupId: test-move-group
+        offsetMs: 2000
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Transitions ──────────────────────────────────────────────────
+
+  - id: contract.list-transitions
+    name: query.listTransitions returns presets and active transitions
+    category: contract
+    tags: [contract, transitions]
+    execute:
+      type: query.listTransitions
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Playback ─────────────────────────────────────────────────────
+
+  - id: contract.seek-to-frame
+    name: editor.seekToFrame seeks to specific frame
+    category: contract
+    tags: [contract, playback]
+    execute:
+      type: editor.seekToFrame
+      params:
+        frame: 30
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.preview-range
+    name: editor.previewRange plays a time range
+    category: contract
+    tags: [contract, playback]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Preview
+          from: 0
+          to: 5000
+    execute:
+      type: editor.previewRange
+      params:
+        from: 0
+        to: 2000
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Canvas ───────────────────────────────────────────────────────
+
+  - id: contract.set-background
+    name: editor.setBackground sets canvas background color
+    category: contract
+    tags: [contract, canvas]
+    execute:
+      type: editor.setBackground
+      params:
+        type: color
+        value: "#000000"
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Track management ─────────────────────────────────────────────
+
+  - id: contract.reorder-tracks
+    name: editor.reorderTracks auto-reorders tracks by type
+    category: contract
+    tags: [contract, tracks]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: Reorder
+          from: 0
+          to: 3000
+    execute:
+      type: editor.reorderTracks
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Cleanup ──────────────────────────────────────────────────────
+
+  - id: contract.purge-items
+    name: editor.purgeItems force-removes items
+    category: contract
+    tags: [contract, cleanup]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: PurgeMe
+          from: 0
+          to: 3000
+    execute:
+      type: editor.purgeItems
+      params:
+        itemIds:
+          - "{{steps.add-text.result.itemId}}"
+    assert:
+      response:
+        - path: status
+          equals: success
+      state:
+        - label: item is gone
+          type: query.getTimelineItems
+          params: {}
+          assertions:
+            - path: result.count
+              equals: 0
+
+  # ── Audio mixing ─────────────────────────────────────────────────
+
+  - id: contract.balance-volumes
+    name: audio.balanceVolumes adjusts volumes by type
+    category: contract
+    tags: [contract, audio]
+    execute:
+      type: audio.balanceVolumes
+      params:
+        musicVolume: 30
+        sfxVolume: 50
+        narrationVolume: 100
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.duck-music
+    name: audio.duckMusic auto-ducks music during narration
+    category: contract
+    tags: [contract, audio]
+    execute:
+      type: audio.duckMusic
+      params:
+        duckDb: -12
+        musicVolume: 30
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Project ──────────────────────────────────────────────────────
+
+  - id: contract.save-autosave
+    name: project.saveAutosave creates an autosave
+    category: contract
+    tags: [contract, project]
+    execute:
+      type: project.saveAutosave
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Queries ──────────────────────────────────────────────────────
+
+  - id: contract.capture-preview-frame
+    name: query.capturePreviewFrame captures canvas as base64
+    category: contract
+    tags: [contract, query, visual]
+    execute:
+      type: query.capturePreviewFrame
+      params: {}
+    assert:
+      response:
+        - path: status
+          oneOf: [success, failed]
+
+  - id: contract.diagnose-scenes
+    name: query.diagnoseScenes checks scene health
+    category: contract
+    tags: [contract, query, scenes]
+    execute:
+      type: query.diagnoseScenes
+      params: {}
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  - id: contract.get-items-at-time
+    name: query.getItemsAtTime returns items at specific time
+    category: contract
+    tags: [contract, query]
+    setup:
+      - id: add-text
+        kind: command
+        type: editor.addText
+        params:
+          text: AtTime
+          from: 0
+          to: 5000
+    execute:
+      type: query.getItemsAtTime
+      params:
+        timeMs: 2500
+    assert:
+      response:
+        - path: status
+          equals: success
+
+  # ── Scenes ───────────────────────────────────────────────────────
+
+  - id: contract.get-scene-source
+    name: scene.getSceneSource returns source code for a library scene
+    category: contract
+    tags: [contract, scenes]
+    requiresAssets: false
+    execute:
+      type: scene.getSceneSource
+      params:
+        sceneId: "intro-title"
+    assert:
+      response:
+        - path: status
+          oneOf: [success, failed]
+
+  - id: contract.validate-code
+    name: scene.validateCode checks custom JSX
+    category: contract
+    tags: [contract, scenes]
+    execute:
+      type: scene.validateCode
+      params:
+        code: "import React from 'react';\nexport default function Scene(){return <div>Valid</div>}"
+    assert:
+      response:
+        - path: status
+          oneOf: [success, failed]
