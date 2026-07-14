@@ -45,7 +45,7 @@ tests:
     category: state
     tags: [state, scenes, add]
     notes: |
-      Agent should first call scene.listScenes to get a valid scene_id,
+      Agent should first call scene.listScenes to get a valid sceneId,
       then use that ID here. If no scenes are available, mark SKIP.
     setup:
       - id: list-scenes
@@ -56,7 +56,7 @@ tests:
     execute:
       type: scene.addLibraryScene
       params:
-        scene_id: "{{steps.list-scenes.result[0].id}}"
+        sceneId: "{{steps.list-scenes.result[0].id}}"
         from_ms: 0
         duration_ms: 5000
     assert:
@@ -117,7 +117,7 @@ tests:
         kind: command
         type: scene.addLibraryScene
         params:
-          scene_id: "{{steps.list-scenes.result[0].id}}"
+          sceneId: "{{steps.list-scenes.result[0].id}}"
           from_ms: 0
           duration_ms: 5000
     execute:

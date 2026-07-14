@@ -491,6 +491,7 @@ curl "http://127.0.0.1:$PORT/api/skills?q=animation" -H "Authorization: Bearer $
 | Read state, timeline, transcript | `queries-and-state` |
 | Save/load .skilltown project files | `project-files` |
 | **🎯 AI viral clipping pipeline** | **`ai-clipping`** — transcribe → score virality → extract clips → reframe → render |
+| **🎨 Creator style catalog** | **`creator-styles`** — browse 10 creator styles, preview `/styles/{styleId}`, inspect templates, apply role/order/type subsets, and compose multiple styles |
 | **📝 Script evaluation & writing** | **`script-evaluator`** — score scripts 0-100, rewrite hooks, write viral scripts |
 
 ## Architecture
@@ -1044,6 +1045,7 @@ These are commonly useful commands not covered in the core sections above:
 |---|---|
 | Scene catalog | `scene.listScenes`, `scene.getSceneProps`, `scene.getSceneSource`, `scene.previewCode`, `scene.validateCode` |
 | Scene creation | `scene.addLibraryScene`, `scene.addCustomScene`, `scene.addBundledScene`, `scene.updateSceneProps`, `template.buildFromJSON`, `editor.addTemplate` |
+| Creator styles | `scene.listStyles`, `scene.getStyle`, `scene.getStyleTemplate`, `scene.applyStyleTemplate`, `scene.applyStyleTemplateSubset`, `scene.composeStyles`, `style.getScenesByRole` |
 
 ### Content bridge and StoryStudio
 
@@ -1572,10 +1574,10 @@ Changes to `commandExecutor.ts` may not hot-reload — a page refresh in the Ele
 The commandExecutor accepts BOTH camelCase and snake_case for common params:
 - `from` / `from_ms` — timeline start time
 - `to` / `duration_ms` — timeline end (or start + duration)
-- `sceneId` / `scene_id` — scene template ID
+- `sceneId` — scene template ID; use camelCase in docs and examples
 - `durationMs` / `duration_ms` — duration in milliseconds
 - `sceneProps` / `props` — scene property overrides
-**Always prefer camelCase** (`from`, `durationMs`, `sceneId`) — snake_case is a fallback.
+**Always prefer camelCase** (`from`, `durationMs`, `sceneId`). Do not use snake_case scene template params in agent examples.
 
 ### Clearing a timeline
 `editor.deleteItems` may not work reliably for all items. The guaranteed way to clear everything:

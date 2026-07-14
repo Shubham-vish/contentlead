@@ -76,7 +76,7 @@ Fetch editable props for one scene. **Always call this before adding text overla
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `sceneId` | `string` | required | Scene template ID (alias: `scene_id`) |
+| `sceneId` | `string` | required | Scene template ID. Use camelCase in agent docs/examples. |
 
 The response includes an `inputSchema` string showing all available props and a `fields` array with details.
 
@@ -99,7 +99,7 @@ Add a pre-built scene to the timeline.
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `sceneId` | `string` | required | Template ID from `scene.listScenes` (alias: `scene_id`) |
+| `sceneId` | `string` | required | Template ID from `scene.listScenes`. Use camelCase in agent docs/examples. |
 | `from` | `number` | `0` | Timeline start time in ms (alias: `from_ms`) |
 | `durationMs` | `number` | scene default | Scene duration in ms (alias: `duration_ms`) |
 | `sceneProps` | `object` | `{}` | Prop overrides for the scene (alias: `scene_props`) |
@@ -399,11 +399,11 @@ Ensure scenes cover the FULL video duration. Gaps = white/empty frames visible i
 Plan contiguous ranges: 0-5s, 5-15s, 15-25s, etc. Verify with `GET /api/state`.
 
 ### Param naming
-The scene handler accepts both camelCase and snake_case:
-- `sceneId` / `scene_id` — both work
-- `durationMs` / `duration_ms` — both work  
-- `from` / `from_ms` — both work
-- `sceneProps` / `props` — both work
+Use camelCase in agent docs and examples:
+- `sceneId` — scene template ID
+- `durationMs` — duration in milliseconds
+- `from` — start time in milliseconds
+- `sceneProps` — scene prop overrides
 **Prefer camelCase** (`sceneId`, `durationMs`, `from`, `sceneProps`).
 
 ## Common Patterns / Recipes

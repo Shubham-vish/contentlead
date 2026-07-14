@@ -105,33 +105,144 @@ YouTube does NOT need cookies for public videos.
 
 ---
 
-## Desktop Bridge Endpoints (Alternative)
+## Desktop Bridge Endpoints (Full CRUD)
+
+All endpoints require `Authorization: Bearer <token>` from `~/.skilltown-desktop/api.json`.
+
+### Read Operations
 
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/bridge/inspiration/feed` | Browse a creator's content feed |
 | POST | `/api/bridge/inspiration/search` | AI-powered cross-platform search |
-| POST | `/api/bridge/inspiration/transcribe` | Transcribe a video by shortcode |
+| GET | `/api/bridge/inspiration/creators` | List all tracked creators |
+| GET | `/api/bridge/inspiration/niches` | List all niches (Pulse) |
+| GET | `/api/bridge/inspiration/niches/:slug` | Get a specific niche |
+| GET | `/api/bridge/inspiration/export` | Export items (JSON/CSV) |
 
-### Feed
+### Write Operations
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/bridge/inspiration/creators` | Add a new creator to track |
+| DELETE | `/api/bridge/inspiration/creators/:id` | Remove a tracked creator |
+| POST | `/api/bridge/inspiration/creators/refresh` | Refresh one creator's feed |
+| POST | `/api/bridge/inspiration/refresh-all` | Refresh ALL creators |
+| POST | `/api/bridge/inspiration/niches` | Create a new niche |
+| DELETE | `/api/bridge/inspiration/niches/:slug` | Delete a niche |
+| POST | `/api/bridge/inspiration/niches/:slug/refresh` | Refresh a niche |
+| POST | `/api/bridge/inspiration/transcribe` | Transcribe a single video |
+| POST | `/api/bridge/inspiration/transcribe-bulk` | Transcribe up to 10 videos |
+| POST | `/api/bridge/inspiration/items/update` | Update item metadata (transcript, notes, tags, aiSummary, aiHookScore) |
+| POST | `/api/bridge/inspiration/ai-output` | Push AI findings to the UI panel |
+
+### Examples
+
+#### Feed
 ```bash
-curl "http://127.0.0.1:$PORT/api/bridge/inspiration/feed?username=garyvee&limit=10" \
-  -H "Authorization: Bearer $TOKEN"
+curl "http://127.0.0.1:$PORT/api/bridge/inspiration/feed?username=garyvee&limit=10"   -H "Authorization: Bearer $TOKEN"
 ```
 
-### Search
+#### Search
 ```bash
-curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/search \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"context": "AI tools for content creators", "sources": ["instagram"]}'
+curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/search   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"context": "AI tools for content creators", "sources": ["instagram", "x", "youtube"]}'
 ```
 
-### Transcribe
+#### Bulk Transcribe (up to 10)
 ```bash
-curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/transcribe \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"shortcode": "C8xABcDeFgH"}'
+curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/transcribe-bulk   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"items": [{"shortcode": "C8xABC"}, {"shortcode": "D9yDEF"}]}'
 ```
+
+#### Add Creator
+```bash
+curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/creators   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"source": "instagram", "identifier": "mkbhd"}'
+```
+
+#### Update Items (AI metadata enrichment)
+```bash
+curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/items/update   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"items": [{"id": "userId__shortcode", "aiSummary": "Tutorial on...", "aiHookScore": 85, "tags": ["tutorial", "AI"]}]}'
+```
+
+#### Push AI Findings to UI Panel (markdown)
+```bash
+curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/ai-output \
+  -H "Authorization: ******" -H "Content-Type: application/json" \
+  -d '{"title": "Viral Hook Analysis", "format": "markdown",
+       "content": "## Top Patterns\n| Hook | Count |\n|---|---|\n| Question | 5 |",
+       "context": {"page": "explore", "query": "AI tools", "itemCount": 12},
+       "actions": [{"id": "select", "label": "Select Top", "type": "select-items", "payload": {"itemIds": ["id1"]}}]}'
+```
+
+#### Push Full-Page HTML (opens in expanded dialog with zoom/pan)
+```bash
+curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/ai-output \
+  -H "Authorization: ******" -H "Content-Type: application/json" \
+  -d '{"title": "📊 Analytics Dashboard", "format": "fullpage",
+       "content": "<!DOCTYPE html><html><head><style>body{background:#0f0f23;color:#e2e8f0;font-family:system-ui}.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px}</style></head><body><h1>Dashboard</h1><div class=\"card\">Rich HTML content here</div></body></html>",
+       "context": {"page": "feed", "itemCount": 100},
+       "actions": [{"id": "export", "label": "📥 Export", "type": "export", "payload": {}}]}'
+```
+
+#### Push Inline HTML Snippet (renders in-card)
+```bash
+curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/ai-output \
+  -H "Authorization: ******" -H "Content-Type: application/json" \
+  -d '{"title": "🎨 KPI Cards", "format": "html",
+       "content": "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:8px\"><div style=\"background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:10px;padding:12px;color:white\"><div style=\"font-size:24px;font-weight:800\">29.5M</div><div style=\"font-size:10px\">Total Views</div></div></div>",
+       "context": {"page": "feed"}}'
+```
+
+---
+
+## AI Findings Panel
+
+The AI can push rich analysis results directly into the app UI. Users see findings in the **Findings** rail panel (Brain icon) on all 3 pages (/inspiration, /explore, /pulse).
+
+### How it works
+1. AI calls `POST /api/bridge/inspiration/ai-output` with markdown/HTML content
+2. Web app stores the finding (in-memory, max 50 per user)
+3. FindingsPanel polls every 5s and renders new cards
+4. User sees: title, context bar, rendered markdown, action buttons, pin/copy/dismiss
+5. Unread badge appears on Brain icon until user opens the panel
+
+### Finding format
+```json
+{
+  "title": "string (required)",
+  "content": "markdown or HTML string (required, max 100KB; 500KB for fullpage)",
+  "format": "markdown | html | json | fullpage",
+  "context": {"page": "explore|pulse|feed", "query": "...", "itemCount": 12},
+  "actions": [
+    {"id": "unique", "label": "Button text", "type": "select-items|export|save-reference|copy|custom", "payload": {"itemIds": [...]}}
+  ],
+  "sessionId": "optional group ID"
+}
+```
+
+### Format types
+| Format | Behavior | Max Size |
+|--------|----------|----------|
+| `markdown` | Rendered inline via ReactMarkdown + GFM tables/code | 100KB |
+| `html` | Rendered inline via `dangerouslySetInnerHTML` (styled snippets) | 100KB |
+| `json` | Rendered as formatted JSON | 100KB |
+| `fullpage` | Shows preview card in panel; click opens **expanded dialog** (90vw×85vh) with sandboxed iframe | 500KB |
+
+### Expanded dialog features
+- **Fullpage findings** auto-open in a large dialog with toolbar (Export, New Tab, Copy, Close)
+- **Any finding** can be expanded via the "Expand" link on each card
+- **Zoom/Pan**: Ctrl+Scroll to zoom (cursor-centered), Space+Drag to pan, Double-click to reset
+- **New Tab**: Opens content in a standalone browser window with same zoom/pan + themed scrollbar
+- **Markdown findings** get ZoomPanViewport (same as /learn pages)
+- **HTML/fullpage findings** render in a sandboxed iframe with themed scrollbar injected
+
+### Action types
+| Type | Behavior |
+|------|----------|
+| `select-items` | Dispatches selection event with `payload.itemIds` |
+| `export` | Downloads the finding content as `.md` file |
+| `copy` | Copies `payload.text` (or full content) to clipboard |
+| `save-reference` | Dispatches event to save to reference library |
+| `custom` | Dispatches generic event with full payload |
 
 ---
 
