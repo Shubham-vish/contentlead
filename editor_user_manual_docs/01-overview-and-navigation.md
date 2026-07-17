@@ -45,7 +45,7 @@ The center canvas plays your project exactly as it will render.
 
 - Press **Space** (or the play control in the top bar) to play/pause.
 - Use the **Go to start** control in the top bar to jump the playhead back to the beginning.
-- Select any item directly on the canvas to move, resize, or rotate it, and to open its **properties panel** on the right.
+- Select any item directly on the canvas to move, resize, or rotate it, and to open its **properties panel** on the right. For handles, rotation, snapping guides, and drag-and-drop onto the preview, see [Canvas Editing](16-canvas-editing.md).
 
 ## The properties panel (right side)
 
@@ -105,3 +105,5 @@ The right panel can also be **popped out** into a floating window and **pinned**
 - [Transitions](12-transitions.md)
 - [Exporting & Versions](13-export-and-versions.md)
 - [Keyboard Shortcuts](14-keyboard-shortcuts.md)
+- [Right-click Menus](15-right-click-menus.md)
+- [Canvas Editing](16-canvas-editing.md)
