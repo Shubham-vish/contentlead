@@ -27,6 +27,8 @@ You can also work from the timeline. When two supported clips touch on the same 
 
 ## How to browse available transitions
 
+![The Effects tab open, showing the Transitions panel.](images/panel-effects.png)
+
 1. Click the **Effects** tab in the menu panel (the panel opens headed **Transitions**).
 2. Review the preview cards. Each card shows an animated thumbnail and a label.
 3. Use the card names to decide the direction or reveal style you want before applying it on the timeline.

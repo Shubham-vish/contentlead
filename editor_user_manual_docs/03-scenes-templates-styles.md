@@ -33,6 +33,8 @@
 
 ## How to browse and preview the scene library
 
+![The Scenes panel with category chips (Charts, Motion BG, Layout, Text, Data Viz, Effects, …) and scene cards with Preview, Add, and Code.](images/panel-scenes.png)
+
 1. Click **Scenes** in the menu panel.
 2. Make sure the **Library** tab is selected.
 3. Use **Search scenes...** to find a scene by name, description, category, tag, or best use.
@@ -55,6 +57,8 @@
 You can also use **Add to Timeline** from the fullscreen preview.
 
 ## How to apply a full style
+
+![The Styles panel with the Common and My Styles tabs and creator-style cards showing scene counts and tags.](images/panel-styles.png)
 
 1. Click **Styles** in the menu panel.
 2. Choose **Common** for curated creator styles, or **My Styles** for styles you saved.

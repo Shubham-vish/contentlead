@@ -294,6 +294,8 @@ The panel notes **Preview is live · also applied during export** and **Set trac
 
 ## How to add sound effects
 
+![The SFX panel for searching and adding sound effects.](images/panel-sfx.png)
+
 1. Open **SFX** in the menu panel. The panel heading is **Sound Effects**.
 2. Use **Library** for built-in SFX, or **My Sounds** for your uploaded effects.
 3. In **Library**, search with **Search...** and filter by **All**, **UI**, **Impacts**, **Transitions**, **Notifications**, **Music**, or **Foley**.

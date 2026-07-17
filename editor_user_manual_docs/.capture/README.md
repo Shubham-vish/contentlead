@@ -41,7 +41,8 @@ states.
 
 - Crop boxes are tuned for the standard editor layout. If the layout changes, adjust the fractions
   in `capture.py`.
-- There is no single "open left-rail tab" command, so panels reached only by clicking a left-rail
-  tab (e.g. the Upload / SFX list views) are not captured here — everything reachable via item
-  selection and content actions is.
+- Left-rail panels are opened programmatically with the `ui.openTab` editor command (added to the
+  SkillTown command executor). The `ai` tab opens a left-side panel and is not auto-cropped here.
 - These are real UI screenshots from a live editor, not generated art.
+- Some panels load their content asynchronously (e.g. SFX, stock media). If a panel looks like it is
+  still loading, increase the `time.sleep(...)` before its capture in `capture.py`.

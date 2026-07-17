@@ -37,6 +37,8 @@ Click a tab once to open its panel. Click the same active tab again to close it.
 
 ## How to upload files
 
+![The Upload tab open, showing the Media Library with the Upload button and Add from Library.](images/panel-uploads.png)
+
 1. Open **Upload**.
 2. Click **Upload**. The **Upload media** dialog opens.
 3. Either drag files into the area labeled **Drag and drop files here, or** or click **browse files**.
@@ -87,6 +89,8 @@ If **Editor Uploads** is empty, the panel says **No editor uploads yet** and **U
 
 ## How to search and browse stock images
 
+![The stock Images (Photos) panel with the Pexels search box and image cards showing dimensions, author, and Add to Timeline.](images/panel-image.png)
+
 1. Open **Image**. The panel heading is **Photos**.
 2. The editor loads curated Pexels images automatically.
 3. Type a search in **Search Pexels images...** and press Enter or click the search button.
@@ -98,6 +102,8 @@ If **Editor Uploads** is empty, the panel says **No editor uploads yet** and **U
 The image cards can show resolution, photographer credit, and an **IMG** badge.
 
 ## How to search and browse stock videos
+
+![The stock Videos panel with the Pexels search box and video cards showing dimensions, author, fps, and duration.](images/panel-video.png)
 
 1. Open **Video**. The panel heading is **Videos**.
 2. The editor loads popular Pexels videos automatically.
@@ -136,6 +142,8 @@ Uploaded audio files also appear in **Upload** under **Audio**. Click **Add to T
 
 ## How to add shapes, stickers, visualizers, and progress bars
 
+![The Shapes (Elements) panel with All/Stickers/Shapes/Visualizers pills and sections for Shapes, Visualizers, and Progress Bars.](images/panel-shapes.png)
+
 1. Open **Shapes**. The panel heading is **Elements**.
 2. Use the category pills **All**, **Stickers**, **Shapes**, and **Visualizers**.
 3. In the main view, browse these sections:
@@ -156,6 +164,8 @@ Uploaded audio files also appear in **Upload** under **Audio**. Click **Add to T
 Shapes are added as 5-second items. Progress bars, progress frames, and audio visualizers are added as 10-second items. These element items are inserted at the start of the timeline.
 
 ## How to use the brand kit
+
+![The Brand Kit panel with Create New Kit and the empty-state prompt to save reusable colors, fonts, and logos.](images/panel-brand.png)
 
 1. Open **Brand**. The panel heading is **Brand Kit**.
 2. Under **Create new kit**, enter a name such as **Acme Brand** and click **Create**.

@@ -2,5 +2,15 @@
   "editor-overview": "Full editor with nothing selected",
   "properties-video": "Video Settings properties panel",
   "properties-caption": "Caption properties panel",
-  "multi-select-timeline": "Multiple items selected on the timeline"
+  "multi-select-timeline": "Multiple items selected on the timeline",
+  "panel-uploads": "Upload / Media Library panel",
+  "panel-styles": "Styles panel",
+  "panel-text": "Text panel",
+  "panel-video": "Video library panel",
+  "panel-image": "Image library panel",
+  "panel-shapes": "Shapes panel",
+  "panel-effects": "Effects panel",
+  "panel-sfx": "SFX panel",
+  "panel-scenes": "Scenes panel",
+  "panel-brand": "Brand kit panel"
 }

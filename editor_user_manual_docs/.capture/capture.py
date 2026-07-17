@@ -189,6 +189,34 @@ def main():
 
     execute("editor.deselectAll")
 
+    # --- State F: left-rail menu panels (via ui.openTab) ---
+    # Panels reachable only by clicking a left-rail tab. Each opens on the
+    # right side (same region as the properties panel). The AI tab opens a
+    # left-side panel and is skipped here.
+    panel_tabs = [
+        ("uploads", "panel-uploads", "Upload / Media Library panel"),
+        ("styles", "panel-styles", "Styles panel"),
+        ("texts", "panel-text", "Text panel"),
+        ("videos", "panel-video", "Video library panel"),
+        ("images", "panel-image", "Image library panel"),
+        ("shapes", "panel-shapes", "Shapes panel"),
+        ("transitions", "panel-effects", "Effects panel"),
+        ("sfx", "panel-sfx", "SFX panel"),
+        ("scenes", "panel-scenes", "Scenes panel"),
+        ("brand-kit", "panel-brand", "Brand kit panel"),
+    ]
+    for tab, out, desc in panel_tabs:
+        r = execute("ui.openTab", {"tab": tab})
+        if r.get("status") != "success":
+            continue
+        time.sleep(1.8)
+        src = "_panel_" + tab.replace("-", "_")
+        shot(src)
+        crop(src, out, (0.765, 0.072, 0.955, 0.985))
+        manifest[out] = desc
+        print(f"✓ {tab} panel")
+    execute("ui.closePanel")
+
     # write manifest
     with open(os.path.join(IMAGES_DIR, "manifest.json"), "w") as f:
         json.dump(manifest, f, indent=2)
