@@ -486,7 +486,7 @@ curl "http://127.0.0.1:$PORT/api/skills?q=animation" -H "Authorization: Bearer $
 | Apply/remove images & captions | `content-bridge` |
 | **📚 Creator Hub** (articles, folders, publish) | **`hub`** — manage knowledge hub content via bridge API |
 | Save, export, resize, tracks | `project-and-export` |
-| **AI image generation, vision, TTS** | `prepwithai/SKILL` |
+| **AI image generation, vision, transcription** | `ai-media/SKILL` |
 | **Transcribe video + Hinglish captions** | `transcription-and-editing` (Firebase polling + Latin transliteration) |
 | Read state, timeline, transcript | `queries-and-state` |
 | Save/load .skilltown project files | `project-files` |
@@ -1161,16 +1161,16 @@ Returns available presets and all currently applied transitions.
 - Use `query.listTransitions` first to see what's already applied before adding more
 - Removing a transition reverts to a hard cut (no gap created)
 
-## 🤖 AI Content Generation (PrepWithAI)
+## 🤖 AI Media Generation (`ai-media`)
 
-The agent has access to **PrepWithAI MCP tools** for AI-powered content creation:
+The agent has access to AI media tools (exposed via MCP domain `prepwithai`) for:
 
 - **Image generation** — Generate images from text prompts (Gemini), add to timeline
 - **Video frame analysis** — Extract frames with ffmpeg, analyze to understand content, create matching scenes
-- **Text-to-speech** — Generate voiceovers with Minimax TTS
+- **Transcription with speakers** — Word-level speaker-tagged transcripts (hybrid Whisper + GPT-4o diarize)
 - **Content-aware editing** — Analyze video frames → understand topics → create contextual intros/transitions/outros
 
-Load the `prepwithai/SKILL` skill for full documentation, workflows, and examples.
+Load the `ai-media/SKILL` skill for full documentation, workflows, and examples.
 
 ## 🎬 Creative Approach — Think Like a Video Editor
 

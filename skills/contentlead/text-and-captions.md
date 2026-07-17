@@ -100,3 +100,61 @@ Find and replace text across all text/caption items on the timeline.
 }}
 ```
 **Returns:** `{ replacedCount, items }` — number of items modified.
+
+## Caption inline-edit keyboard shortcuts
+
+When a caption is in inline edit mode (double-click a selected caption), each word is a
+separate editable token (green outline = focused word). Shortcuts:
+
+| Key | Action |
+|-----|--------|
+| **Enter** | **Commit / finish editing** (saves text + timing, exits edit mode). IME-safe: while composing Devanagari/other scripts, Enter confirms the IME candidate instead. |
+| **⌘/Ctrl+Enter** | Also commits (same as Enter). |
+| **Esc** | Cancel — discard edits, exit edit mode. |
+| **Tab** / **Shift+Tab** | Move to next / previous word. From the last word, Tab jumps to the Done button. |
+| **→ / ←** | Move to next/prev word only when the caret is at the end/start of the current word; otherwise normal caret movement. |
+| **Backspace** (empty word) | Delete that word token, focus the previous one. |
+| **Space** | Split the current word into two tokens at the caret. |
+| Click outside / **Done** button | Commit (same as Enter). |
+
+Source: `player/caption-inline-editor/` — `CaptionInlineEditor.tsx` (root `onKeyDownCapture`
+handles Enter=commit + Esc=cancel), `CaptionWordToken.tsx` (Tab/arrow word navigation),
+`CaptionEditToolbar.tsx` (Done ↵ / Cancel buttons).
+
+## Scene-backed text templates (high-fidelity styling)
+
+Text items stay editable (`type:"text"` — inline edit, toolbar, timeline, `setAnimation` all
+still work), but when `details.sceneTemplate` is set they render through a parameterized,
+high-fidelity Remotion text-scene template instead of the flat text box. Use this whenever
+plain text looks basic and you want scene-quality typography + animation.
+
+Set via `editor.addText` or `editor.editItem` on `details`:
+```json
+{ "type": "editor.editItem", "params": {
+  "itemId": "text_abc",
+  "updates": { "details": {
+    "sceneTemplate": "heroStack",
+    "accentColor": "#e0783f",
+    "sceneParams": { "stagger": 3, "scrim": true }
+  }}
+}}
+```
+
+### Templates
+- **`heroStack`** — stacked multi-size italic serif (white by default, `color`), word-by-word
+  spring rise + blur-in. Signature "sky-serif" hero look: use `textAlign:"left"` + lower-left
+  `top`/`left` placement, mixed `fontSize` per item, and time overlapping items to build an
+  accumulating stack. Params: `scales[]`, `stagger`, `scrim`(bool, default OFF), `scrimColor`.
+- **`keywordCallout`** — phrase in a solid rounded box, spring pop-in + slight rotate, optional
+  kicker label. Params: `label`, `boxColor`, `useAccentBox`(bool), `radius`, `rotate`.
+  Best for punchy keywords ("1 prompt").
+- **`wordReveal`** — words rise one-by-one from a clip mask on a spring stagger, optional
+  accent-colored highlighted words. Params: `stagger`, `highlight[]` (words to accent), `rise`.
+  Best for phrase reveals ("to do this", 'comment "Brain"').
+
+### Notes
+- `accentColor` (top-level detail) drives highlights / accent box; item `color` is the base.
+- Editing text inline temporarily falls back to plain MotionText; template resumes on blur.
+- Only items WITH `sceneTemplate` change behavior — zero impact on existing text items.
+- Source module: `player/text-scenes/` (registry.ts, HeroStack/KeywordCallout/WordReveal.tsx,
+  TextSceneRenderer.tsx). Add new templates by registering in `registry.ts`.

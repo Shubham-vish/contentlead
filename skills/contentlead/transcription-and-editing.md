@@ -103,112 +103,72 @@ but for a long clip you can tail the job file to watch progress. Shape:
 Poll `steps.transcribe.progress` (0–100) for the slow transcription phase. On failure,
 the failing step gets `{ done: false, error: "..." }` and top-level `status: "failed"`.
 Use `query.getTranscriptionStatus` (below) as the reload-safe status source.
+### Option A (recommended): MCP + auto-tracked job
 
-> Requires `PREPWITHAI_API_SECRET` configured on the desktop app. If you need full
-> control (custom upload, multi-language merge, manual word filtering), use the manual
-> pipeline in Option A / Option B instead.
-
-### Option A: MCP Transcription (recommended for long videos)
+Fire-and-forget with real-time push tracking. No polling. No secrets. Works
+from any AI CLI on any machine — the desktop app owns Firebase auth via cookies.
 
 ```bash
-# 1. Extract audio
-ffmpeg -i /path/to/video.mp4 -vn -acodec aac -b:a 128k /tmp/audio.m4a
+PORT=$(node -e "console.log(require(require('os').homedir()+'/.skilltown-desktop/api.json').port)")
+TOKEN=$(node -e "console.log(require(require('os').homedir()+'/.skilltown-desktop/api.json').token)")
+API=http://127.0.0.1:$PORT
 
-# 2. Upload audio to get a URL
-# Use prepwithai_asset_rehost MCP tool to upload to Azure blob storage
-
-# 3. Transcribe via MCP
-# Use prepwithai_transcribe_long tool with:
-#   - audio_url: the uploaded URL
-#   - language: "hi" (Hindi/Hinglish), "en" (English), etc.
-#   - Returns: word-level timestamps, full text, SRT
-
-# 4. Save transcript for editing
-# Save word timestamps to /tmp/transcript_words.json
-```
-
-### Option B: Pipeline API (no MCP — use from CLI/scripts)
-
-Use this when MCP tools aren't available (CLI agents, scripts, automation).
-
-#### Step 1 — Extract audio
-```bash
+# 1. Extract audio (only step the AI does locally)
 ffmpeg -y -i /path/to/video.mp4 -vn -acodec libmp3lame -b:a 128k /tmp/audio.mp3
-```
 
-#### Step 2 — Upload audio to get a PUBLIC URL
+# 2. Upload via MCP (Azure blob under the hood — no manual SAS/keys needed)
+AUDIO_URL=$(curl -sX POST $API/api/mcp/call \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"domain":"prepwithai","tool":"prepwithai_asset_rehost",
+        "args":{"source":"/tmp/audio.mp3","kind":"audio"}}' \
+  | jq -r '.content.result | fromjson | .url')
 
-The `analyze_audio` backend pulls audio from a URL — **localhost won't work**.
-Upload to Azure Blob (`prepwithai` storage account, `global-assets` container) with a SAS token:
+# 3. Kick off transcription — returns immediately with a trackingUrl
+RESP=$(curl -sX POST $API/api/mcp/call \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d "{\"domain\":\"prepwithai\",\"tool\":\"prepwithai_transcribe_long\",
+       \"args\":{\"audio_url\":\"$AUDIO_URL\",\"language\":\"hi\",
+                    \"content_id\":\"content_<your-id>\"}}")
+JOB=$(echo "$RESP" | jq -r .trackingUrl)     # e.g. /api/jobs/<process_id>
 
-```python
-from azure.storage.blob import BlobServiceClient, BlobSasPermissions, generate_blob_sas
-from datetime import datetime, timedelta, timezone
-import os
-
-# Connection string from /Users/shubham/Codes/SkillTown/.env → AZURE_STORAGE_CONNECTION_STRING
-conn_str = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
-account_name = "prepwithai"
-account_key = conn_str.split("AccountKey=")[1].split(";")[0]
-container = "global-assets"
-blob_name = f"transcription/audio_{int(datetime.now().timestamp())}.mp3"
-
-bsc = BlobServiceClient.from_connection_string(conn_str)
-with open("/tmp/audio.mp3", "rb") as f:
-    bsc.get_container_client(container).upload_blob(name=blob_name, data=f, overwrite=True)
-
-sas = generate_blob_sas(
-    account_name=account_name, container_name=container, blob_name=blob_name,
-    account_key=account_key,
-    permission=BlobSasPermissions(read=True),
-    expiry=datetime.now(timezone.utc) + timedelta(hours=4),
-)
-audio_url = f"https://{account_name}.blob.core.windows.net/{container}/{blob_name}?{sas}"
-print(audio_url)
-```
-
-#### Step 3 — Start transcription (async, returns immediately)
-
-The `x-api-secret` is `PREPWITHAI_API_SECRET` from `/Users/shubham/Codes/SkillTown/.env`.
-
-```bash
-SECRET="<PREPWITHAI_API_SECRET>"
-curl -X POST "https://api.prepwithai.in/api/analyze_audio" \
-  -H "Content-Type: application/json" \
-  -H "x-api-secret: $SECRET" \
-  -d "{\"audio_url\": \"$AUDIO_URL\", \"language\": \"hi\"}"
-# Returns: { "status": "processing", "process_id": "...", "firebase_path": "content/.../audio_transcriptions/..." }
-```
-
-> ⚠️ **Cache key is `audio_url` only — `language` is NOT part of the cache.** Re-uploading the same audio with a different language param returns the cached first-language transcription. To get multiple language passes, upload with **different blob names** (e.g., append `_pass2.mp3`).
-
-#### Step 4 — Poll Firebase Realtime DB for the result (CRITICAL!)
-
-The REST endpoint keeps returning `"processing"` — the actual result lands in Firebase Realtime DB.
-**No auth needed** — the path has public read access.
-
-```bash
-DB_URL="https://tradingleadv2-default-rtdb.firebaseio.com"
-FB_PATH="<firebase_path from step 3>"   # e.g. "content/anonymous/default/audio_transcriptions/anonymous__audio__..."
-
-# Poll until result.complete_transcription.words exists
+# 4a. Poll the cached snapshot (0ms latency — reads from desktop memory, not Firebase)
 while true; do
-  result=$(curl -s "$DB_URL/$FB_PATH/result.json")
-  if [ "$result" != "null" ] && [ -n "$result" ]; then
-    echo "$result" > /tmp/transcript.json
-    echo "Transcription complete"
-    break
-  fi
-  echo "Still processing..."
+  STATUS=$(curl -s $API$JOB -H "Authorization: Bearer $TOKEN" | jq -r .status)
+  echo "[$(date +%T)] $STATUS"
+  [ "$STATUS" = "complete" ] && break
+  [ "$STATUS" = "failed" ] && exit 1
   sleep 5
 done
+
+# 4b. OR subscribe to the SSE stream (real-time push, no polling)
+curl -N -s $API$JOB/stream -H "Authorization: Bearer $TOKEN"
+
+# 5. Read the finished transcript from the cached snapshot
+curl -s $API$JOB -H "Authorization: Bearer $TOKEN" \
+  | jq '.snapshot.result | {full_text, srt: .srt_content, words: .complete_transcription.words}' \
+  > /tmp/transcript.json
 ```
 
-You can also watch progress (percentage):
-```bash
-curl -s "$DB_URL/$FB_PATH/progress.json"
-# { "completed_chunks": 1, "percentage": 100.0, "total_chunks": 1, ... }
-```
+**How the tracking works** (you never need to touch Firebase directly):
+
+1. `prepwithai_transcribe_long` returns `{process_id, firebase_path}` and the MCP proxy
+   auto-subscribes to that Firebase path via native SSE (`Accept: text/event-stream`).
+2. Every progress push from the backend lands in an in-memory cache on the desktop.
+3. `GET /api/jobs/:id` serves that cache in <1 ms — no external calls.
+4. When the backend writes `result.complete_transcription`, the job is auto-marked
+   `complete`, the upstream stream is closed, and the cache stays for 1 hour.
+5. Same pattern works for ANY future backend job that writes to a Firebase path —
+   register manually via `POST /api/jobs/subscribe {kind, firebase_path}`.
+
+**Other job endpoints** (all under `Authorization: Bearer $TOKEN`):
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/jobs` | List all tracked jobs (`?status=in_progress` to filter) |
+| `GET /api/jobs/:id` | Full cached snapshot for one job |
+| `GET /api/jobs/:id/stream` | SSE stream of live updates (real-time push) |
+| `POST /api/jobs/subscribe` | Manually track a Firebase path `{kind, firebase_path}` |
+| `DELETE /api/jobs/:id` | Unsubscribe + drop cache |
 
 ### Transcript Data Format
 
