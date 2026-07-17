@@ -28,6 +28,7 @@ New to the editor? Start with **[Overview & Navigation](01-overview-and-navigati
 | 12 | [Transitions](12-transitions.md) | Browse and add transitions between clips, and change transition style and duration. |
 | 13 | [Exporting, Rendering & Versions](13-export-and-versions.md) | Save the project, choose export settings, export and download, track render progress, and restore versions. |
 | 14 | [Keyboard Shortcuts](14-keyboard-shortcuts.md) | Every registered shortcut, grouped by category, plus how to view and customize them. |
+| 15 | [Right-click Menus](15-right-click-menus.md) | Every right-click action and submenu — arrange, compose to scene, transform, speed, volume, transitions, face track, copy/paste style, transcribe, and empty-area menus. |
 
 ## How these docs are written
 
