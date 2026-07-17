@@ -124,6 +124,8 @@ Number controls have both a slider and a typed value; drag the slider or type a 
 
 Select an image. The panel title is **Image Settings** (bulk: **Images (n selected)** / **Editing all n images**).
 
+![Image Settings — Design tab: Scale (Fit), Lock Ratio, Opacity, Radius, Blur, Brightness, per-side Crop, and Border & Shadow.](images/explore-image-design.png)
+
 **Design tab**
 
 | Section | Controls |
@@ -186,6 +188,8 @@ The clip and audio toggles show helpful tooltips: **Clip is OFF — invisible & 
 
 Select an audio item. The panel title is **Audio Settings**.
 
+![Audio Settings — Basic tab: Source, GAIN meter, Volume, Active/Audio toggles, Track role (auto-duck) Default/Voice/Music, Live Meter, and Loudness.](images/explore-audio-default.png)
+
 **Basic tab**
 
 | Section / control | What it does |
@@ -227,6 +231,8 @@ Select a shape. The panel uses the **Design** and **Effects** tabs.
 
 Select a text item. The panel uses **Design**, **Animate**, and **Effects** tabs.
 
+![Text Settings — Design tab: Preset, Font, Weight, Size, Color, Fill, Gradient, Align, Case, Decoration, Opacity, and Typography.](images/explore-text-design.png)
+
 **Design tab**
 
 - **Text Style** — the main typography section, with **Reset Style** to restore defaults. Controls include **Styles** (font family), **Size**, **Typography**, **Line Height**, **Letter Spacing**, **Word Spacing**, **Border Radius**, **Rotation**, **Weight**, **Decoration**, and **Case** (**As typed**, **Uppercase**, **Lowercase**). Alignment offers **Left**, **Center**, **Right**. **Blend Mode** and **Background Color** are also here.
@@ -241,6 +247,8 @@ Select a text item. The panel uses **Design**, **Animate**, and **Effects** tabs
 ## How to edit caption properties
 
 Select a caption. The panel uses **Transcript**, **Content**, **Design**, **Animate**, and **Effects** tabs.
+
+![Caption Settings — Content tab: Words/Lines toggle, preset search, live preview, and the caption-style preset gallery.](images/explore-caption-content.png)
 
 | Tab | Contents |
 |---|---|
@@ -390,6 +398,8 @@ For automatic cutouts, open **AI Auto Matting**. It notes **Requires the Desktop
 
 ## How to use the 3D Camera and Zoom to Spot
 
+![Video Settings — Camera tab: Color Keying (Chroma), AI Auto Matting, 3D Camera, and Zoom to Spot.](images/properties-video-camera.png)
+
 Open **3D Camera** (Camera/Effects tab). Turn it on with **Toggle 3D Camera on**, then **Pick a movement** from the presets and refine under **Your moves**:
 
 Movement presets: **Orbit Right**, **Orbit Left**, **Tilt Up**, **Tilt Down**, **Push In**, **Pull Out**, **Dramatic**, **Hover**, **Ken Burns**, **Slide Right**, **Slide Left**, **Hold / Pause**. Apply modes **Replace** or **Append**. Fine controls cover **Scale**, **Rotation**, **Position**, and **Focus**, with **Reset**, **Undo**, and **Redo**.
@@ -409,6 +419,8 @@ Open **Face Track** (video). It explains **Detect faces and auto-pan the crop wi
 | **Remove** | Clears tracking. |
 
 ## How to add and tune animations
+
+![Video Settings — Animate tab: Animations (Animation, Entry Animation, Exit Animation).](images/properties-video-animate.png)
 
 Open **Animations** (Animate/Effects tab). It has **In**, **Loop**, and **Out** tabs; each shows preset thumbnails plus **None**. When several items are selected with different settings it shows **Multiple**. Duration sliders are **Animation In Duration**, **Animation Out Duration**, and **Animation Loop Duration**.
 

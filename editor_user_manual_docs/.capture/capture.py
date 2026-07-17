@@ -28,6 +28,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 IMAGES_DIR = os.path.normpath(os.path.join(HERE, "..", "images"))
 API_FILE = os.path.expanduser("~/.skilltown-desktop/api.json")
 
+# Crop box (fractions) for the right-side item Properties panel. The panel's
+# left edge sits at ~0.688 of the retina window width; give a little margin.
+PROP_BOX = (0.678, 0.088, 0.958, 0.985)
+
 
 def load_api():
     with open(API_FILE) as f:
@@ -111,6 +115,52 @@ def first_of(items, *types):
     return None
 
 
+def capture_temp_items(manifest):
+    """Add a text, image, and audio item, capture their Design/Basic panels,
+    then delete them so the project is left unchanged."""
+    added = []
+
+    def add_capture(cmd, params, itype, out, desc):
+        before = {i["id"] for i in get_items()}
+        r = execute(cmd, params)
+        if r.get("status") != "success":
+            return
+        time.sleep(2.0)
+        new = [i["id"] for i in get_items() if i["id"] not in before]
+        if not new:
+            print(f"  ! no new item for {cmd}")
+            return
+        nid = new[0]
+        added.append(nid)
+        execute("editor.deselectAll")
+        execute("editor.select", {"itemIds": [nid]})
+        time.sleep(1.5)
+        if itype in ("text", "image"):
+            execute("ui.setPropertiesTab", {"tab": "design", "type": itype})
+            time.sleep(1.2)
+        src = f"_tmp_{itype}"
+        shot(src)
+        crop(src, out, PROP_BOX)
+        manifest[out] = desc
+        print(f"✓ temp {itype} panel")
+
+    add_capture("editor.addText",
+                {"text": "Sample heading", "from_ms": 0, "duration_ms": 4000, "fontSize": 80},
+                "text", "explore-text-design", "Text Settings — Design tab")
+    add_capture("editor.addImage",
+                {"url": "https://picsum.photos/id/237/1200/800", "from_ms": 0, "duration_ms": 4000},
+                "image", "explore-image-design", "Image Settings — Design tab")
+    add_capture("editor.addAudio",
+                {"url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+                 "from_ms": 0, "duration_ms": 6000},
+                "audio", "explore-audio-default", "Audio Settings — Basic tab")
+
+    if added:
+        execute("editor.deselectAll")
+        execute("editor.deleteItems", {"itemIds": added})
+        print(f"✓ cleaned up {len(added)} temp items")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--navigate", metavar="CONTENT_ID", default=None)
@@ -151,19 +201,45 @@ def main():
         time.sleep(1.5)
         shot("_sel_video")
         crop("_sel_video", "canvas-selection-handles", (0.44, 0.06, 0.75, 0.70))
-        crop("_sel_video", "properties-video", (0.765, 0.072, 0.945, 0.985))
+        crop("_sel_video", "properties-video", PROP_BOX)
         manifest["properties-video"] = "Video Settings properties panel"
         print("✓ video selected + panel")
 
-    # --- State C: caption item selected -> Caption/Text panel ---
+        # Properties inner tabs (Design / Animate / Effects / Camera).
+        for sub in ("design", "animate", "effects", "camera"):
+            r = execute("ui.setPropertiesTab", {"tab": sub, "type": "video"})
+            if r.get("status") != "success":
+                continue
+            time.sleep(1.5)
+            src = f"_sel_video_{sub}"
+            shot(src)
+            out = f"properties-video-{sub}"
+            crop(src, out, PROP_BOX)
+            manifest[out] = f"Video properties — {sub.capitalize()} tab"
+            print(f"✓ video properties {sub} tab")
+        # Reset to Design for a clean default state.
+        execute("ui.setPropertiesTab", {"tab": "design", "type": "video"})
+
+    # --- State C: caption item selected -> Caption panel + key tabs ---
     if caption_id:
         execute("editor.deselectAll")
         execute("editor.select", {"itemIds": [caption_id]})
         time.sleep(1.5)
         shot("_sel_caption")
-        crop("_sel_caption", "properties-caption", (0.765, 0.072, 0.945, 0.985))
+        crop("_sel_caption", "properties-caption", PROP_BOX)
         manifest["properties-caption"] = "Caption properties panel"
-        print("✓ caption selected + panel")
+        for sub, out in (("content", "explore-caption-content"),
+                         ("effects", "explore-caption-effects")):
+            r = execute("ui.setPropertiesTab", {"tab": sub, "type": "caption"})
+            if r.get("status") != "success":
+                continue
+            time.sleep(1.4)
+            src = f"_cap_{sub}"
+            shot(src)
+            crop(src, out, PROP_BOX)
+            manifest[out] = f"Caption properties — {sub.capitalize()} tab"
+        execute("ui.setPropertiesTab", {"tab": "transcript", "type": "caption"})
+        print("✓ caption selected + tabs")
 
     # --- State D: image item selected -> Image panel ---
     if image_id:
@@ -171,7 +247,7 @@ def main():
         execute("editor.select", {"itemIds": [image_id]})
         time.sleep(1.5)
         shot("_sel_image")
-        crop("_sel_image", "properties-image", (0.765, 0.072, 0.945, 0.985))
+        crop("_sel_image", "properties-image", PROP_BOX)
         manifest["properties-image"] = "Image properties panel"
         print("✓ image selected + panel")
 
@@ -183,11 +259,15 @@ def main():
         time.sleep(1.5)
         shot("_sel_multi")
         crop("_sel_multi", "multi-select-timeline", (0.595, 0.768, 0.955, 1.0))
-        crop("_sel_multi", "properties-multi", (0.765, 0.072, 0.945, 0.985))
+        crop("_sel_multi", "properties-multi", PROP_BOX)
         manifest["multi-select-timeline"] = "Multiple items selected on the timeline"
         print("✓ multi-select")
 
     execute("editor.deselectAll")
+
+    # --- State D2: temporary text / image / audio items to document their
+    # properties panels, then delete them so the project is left unchanged. ---
+    capture_temp_items(manifest)
 
     # --- State F: left-rail menu panels (via ui.openTab) ---
     # Panels reachable only by clicking a left-rail tab. Each opens on the
@@ -209,13 +289,25 @@ def main():
         r = execute("ui.openTab", {"tab": tab})
         if r.get("status") != "success":
             continue
-        time.sleep(1.8)
+        # SFX panel streams results after mount; give it longer to settle.
+        time.sleep(3.5 if tab == "sfx" else 1.8)
         src = "_panel_" + tab.replace("-", "_")
         shot(src)
-        crop(src, out, (0.765, 0.072, 0.955, 0.985))
+        crop(src, out, PROP_BOX)
         manifest[out] = desc
         print(f"✓ {tab} panel")
     execute("ui.closePanel")
+
+    # --- State G: AI Edit panel (opens on the LEFT side) ---
+    r = execute("ui.openTab", {"tab": "ai"})
+    if r.get("status") == "success":
+        time.sleep(2.0)
+        shot("_panel_ai")
+        # AI panel docks on the left edge of the window.
+        crop("_panel_ai", "panel-ai-edit", (0.0, 0.045, 0.235, 0.985))
+        manifest["panel-ai-edit"] = "AI Edit panel"
+        print("✓ ai-edit panel")
+        execute("ui.closePanel", {"closeAI": True})
 
     # write manifest
     with open(os.path.join(IMAGES_DIR, "manifest.json"), "w") as f:

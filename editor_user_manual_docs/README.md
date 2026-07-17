@@ -49,3 +49,9 @@ mock-ups. They are produced by the pipeline in [`.capture/`](.capture/README.md)
 SkillTown Desktop app through its control API, puts the editor into specific states, captures the
 window, and crops clean regions. To refresh them after a UI change, re-run `.capture/capture.py`.
 
+## HTML version
+
+A themed, browsable **HTML site** can be generated from these markdown docs (single source of
+truth) for the website / Hub. Build it with [`.site/build.py`](.site/README.md); output lands in
+`site/` as a self-contained static site (sidebar, per-page table of contents, and search).
+

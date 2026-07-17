@@ -1,6 +1,9 @@
 {
   "editor-overview": "Full editor with nothing selected",
   "properties-video": "Video Settings properties panel",
+  "properties-video-design": "Video properties \u2014 Design tab",
+  "properties-video-animate": "Video properties \u2014 Animate tab",
+  "properties-video-effects": "Video properties \u2014 Effects tab",
   "properties-caption": "Caption properties panel",
   "multi-select-timeline": "Multiple items selected on the timeline",
   "panel-uploads": "Upload / Media Library panel",
@@ -12,5 +15,6 @@
   "panel-effects": "Effects panel",
   "panel-sfx": "SFX panel",
   "panel-scenes": "Scenes panel",
-  "panel-brand": "Brand kit panel"
+  "panel-brand": "Brand kit panel",
+  "panel-ai-edit": "AI Edit panel"
 }

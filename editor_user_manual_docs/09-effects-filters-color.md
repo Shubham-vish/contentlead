@@ -33,6 +33,8 @@ Color pickers appear anywhere you click a color field, such as **Color**, **Fill
 
 ## How to apply visual effect presets
 
+![The Effects section: Search effects, Recently Used, and preset groups (Dimmed, Low Contrast, Warm Tone, Noir, Black & White).](images/properties-video-effects.png)
+
 1. Select the item you want to stylize.
 2. In the properties panel, open **Effects**.
 3. Use **Search effects...** if you know the look you want. Search checks the preset name, description, and effect type. If nothing matches, the panel shows **No effects found for "{searchQuery}"**.

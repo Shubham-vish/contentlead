@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Right-click Menus — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link active" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Right-click Menus</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>Right-click a timeline or canvas item to open quick edit actions for properties, splitting, transforms, speed, volume, transitions, transcription, style copying, grouping, and deletion.</p>
+</blockquote>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<p>Right-click an item on the <strong>canvas</strong> or on the <strong>timeline</strong>. The menu opens at your pointer and starts with the item type, such as <strong>video</strong>, <strong>audio</strong>, <strong>image</strong>, or <strong>Template</strong>. If multiple selected items are included, the header also shows <strong>[n] items</strong>.</p>
+<p>Right-clicking empty canvas or timeline space does not open this item menu. To clear selection or move around the timeline, use the normal timeline controls instead.</p>
+<h2 id="what-you-can-do">What you can do<a class="headerlink" href="#what-you-can-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Open <strong>Properties</strong> for the selected item.</li>
+<li>Split, merge, duplicate, delete, or ripple delete timeline items.</li>
+<li>Turn clips on/off, mute/unmute media, and set track audio roles.</li>
+<li>Transform images, videos, and templates with fit/fill, centering, flips, rotation, and reset.</li>
+<li>Crop images and videos.</li>
+<li>Set <strong>Playback Speed</strong>, <strong>Volume</strong>, and quick <strong>Transition to next</strong> presets.</li>
+<li>Use <strong>Face Track</strong> on videos.</li>
+<li><strong>Detach audio</strong>, <strong>Transcribe…</strong>, and <strong>Reload waveform</strong> for audio-capable clips.</li>
+<li>Use <strong>Arrange</strong> for visibility, track locking, combining, linking, style copy/paste, relinking, and saving custom scenes.</li>
+<li>Use <strong>Compose to Scene</strong> to turn selected media into animated scene layouts.</li>
+</ul>
+<h2 id="how-to-use-the-main-item-menu">How to use the main item menu<a class="headerlink" href="#how-to-use-the-main-item-menu" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select one item, or select multiple items if you want the action to affect a group.</li>
+<li>Right-click the item on the canvas or timeline.</li>
+<li>Choose a command from the menu, or hover a row with an arrow to open its submenu.</li>
+<li>Press Escape or click away to close the menu.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Menu entry</th>
+<th>When it appears</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Compose to Scene</strong></td>
+<td>When the selected items can be composed into a scene.</td>
+<td>Opens scene-building options based on the selected videos, images, and templates.</td>
+</tr>
+<tr>
+<td><strong>Properties</strong></td>
+<td>Always.</td>
+<td>Opens the properties panel for the item. Shortcut shown: <strong>Enter</strong>.</td>
+</tr>
+<tr>
+<td><strong>Split at playhead</strong></td>
+<td>When the playhead is inside the item and the item can be split.</td>
+<td>Cuts the selected item at the playhead. Shortcut shown: <strong>Q</strong>.</td>
+</tr>
+<tr>
+<td><strong>Merge (rejoin split)</strong></td>
+<td>When selected adjacent split pieces can be rejoined.</td>
+<td>Merges compatible split pieces back together. Shortcut shown: <strong>G</strong>.</td>
+</tr>
+<tr>
+<td><strong>Duplicate</strong></td>
+<td>Always.</td>
+<td>Creates a copy after the selected item. Shortcut shown: <strong>Ctrl+D</strong>.</td>
+</tr>
+<tr>
+<td><strong>Turn clip off</strong> / <strong>Turn clip on</strong></td>
+<td>Always.</td>
+<td>Disables or re-enables the selected clip.</td>
+</tr>
+<tr>
+<td><strong>Mute clip</strong> / <strong>Unmute clip</strong></td>
+<td>Video and audio items.</td>
+<td>Mutes or unmutes the clip without changing its volume value.</td>
+</tr>
+<tr>
+<td><strong>Track Role</strong></td>
+<td>Video and audio items.</td>
+<td>Sets the clip’s track role for audio workflows.</td>
+</tr>
+<tr>
+<td><strong>Transform</strong></td>
+<td>Images, videos, and templates.</td>
+<td>Opens fit, fill, center, flip, rotate, and reset actions.</td>
+</tr>
+<tr>
+<td><strong>Crop…</strong></td>
+<td>Images and videos.</td>
+<td>Opens crop controls for the selected visual item.</td>
+</tr>
+<tr>
+<td><strong>Face Track</strong></td>
+<td>Video items.</td>
+<td>Detects faces and applies automatic follow or split framing.</td>
+</tr>
+<tr>
+<td><strong>Playback Speed</strong></td>
+<td>Video, audio, and template items.</td>
+<td>Applies a speed preset.</td>
+</tr>
+<tr>
+<td><strong>Transition to next</strong></td>
+<td>When there is a later item on the same track.</td>
+<td>Adds a quick transition from this item into the next item.</td>
+</tr>
+<tr>
+<td><strong>Volume</strong></td>
+<td>Video and audio items.</td>
+<td>Applies a volume preset.</td>
+</tr>
+<tr>
+<td><strong>Detach audio</strong></td>
+<td>Video items with audio that have not already been detached.</td>
+<td>Creates a separate audio item and mutes the original video.</td>
+</tr>
+<tr>
+<td><strong>Detach audio ([n])</strong></td>
+<td>Multiple detachable video items are selected.</td>
+<td>Detaches audio from all eligible selected videos.</td>
+</tr>
+<tr>
+<td><strong>Transcribe…</strong></td>
+<td>Video and audio items.</td>
+<td>Opens the transcription dialog for the clip’s source recording.</td>
+</tr>
+<tr>
+<td><strong>Reload waveform</strong></td>
+<td>Video and audio items.</td>
+<td>Refreshes the waveform display if it did not draw correctly.</td>
+</tr>
+<tr>
+<td><strong>Arrange</strong></td>
+<td>Always.</td>
+<td>Opens visibility, track lock, combine/link, style, relink, and save options.</td>
+</tr>
+<tr>
+<td><strong>Link tracks</strong></td>
+<td>Selected items span two or more tracks.</td>
+<td>Links selected tracks together.</td>
+</tr>
+<tr>
+<td><strong>Delete</strong></td>
+<td>Always.</td>
+<td>Deletes the selected item or selected items. Shortcut shown: <strong>Del</strong>.</td>
+</tr>
+<tr>
+<td><strong>Ripple delete (close gap)</strong></td>
+<td>Always.</td>
+<td>Deletes the selection and pulls later items on the same track left to close the gap. Shortcut shown: <strong>⇧Del</strong>.</td>
+</tr>
+</tbody>
+</table>
+<p>The item menu does not show regular <strong>Cut</strong>, <strong>Copy</strong>, or <strong>Paste</strong> item commands. Use timeline shortcuts for item copy/paste, and use <strong>Copy Style</strong> / <strong>Paste Style</strong> inside <strong>Arrange</strong> for style transfer.</p>
+<h2 id="how-to-use-compose-to-scene">How to use Compose to Scene<a class="headerlink" href="#how-to-use-compose-to-scene" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select one or more videos, images, or templates.</li>
+<li>Right-click the selection and hover <strong>Compose to Scene</strong>.</li>
+<li>Use <strong>Search scenes...</strong> to filter the scene choices.</li>
+<li>Click a scene option.</li>
+<li>If multiple items are selected, confirm the dialog titled <strong>Compose to Scene</strong> by clicking <strong>Create [n] Scenes</strong>, or click <strong>Cancel</strong>.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Compose entry</th>
+<th>What it creates</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>⭐ Segmented Video (Gap-Aware)</strong></td>
+<td>Turns two or more video clips into one gap-aware sequence that skips removed parts.</td>
+</tr>
+<tr>
+<td><strong>Picture in Picture</strong></td>
+<td>Uses one video as the main clip and another as a picture-in-picture overlay.</td>
+</tr>
+<tr>
+<td><strong>Picture in Picture (Swapped)</strong></td>
+<td>Same layout as picture-in-picture, with the main and overlay sources reversed.</td>
+</tr>
+<tr>
+<td><strong>Split Compare (Side by Side)</strong></td>
+<td>Places two video sources side by side for comparison.</td>
+</tr>
+<tr>
+<td><strong>Ken Burns (Cinematic Pan/Zoom)</strong></td>
+<td>Adds cinematic pan/zoom motion to a video clip.</td>
+</tr>
+<tr>
+<td><strong>Spotlight Focus</strong></td>
+<td>Adds a spotlight-style focus effect to a video.</td>
+</tr>
+<tr>
+<td><strong>Text Callout (Annotated)</strong></td>
+<td>Adds callout annotation styling over a video.</td>
+</tr>
+<tr>
+<td><strong>Smart Camera (Video)</strong></td>
+<td>Adds camera keyframe motion to a video.</td>
+</tr>
+<tr>
+<td><strong>📱 Handheld Camera (Video)</strong></td>
+<td>Adds organic handheld-style motion to a video.</td>
+</tr>
+<tr>
+<td><strong>Smart Camera (Pan/Zoom Image)</strong></td>
+<td>Adds animated camera movement to an image.</td>
+</tr>
+<tr>
+<td><strong>Ken Burns (Image)</strong></td>
+<td>Adds cinematic floating zoom/pan to an image.</td>
+</tr>
+<tr>
+<td><strong>📱 Handheld Camera (Realistic)</strong></td>
+<td>Adds realistic floating motion and depth to an image.</td>
+</tr>
+<tr>
+<td><strong>Image Highlight (Marker)</strong></td>
+<td>Highlights regions on an image with marker-style emphasis.</td>
+</tr>
+<tr>
+<td><strong>Image Underline (Focus)</strong></td>
+<td>Underlines image regions while dimming the rest.</td>
+</tr>
+<tr>
+<td><strong>Image Underline (Light Fade)</strong></td>
+<td>Underlines regions while fading non-highlighted areas toward white.</td>
+</tr>
+<tr>
+<td><strong>Image Focus (Blur)</strong></td>
+<td>Focuses image regions by blurring everything else.</td>
+</tr>
+<tr>
+<td><strong>Image Focus (Grayscale)</strong></td>
+<td>Focuses image regions by turning everything else grayscale.</td>
+</tr>
+<tr>
+<td><strong>Video + Image PIP</strong></td>
+<td>Combines a video with an image overlay.</td>
+</tr>
+<tr>
+<td><strong>🎬 Nested Composition</strong></td>
+<td>Combines selected videos, images, and templates into one layered scene.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-transform-an-item">How to transform an item<a class="headerlink" href="#how-to-transform-an-item" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Right-click an image, video, or template.</li>
+<li>Hover <strong>Transform</strong>.</li>
+<li>Choose the transform you want.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Transform entry</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fit to canvas</strong></td>
+<td>Scales the item so the whole item fits inside the canvas.</td>
+</tr>
+<tr>
+<td><strong>Fill canvas</strong></td>
+<td>Scales the item so it covers the canvas. Some edges may crop visually.</td>
+</tr>
+<tr>
+<td><strong>Original size</strong></td>
+<td>Returns the item to its original scale.</td>
+</tr>
+<tr>
+<td><strong>Center on canvas</strong></td>
+<td>Moves the item to the center without changing its scale or rotation.</td>
+</tr>
+<tr>
+<td><strong>Flip horizontal</strong></td>
+<td>Toggles horizontal flip. A checkmark appears when active.</td>
+</tr>
+<tr>
+<td><strong>Flip vertical</strong></td>
+<td>Toggles vertical flip. A checkmark appears when active.</td>
+</tr>
+<tr>
+<td><strong>Rotate 90° CW</strong></td>
+<td>Rotates clockwise in 90-degree steps.</td>
+</tr>
+<tr>
+<td><strong>Rotate 90° CCW</strong></td>
+<td>Rotates counterclockwise in 90-degree steps.</td>
+</tr>
+<tr>
+<td><strong>Reset transform</strong></td>
+<td>Resets flip, rotation, and scale to defaults. Disabled when there is nothing to reset.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-change-speed-volume-role-and-transitions">How to change speed, volume, role, and transitions<a class="headerlink" href="#how-to-change-speed-volume-role-and-transitions" title="Permanent link">&para;</a></h2>
+<p>Use these submenus when you need quick media changes without opening the properties panel.</p>
+<table>
+<thead>
+<tr>
+<th>Submenu</th>
+<th>Entries</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Playback Speed</strong></td>
+<td><strong>0.25×</strong>, <strong>0.5×</strong>, <strong>0.75×</strong>, <strong>1× (Normal)</strong>, <strong>1.25×</strong>, <strong>1.5×</strong>, <strong>2×</strong>, <strong>3×</strong>, <strong>4×</strong></td>
+</tr>
+<tr>
+<td><strong>Volume</strong></td>
+<td><strong>0% (Mute)</strong>, <strong>25%</strong>, <strong>50%</strong>, <strong>75%</strong>, <strong>100%</strong>, <strong>150%</strong>, <strong>200%</strong></td>
+</tr>
+<tr>
+<td><strong>Track Role</strong></td>
+<td><strong>Default</strong>, <strong>🎤 Voice</strong>, <strong>🎵 Music</strong></td>
+</tr>
+<tr>
+<td><strong>Transition to next</strong></td>
+<td><strong>fade</strong>, <strong>slide up</strong>, <strong>slide down</strong>, <strong>slide left</strong>, <strong>slide right</strong>, <strong>wipe up</strong>, <strong>wipe down</strong>, <strong>wipe left</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Transition to next</strong> only appears when the selected item has a next item on the same track. Each quick transition shows its duration in seconds.</p>
+<h2 id="how-to-use-face-track">How to use Face Track<a class="headerlink" href="#how-to-use-face-track" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Right-click a video item.</li>
+<li>Hover <strong>Face Track</strong>.</li>
+<li>Choose how the editor should detect and apply face framing.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Face Track entry</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Detect &amp; Apply (Auto)</strong></td>
+<td>Detects faces and can auto-split framing if two faces are found.</td>
+</tr>
+<tr>
+<td><strong>Re-detect (Auto)</strong></td>
+<td>Re-runs automatic detection after face tracking already exists.</td>
+</tr>
+<tr>
+<td><strong>Detect &amp; Apply (Follow)</strong></td>
+<td>Applies single-face panning only.</td>
+</tr>
+<tr>
+<td><strong>Regenerate Keyframes</strong></td>
+<td>Rebuilds the movement keyframes from the current face-track data.</td>
+</tr>
+<tr>
+<td><strong>Sensitivity</strong></td>
+<td>Opens sensitivity choices.</td>
+</tr>
+<tr>
+<td><strong>Tight</strong></td>
+<td>Uses denser detection and follows small movements.</td>
+</tr>
+<tr>
+<td><strong>Normal</strong></td>
+<td>Uses balanced tracking.</td>
+</tr>
+<tr>
+<td><strong>Loose</strong></td>
+<td>Uses minimal panning.</td>
+</tr>
+<tr>
+<td><strong>Toggle Preview Overlay</strong></td>
+<td>Shows or hides face-region preview overlays.</td>
+</tr>
+<tr>
+<td><strong>Remove Face Track</strong></td>
+<td>Removes face tracking from the clip.</td>
+</tr>
+</tbody>
+</table>
+<p>While detection is running, the menu label changes to <strong>Detecting faces…</strong>. A dot appears beside <strong>Face Track</strong> when face tracking is already applied.</p>
+<h2 id="how-to-use-arrange">How to use Arrange<a class="headerlink" href="#how-to-use-arrange" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Right-click an item.</li>
+<li>Hover <strong>Arrange</strong>.</li>
+<li>Choose the management action you need.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Arrange entry</th>
+<th>When it appears</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Hide</strong> / <strong>Show</strong></td>
+<td>Visual items.</td>
+<td>Hides or shows the selected item or selected items.</td>
+</tr>
+<tr>
+<td><strong>Lock track</strong> / <strong>Unlock track</strong></td>
+<td>Items that are on a track.</td>
+<td>Locks or unlocks the item’s whole track.</td>
+</tr>
+<tr>
+<td><strong>Combine [n] items</strong></td>
+<td>Two or more items are selected.</td>
+<td>Combines selected items into a nested scene.</td>
+</tr>
+<tr>
+<td><strong>Link [n] items</strong></td>
+<td>Two or more items are selected.</td>
+<td>Links selected items so they can move/delete together.</td>
+</tr>
+<tr>
+<td><strong>Unlink</strong></td>
+<td>The item is linked.</td>
+<td>Removes item linking.</td>
+</tr>
+<tr>
+<td><strong>Uncombine layers</strong></td>
+<td>A nested scene is selected.</td>
+<td>Breaks a nested scene back into layers.</td>
+</tr>
+<tr>
+<td><strong>Copy Style</strong></td>
+<td>Always.</td>
+<td>Opens the style-copy dialog.</td>
+</tr>
+<tr>
+<td><strong>Paste Style</strong></td>
+<td>After a style has been copied.</td>
+<td>Applies the copied style categories to the selected item or items.</td>
+</tr>
+<tr>
+<td><strong>Relink media…</strong></td>
+<td>Video, audio, and image items.</td>
+<td>Lets you reconnect the item to a media file.</td>
+</tr>
+<tr>
+<td><strong>Save to Library</strong></td>
+<td>Custom template scenes.</td>
+<td>Saves the custom scene for reuse.</td>
+</tr>
+</tbody>
+</table>
+<p>Layer-order commands such as bring forward or send backward are not part of this right-click menu. Use the timeline’s track order and item properties when you need to control what appears in front.</p>
+<h2 id="how-to-copy-and-paste-style">How to copy and paste style<a class="headerlink" href="#how-to-copy-and-paste-style" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Right-click the source item.</li>
+<li>Hover <strong>Arrange</strong> and choose <strong>Copy Style</strong>.</li>
+<li>In the <strong>Copy Style</strong> dialog, select which style categories to copy.</li>
+<li>Click <strong>Copy [n] Style</strong> or <strong>Copy [n] Styles</strong>.</li>
+<li>Right-click the target item or selected targets.</li>
+<li>Hover <strong>Arrange</strong> and choose <strong>Paste Style</strong>.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Copy Style control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>All</strong></td>
+<td>Selects all style categories.</td>
+</tr>
+<tr>
+<td><strong>None</strong></td>
+<td>Clears all selected categories.</td>
+</tr>
+<tr>
+<td><strong>Cancel</strong></td>
+<td>Closes without copying.</td>
+</tr>
+<tr>
+<td><strong>Copy [n] Style</strong> / <strong>Copy [n] Styles</strong></td>
+<td>Copies the selected categories.</td>
+</tr>
+<tr>
+<td><strong>All properties are at defaults — paste will apply default values</strong></td>
+<td>Indicates the source has no custom style values.</td>
+</tr>
+<tr>
+<td><strong>[n] of [n] properties have custom values</strong></td>
+<td>Shows how many style categories have custom values.</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Style category</th>
+<th>What it transfers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scene Settings</strong></td>
+<td>Compatible template scene settings.</td>
+</tr>
+<tr>
+<td><strong>Opacity</strong></td>
+<td>Transparency.</td>
+</tr>
+<tr>
+<td><strong>Blur</strong></td>
+<td>Blur amount.</td>
+</tr>
+<tr>
+<td><strong>Brightness</strong></td>
+<td>Brightness level.</td>
+</tr>
+<tr>
+<td><strong>Border Radius</strong></td>
+<td>Rounded corners.</td>
+</tr>
+<tr>
+<td><strong>Border</strong></td>
+<td>Border width and color.</td>
+</tr>
+<tr>
+<td><strong>Shadow</strong></td>
+<td>Box shadow or drop shadow.</td>
+</tr>
+<tr>
+<td><strong>Playback Speed</strong></td>
+<td>Speed setting.</td>
+</tr>
+<tr>
+<td><strong>Animations</strong></td>
+<td>Enter and exit animations.</td>
+</tr>
+<tr>
+<td><strong>Transform</strong></td>
+<td>Scale and rotation-related transform settings.</td>
+</tr>
+<tr>
+<td><strong>Volume</strong></td>
+<td>Clip volume.</td>
+</tr>
+<tr>
+<td><strong>Crop</strong></td>
+<td>Crop region.</td>
+</tr>
+<tr>
+<td><strong>Flip</strong></td>
+<td>Horizontal and vertical flip settings.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Scene Settings</strong> paste only applies between compatible scene types, and media-source fields are not copied.</p>
+<h2 id="how-to-transcribe-a-clip">How to transcribe a clip<a class="headerlink" href="#how-to-transcribe-a-clip" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Right-click a video or audio item.</li>
+<li>Choose <strong>Transcribe…</strong>.</li>
+<li>Review the <strong>Transcribe Clip</strong> dialog.</li>
+<li>Adjust <strong>Audio Analysis Settings</strong> if needed.</li>
+<li>Click <strong>Transcribe</strong>, or click <strong>Cancel</strong> to close.</li>
+</ol>
+<p>The <strong>Selected Clip</strong> section shows <strong>Name</strong>, <strong>Duration</strong>, <strong>Range</strong>, <strong>Track</strong>, and, when available, <strong>Source</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Transcription option</th>
+<th>Choices or behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Analysis Granularity</strong></td>
+<td><strong>Word Level (More detailed)</strong> or <strong>Segment Level (Faster)</strong>.</td>
+</tr>
+<tr>
+<td><strong>Window Duration (seconds)</strong></td>
+<td>Processing window size. Valid range is 10–400 seconds; the default is 120 seconds.</td>
+</tr>
+<tr>
+<td><strong>Transliterate to English</strong></td>
+<td>Toggle between <strong>Enabled</strong> and <strong>Disabled</strong>. Converts non-English scripts, such as Hindi Devanagari, to Latin/English text.</td>
+</tr>
+<tr>
+<td><strong>Number of Passes</strong></td>
+<td><strong>1 Pass (Fastest)</strong>, <strong>2 Passes</strong>, <strong>3 Passes</strong>, <strong>4 Passes</strong>, or <strong>5 Passes (Most Accurate)</strong>.</td>
+</tr>
+<tr>
+<td><strong>Quick presets:</strong></td>
+<td><strong>Fast</strong>, <strong>Balanced</strong>, or <strong>Detailed</strong>.</td>
+</tr>
+</tbody>
+</table>
+<p>If the same source recording already has a transcript, the editor asks: <strong>Replace the existing transcription for this recording ("[clip name]")?</strong> The warning explains that saved transcript data is overwritten, but captions already added to the timeline are not removed automatically.</p>
+<h2 id="how-to-right-click-empty-canvas-or-timeline-space">How to right-click empty canvas or timeline space<a class="headerlink" href="#how-to-right-click-empty-canvas-or-timeline-space" title="Permanent link">&para;</a></h2>
+<p>Right-clicking empty editor space does not open a separate empty-area menu. The right-click menu is item-based: it opens only when the pointer is over a canvas item or a timeline item.</p>
+<table>
+<thead>
+<tr>
+<th>Right-click target</th>
+<th>What happens</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Empty canvas/player area</td>
+<td>No right-click menu opens.</td>
+</tr>
+<tr>
+<td>Empty timeline canvas area</td>
+<td>No right-click menu opens.</td>
+</tr>
+<tr>
+<td>Timeline track item</td>
+<td>Opens the item menu for that item, or for the current multi-selection if that item is already selected.</td>
+</tr>
+<tr>
+<td>Canvas item</td>
+<td>Opens the item menu for that item, or for the current multi-selection if that item is already selected.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The right-click menu uses the current selection if you right-click an already-selected item. If you right-click an unselected item, the menu acts on that item only.</li>
+<li>Some commands appear only for certain item types: <strong>Face Track</strong> is video-only; <strong>Volume</strong>, <strong>Track Role</strong>, <strong>Transcribe…</strong>, and <strong>Reload waveform</strong> are for video/audio; <strong>Crop…</strong> is for images/videos.</li>
+<li><strong>Playback Speed</strong> also appears for templates.</li>
+<li><strong>Transition to next</strong> needs a next item later on the same track.</li>
+<li><strong>Split at playhead</strong> only appears when the playhead is inside the item, not on its edge.</li>
+<li><strong>Detach audio</strong> creates a separate audio item and mutes the video so you do not hear doubled audio.</li>
+<li><strong>Ripple delete (close gap)</strong> shifts later items on the same track left after deleting.</li>
+<li>Right-clicking empty canvas or empty timeline space does not open an empty-area menu.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="03-scenes-templates-styles.html">Scenes, Templates &amp; Styles</a></li>
+<li><a href="04-custom-scenes-and-ai.html">Custom Scenes &amp; AI</a></li>
+<li><a href="06-timeline-and-selection.html">Timeline &amp; Selection</a></li>
+<li><a href="07-item-properties.html">Item Properties</a></li>
+<li><a href="12-transitions.html">Transitions</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#where-to-find-it">Where to find it</a></li>
+<li><a href="#what-you-can-do">What you can do</a></li>
+<li><a href="#how-to-use-the-main-item-menu">How to use the main item menu</a></li>
+<li><a href="#how-to-use-compose-to-scene">How to use Compose to Scene</a></li>
+<li><a href="#how-to-transform-an-item">How to transform an item</a></li>
+<li><a href="#how-to-change-speed-volume-role-and-transitions">How to change speed, volume, role, and transitions</a></li>
+<li><a href="#how-to-use-face-track">How to use Face Track</a></li>
+<li><a href="#how-to-use-arrange">How to use Arrange</a></li>
+<li><a href="#how-to-copy-and-paste-style">How to copy and paste style</a></li>
+<li><a href="#how-to-transcribe-a-clip">How to transcribe a clip</a></li>
+<li><a href="#how-to-right-click-empty-canvas-or-timeline-space">How to right-click empty canvas or timeline space</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

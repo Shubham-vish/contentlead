@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Custom Scenes &amp; AI Assistance — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link active" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Custom Scenes &amp; AI Assistance</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>Create custom animated scenes with AI, preview them live, add them to the timeline, edit bundled scenes, and use the editor-wide assistant for timeline-aware video changes.</p>
+</blockquote>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<p>Open the menu panel and click <strong>Scenes</strong>. Use the scene panel tabs to browse existing scenes, community bundled scenes, or choose <strong>AI Generate</strong> for the custom scene workspace.</p>
+<p>For whole-video help, click <strong>AI Edit</strong> in the menu panel, or use the edge button labeled <strong>Open AI Editor</strong>. This opens the <strong>AI Editor</strong> assistant panel.</p>
+<p>When a scene is already on the timeline, select it. Its scene controls appear in the properties panel, including <strong>Content</strong>, <strong>Settings</strong>, <strong>Effects</strong>, <strong>Live Preview</strong>, <strong>All Props (JSON)</strong>, and any available source editor.</p>
+<h2 id="what-you-can-do">What you can do<a class="headerlink" href="#what-you-can-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Generate one scene from a natural-language prompt with <strong>AI Chat</strong>.</li>
+<li>Build a prompt for ChatGPT, Claude, Gemini, Cursor, or another outside assistant with <strong>External AI</strong>, then paste the result back into the editor.</li>
+<li>Edit a scene in the <strong>Code</strong> editor and preview changes with <strong>Preview</strong>, <strong>Full</strong>, <strong>Live Preview</strong>, or a floating preview window.</li>
+<li>Set <strong>Name</strong>, <strong>Frames</strong>, <strong>Landscape</strong>, <strong>Portrait</strong>, <strong>Speed</strong>, size presets, and duration presets.</li>
+<li>Use <strong>Auto</strong> compile, <strong>Run</strong> manually, copy code, expand the editor, and copy error messages for fixing.</li>
+<li>Add a finished scene with <strong>Add to Timeline</strong>, <strong>Add to Timeline &amp; Close</strong>, or export it with <strong>Render MP4</strong>.</li>
+<li>Browse community bundled scenes, preview their details, <strong>Add</strong>, <strong>Fork</strong>, view <strong>Code</strong>, and edit/rebuild bundled scenes after adding them.</li>
+<li>Edit scene properties through typed controls or <strong>All Props (JSON)</strong> with a <strong>Live Preview</strong>.</li>
+<li>Use <strong>AI Edit</strong> / <strong>AI Editor</strong> for whole-project chat, thread history, settings, workspace files, and timeline-aware edits.</li>
+</ul>
+<h2 id="how-to-open-the-custom-scene-workspace">How to open the custom scene workspace<a class="headerlink" href="#how-to-open-the-custom-scene-workspace" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Click <strong>Scenes</strong> in the menu panel.</li>
+<li>Click <strong>AI Generate</strong>.</li>
+<li>The workspace opens with <strong>AI Chat</strong>, <strong>External AI</strong>, <strong>Templates</strong>, <strong>Preview</strong>, <strong>Code</strong>, <strong>Add to Timeline</strong>, and <strong>Render MP4</strong>.</li>
+<li>Optional: click <strong>Templates</strong>, search with <strong>Search templates...</strong>, then choose a starter under <strong>Starters</strong> or a saved scene under <strong>Saved</strong>.</li>
+<li>Optional: use the small <strong>Paste</strong> control to paste code from your clipboard, or <strong>Clear</strong> to reset to a simple starter scene.</li>
+</ol>
+<h2 id="how-to-generate-a-scene-with-ai-chat">How to generate a scene with AI Chat<a class="headerlink" href="#how-to-generate-a-scene-with-ai-chat" title="Permanent link">&para;</a></h2>
+<ol>
+<li>In <strong>AI Generate</strong>, click <strong>AI Chat</strong>.</li>
+<li>If there is no active conversation, you may see <strong>Remotion Scene Creator</strong> with: “Describe the animated scene you want and the AI will generate Remotion code you can preview and add to the timeline.”</li>
+<li>Click <strong>Create a Scene</strong> or type in the chat box.</li>
+<li>Ask for the scene you want. The built-in tips are: “Describe the animation or visual you want,” “Mention colours, fonts, or layout preferences,” and “Ask for charts, motion backgrounds, text reveals, and more.”</li>
+<li>The chat receives the current scene context, including the scene name, duration, orientation, current code, and current compile error. You can ask it to “make this more cinematic,” “fix the error,” “change this to portrait,” “add a chart,” “slow the animation,” or “match my brand colors.”</li>
+<li>When the assistant updates the scene, the editor shows the toast “AI updated the scene code” and the message “Review the preview and click "Add to Timeline" when ready.” Review <strong>Preview</strong> and <strong>Code</strong> before adding.</li>
+<li>Use <strong>Float</strong> to undock the chat, or <strong>Dock</strong> to return it to the panel.</li>
+</ol>
+<h2 id="how-to-generate-with-external-ai">How to generate with External AI<a class="headerlink" href="#how-to-generate-with-external-ai" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Click <strong>External AI</strong>. Opening <strong>External AI</strong> hides <strong>AI Chat</strong>, and opening <strong>AI Chat</strong> hides <strong>External AI</strong>.</li>
+<li>Use the header controls:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>System Prompt</strong></td>
+<td>Copies the external scene-authoring instructions so you can paste them into another AI tool’s project rules. After copying, the button shows <strong>Copied!</strong>.</td>
+</tr>
+<tr>
+<td><strong>Hyperframes</strong></td>
+<td>Copies a separate prompt for a different HTML-style animation workflow. The generated result is not pasted into the custom scene code box.</td>
+</tr>
+<tr>
+<td><strong>Sample</strong></td>
+<td>Opens a sample in a new tab.</td>
+</tr>
+<tr>
+<td><strong>Scene Studio</strong></td>
+<td>Opens the scene studio in a new tab.</td>
+</tr>
+</tbody>
+</table>
+<ol start="3">
+<li>Choose a size preset from the dropdown. Options are <strong>Landscape — 16:9</strong>, <strong>Portrait / Reel — 9:16</strong>, <strong>Square — 1:1</strong>, <strong>Half Screen Side — 960×1080</strong>, <strong>Half Screen Stack — 1080×960</strong>, and <strong>HD — 1280×720</strong>.</li>
+<li>Choose a duration preset: <strong>3s</strong>, <strong>5s</strong>, <strong>8s</strong>, <strong>10s</strong>, or <strong>15s</strong>.</li>
+<li>In <strong>Describe the scene</strong>, type your request. The placeholder example is: “e.g. A staggered list of 5 benefits of meditation with purple gradient background, spring animations”.</li>
+<li>If you want a fast start, click one of the example chips: <strong>Pricing table with 3 tiers and feature checklist</strong>, <strong>Animated timeline of 5 company milestones</strong>, <strong>Confetti celebration with big counter reaching 10K users</strong>, <strong>Dashboard with 4 KPI cards and trend arrows</strong>, or <strong>Mind map branching from a central topic with 6 nodes</strong>.</li>
+<li>Optional: open <strong>Scene Type: Auto-detect</strong> and pick any matching scene types. If the editor detects types, it shows <strong>Detected:</strong> chips you can click to add.</li>
+<li>Choose <strong>Complexity:</strong> <strong>Simple</strong>, <strong>Medium</strong>, or <strong>Advanced</strong>.</li>
+<li>Click <strong>Copy Prompt</strong>. After copying, the button shows <strong>Copied!</strong> and the panel shows <strong>Prompt</strong> with <strong>Re-copy</strong>, character count, and token estimate.</li>
+<li>Paste the prompt into <strong>ChatGPT</strong>, <strong>Claude</strong>, or <strong>Gemini</strong>, then paste the result into <strong>Paste AI-generated code</strong>.</li>
+<li>The pasted result is checked automatically. If it shows <strong>✓ Valid</strong>, click <strong>Use This Code</strong>. If it shows <strong>✕ Errors</strong> or <strong>Errors found</strong>, click <strong>Copy Fix Prompt</strong> and paste that back into the outside assistant.</li>
+<li>Use <strong>Reset</strong> to clear the description, generated prompt, pasted code, validation state, and complexity back to defaults.</li>
+</ol>
+<h2 id="how-to-preview-and-edit-a-custom-scene">How to preview and edit a custom scene<a class="headerlink" href="#how-to-preview-and-edit-a-custom-scene" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Name</strong></td>
+<td>Renames the scene before it is added to the timeline.</td>
+</tr>
+<tr>
+<td><strong>Frames</strong></td>
+<td>Sets the scene duration in frames. The minimum is 30 frames.</td>
+</tr>
+<tr>
+<td><strong>Landscape</strong></td>
+<td>Uses a wide preview shape.</td>
+</tr>
+<tr>
+<td><strong>Portrait</strong></td>
+<td>Uses a vertical preview shape.</td>
+</tr>
+<tr>
+<td><strong>Speed</strong></td>
+<td>Sets scene playback speed from 0.1× to 4×.</td>
+</tr>
+<tr>
+<td><strong>Preview</strong></td>
+<td>Expands or collapses the live preview area.</td>
+</tr>
+<tr>
+<td><strong>Float</strong></td>
+<td>Undocks the preview so it can stay visible while you edit.</td>
+</tr>
+<tr>
+<td><strong>Dock</strong></td>
+<td>Returns the floating preview to the panel.</td>
+</tr>
+<tr>
+<td><strong>Full</strong></td>
+<td>Opens <strong>Fullscreen Preview</strong>.</td>
+</tr>
+<tr>
+<td><strong>Code</strong></td>
+<td>Opens the editable source area.</td>
+</tr>
+<tr>
+<td><strong>Auto</strong></td>
+<td>Rebuilds the preview automatically after a short pause while you type.</td>
+</tr>
+<tr>
+<td><strong>Run</strong></td>
+<td>Rebuilds manually when <strong>Auto</strong> is off.</td>
+</tr>
+<tr>
+<td><strong>Copy</strong></td>
+<td>Copies the current code.</td>
+</tr>
+<tr>
+<td><strong>Expand editor</strong></td>
+<td>Opens a larger editor with <strong>Code Editor</strong> and <strong>Live Preview</strong> side by side.</td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>Use <strong>Name</strong>, <strong>Frames</strong>, <strong>Landscape</strong> / <strong>Portrait</strong>, and <strong>Speed</strong> to set the scene’s identity, duration, aspect, and playback rate.</li>
+<li>Drag the horizontal divider labeled <strong>Drag to resize preview / code split</strong> to give more space to the preview or code editor.</li>
+<li>Open <strong>Preview</strong> to play the scene. If there is no valid scene yet, you may see <strong>Write code to see preview</strong>.</li>
+<li>Use the preview play/pause button, seek bar, and time display to scrub through the scene.</li>
+<li>If the scene fails while playing, the preview may show <strong>Render Error</strong> or <strong>Scene Render Crash</strong>. The code area also shows an error bar with a <strong>Copy error message</strong> control.</li>
+<li>Edit in <strong>Code</strong>. Keep <strong>Auto</strong> on for live updates, or turn it off and click <strong>Run</strong> when you are ready.</li>
+<li>Click <strong>Expand editor</strong> for the large dialog. It includes <strong>Code Editor</strong>, <strong>Live Preview</strong>, a draggable vertical preview divider, <strong>Add to Timeline &amp; Close</strong>, <strong>Render MP4</strong>, and <strong>Close</strong>.</li>
+<li>In <strong>Fullscreen Preview</strong>, use the player controls and <strong>Close</strong> when done.</li>
+<li>Watch the status badge in expanded mode: <strong>Ready</strong> means the scene can preview, <strong>Error</strong> means it needs fixing, and <strong>Idle</strong> means nothing is compiled yet.</li>
+</ol>
+<h2 id="how-to-add-or-render-a-custom-scene">How to add or render a custom scene<a class="headerlink" href="#how-to-add-or-render-a-custom-scene" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Move the playhead to where the scene should start.</li>
+<li>Make sure the preview is valid and the status is not <strong>Error</strong>.</li>
+<li>Click <strong>Add to Timeline</strong>. While it is working, the button shows <strong>Adding...</strong>.</li>
+<li>In the expanded editor, use <strong>Add to Timeline &amp; Close</strong> to add the scene and close the dialog in one step.</li>
+<li>To export only the scene, click <strong>Render MP4</strong>. During export you may see <strong>Checking browser support…</strong> and <strong>Rendering…</strong> with a percentage and encoded-frame count.</li>
+<li>Use the cancel control if you need to stop a render.</li>
+<li>When rendering finishes, click <strong>Download MP4</strong>. The result also shows the file size and “Rendered in …s”.</li>
+<li>If rendering fails, use <strong>Retry</strong> or <strong>Dismiss</strong>. If you cancelled, the render button changes to <strong>Render Again</strong>.</li>
+</ol>
+<h2 id="how-to-use-floating-chat-and-floating-preview-windows">How to use floating chat and floating preview windows<a class="headerlink" href="#how-to-use-floating-chat-and-floating-preview-windows" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Floating window</th>
+<th>Controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scene AI Chat</strong></td>
+<td>Drag the title bar to move it, drag edges or corners to resize, use <strong>Minimize</strong> / <strong>Expand</strong>, and use <strong>Dock chat back to panel</strong> to return it.</td>
+</tr>
+<tr>
+<td><strong>Live Preview</strong></td>
+<td>Drag the title bar to move it, drag edges or corners to resize, use <strong>Snap to position</strong>, <strong>Minimize</strong> / <strong>Expand</strong>, and <strong>Dock preview back to panel</strong>.</td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>Click <strong>Float</strong> in <strong>AI Chat</strong> to open <strong>Scene AI Chat</strong> as a floating window.</li>
+<li>Click <strong>Float</strong> in <strong>Preview</strong> or <strong>Live Preview</strong> to open the preview as a floating window.</li>
+<li>In a floating preview, click <strong>Snap to position</strong> and choose <strong>Top-Left</strong>, <strong>Top-Right</strong>, <strong>Bottom-Left</strong>, <strong>Bottom-Right</strong>, <strong>Center</strong>, <strong>Left Half</strong>, <strong>Right Half</strong>, or <strong>Bottom Strip</strong>.</li>
+<li>If a docked panel shows <strong>Preview is floating — drag it anywhere</strong> or <strong>Preview is floating — drag it anywhere on screen</strong>, click <strong>Click here to dock back</strong> to restore it.</li>
+</ol>
+<h2 id="how-to-browse-and-add-bundled-scenes">How to browse and add bundled scenes<a class="headerlink" href="#how-to-browse-and-add-bundled-scenes" title="Permanent link">&para;</a></h2>
+<p>Bundled scenes are community scenes that can include a broader set of animation libraries. Use them when you want richer imported effects, then edit the scene after it is on the timeline.</p>
+<ol>
+<li>Open <strong>Scenes</strong> and go to the community bundled scene area.</li>
+<li>Search with <strong>Search community scenes...</strong>.</li>
+<li>Filter with category pills: <strong>All</strong>, <strong>Backgrounds</strong>, <strong>Particles</strong>, <strong>Data Viz</strong>, <strong>Text Effects</strong>, <strong>3D Effects</strong>, <strong>Transitions</strong>, <strong>Glitch</strong>, <strong>Abstract</strong>, <strong>Cinematic</strong>, and <strong>Other</strong>.</li>
+<li>Use <strong>↻ Refresh</strong> if the list looks stale.</li>
+<li>If the list is loading, it shows <strong>Loading community scenes...</strong>. If loading fails, click <strong>Try again</strong>.</li>
+<li>Click a scene card to expand it. The collapsed card shows <strong>Preview</strong>; the expanded card shows import chips, version, author/date details, orientation when available, and action buttons.</li>
+<li>Click <strong>Add</strong> for a quick add from the collapsed card, or click <strong>Add to Timeline</strong> in the expanded card. While adding, the button shows <strong>Adding...</strong>.</li>
+<li>Click <strong>Fork</strong> to send the scene into <strong>AI Generate</strong> for editing as a custom scene. The editor confirms: “Forked … — switch to AI Generate tab to edit”.</li>
+<li>Click <strong>Code</strong> to open the source dialog. The dialog title is “Source Code”, shows the scene version, and includes <strong>Copy Code</strong>, <strong>Fork &amp; Edit</strong>, and <strong>Add to Timeline</strong>.</li>
+<li>After adding, select the bundled scene on the timeline to edit it in the properties panel.</li>
+</ol>
+<h2 id="how-to-edit-a-bundled-scene-after-adding-it">How to edit a bundled scene after adding it<a class="headerlink" href="#how-to-edit-a-bundled-scene-after-adding-it" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select the bundled scene on the timeline.</li>
+<li>In the properties panel, open <strong>Content</strong>.</li>
+<li>Open <strong>Bundled Scene Code</strong>. The section starts read-only and shows <strong>Bundled</strong> when the current bundle is valid.</li>
+<li>Review the used import chips at the top of the section or dialog. These chips show which external libraries the bundled scene currently uses.</li>
+<li>Click <strong>Unlock editor</strong> to edit. The help text changes from “Read-only · Click 🔓 to enable editing” to “Edit source · Click 💾 to rebuild &amp; save”.</li>
+<li>Make your change in the code editor.</li>
+<li>Click <strong>Rebuild bundled scene</strong> in the inline section, <strong>Rebuild</strong> in the dialog header, or <strong>Rebuild &amp; Save</strong> under the dialog preview. While building, the button shows <strong>Building...</strong>.</li>
+<li>If rebuilding succeeds, the editor shows <strong>Rebuilt!</strong>, updates the preview, and saves the new bundled source into the scene item.</li>
+<li>If rebuilding fails, the error appears under the editor or at the bottom of the dialog. If it says rebuilding requires the desktop app, follow the <strong>Scene rebuilding requires the Desktop app.</strong> prompt.</li>
+<li>Use <strong>Copy code</strong> to copy the source, <strong>Expand editor</strong> to open the large split dialog, <strong>Lock editor</strong> to return to read-only mode, and <strong>Publish to Community Library</strong> / <strong>Publish</strong> to share a valid custom or bundled scene.</li>
+</ol>
+<h3 id="bundled-scene-editor-controls">Bundled scene editor controls<a class="headerlink" href="#bundled-scene-editor-controls" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Where it appears</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Bundled Scene Code</strong></td>
+<td>Inline properties panel</td>
+<td>Expands or collapses the bundled source editor.</td>
+</tr>
+<tr>
+<td><strong>Bundled Scene Source</strong></td>
+<td>Large dialog title</td>
+<td>Opens the larger code-and-preview dialog for a bundled scene.</td>
+</tr>
+<tr>
+<td><strong>Bundled</strong></td>
+<td>Badge</td>
+<td>Means the current bundled preview loaded successfully.</td>
+</tr>
+<tr>
+<td><strong>Error</strong></td>
+<td>Badge</td>
+<td>Means the current source or bundle cannot preview.</td>
+</tr>
+<tr>
+<td><strong>Unlock editor</strong></td>
+<td>Inline section and dialog</td>
+<td>Allows edits to a read-only bundled scene.</td>
+</tr>
+<tr>
+<td><strong>Lock editor</strong></td>
+<td>Inline section and dialog</td>
+<td>Locks the editor again after editing.</td>
+</tr>
+<tr>
+<td><strong>Copy code</strong></td>
+<td>Inline section and dialog</td>
+<td>Copies the current source.</td>
+</tr>
+<tr>
+<td><strong>Rebuild bundled scene</strong></td>
+<td>Inline section</td>
+<td>Builds the edited source and saves it back to the scene.</td>
+</tr>
+<tr>
+<td><strong>Rebuild</strong></td>
+<td>Dialog header</td>
+<td>Builds the edited source from the large dialog.</td>
+</tr>
+<tr>
+<td><strong>Rebuild &amp; Save</strong></td>
+<td>Dialog preview column</td>
+<td>Builds the edited source and saves it back to the scene.</td>
+</tr>
+<tr>
+<td><strong>Publish to Community Library</strong></td>
+<td>Inline preview column</td>
+<td>Shares a valid custom or bundled scene with the community.</td>
+</tr>
+<tr>
+<td><strong>Publish</strong></td>
+<td>Dialog header</td>
+<td>Same community sharing action in the large dialog.</td>
+</tr>
+<tr>
+<td><strong>Expand editor</strong></td>
+<td>Inline section</td>
+<td>Opens the large split dialog.</td>
+</tr>
+<tr>
+<td><strong>Landscape — 16:9</strong></td>
+<td>Dialog size dropdown</td>
+<td>Previews the scene at 1920×1080.</td>
+</tr>
+<tr>
+<td><strong>Portrait — 9:16</strong></td>
+<td>Dialog size dropdown</td>
+<td>Previews the scene at 1080×1920.</td>
+</tr>
+<tr>
+<td><strong>Square — 1:1</strong></td>
+<td>Dialog size dropdown</td>
+<td>Previews the scene at 1080×1080.</td>
+</tr>
+<tr>
+<td><strong>HD — 1280×720</strong></td>
+<td>Dialog size dropdown</td>
+<td>Previews the scene at 1280×720.</td>
+</tr>
+<tr>
+<td><strong>Half Side — 960×1080</strong></td>
+<td>Dialog size dropdown</td>
+<td>Previews the scene at 960×1080.</td>
+</tr>
+<tr>
+<td><strong>Resize code preview split</strong></td>
+<td>Dialog divider</td>
+<td>Drag to change the width of the code editor and preview area.</td>
+</tr>
+<tr>
+<td><strong>Preview unavailable.</strong></td>
+<td>Preview area</td>
+<td>Appears when no preview is available.</td>
+</tr>
+<tr>
+<td><strong>Fix the current issue to see the preview.</strong></td>
+<td>Preview area</td>
+<td>Appears when an error prevents preview.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-edit-scene-props-with-json-and-live-preview">How to edit scene props with JSON and live preview<a class="headerlink" href="#how-to-edit-scene-props-with-json-and-live-preview" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select a scene on the timeline.</li>
+<li>In the properties panel, open <strong>Content</strong>.</li>
+<li>Use <strong>Live Preview</strong> to see the current scene. Click <strong>Float</strong> if you want it to stay visible while editing; click <strong>Dock</strong> to return it.</li>
+<li>Open <strong>All Props (JSON)</strong> for a compact JSON editor.</li>
+<li>Edit values and click <strong>Apply</strong>. When the save completes, the button briefly shows <strong>Saved</strong>.</li>
+<li>Use the reset control to restore the JSON from the current scene item, the copy control to copy the JSON, or the expand control to open the full editor.</li>
+<li>In the full dialog, the title is <strong>Scene Props —</strong> followed by the scene name, and the description says “Edit JSON on the left, see live preview on the right”.</li>
+<li>Use <strong>Format</strong> to pretty-print valid JSON, <strong>Copy</strong> to copy it, and <strong>✕</strong> to close the dialog.</li>
+<li>The right side shows <strong>Live Preview</strong>. It shows <strong>Synced</strong> when the preview matches valid JSON and <strong>Invalid JSON</strong> when the JSON cannot be parsed.</li>
+<li>If the preview cannot load, you may see <strong>Scene component not found</strong>. If there are no valid preview props yet, you may see <strong>Edit JSON to see preview</strong>.</li>
+<li>Click <strong>Apply &amp; Close</strong> to save the parsed props to the scene, or <strong>Cancel</strong> to leave without applying.</li>
+</ol>
+<h2 id="how-to-view-or-fork-source-from-a-library-scene">How to view or fork source from a library scene<a class="headerlink" href="#how-to-view-or-fork-source-from-a-library-scene" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select a built-in scene on the timeline.</li>
+<li>In <strong>Content</strong>, use the scene info area to open its source when available.</li>
+<li>The dialog title reads the scene name followed by <strong>Source Code</strong>.</li>
+<li>If source is unavailable, the dialog says <strong>Source code not available for this scene.</strong> and shows the scene ID.</li>
+<li>If source is available, the dialog opens a read-only editor with <strong>Library</strong> status, a live preview, and the note “Read-only · Click 🔓 to edit · Fork to save as custom scene”.</li>
+<li>Use <strong>Copy</strong> to copy the source, <strong>Unlock editor</strong> if you want to inspect/edit locally, or <strong>Fork as Custom Scene</strong> / <strong>Fork</strong> to convert it into a custom editable scene.</li>
+</ol>
+<h2 id="how-to-use-the-editor-wide-ai-assistant">How to use the editor-wide AI assistant<a class="headerlink" href="#how-to-use-the-editor-wide-ai-assistant" title="Permanent link">&para;</a></h2>
+<p><img alt="The AI Editor panel: AI Content Creator empty state, Start Creating, model selector (LLM), MCP toggle, and the message input with attach/context/send." src="images/panel-ai-edit.png" /></p>
+<ol>
+<li>Click <strong>AI Edit</strong> in the menu panel, or click <strong>Open AI Editor</strong> on the left edge.</li>
+<li>The <strong>AI Editor</strong> panel opens. Use <strong>Close</strong> / <strong>Close AI Panel</strong> / <strong>Close AI Editor</strong> to close it, or <strong>Collapse AI Editor</strong> to collapse the panel.</li>
+<li>Type in the box labeled <strong>Type a message...</strong> and click <strong>Send message</strong>. In fullscreen input mode, the placeholder may say <strong>Type a message... (Ctrl+Enter to send)</strong> and “Use $ for predefined customprompts”.</li>
+<li>Use <strong>Upload file</strong> to attach a file, <strong>Add state property</strong> to insert a <code>#</code> context reference, <strong>Mention agent</strong> to insert an <code>@</code> agent mention, and <strong>Insert custom prompt</strong> to insert a saved prompt.</li>
+<li>The assistant receives a compact timeline snapshot: canvas size, duration, tracks, selected items, scene types, item names, and text where available. You can ask it to rearrange scenes, add overlays, adjust timing, fix selected items, or continue an edit plan.</li>
+<li>Use <strong>Thread history</strong> to open earlier conversations. The dropdown shows <strong>Threads ·</strong> followed by the assistant graph name, each thread title, date, and short ID.</li>
+<li>Use <strong>Start new chat</strong> to begin a fresh thread. The confirmation dialog <strong>Start New Chat</strong> explains that the current thread is not deleted; choose <strong>Cancel</strong> or <strong>Start New Chat</strong>.</li>
+<li>Use <strong>Delete current thread</strong> only when you no longer need the conversation. The confirmation dialog <strong>Delete Workflow Thread</strong> offers <strong>Cancel</strong> and <strong>Delete Thread</strong>.</li>
+<li>Use <strong>Show settings</strong> / <strong>Hide settings</strong> for workflow, model, prompt, and state controls. In compact mode, settings open as a right-side drawer.</li>
+<li>If the workflow supports files, use <strong>Show workspace files</strong> / <strong>Hide workspace</strong> to open <strong>Workspace Files</strong>. Scene workflows can apply workspace code back into the scene editor.</li>
+<li>Use <strong>Enter fullscreen</strong> for a larger assistant view, and <strong>Exit fullscreen</strong> to return.</li>
+<li>In settings, you may see <strong>Workflow Visualization</strong>, workflow state, attachments, prompt controls, temperature controls, <strong>Custom LLM</strong>, and <strong>MCP Server</strong> configuration depending on the assistant workflow.</li>
+</ol>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Add to Timeline</strong> places the custom or bundled scene at the current playhead position.</li>
+<li><strong>AI Chat</strong> edits one scene; <strong>AI Edit</strong> works across the whole video timeline.</li>
+<li><strong>External AI</strong> is best when you want to use a different assistant, keep a reusable <strong>System Prompt</strong>, or iterate outside the editor.</li>
+<li>If <strong>Auto</strong> is on, code edits update after a short pause. If you want control over rebuild timing, turn <strong>Auto</strong> off and use <strong>Run</strong>.</li>
+<li>Floating windows stay useful while editing long code or JSON: keep <strong>Live Preview</strong> visible and resize or snap it to a corner.</li>
+<li>Bundled scene source starts locked to prevent accidental changes. Unlock, edit, then rebuild before expecting the timeline item to change.</li>
+<li>Import chips in bundled scenes show what the scene already uses; unsupported imports appear as build or preview errors rather than normal controls.</li>
+<li>JSON changes apply only after <strong>Apply</strong> or <strong>Apply &amp; Close</strong>. Invalid JSON can still be typed, but it will not save and the preview shows <strong>Invalid JSON</strong>.</li>
+<li>If you see <strong>Render Error</strong>, <strong>Scene Render Crash</strong>, <strong>Error</strong>, <strong>Errors found</strong>, or <strong>Fix the current issue to see the preview.</strong>, copy the error and ask <strong>AI Chat</strong> or your external assistant to fix it before adding or publishing.</li>
+<li>Client-side <strong>Render MP4</strong> depends on browser support. If support checking fails, use the message shown in the render area to decide whether to retry in another browser.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="03-scenes-and-templates.html">Scenes &amp; Templates</a></li>
+<li><a href="02-timeline-editing.html">Timeline Editing</a></li>
+<li><a href="05-exporting-and-rendering.html">Exporting &amp; Rendering</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#where-to-find-it">Where to find it</a></li>
+<li><a href="#what-you-can-do">What you can do</a></li>
+<li><a href="#how-to-open-the-custom-scene-workspace">How to open the custom scene workspace</a></li>
+<li><a href="#how-to-generate-a-scene-with-ai-chat">How to generate a scene with AI Chat</a></li>
+<li><a href="#how-to-generate-with-external-ai">How to generate with External AI</a></li>
+<li><a href="#how-to-preview-and-edit-a-custom-scene">How to preview and edit a custom scene</a></li>
+<li><a href="#how-to-add-or-render-a-custom-scene">How to add or render a custom scene</a></li>
+<li><a href="#how-to-use-floating-chat-and-floating-preview-windows">How to use floating chat and floating preview windows</a></li>
+<li><a href="#how-to-browse-and-add-bundled-scenes">How to browse and add bundled scenes</a></li>
+<li><a href="#how-to-edit-a-bundled-scene-after-adding-it">How to edit a bundled scene after adding it</a><ul>
+<li><a href="#bundled-scene-editor-controls">Bundled scene editor controls</a></li>
+</ul>
+</li>
+<li><a href="#how-to-edit-scene-props-with-json-and-live-preview">How to edit scene props with JSON and live preview</a></li>
+<li><a href="#how-to-view-or-fork-source-from-a-library-scene">How to view or fork source from a library scene</a></li>
+<li><a href="#how-to-use-the-editor-wide-ai-assistant">How to use the editor-wide AI assistant</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

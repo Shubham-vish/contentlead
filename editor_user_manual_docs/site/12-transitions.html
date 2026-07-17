@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transitions — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link active" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Transitions</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>Add smooth visual effects between two adjacent clips so one shot blends, slides, wipes, or reveals into the next.</p>
+</blockquote>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<p>Open the <strong>Effects</strong> tab in the menu panel to browse transition previews. (This is the tab with the transition icon; the panel that opens is headed <strong>Transitions</strong>.)</p>
+<blockquote>
+<p>Note: the <strong>Effects</strong> menu tab is for clip-to-clip transitions. This is different from the <strong>Effects</strong> section inside the properties panel, which adds visual effects like glow, blur, and grain to a single selected item — see <a href="09-effects-filters-color.html">Visual Effects, Filters, Chroma Key &amp; Color</a>.</p>
+</blockquote>
+<p>You can also work from the timeline. When two supported clips touch on the same track, a small transition marker appears at the cut between them. Click that marker to open the <strong>Transition</strong> popover.</p>
+<h2 id="what-you-can-do">What you can do<a class="headerlink" href="#what-you-can-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Browse transition preview cards in the <strong>Effects</strong> tab (headed <strong>Transitions</strong>).</li>
+<li>Add a quick transition from a clip’s right-click menu with <strong>Transition to next</strong>.</li>
+<li>Use the timeline transition marker to choose the transition style.</li>
+<li>Adjust <strong>Duration</strong> with a slider or preset chips.</li>
+<li>Use <strong>Remove</strong> or <strong>None</strong> to return the cut to no visible transition.</li>
+</ul>
+<h2 id="how-to-browse-available-transitions">How to browse available transitions<a class="headerlink" href="#how-to-browse-available-transitions" title="Permanent link">&para;</a></h2>
+<p><img alt="The Effects tab open, showing the Transitions panel." src="images/panel-effects.png" /></p>
+<ol>
+<li>Click the <strong>Effects</strong> tab in the menu panel (the panel opens headed <strong>Transitions</strong>).</li>
+<li>Review the preview cards. Each card shows an animated thumbnail and a label.</li>
+<li>Use the card names to decide the direction or reveal style you want before applying it on the timeline.</li>
+</ol>
+<p>The timeline transition picker exposes these user-facing choices:</p>
+<table>
+<thead>
+<tr>
+<th>Transition</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>None</strong></td>
+<td>Keeps the cut without a visible transition.</td>
+</tr>
+<tr>
+<td><strong>Fade</strong></td>
+<td>Crossfades from one clip into the next.</td>
+</tr>
+<tr>
+<td><strong>Slide Up</strong></td>
+<td>Slides the next clip upward into view.</td>
+</tr>
+<tr>
+<td><strong>Slide Down</strong></td>
+<td>Slides the next clip downward into view.</td>
+</tr>
+<tr>
+<td><strong>Slide Left</strong></td>
+<td>Slides the next clip left into view.</td>
+</tr>
+<tr>
+<td><strong>Slide Right</strong></td>
+<td>Slides the next clip right into view.</td>
+</tr>
+<tr>
+<td><strong>Wipe Up</strong></td>
+<td>Reveals the next clip with an upward wipe.</td>
+</tr>
+<tr>
+<td><strong>Wipe Down</strong></td>
+<td>Reveals the next clip with a downward wipe.</td>
+</tr>
+<tr>
+<td><strong>Wipe Left</strong></td>
+<td>Reveals the next clip with a left wipe.</td>
+</tr>
+<tr>
+<td><strong>Wipe Right</strong></td>
+<td>Reveals the next clip with a right wipe.</td>
+</tr>
+<tr>
+<td><strong>Flip</strong></td>
+<td>Flips from one clip to the next.</td>
+</tr>
+<tr>
+<td><strong>Clock Wipe</strong></td>
+<td>Reveals the next clip in a circular clock motion.</td>
+</tr>
+<tr>
+<td><strong>Star</strong></td>
+<td>Reveals the next clip through a star shape.</td>
+</tr>
+<tr>
+<td><strong>Circle</strong></td>
+<td>Reveals the next clip through a circle.</td>
+</tr>
+<tr>
+<td><strong>Rectangle</strong></td>
+<td>Reveals the next clip through a rectangle.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-add-a-transition-between-two-clips">How to add a transition between two clips<a class="headerlink" href="#how-to-add-a-transition-between-two-clips" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Place two video or image clips on the same timeline track.</li>
+<li>Move or trim them so the first clip ends exactly where the next clip starts. When the clips touch, the cut shows a small transition marker.</li>
+<li>Click the marker at the boundary between the clips.</li>
+<li>In <strong>Transition</strong>, choose a preset such as <strong>Fade</strong>, <strong>Slide Up</strong>, <strong>Wipe Left</strong>, or <strong>Circle</strong>.</li>
+<li>Click <strong>Apply</strong>. The marker changes to an active transition indicator, and playback blends the outgoing clip into the incoming clip.</li>
+</ol>
+<h2 id="how-to-add-a-quick-transition-from-the-clip-menu">How to add a quick transition from the clip menu<a class="headerlink" href="#how-to-add-a-quick-transition-from-the-clip-menu" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Right-click the first clip in a pair of adjacent clips.</li>
+<li>Choose <strong>Transition to next</strong>.</li>
+<li>Pick one of the quick options. The quick menu shows the preset name and its default duration, such as <strong>fade</strong> with <strong>0.5s</strong>.</li>
+<li>The editor adds the transition to the next clip on the same track.</li>
+</ol>
+<p>If there is no next clip on that track, the transition option is not shown. If the editor cannot find a next clip, it warns <strong>No next clip on this track to transition into</strong>.</p>
+<h2 id="how-to-change-transition-style-and-duration">How to change transition style and duration<a class="headerlink" href="#how-to-change-transition-style-and-duration" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Click the transition marker on the timeline.</li>
+<li>In <strong>Transition</strong>, choose a different preset. The selected preset shows a check mark.</li>
+<li>Under <strong>Duration</strong>, drag the slider to set how long the overlap lasts.</li>
+<li>Or click a duration chip: <strong>0.3s</strong>, <strong>0.5s</strong>, <strong>1.0s</strong>, or <strong>1.5s</strong>.</li>
+<li>Click <strong>Apply</strong> to save the change.</li>
+<li>To remove the effect, click <strong>Remove</strong>. You can also choose <strong>None</strong> to keep the cut without a transition.</li>
+</ol>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Transitions work at the cut between adjacent clips on the same track. If there is a gap, move the clips together first.</li>
+<li>The timeline marker is the main editing handle for changing a transition after it is created.</li>
+<li><strong>Duration</strong> is shown in seconds. The slider supports short transitions around <strong>0.2s</strong> up to longer transitions around <strong>2.0s</strong>.</li>
+<li>Very long transitions are automatically limited by the length of the surrounding clips, so short clips may not show the full requested duration.</li>
+<li>Quick transitions use a default <strong>0.5s</strong> duration. Use the marker popover if you want a different duration.</li>
+<li>Transitions are visual effects for clips; they are separate from item animations such as fade-in or slide-in on a single selected item.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="04-timeline-editing.html">Timeline editing</a></li>
+<li><a href="02-media-library.html">Media Library</a></li>
+<li><a href="03-scenes-templates-styles.html">Scenes, Templates &amp; Styles</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#where-to-find-it">Where to find it</a></li>
+<li><a href="#what-you-can-do">What you can do</a></li>
+<li><a href="#how-to-browse-available-transitions">How to browse available transitions</a></li>
+<li><a href="#how-to-add-a-transition-between-two-clips">How to add a transition between two clips</a></li>
+<li><a href="#how-to-add-a-quick-transition-from-the-clip-menu">How to add a quick transition from the clip menu</a></li>
+<li><a href="#how-to-change-transition-style-and-duration">How to change transition style and duration</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

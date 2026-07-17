@@ -27,6 +27,8 @@ Select an audio or video item on the canvas or timeline to open its properties p
 
 ## How to adjust clip volume, gain, fades, and speed
 
+![Audio Settings — Basic tab: Source, GAIN meter (−∞ to +48 dB), Volume, Active/Audio toggles, Track role (auto-duck), Live Meter, and Loudness.](images/explore-audio-default.png)
+
 1. Select an audio clip or a video clip with sound.
 2. Open **Basic** in the properties panel.
 3. Drag **Gain** for dB-style mixing. The readout shows values such as **−∞ dB**, **0.0 dB**, or **+6.0 dB**. Double-click the fader to reset to **0 dB**.

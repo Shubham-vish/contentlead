@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Item Properties — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link active" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Item Properties</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>The properties panel is the right-hand panel that appears whenever you select an item. It gives you every layout, appearance, media, audio, effect, camera, and layer control for that item, grouped into tabs and collapsible sections.</p>
+</blockquote>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select an item on the canvas or in the timeline.</li>
+<li>The right-hand <strong>properties panel</strong> opens automatically. Its header shows <strong>Properties</strong> (or <strong>Tools</strong> while other tool panels are open) plus a title that changes with the selected item type.</li>
+<li>If nothing is selected, the panel shows <strong>No item selected</strong>.</li>
+</ol>
+<h3 id="panel-title-by-item-type">Panel title by item type<a class="headerlink" href="#panel-title-by-item-type" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Selected item</th>
+<th>Panel title</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Caption</td>
+<td><strong>Caption Settings</strong></td>
+</tr>
+<tr>
+<td>Text</td>
+<td><strong>Text Settings</strong></td>
+</tr>
+<tr>
+<td>Image</td>
+<td><strong>Image Settings</strong></td>
+</tr>
+<tr>
+<td>Video</td>
+<td><strong>Video Settings</strong></td>
+</tr>
+<tr>
+<td>Audio</td>
+<td><strong>Audio Settings</strong></td>
+</tr>
+<tr>
+<td>Shape</td>
+<td><strong>Shape Settings</strong></td>
+</tr>
+<tr>
+<td>Progress bar</td>
+<td><strong>Progress Bar Settings</strong></td>
+</tr>
+<tr>
+<td>Progress frame</td>
+<td><strong>Progress Frame Settings</strong></td>
+</tr>
+<tr>
+<td>Audio-bar visualizers</td>
+<td><strong>Lineal Bars Settings</strong>, <strong>Wave Bars Settings</strong>, <strong>Hill Bars Settings</strong>, or <strong>Radial Bars Settings</strong></td>
+</tr>
+<tr>
+<td>Template / scene</td>
+<td><strong>Template Settings</strong></td>
+</tr>
+<tr>
+<td>Nested scene</td>
+<td><strong>Nested Scene (n layers)</strong></td>
+</tr>
+<tr>
+<td>Anything else</td>
+<td><strong>Item Settings</strong></td>
+</tr>
+</tbody>
+</table>
+<p>When several items of the <strong>same</strong> type are selected, the header shows a bulk title such as <strong>Bulk Editing 3 images</strong>, with in-panel indicators like <strong>Images (3 selected)</strong> or <strong>Editing all 3 images</strong>. When you select <strong>mixed</strong> item types, the header shows <strong>3 Mixed Items</strong> and the panel offers only the shared controls.</p>
+<h3 id="managing-the-panel-window">Managing the panel window<a class="headerlink" href="#managing-the-panel-window" title="Permanent link">&para;</a></h3>
+<p>The panel header has controls for how the panel is shown:</p>
+<table>
+<thead>
+<tr>
+<th>Button / tooltip</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Pop out to separate window</strong></td>
+<td>Moves the properties panel into its own floating OS window.</td>
+</tr>
+<tr>
+<td><strong>Bring popout to front</strong></td>
+<td>Raises the popped-out window above other windows.</td>
+</tr>
+<tr>
+<td><strong>Dock panel back</strong> / <strong>Pin panel back</strong></td>
+<td>Returns a floating or popped-out panel to the right side.</td>
+</tr>
+<tr>
+<td><strong>Undock panel (make floating)</strong></td>
+<td>Detaches the panel so you can drag it anywhere over the editor.</td>
+</tr>
+<tr>
+<td><strong>Expand panel</strong> / <strong>Collapse panel</strong></td>
+<td>Widens or narrows the panel.</td>
+</tr>
+<tr>
+<td><strong>Drag to resize</strong></td>
+<td>Drag the panel's inner edge to change its width.</td>
+</tr>
+<tr>
+<td><strong>Close panel</strong></td>
+<td>Closes the properties panel.</td>
+</tr>
+</tbody>
+</table>
+<p>An <strong>AI Editor</strong> side panel is available too, opened with <strong>Open AI Editor</strong> and managed with <strong>Dock</strong>, <strong>Float</strong>, <strong>Close</strong>, <strong>Close AI Editor</strong>, and <strong>Collapse AI Editor</strong>. It shows <strong>Loading AI...</strong> while it starts.</p>
+<h2 id="what-you-can-do">What you can do<a class="headerlink" href="#what-you-can-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Switch between the panel <strong>tabs</strong> for the selected item (Design, Animate, Effects, Camera, Auto-Captions, Basic, Content, Settings, Transcript — the set depends on item type).</li>
+<li>Search the panel with the per-item search box (for example <strong>Search image settings...</strong>).</li>
+<li>Expand or collapse each section by clicking its heading.</li>
+<li>Align, distribute, position, scale, and rotate items.</li>
+<li>Adjust common appearance: <strong>Opacity</strong>, <strong>Rounded</strong> corners, <strong>Blur</strong>, <strong>Brightness</strong>, flip, border/stroke, and shadow.</li>
+<li>Set image/video <strong>Scale</strong> to <strong>Fill</strong>, <strong>Fit</strong>, <strong>Original</strong>, or <strong>Custom</strong>; crop with numeric edges or the visual <strong>Crop</strong> dialog.</li>
+<li>Control clip playback: <strong>Volume</strong>, <strong>Speed</strong> / <strong>Playback rate</strong>, and <strong>Reverse</strong>; turn a clip <strong>Active/Off</strong> or <strong>Audio/Muted</strong>.</li>
+<li>Apply <strong>Clip Mask</strong> shapes, <strong>Blend Mode</strong>, <strong>Color &amp; Filters</strong> grading, <strong>Remove Background</strong> / <strong>Color Keying (Chroma)</strong>, <strong>AI Auto Matting</strong>, <strong>3D Camera</strong>, <strong>Zoom to Spot</strong>, and <strong>Face Track</strong>.</li>
+<li>Style shapes, text, captions, progress bars/frames, and templates with type-specific controls.</li>
+<li>Edit nested-scene layers, and use floating pickers for <strong>Fonts</strong>, <strong>Presets</strong>, and <strong>Animations</strong>.</li>
+<li>Remove all motion with <strong>Reset All</strong>.</li>
+</ul>
+<h2 id="how-to-open-and-navigate-the-properties-panel">How to open and navigate the properties panel<a class="headerlink" href="#how-to-open-and-navigate-the-properties-panel" title="Permanent link">&para;</a></h2>
+<p><img alt="The Properties panel open on the right with the Design, Animate, and Effects tabs." src="images/properties-video.png" /></p>
+<ol>
+<li>Click a single item on the canvas or timeline.</li>
+<li>Click a <strong>tab</strong> at the top of the panel. The available tabs depend on the item type:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Item type</th>
+<th>Tabs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Image</td>
+<td><strong>Design</strong>, <strong>Animate</strong>, <strong>Effects</strong>, <strong>Camera</strong></td>
+</tr>
+<tr>
+<td>Video</td>
+<td><strong>Design</strong>, <strong>Animate</strong>, <strong>Effects</strong>, <strong>Camera</strong>, <strong>Auto-Captions</strong></td>
+</tr>
+<tr>
+<td>Shape</td>
+<td><strong>Design</strong>, <strong>Effects</strong></td>
+</tr>
+<tr>
+<td>Text</td>
+<td><strong>Design</strong>, <strong>Animate</strong>, <strong>Effects</strong></td>
+</tr>
+<tr>
+<td>Caption</td>
+<td><strong>Transcript</strong>, <strong>Content</strong>, <strong>Design</strong>, <strong>Animate</strong>, <strong>Effects</strong></td>
+</tr>
+<tr>
+<td>Audio</td>
+<td><strong>Basic</strong>, <strong>Effects</strong>, <strong>Auto-Captions</strong></td>
+</tr>
+<tr>
+<td>Template / scene</td>
+<td><strong>Content</strong>, <strong>Settings</strong>, <strong>Effects</strong></td>
+</tr>
+<tr>
+<td>Progress bar / frame</td>
+<td><strong>Design</strong>, <strong>Effects</strong></td>
+</tr>
+</tbody>
+</table>
+<ol start="3">
+<li>Use the search box to jump to a control by name. Each item type has its own placeholder: <strong>Search image settings...</strong>, <strong>Search video settings...</strong>, <strong>Search text settings...</strong>, <strong>Search caption settings...</strong>, <strong>Search audio settings...</strong>, or the generic <strong>Search settings...</strong>. You can search by common terms such as <em>volume, opacity, blur, brightness, border radius, scale, fit, gain, meter, eq, playback rate, reverse, keyframe, easing, chroma, blend, saturation, camera, focus point, face tracking, font, letter spacing, caption style, fade in, fade out, gradient, change shape,</em> and many more.</li>
+<li>Open or close a section by clicking its heading (for example <strong>Basic</strong>, <strong>Border &amp; Shadow</strong>, <strong>Color &amp; Filters</strong>, <strong>Speed</strong>, <strong>Keyframes</strong>). Section open/closed states are remembered.</li>
+</ol>
+<h2 id="how-to-align-and-distribute-items">How to align and distribute items<a class="headerlink" href="#how-to-align-and-distribute-items" title="Permanent link">&para;</a></h2>
+<p>The <strong>Align</strong> toolbar appears at the top of the panel for supported visual items. Its heading reads <strong>Align</strong> for one item or <strong>Align (n items)</strong> for a selection.</p>
+<table>
+<thead>
+<tr>
+<th>Control (tooltip)</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Align left to canvas</strong> / <strong>Align left to selection</strong></td>
+<td>Moves the item to the left edge of the canvas, or aligns the selection's left edges.</td>
+</tr>
+<tr>
+<td><strong>Center horizontally</strong></td>
+<td>Centers horizontally.</td>
+</tr>
+<tr>
+<td><strong>Align right to canvas</strong> / <strong>Align right to selection</strong></td>
+<td>Right edge of canvas or selection.</td>
+</tr>
+<tr>
+<td><strong>Align top to canvas</strong> / <strong>Align top to selection</strong></td>
+<td>Top edge of canvas or selection.</td>
+</tr>
+<tr>
+<td><strong>Center vertically</strong></td>
+<td>Centers vertically.</td>
+</tr>
+<tr>
+<td><strong>Align bottom to canvas</strong> / <strong>Align bottom to selection</strong></td>
+<td>Bottom edge of canvas or selection.</td>
+</tr>
+<tr>
+<td><strong>Distribute horizontally</strong></td>
+<td>Spaces selected items evenly left-to-right.</td>
+</tr>
+<tr>
+<td><strong>Distribute vertically</strong></td>
+<td>Spaces selected items evenly top-to-bottom.</td>
+</tr>
+<tr>
+<td><strong>Need 3+ items</strong></td>
+<td>Tooltip shown when distribute is unavailable (fewer than three items selected).</td>
+</tr>
+</tbody>
+</table>
+<p>Whether the target is the canvas or the selection changes automatically based on how many items are selected.</p>
+<h2 id="how-to-adjust-common-transform-and-appearance-controls">How to adjust common transform and appearance controls<a class="headerlink" href="#how-to-adjust-common-transform-and-appearance-controls" title="Permanent link">&para;</a></h2>
+<p>These controls recur across most visual item types (exact labels below are the on-screen text).</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Label / units</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Opacity</td>
+<td><strong>Opacity</strong>, shown in <strong>%</strong></td>
+<td>Changes transparency.</td>
+</tr>
+<tr>
+<td>Corner radius</td>
+<td><strong>Rounded</strong>, in <strong>px</strong> (also <strong>Radius</strong> in some panels)</td>
+<td>Rounds the item's corners.</td>
+</tr>
+<tr>
+<td>Blur</td>
+<td><strong>Blur</strong>, in <strong>px</strong></td>
+<td>Softens the item.</td>
+</tr>
+<tr>
+<td>Brightness</td>
+<td><strong>Brightness</strong>, in <strong>%</strong></td>
+<td>Darkens or brightens the item.</td>
+</tr>
+<tr>
+<td>Flip</td>
+<td><strong>Flip</strong>, with <strong>Flip X</strong> and <strong>Flip Y</strong></td>
+<td>Mirrors horizontally or vertically.</td>
+</tr>
+<tr>
+<td>Scale</td>
+<td><strong>Scale</strong></td>
+<td>Resizes without changing the source dimensions.</td>
+</tr>
+<tr>
+<td>Rotation</td>
+<td><strong>Rotate</strong> / <strong>Rotation</strong></td>
+<td>Rotates the item.</td>
+</tr>
+<tr>
+<td>Lock ratio</td>
+<td><strong>Lock Ratio</strong> with <strong>Yes</strong> / <strong>No</strong></td>
+<td>Keeps width and height proportional while resizing.</td>
+</tr>
+</tbody>
+</table>
+<p>Number controls have both a slider and a typed value; drag the slider or type a number. You can also drag an item on the canvas to move it, and use its canvas handles to resize or rotate.</p>
+<h2 id="how-to-edit-image-properties">How to edit image properties<a class="headerlink" href="#how-to-edit-image-properties" title="Permanent link">&para;</a></h2>
+<p>Select an image. The panel title is <strong>Image Settings</strong> (bulk: <strong>Images (n selected)</strong> / <strong>Editing all n images</strong>).</p>
+<p><img alt="Image Settings — Design tab: Scale (Fit), Lock Ratio, Opacity, Radius, Blur, Brightness, per-side Crop, and Border &amp; Shadow." src="images/explore-image-design.png" /></p>
+<p><strong>Design tab</strong></p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Style Template</strong></td>
+<td>Pick a motion/style preset; see the animation options below.</td>
+</tr>
+<tr>
+<td><strong>Entry Animation</strong> / <strong>Exit Animation</strong></td>
+<td>Choose how the image enters and leaves; <strong>None</strong> to clear.</td>
+</tr>
+<tr>
+<td><strong>Basic</strong></td>
+<td><strong>Scale</strong> (<strong>Fill</strong>, <strong>Fit</strong>, <strong>Original</strong>), <strong>Crop</strong>, <strong>Opacity</strong>, <strong>Radius</strong>, <strong>Blur</strong>, <strong>Brightness</strong>.</td>
+</tr>
+<tr>
+<td><strong>Border &amp; Shadow</strong></td>
+<td><strong>Border</strong> and <strong>Shadow</strong> controls (color, size, X, Y, blur).</td>
+</tr>
+<tr>
+<td><strong>Clip Mask</strong></td>
+<td>Mask the image to a shape (see Clip Mask below).</td>
+</tr>
+<tr>
+<td><strong>Remove Background</strong></td>
+<td>Chroma/background removal controls.</td>
+</tr>
+<tr>
+<td><strong>Blend Mode</strong></td>
+<td>How the image blends with layers beneath it.</td>
+</tr>
+<tr>
+<td><strong>Color &amp; Filters</strong></td>
+<td>Color-grade presets and adjustments.</td>
+</tr>
+<tr>
+<td><strong>Reset All</strong></td>
+<td>Remove all keyframes, effects, and animations.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Animate tab</strong> — <strong>Style Template</strong>, <strong>Entry Animation</strong>, <strong>Exit Animation</strong>, and <strong>Animations</strong>.</p>
+<p><strong>Effects tab</strong> — <strong>Keyframes</strong>, <strong>Effects</strong>, <strong>Clip Mask</strong>, <strong>Remove Background</strong>, <strong>Blend Mode</strong>, <strong>Color &amp; Filters</strong>, <strong>Reset All</strong>.</p>
+<p><strong>Camera tab</strong> — <strong>3D Camera</strong> and <strong>Zoom to Spot</strong>.</p>
+<h2 id="how-to-edit-video-properties">How to edit video properties<a class="headerlink" href="#how-to-edit-video-properties" title="Permanent link">&para;</a></h2>
+<p>Select a video. The panel title is <strong>Video Settings</strong>.</p>
+<p><img alt="Video Settings panel: Scale, Crop, Volume, Opacity, Radius, Blur, Brightness, plus Audio, Speed, Border &amp; Shadow, Color Keying (Chroma), and AI Auto Matting sections." src="images/properties-video.png" /></p>
+<p><strong>Design tab</strong></p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Basic</strong></td>
+<td><strong>Scale</strong> (<strong>Fill</strong>, <strong>Fit</strong>, <strong>Original</strong>, <strong>Custom</strong>), <strong>Crop</strong>, clip toggle <strong>Active/Off</strong>, audio toggle <strong>Audio/Muted</strong>, <strong>Volume</strong>, <strong>Opacity</strong>, <strong>Radius</strong>, <strong>Blur</strong>, <strong>Brightness</strong>.</td>
+</tr>
+<tr>
+<td><strong>Audio</strong></td>
+<td>Expanded audio controls for the clip's sound.</td>
+</tr>
+<tr>
+<td><strong>Speed</strong></td>
+<td>Playback speed (see the Speed table below).</td>
+</tr>
+<tr>
+<td><strong>Animations</strong></td>
+<td>Enter/exit and looping motion.</td>
+</tr>
+<tr>
+<td><strong>Border &amp; Shadow</strong></td>
+<td>Border and shadow styling.</td>
+</tr>
+<tr>
+<td><strong>Color &amp; Filters</strong></td>
+<td>Color grading.</td>
+</tr>
+<tr>
+<td><strong>3D Camera</strong> / <strong>Zoom to Spot</strong></td>
+<td>Camera motion.</td>
+</tr>
+<tr>
+<td><strong>Face Track</strong></td>
+<td>Auto-follow a speaker's face.</td>
+</tr>
+</tbody>
+</table>
+<p>The clip and audio toggles show helpful tooltips: <strong>Clip is OFF — invisible &amp; silent in preview/export. Click to turn it back on.</strong>, <strong>Clip is active. Click to turn it off (invisible + silent).</strong>, <strong>Audio is muted. Click to unmute this clip.</strong>, and <strong>Audio is on. Click to mute this clip.</strong></p>
+<p><strong>Animate tab</strong> — <strong>Animations</strong>.</p>
+<p><strong>Effects tab</strong> — <strong>Keyframes</strong>, <strong>Effects</strong>, <strong>Clip Mask</strong>, <strong>Color Keying (Chroma)</strong>, <strong>AI Auto Matting</strong>, <strong>Blend Mode</strong>, <strong>Color &amp; Filters</strong>.</p>
+<p><strong>Camera tab</strong> — <strong>3D Camera</strong> and <strong>Zoom to Spot</strong>.</p>
+<p><strong>Auto-Captions tab</strong> — generate captions from the clip. If unavailable it shows <strong>Transcription is unavailable for this clip.</strong> Caption styling is covered in <a href="05-text-and-captions.html">Text and Captions</a>.</p>
+<h3 id="speed-controls-video-and-audio">Speed controls (video and audio)<a class="headerlink" href="#speed-controls-video-and-audio" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Playback rate</strong></td>
+<td>Shows the current speed; tip: <strong>Controls clip playback speed.</strong></td>
+</tr>
+<tr>
+<td><strong>0.25x</strong>, <strong>0.5x</strong>, <strong>0.75x</strong>, <strong>1x</strong>, <strong>1.5x</strong>, <strong>2x</strong>, <strong>3x</strong>, <strong>4x</strong></td>
+<td>Preset speeds.</td>
+</tr>
+<tr>
+<td><strong>Custom</strong></td>
+<td>Fine-tune the speed.</td>
+</tr>
+<tr>
+<td><strong>Reverse</strong></td>
+<td><strong>Play the selected clip backward.</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-edit-audio-properties">How to edit audio properties<a class="headerlink" href="#how-to-edit-audio-properties" title="Permanent link">&para;</a></h2>
+<p>Select an audio item. The panel title is <strong>Audio Settings</strong>.</p>
+<p><img alt="Audio Settings — Basic tab: Source, GAIN meter, Volume, Active/Audio toggles, Track role (auto-duck) Default/Voice/Music, Live Meter, and Loudness." src="images/explore-audio-default.png" /></p>
+<p><strong>Basic tab</strong></p>
+<table>
+<thead>
+<tr>
+<th>Section / control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Source</strong></td>
+<td>Shows the audio file; <strong>Copy full path</strong> copies the source path. If none, shows <strong>No audio source available.</strong></td>
+</tr>
+<tr>
+<td><strong>Volume</strong></td>
+<td>Adjusts level (audio items allow boosted values above 100%).</td>
+</tr>
+<tr>
+<td>Clip toggle</td>
+<td><strong>Active</strong> / <strong>Off</strong> includes or excludes the clip.</td>
+</tr>
+<tr>
+<td>Audio toggle</td>
+<td><strong>Audio</strong> / <strong>Muted</strong> mutes or unmutes.</td>
+</tr>
+<tr>
+<td><strong>Track role (auto-duck)</strong></td>
+<td><strong>Default</strong>, <strong>Voice</strong>, or <strong>Music</strong> — controls automatic ducking.</td>
+</tr>
+<tr>
+<td><strong>Audio Processing</strong></td>
+<td>Opens processing controls (gain, EQ, and related tools). Includes <strong>Open master bus controls</strong> for the master bus.</td>
+</tr>
+<tr>
+<td><strong>Live meter</strong></td>
+<td>Real-time L/R levels. Toggle with <strong>Enable live meter</strong> / <strong>Disable live meter (saves CPU)</strong>. Shows <strong>(paused)</strong> when playback is stopped.</td>
+</tr>
+<tr>
+<td><strong>Loudness</strong></td>
+<td>Analysis values <strong>Peak</strong>, <strong>RMS</strong>, <strong>source</strong>, and <strong>after volume</strong>. Shows <strong>analyzing…</strong>, <strong>No audio source.</strong>, or <strong>Couldn't analyze (silent track or unsupported codec).</strong> as needed.</td>
+</tr>
+<tr>
+<td><strong>Speed</strong></td>
+<td>Playback speed presets, <strong>Custom</strong>, and <strong>Reverse</strong> (same as video).</td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>Gain</strong> fader shows a decibel scale (<strong>−∞ dB</strong> at the bottom). Tip: <strong>Drag to adjust · double-click for 0 dB.</strong></p>
+<p><strong>Effects tab</strong> — <strong>Animations</strong>, <strong>Effects</strong>, <strong>Keyframes</strong>.</p>
+<p><strong>Auto-Captions tab</strong> — generate captions from the audio.</p>
+<h2 id="how-to-edit-shape-properties">How to edit shape properties<a class="headerlink" href="#how-to-edit-shape-properties" title="Permanent link">&para;</a></h2>
+<p>Select a shape. The panel uses the <strong>Design</strong> and <strong>Effects</strong> tabs.</p>
+<p><strong>Design tab</strong></p>
+<table>
+<thead>
+<tr>
+<th>Section / control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fill Color</strong></td>
+<td>Changes the shape fill (solid or gradient).</td>
+</tr>
+<tr>
+<td><strong>Stroke</strong></td>
+<td>Border/stroke controls: <strong>Stroke Color</strong> and <strong>Stroke Width</strong>.</td>
+</tr>
+<tr>
+<td><strong>Appearance</strong></td>
+<td><strong>Opacity</strong>, <strong>Blur</strong>, and <strong>Brightness</strong>.</td>
+</tr>
+<tr>
+<td><strong>Size</strong></td>
+<td><strong>Width</strong> and <strong>Height</strong> inputs.</td>
+</tr>
+<tr>
+<td><strong>Shadow</strong></td>
+<td>Shadow <strong>Color</strong>, <strong>X</strong>, <strong>Y</strong>, and <strong>Blur</strong>.</td>
+</tr>
+<tr>
+<td><strong>Change Shape</strong></td>
+<td>Swap the current shape for another shape thumbnail.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Effects tab</strong> — <strong>Keyframes</strong>.</p>
+<h2 id="how-to-edit-text-properties">How to edit text properties<a class="headerlink" href="#how-to-edit-text-properties" title="Permanent link">&para;</a></h2>
+<p>Select a text item. The panel uses <strong>Design</strong>, <strong>Animate</strong>, and <strong>Effects</strong> tabs.</p>
+<p><img alt="Text Settings — Design tab: Preset, Font, Weight, Size, Color, Fill, Gradient, Align, Case, Decoration, Opacity, and Typography." src="images/explore-text-design.png" /></p>
+<p><strong>Design tab</strong></p>
+<ul>
+<li><strong>Text Style</strong> — the main typography section, with <strong>Reset Style</strong> to restore defaults. Controls include <strong>Styles</strong> (font family), <strong>Size</strong>, <strong>Typography</strong>, <strong>Line Height</strong>, <strong>Letter Spacing</strong>, <strong>Word Spacing</strong>, <strong>Border Radius</strong>, <strong>Rotation</strong>, <strong>Weight</strong>, <strong>Decoration</strong>, and <strong>Case</strong> (<strong>As typed</strong>, <strong>Uppercase</strong>, <strong>Lowercase</strong>). Alignment offers <strong>Left</strong>, <strong>Center</strong>, <strong>Right</strong>. <strong>Blend Mode</strong> and <strong>Background Color</strong> are also here.</li>
+<li><strong>Fill</strong> — choose a solid <strong>Color</strong> or turn on <strong>Gradient</strong> (tip: <strong>Use a text gradient instead of a solid color</strong>) and set <strong>Color 1</strong>, <strong>Color 2</strong>, and <strong>Direction</strong>. <strong>Padding</strong> offers <strong>Top</strong>, <strong>Right</strong>, <strong>Bottom</strong>, and <strong>Left</strong>.</li>
+<li><strong>Stroke &amp; Shadow</strong> — add outline and shadow. Use <strong>Add Shadow</strong> (under <strong>Extra Shadows</strong>, listed as <strong>Shadow 1</strong>, <strong>Shadow 2</strong>, …) and <strong>Add Stroke</strong> (under <strong>Extra Strokes</strong>, listed as <strong>Stroke 1</strong>, <strong>Stroke 2</strong>, …).</li>
+<li><strong>Word Colors</strong> — <strong>Pick colors for individual words.</strong> Use <strong>Reset All</strong> to clear. If there is no text yet it shows <strong>Add some text to style words.</strong></li>
+</ul>
+<p><strong>Animate tab</strong> — <strong>Animations</strong>.</p>
+<p><strong>Effects tab</strong> — <strong>Keyframes</strong> and <strong>Effects</strong>.</p>
+<h2 id="how-to-edit-caption-properties">How to edit caption properties<a class="headerlink" href="#how-to-edit-caption-properties" title="Permanent link">&para;</a></h2>
+<p>Select a caption. The panel uses <strong>Transcript</strong>, <strong>Content</strong>, <strong>Design</strong>, <strong>Animate</strong>, and <strong>Effects</strong> tabs.</p>
+<p><img alt="Caption Settings — Content tab: Words/Lines toggle, preset search, live preview, and the caption-style preset gallery." src="images/explore-caption-content.png" /></p>
+<table>
+<thead>
+<tr>
+<th>Tab</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Transcript</strong></td>
+<td>The caption transcript editor, for correcting words and timing.</td>
+</tr>
+<tr>
+<td><strong>Content</strong></td>
+<td><strong>Preset</strong> (choose a caption style), <strong>Caption Words</strong>, and <strong>Caption Colors</strong>.</td>
+</tr>
+<tr>
+<td><strong>Design</strong></td>
+<td><strong>Text Style</strong> and <strong>Stroke &amp; Shadow</strong>, as for text.</td>
+</tr>
+<tr>
+<td><strong>Animate</strong></td>
+<td><strong>Animations</strong>.</td>
+</tr>
+<tr>
+<td><strong>Effects</strong></td>
+<td><strong>Keyframes</strong> and <strong>Effects</strong>.</td>
+</tr>
+</tbody>
+</table>
+<p>If a caption has no words yet, the panel shows <strong>No caption text yet</strong> and <strong>This caption has no words. Add captions to get started.</strong> Caption styling and word editing are documented in <a href="05-text-and-captions.html">Text and Captions</a>.</p>
+<h2 id="how-to-edit-template-scene-properties">How to edit template (scene) properties<a class="headerlink" href="#how-to-edit-template-scene-properties" title="Permanent link">&para;</a></h2>
+<p>Select a template scene. The panel title is <strong>Template Settings</strong> and it uses the <strong>Content</strong>, <strong>Settings</strong>, and <strong>Effects</strong> tabs. Use the <strong>Code</strong> button (<strong>View &amp; fork source code</strong>) to open the scene's source.</p>
+<h3 id="content-tab">Content tab<a class="headerlink" href="#content-tab" title="Permanent link">&para;</a></h3>
+<p><strong>Scene Orientation</strong> sets the canvas for the scene:</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Options</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Orientation</td>
+<td><strong>Landscape</strong>, <strong>Portrait</strong></td>
+</tr>
+<tr>
+<td>Size presets</td>
+<td><strong>1080p</strong>, <strong>720p</strong>, <strong>Square</strong>, <strong>4:5</strong>, <strong>9:16</strong></td>
+</tr>
+<tr>
+<td>Custom size</td>
+<td><strong>Width</strong>, <strong>Height</strong></td>
+</tr>
+<tr>
+<td><strong>Speed</strong></td>
+<td>Playback speed (title: <strong>Playback speed</strong>).</td>
+</tr>
+<tr>
+<td><strong>Opacity</strong></td>
+<td>Scene opacity, in <strong>%</strong>.</td>
+</tr>
+<tr>
+<td><strong>Reset</strong></td>
+<td>Restores orientation defaults.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Live Preview</strong> shows a live render of the scene. Use <strong>Float</strong> / <strong>Dock</strong> to detach it (<strong>Undock preview (float freely)</strong> / <strong>Dock preview back</strong>); when floating it says <strong>Preview is floating — drag it anywhere on screen</strong> and <strong>Click here to dock back</strong>.</p>
+<p><strong>Content</strong> — the scene's own fields, taken from that template's schema. Field labels vary by template; each field type is edited differently:</p>
+<table>
+<thead>
+<tr>
+<th>Field type</th>
+<th>How you edit it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Text</td>
+<td>A text box; required fields are marked with <strong>*</strong>.</td>
+</tr>
+<tr>
+<td>Number</td>
+<td>A number box with a slider.</td>
+</tr>
+<tr>
+<td>Boolean</td>
+<td>A toggle switch.</td>
+</tr>
+<tr>
+<td>Color</td>
+<td>A color swatch that opens a picker (<strong>Click to pick color</strong>), a hex box (<strong>#000000</strong>), a transparent toggle (<strong>Set to opaque</strong> / <strong>Set to transparent</strong>), and <strong>Close color picker</strong>.</td>
+</tr>
+<tr>
+<td>List of text (tags)</td>
+<td>Type into <strong>Add item...</strong> and press add; each tag has a remove button; a count shows <strong>n items</strong>.</td>
+</tr>
+<tr>
+<td>List of numbers</td>
+<td><strong>Add</strong> and <strong>Remove last</strong> buttons.</td>
+</tr>
+<tr>
+<td>List of objects</td>
+<td>Rows labeled <strong>Item 1</strong>, <strong>Item 2</strong>, … each expanding to a sub-form.</td>
+</tr>
+<tr>
+<td>Choice / enum</td>
+<td>A dropdown with placeholder <strong>Select...</strong></td>
+</tr>
+<tr>
+<td>Range</td>
+<td>Two or three linked sliders labeled <strong>Start</strong> → <strong>End</strong>, or <strong>Start</strong> → <strong>Peak</strong> → <strong>End</strong>.</td>
+</tr>
+<tr>
+<td>Media</td>
+<td>A media picker (see below). Grouped under <strong>Media</strong>.</td>
+</tr>
+<tr>
+<td>Camera fields</td>
+<td>Grouped under <strong>Camera</strong>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Style Overrides</strong> — style fields grouped under <strong>Effects</strong>, <strong>Typography</strong>, <strong>Theme Colors</strong>, and <strong>Layout</strong>. Advanced users can open <strong>Raw JSON (advanced)</strong> to edit the style JSON directly.</p>
+<p>For deep editing you can open the full JSON editor (<strong>Scene Props — <scene name></strong>, with <strong>Format</strong>, <strong>Copy</strong>, <strong>Apply &amp; Close</strong>, <strong>Cancel</strong>, and a <strong>Live Preview</strong> that shows <strong>Invalid JSON</strong>/<strong>Synced</strong>), or the scene code editor (<strong>Custom Scene Code</strong>, <strong>Bundled Scene Code</strong>, or <strong>Scene Source Code</strong>).</p>
+<h3 id="settings-tab">Settings tab<a class="headerlink" href="#settings-tab" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Background &amp; Effects</strong></td>
+<td><strong>Background</strong> color, <strong>Gradient</strong> intensity, and <strong>Vignette</strong> strength.</td>
+</tr>
+<tr>
+<td><strong>Size &amp; Crop</strong></td>
+<td><strong>W</strong> / <strong>H</strong>; size presets <strong>Full</strong>, <strong>Half</strong>, <strong>Square</strong>, <strong>Wide</strong>, <strong>Banner</strong>; <strong>Layout Presets</strong> (<strong>Full</strong>, <strong>Top Half</strong>, <strong>Bottom Half</strong>, <strong>Left Half</strong>, <strong>Right Half</strong>, <strong>Top Left ¼</strong>, <strong>Top Right ¼</strong>, <strong>Bottom Left ¼</strong>, <strong>Bottom Right ¼</strong>, <strong>Center Card</strong>, <strong>Top ⅓</strong>, <strong>Middle ⅓</strong>, <strong>Bottom ⅓</strong>); <strong>Crop Edges</strong> (<strong>Left</strong>, <strong>Right</strong>, <strong>Top</strong>, <strong>Bottom</strong>) with <strong>Reset</strong>, <strong>Center 50%</strong>, and <strong>Top Half</strong> quick actions.</td>
+</tr>
+<tr>
+<td><strong>Video Settings</strong></td>
+<td>For video-based scenes: <strong>Volume</strong>, <strong>Speed</strong>, <strong>Blur</strong>, <strong>Brightness</strong>, <strong>Radius</strong>, plus an <strong>Audio</strong> subsection.</td>
+</tr>
+<tr>
+<td><strong>All Props (JSON)</strong></td>
+<td>Inline JSON editor with <strong>Apply</strong>/<strong>Saved</strong>, <strong>Copy</strong>, and <strong>Expand</strong> (<strong>Open in full editor</strong>).</td>
+</tr>
+<tr>
+<td><strong>Animations</strong></td>
+<td>Scene <strong>Enter</strong> and <strong>Exit</strong> motion, with frame durations (<strong>fr</strong>) and quick presets <strong>Fade In/Out</strong>, <strong>Slide Up</strong>, <strong>Scale In</strong>, and <strong>None</strong>. Full options: <strong>None</strong>, <strong>Fade</strong>, <strong>Slide Up</strong>, <strong>Slide Down</strong>, <strong>Slide Left</strong>, <strong>Slide Right</strong>, <strong>Scale</strong>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="effects-tab">Effects tab<a class="headerlink" href="#effects-tab" title="Permanent link">&para;</a></h3>
+<p><strong>Effects</strong>, <strong>Keyframes</strong>, and (where supported) <strong>3D Camera</strong> and <strong>Zoom to Spot</strong>.</p>
+<h2 id="how-to-edit-progress-bars-and-progress-frames">How to edit progress bars and progress frames<a class="headerlink" href="#how-to-edit-progress-bars-and-progress-frames" title="Permanent link">&para;</a></h2>
+<p>Select a progress item (<strong>Progress Bar Settings</strong> or <strong>Progress Frame Settings</strong>). Tabs are <strong>Design</strong> and <strong>Effects</strong>.</p>
+<p><strong>Design tab</strong></p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Style</strong></td>
+<td>Progress-bar styles <strong>Solid</strong>, <strong>Segmented</strong>, <strong>Gradient</strong>, <strong>Glow</strong>, <strong>Striped</strong>, <strong>Outline</strong>, <strong>Dual</strong>; progress-frame styles <strong>Corner</strong>, <strong>Full Border</strong>. Style-specific extras: <strong>Segments</strong> and <strong>Gap</strong> (Segmented), <strong>Border</strong> (Outline), <strong>Gradient End</strong> (Gradient).</td>
+</tr>
+<tr>
+<td><strong>Colors</strong></td>
+<td><strong>Progress Color</strong> and <strong>Track Color</strong>.</td>
+</tr>
+<tr>
+<td><strong>Settings</strong></td>
+<td><strong>Inverted</strong> toggle, <strong>Height</strong> (bars), <strong>Direction</strong> (<strong>Horizontal</strong> / <strong>Vertical</strong>, bars), <strong>Thickness</strong> (frames), <strong>Flip X</strong> / <strong>Flip Y</strong> (frames), plus <strong>Radius</strong>, <strong>Opacity</strong>, <strong>Blur</strong>, and <strong>Brightness</strong> where applicable.</td>
+</tr>
+<tr>
+<td><strong>Quick Presets</strong></td>
+<td>One-tap color presets: <strong>Pink</strong>, <strong>Blue</strong>, <strong>Green</strong>, <strong>Purple</strong>, <strong>Orange</strong>, <strong>Red</strong>, <strong>Yellow</strong>, <strong>Teal</strong>, <strong>Indigo</strong>, <strong>Rose</strong>, <strong>Lime</strong>, <strong>White</strong>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Effects tab</strong> — <strong>Animations</strong>.</p>
+<h2 id="how-to-edit-nested-scene-layers">How to edit nested scene layers<a class="headerlink" href="#how-to-edit-nested-scene-layers" title="Permanent link">&para;</a></h2>
+<p>A nested scene groups several items. Its panel title is <strong>Nested Scene (n layers)</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Uncombine</strong></td>
+<td>Breaks the nested scene back into separate items (confirms <strong>Ungrouped n items</strong>; shows <strong>Failed to uncombine</strong> on error).</td>
+</tr>
+<tr>
+<td><strong>Select All</strong></td>
+<td>Selects every layer inside.</td>
+</tr>
+<tr>
+<td><strong>Quick Edit</strong></td>
+<td>Compact controls for the selected layer: <strong>Position &amp; Size</strong>, <strong>Opacity</strong>, <strong>Round</strong>, and (for video layers) <strong>Vol</strong>, <strong>Speed</strong>, <strong>Blur</strong>, <strong>Bright</strong>.</td>
+</tr>
+<tr>
+<td><strong>Full Settings</strong></td>
+<td>Opens the full native settings for that layer's type.</td>
+</tr>
+<tr>
+<td>Batch (multiple layers)</td>
+<td><strong>Opacity (all)</strong> and <strong>Visibility</strong> with <strong>Show</strong> / <strong>Hide</strong>.</td>
+</tr>
+</tbody>
+</table>
+<p>Use each layer row's arrow controls to reorder a layer, the eye control to show/hide it, and the trash control to delete it. You cannot remove the last layer — it shows <strong>Can't remove last layer</strong>.</p>
+<h2 id="how-to-edit-multiple-mixed-items">How to edit multiple mixed items<a class="headerlink" href="#how-to-edit-multiple-mixed-items" title="Permanent link">&para;</a></h2>
+<p><img alt="The properties panel titled &quot;Bulk Editing 3 captions&quot; when several items of the same type are selected." src="images/properties-multi.png" /></p>
+<p>When you select different item types together, the header shows <strong>n Mixed Items</strong> and the panel offers shared controls only:</p>
+<table>
+<thead>
+<tr>
+<th>Section / control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Position (Relative)</strong></td>
+<td>Nudge all selected items together.</td>
+</tr>
+<tr>
+<td><strong>Move X</strong> / <strong>Move Y</strong></td>
+<td>Step buttons <strong>-10</strong>, <strong>-1</strong>, <strong>+1</strong>, <strong>+10</strong>.</td>
+</tr>
+<tr>
+<td><strong>Scale</strong></td>
+<td>Resize all selected items.</td>
+</tr>
+<tr>
+<td><strong>Rotation</strong></td>
+<td>Rotate all selected items.</td>
+</tr>
+<tr>
+<td><strong>Appearance</strong></td>
+<td>Shared <strong>Opacity</strong>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-apply-a-clip-mask">How to apply a clip mask<a class="headerlink" href="#how-to-apply-a-clip-mask" title="Permanent link">&para;</a></h2>
+<p>Open the <strong>Clip Mask</strong> section (image and video Effects/Design). Choose a mask shape:</p>
+<p><strong>None</strong>, <strong>Circle</strong>, <strong>Rounded</strong>, <strong>Diamond</strong>, <strong>Hexagon</strong>, <strong>Star</strong>, <strong>Triangle</strong>, <strong>Pentagon</strong>, <strong>Octagon</strong>, <strong>Heart</strong>, <strong>Cross</strong>, <strong>Arrow</strong>.</p>
+<h2 id="how-to-set-a-blend-mode">How to set a blend mode<a class="headerlink" href="#how-to-set-a-blend-mode" title="Permanent link">&para;</a></h2>
+<p>Open the <strong>Blend Mode</strong> section. Modes are grouped by effect:</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Modes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Basic</td>
+<td><strong>Normal</strong></td>
+</tr>
+<tr>
+<td>Darken</td>
+<td><strong>Darken</strong>, <strong>Multiply</strong>, <strong>Color Burn</strong></td>
+</tr>
+<tr>
+<td>Lighten</td>
+<td><strong>Lighten</strong>, <strong>Screen</strong>, <strong>Color Dodge</strong></td>
+</tr>
+<tr>
+<td>Contrast</td>
+<td><strong>Overlay</strong>, <strong>Hard Light</strong>, <strong>Soft Light</strong></td>
+</tr>
+<tr>
+<td>Inversion</td>
+<td><strong>Difference</strong>, <strong>Exclusion</strong></td>
+</tr>
+<tr>
+<td>Component</td>
+<td><strong>Hue</strong>, <strong>Saturation</strong>, <strong>Color</strong>, <strong>Luminosity</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-color-grade-with-color-filters">How to color-grade with Color &amp; Filters<a class="headerlink" href="#how-to-color-grade-with-color-filters" title="Permanent link">&para;</a></h2>
+<p>Open <strong>Color &amp; Filters</strong>. Pick a preset or adjust manually.</p>
+<ul>
+<li><strong>Presets</strong>: <strong>Cinematic</strong>, <strong>Vintage</strong>, <strong>B&amp;W Film</strong>, <strong>Warm</strong>, <strong>Cool</strong>, <strong>Noir</strong>, <strong>Faded</strong>, <strong>Vivid</strong>, <strong>Sunset</strong>, <strong>Moody</strong>, <strong>Pastel</strong>, <strong>Teal &amp; Orange</strong>, <strong>Dream</strong>, <strong>Hi Contrast</strong>, <strong>Matte</strong>. Use <strong>Reset</strong> to clear.</li>
+<li><strong>Adjust</strong> sliders: <strong>Contrast</strong>, <strong>Saturation</strong>, <strong>Hue</strong> (in <strong>°</strong>), <strong>Sepia</strong>, and <strong>Grayscale</strong> (in <strong>%</strong>).</li>
+</ul>
+<h2 id="how-to-remove-a-background-color-keying-chroma">How to remove a background (Color Keying / Chroma)<a class="headerlink" href="#how-to-remove-a-background-color-keying-chroma" title="Permanent link">&para;</a></h2>
+<p>Open <strong>Remove Background</strong> (image) or <strong>Color Keying (Chroma)</strong> (video).</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Remove Background</strong></td>
+<td>Master toggle for keying.</td>
+</tr>
+<tr>
+<td><strong>Key Colors (Max 5)</strong></td>
+<td>Add up to five colors to knock out; each has <strong>Remove this color</strong>, and you can <strong>Add another key color</strong>.</td>
+</tr>
+<tr>
+<td><strong>Eyedropper</strong></td>
+<td>Pick a color from the video (shows <strong>Picking…</strong> while active). Quick presets set a green/blue/etc. <strong>screen</strong>.</td>
+</tr>
+<tr>
+<td><strong>Tolerance</strong>, <strong>Edge Softness</strong>, <strong>Spill Removal</strong></td>
+<td>Fine-tune the key; <strong>Reset</strong> restores defaults.</td>
+</tr>
+<tr>
+<td><strong>Denoise (clean edges)</strong></td>
+<td>Smooths edges (<strong>Global — smooths chroma for all colors</strong>).</td>
+</tr>
+</tbody>
+</table>
+<p>For automatic cutouts, open <strong>AI Auto Matting</strong>. It notes <strong>Requires the Desktop app for local GPU processing.</strong> and <strong>Requires an AI model (~15MB) to be downloaded once to your device.</strong> Use <strong>Download AI Model</strong> (shows <strong>Downloading...</strong>); once ready it shows <strong>AI Matting Active (Local GPU)</strong>.</p>
+<h2 id="how-to-use-the-3d-camera-and-zoom-to-spot">How to use the 3D Camera and Zoom to Spot<a class="headerlink" href="#how-to-use-the-3d-camera-and-zoom-to-spot" title="Permanent link">&para;</a></h2>
+<p><img alt="Video Settings — Camera tab: Color Keying (Chroma), AI Auto Matting, 3D Camera, and Zoom to Spot." src="images/properties-video-camera.png" /></p>
+<p>Open <strong>3D Camera</strong> (Camera/Effects tab). Turn it on with <strong>Toggle 3D Camera on</strong>, then <strong>Pick a movement</strong> from the presets and refine under <strong>Your moves</strong>:</p>
+<p>Movement presets: <strong>Orbit Right</strong>, <strong>Orbit Left</strong>, <strong>Tilt Up</strong>, <strong>Tilt Down</strong>, <strong>Push In</strong>, <strong>Pull Out</strong>, <strong>Dramatic</strong>, <strong>Hover</strong>, <strong>Ken Burns</strong>, <strong>Slide Right</strong>, <strong>Slide Left</strong>, <strong>Hold / Pause</strong>. Apply modes <strong>Replace</strong> or <strong>Append</strong>. Fine controls cover <strong>Scale</strong>, <strong>Rotation</strong>, <strong>Position</strong>, and <strong>Focus</strong>, with <strong>Reset</strong>, <strong>Undo</strong>, and <strong>Redo</strong>.</p>
+<p>Open <strong>Zoom to Spot</strong> to zoom into focus points. It hints <strong>Toggle Zoom to Spot on (top right) to add focus points.</strong></p>
+<h2 id="how-to-track-a-face-face-track">How to track a face (Face Track)<a class="headerlink" href="#how-to-track-a-face-face-track" title="Permanent link">&para;</a></h2>
+<p>Open <strong>Face Track</strong> (video). It explains <strong>Detect faces and auto-pan the crop window to follow the speaker.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Auto</strong> / <strong>Follow</strong></td>
+<td><strong>Auto</strong> splits when two faces are present; <strong>Follow</strong> pans to a single speaker.</td>
+</tr>
+<tr>
+<td><strong>Sensitivity</strong></td>
+<td><strong>Tight</strong>, <strong>Normal</strong>, or <strong>Loose</strong>.</td>
+</tr>
+<tr>
+<td><strong>Preview</strong></td>
+<td>Toggles the on-canvas overlay (<strong>Show face preview overlay</strong> / <strong>Hide face preview overlay</strong>).</td>
+</tr>
+<tr>
+<td><strong>Re-detect</strong> / <strong>Regen</strong></td>
+<td>Re-runs detection.</td>
+</tr>
+<tr>
+<td><strong>Remove</strong></td>
+<td>Clears tracking.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-add-and-tune-animations">How to add and tune animations<a class="headerlink" href="#how-to-add-and-tune-animations" title="Permanent link">&para;</a></h2>
+<p><img alt="Video Settings — Animate tab: Animations (Animation, Entry Animation, Exit Animation)." src="images/properties-video-animate.png" /></p>
+<p>Open <strong>Animations</strong> (Animate/Effects tab). It has <strong>In</strong>, <strong>Loop</strong>, and <strong>Out</strong> tabs; each shows preset thumbnails plus <strong>None</strong>. When several items are selected with different settings it shows <strong>Multiple</strong>. Duration sliders are <strong>Animation In Duration</strong>, <strong>Animation Out Duration</strong>, and <strong>Animation Loop Duration</strong>.</p>
+<p><strong>Entry Animation</strong> / <strong>Exit Animation</strong> pickers let you choose a preset (or <strong>None</strong>), set <strong>Start</strong>, <strong>End</strong>, and <strong>Duration (frames)</strong>, choose an <strong>Easing</strong>, and open <strong>Tweak Parameters</strong> to adjust properties such as <strong>Scale</strong>, <strong>Scale X</strong>, <strong>Scale Y</strong>, <strong>Opacity</strong>, <strong>Position X</strong>, <strong>Position Y</strong>, <strong>Rotation</strong>, <strong>Blur</strong>, and <strong>Brightness</strong>. A <strong>(modified)</strong> badge appears when you change defaults; use <strong>Reset to Defaults</strong> or <strong>Re-apply with current settings</strong>.</p>
+<p>Easing options include <strong>Linear</strong>, <strong>Ease</strong>, <strong>Ease In</strong>, <strong>Ease Out</strong>, <strong>Ease In Out</strong>, the Quad/Cubic variants, and <strong>Back</strong>, <strong>Expo</strong>, <strong>Bounce</strong>, and <strong>Elastic</strong> variants.</p>
+<p>The <strong>Style Template</strong> section (images) applies a coordinated look and can add matching sound: toggle <strong>Sound Effects</strong> <strong>ON</strong>/<strong>OFF</strong> (<strong>Auto-adds sound effects matching each animation preset.</strong>), set <strong>Stagger (frames between items)</strong>, enable <strong>Vary</strong> (<strong>Each image gets a different animation.</strong>), and use <strong>Copy</strong> / <strong>Paste to All</strong> to share one animation across a selection.</p>
+<h2 id="how-to-manage-effects">How to manage effects<a class="headerlink" href="#how-to-manage-effects" title="Permanent link">&para;</a></h2>
+<p>Open <strong>Effects</strong>. Search with <strong>Search effects...</strong>. Applied effects appear under <strong>Applied (n)</strong> with <strong>Disable</strong>/<strong>Enable</strong> and <strong>Delete</strong> per effect. Effect parameters include <strong>Timing</strong> (<strong>Start</strong>, <strong>End</strong>), <strong>Fade In</strong>, <strong>Fade Out</strong>, <strong>Easing</strong>, and effect-specific values (<strong>Intensity</strong>, <strong>Amount</strong>, <strong>Scale</strong>, <strong>Speed</strong>, etc.).</p>
+<h2 id="how-to-remove-all-motion-reset-all">How to remove all motion (Reset All)<a class="headerlink" href="#how-to-remove-all-motion-reset-all" title="Permanent link">&para;</a></h2>
+<p>Open <strong>Reset All</strong>. It lists <strong>Content to be removed:</strong> with counts for <strong>Keyframes</strong>, <strong>Effects</strong>, and <strong>Animations</strong>. Click <strong>Remove All Keyframes &amp; Effects</strong>; confirm <strong>Remove All Keyframes &amp; Effects?</strong> with <strong>Remove All</strong> (or <strong>Cancel</strong>). This is undoable with Ctrl+Z.</p>
+<h2 id="how-to-crop-an-image-or-video">How to crop an image or video<a class="headerlink" href="#how-to-crop-an-image-or-video" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select an image or video.</li>
+<li>In <strong>Basic</strong>, click <strong>Crop</strong> or <strong>Visual crop editor</strong>.</li>
+<li>In the <strong>Crop</strong> dialog, choose <strong>Aspect Ratio</strong>: <strong>Free</strong>, <strong>1:1</strong>, <strong>2:3</strong>, <strong>3:2</strong>, <strong>3:4</strong>, <strong>4:3</strong>, <strong>9:16</strong>, or <strong>16:9</strong>.</li>
+<li>Drag the crop box or its handles in the preview.</li>
+<li>Click <strong>Apply</strong> to save, or <strong>Reset</strong> to restore the full image/video.</li>
+</ol>
+<p>You can also use the numeric <strong>Left</strong>, <strong>Right</strong>, <strong>Top</strong>, and <strong>Bottom</strong> edge controls and <strong>Reset crop</strong> directly in the panel. The panel tip reads: <strong>Tip: Hold Alt + drag a resize handle on canvas for visual crop</strong>.</p>
+<h2 id="how-to-pick-or-replace-media-template-fields">How to pick or replace media (template fields)<a class="headerlink" href="#how-to-pick-or-replace-media-template-fields" title="Permanent link">&para;</a></h2>
+<p>Media fields use a picker with:</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>URL or upload...</strong></td>
+<td>Type/paste a URL.</td>
+</tr>
+<tr>
+<td><strong>Upload file</strong></td>
+<td>Upload a file from your device.</td>
+</tr>
+<tr>
+<td><strong>Pick from timeline</strong> / <strong>Timeline Media</strong></td>
+<td>Reuse media already on the timeline.</td>
+</tr>
+<tr>
+<td><strong>Remove media</strong></td>
+<td>Clears the field.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-use-on-canvas-floating-controls">How to use on-canvas floating controls<a class="headerlink" href="#how-to-use-on-canvas-floating-controls" title="Permanent link">&para;</a></h2>
+<p>Some pickers open as floating popovers on the canvas.</p>
+<table>
+<thead>
+<tr>
+<th>Floating panel</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fonts</strong></td>
+<td>Search fonts with <strong>Search font...</strong> and apply one to the selected text. Shows <strong>No font found</strong> when there is no match.</td>
+</tr>
+<tr>
+<td><strong>Presets</strong></td>
+<td>Text or caption style presets. Text presets preview the word <strong>Text</strong>. In caption bulk mode the heading adds <strong>Bulk (n)</strong>, and a <strong>Custom</strong> entry is available.</td>
+</tr>
+<tr>
+<td><strong>Animations</strong></td>
+<td>Preset thumbnails under <strong>In</strong>, <strong>Loop</strong>, and <strong>Out</strong> tabs; the heading shows the count of affected items.</td>
+</tr>
+</tbody>
+</table>
+<p>Click outside the floating control or use its close icon to dismiss it.</p>
+<p>The caption <strong>Presets</strong> picker also lets you preview against your footage: switch between <strong>Words</strong> and <strong>Lines</strong>, search with <strong>Search presets...</strong>, type your own text in <strong>Preview with your own text...</strong> (<strong>Clear custom text</strong> to reset), and change the preview background (<strong>Dark</strong>, <strong>White</strong>, <strong>Gray</strong>, <strong>Green</strong>, <strong>Blue</strong>, <strong>Red</strong>, or <strong>Pick custom color</strong>). If nothing matches it shows <strong>No presets found</strong>.</p>
+<h2 id="how-to-arrange-layers">How to arrange layers<a class="headerlink" href="#how-to-arrange-layers" title="Permanent link">&para;</a></h2>
+<ol>
+<li>For normal timeline items, set front-to-back order by moving items between tracks in the timeline — items on higher/front tracks render above those behind.</li>
+<li>For selected visual items, use the <strong>Align</strong> controls to line them up.</li>
+<li>For nested scenes, use each layer row's arrow controls to reorder, and <strong>Show</strong>/<strong>Hide</strong> (or the eye control) for visibility.</li>
+<li>Use <strong>Uncombine</strong> to return nested layers to separate timeline items.</li>
+</ol>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Not every item shows every section — the panel only shows controls that apply to the selected type.</li>
+<li><strong>Custom</strong> appears in <strong>Scale</strong> only when the current scale is not <strong>Fill</strong>, <strong>Fit</strong>, or <strong>Original</strong>.</li>
+<li><strong>Distribute horizontally</strong> / <strong>Distribute vertically</strong> need at least three selected items.</li>
+<li>Audio <strong>Live meter</strong> and video effects use extra CPU; <strong>AI Auto Matting</strong> needs the Desktop app and a one-time model download.</li>
+<li>Audio <strong>Volume</strong> can exceed 100% for boosting; the <strong>Gain</strong> fader shows the equivalent in decibels.</li>
+<li>Template <strong>Content</strong> fields are defined by each scene's schema, so their labels differ from template to template.</li>
+<li><strong>Auto-Captions</strong>, caption words, and caption styling are documented in <a href="05-text-and-captions.html">Text and Captions</a>; detailed <strong>Animations</strong>/<strong>Keyframes</strong> workflows are covered in the animation manual.</li>
+<li>Section open/closed states and the last-used tab are remembered per item type.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="02-media-library.html">Media Library</a></li>
+<li><a href="03-scenes-templates-styles.html">Scenes, Templates, and Styles</a></li>
+<li><a href="05-text-and-captions.html">Text and Captions</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#where-to-find-it">Where to find it</a><ul>
+<li><a href="#panel-title-by-item-type">Panel title by item type</a></li>
+<li><a href="#managing-the-panel-window">Managing the panel window</a></li>
+</ul>
+</li>
+<li><a href="#what-you-can-do">What you can do</a></li>
+<li><a href="#how-to-open-and-navigate-the-properties-panel">How to open and navigate the properties panel</a></li>
+<li><a href="#how-to-align-and-distribute-items">How to align and distribute items</a></li>
+<li><a href="#how-to-adjust-common-transform-and-appearance-controls">How to adjust common transform and appearance controls</a></li>
+<li><a href="#how-to-edit-image-properties">How to edit image properties</a></li>
+<li><a href="#how-to-edit-video-properties">How to edit video properties</a><ul>
+<li><a href="#speed-controls-video-and-audio">Speed controls (video and audio)</a></li>
+</ul>
+</li>
+<li><a href="#how-to-edit-audio-properties">How to edit audio properties</a></li>
+<li><a href="#how-to-edit-shape-properties">How to edit shape properties</a></li>
+<li><a href="#how-to-edit-text-properties">How to edit text properties</a></li>
+<li><a href="#how-to-edit-caption-properties">How to edit caption properties</a></li>
+<li><a href="#how-to-edit-template-scene-properties">How to edit template (scene) properties</a><ul>
+<li><a href="#content-tab">Content tab</a></li>
+<li><a href="#settings-tab">Settings tab</a></li>
+<li><a href="#effects-tab">Effects tab</a></li>
+</ul>
+</li>
+<li><a href="#how-to-edit-progress-bars-and-progress-frames">How to edit progress bars and progress frames</a></li>
+<li><a href="#how-to-edit-nested-scene-layers">How to edit nested scene layers</a></li>
+<li><a href="#how-to-edit-multiple-mixed-items">How to edit multiple mixed items</a></li>
+<li><a href="#how-to-apply-a-clip-mask">How to apply a clip mask</a></li>
+<li><a href="#how-to-set-a-blend-mode">How to set a blend mode</a></li>
+<li><a href="#how-to-color-grade-with-color-filters">How to color-grade with Color &amp; Filters</a></li>
+<li><a href="#how-to-remove-a-background-color-keying-chroma">How to remove a background (Color Keying / Chroma)</a></li>
+<li><a href="#how-to-use-the-3d-camera-and-zoom-to-spot">How to use the 3D Camera and Zoom to Spot</a></li>
+<li><a href="#how-to-track-a-face-face-track">How to track a face (Face Track)</a></li>
+<li><a href="#how-to-add-and-tune-animations">How to add and tune animations</a></li>
+<li><a href="#how-to-manage-effects">How to manage effects</a></li>
+<li><a href="#how-to-remove-all-motion-reset-all">How to remove all motion (Reset All)</a></li>
+<li><a href="#how-to-crop-an-image-or-video">How to crop an image or video</a></li>
+<li><a href="#how-to-pick-or-replace-media-template-fields">How to pick or replace media (template fields)</a></li>
+<li><a href="#how-to-use-on-canvas-floating-controls">How to use on-canvas floating controls</a></li>
+<li><a href="#how-to-arrange-layers">How to arrange layers</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

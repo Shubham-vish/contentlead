@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camera Effects — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link active" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Camera Effects</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>Add cinematic camera movement to a selected clip, including 3D zoom, pan, tilt, roll, focus-point zooms, and chained movement sequences.</p>
+</blockquote>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select a supported video, image, or scene/template item on the canvas or timeline.</li>
+<li>Open the properties panel for the selected item.</li>
+<li>For video items, open the <strong>Effects</strong> tab, then use <strong>3D Camera</strong> or <strong>Zoom to Spot</strong>.</li>
+<li>For image and scene/template items, look for the <strong>3D Camera</strong> and <strong>Zoom to Spot</strong> sections in the properties panel.</li>
+<li>Turn on the switch in the section header. The switch shows <strong>ON</strong> when the effect is active and <strong>OFF</strong> when it is inactive.</li>
+<li>If a section says <strong>Toggle 3D Camera on (top right) to add camera moves.</strong> or <strong>Toggle Zoom to Spot on (top right) to add focus points.</strong>, turn on the matching switch first.</li>
+</ol>
+<h2 id="what-you-can-do">What you can do<a class="headerlink" href="#what-you-can-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Use <strong>3D Camera</strong> to add preset movement such as <strong>Orbit Right</strong>, <strong>Push In</strong>, <strong>Ken Burns</strong>, slides, tilts, and hover moves.</li>
+<li>Use <strong>Pick a movement preset</strong> to quickly add a camera move, then refine it in <strong>Your moves</strong>.</li>
+<li>Use <strong>Adjust</strong> to tweak the current frame with a direct camera pad: drag to pan, scroll to zoom, and drag <strong>Pan</strong>, <strong>Tilt</strong>, and <strong>Roll</strong> chips to rotate.</li>
+<li>Use <strong>Zoom to Spot</strong> to create zoom targets with <strong>Zoom</strong>, <strong>Hold</strong>, <strong>Transition</strong>, <strong>Frame</strong>, <strong>X %</strong>, <strong>Y %</strong>, and <strong>Easing</strong> controls.</li>
+<li>Set a focus point visually with the large picker, with the canvas overlay, or by editing exact percentages.</li>
+<li>Use <strong>Animation Timeline</strong> and <strong>All keyframes</strong> to select, retime, duplicate, mute, edit, or delete camera keyframes.</li>
+<li>Use <strong>Sequence</strong> to chain multiple movements back-to-back and apply them as one camera sequence.</li>
+<li>Use <strong>Advanced</strong> for per-channel editing of <strong>Scale</strong>, <strong>Rotation</strong>, <strong>Position</strong>, global depth/default zoom, and cleanup actions.</li>
+</ul>
+<h2 id="how-to-choose-the-right-camera-tab">How to choose the right camera tab<a class="headerlink" href="#how-to-choose-the-right-camera-tab" title="Permanent link">&para;</a></h2>
+<p><img alt="The Camera tab: Color Keying (Chroma), AI Auto Matting, 3D Camera, and Zoom to Spot sections." src="images/properties-video-camera.png" /></p>
+<ol>
+<li>Open <strong>3D Camera</strong> and switch it <strong>ON</strong>.</li>
+<li>Use the three tabs according to what you need:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Tab</th>
+<th>Main controls</th>
+<th>Use it for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Adjust</strong></td>
+<td><strong>Tweak the current frame</strong>, direct camera pad, <strong>Pan ↔</strong>, <strong>Tilt ↕</strong>, <strong>Roll ↻</strong>, <strong>Set keyframe at playhead</strong>, <strong>Keyframe set — click to remove</strong></td>
+<td>Visual one-frame camera positioning, panning, zooming, and rotation.</td>
+</tr>
+<tr>
+<td><strong>Sequence</strong></td>
+<td><strong>Add step</strong>, preset buttons, duration sliders, <strong>Apply Sequence</strong>, <strong>Even</strong>, <strong>Clear</strong></td>
+<td>Chaining multiple preset moves back-to-back across the selected clip.</td>
+</tr>
+<tr>
+<td><strong>Advanced</strong></td>
+<td><strong>Scale</strong>, <strong>Rotation</strong>, <strong>Position</strong>, <strong>Show Overlay Markers</strong>, <strong>Global settings (depth, default zoom)</strong>, <strong>Reset at Playhead</strong>, <strong>Clear All</strong></td>
+<td>Exact per-channel keyframe editing and global camera settings.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-add-a-3d-camera-movement-preset">How to add a 3D camera movement preset<a class="headerlink" href="#how-to-add-a-3d-camera-movement-preset" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select the clip you want to animate.</li>
+<li>Open <strong>3D Camera</strong> and switch it <strong>ON</strong>.</li>
+<li>Expand <strong>Pick a movement preset</strong>.</li>
+<li>Click a preset. The helper text says: <strong>Click to add it to your clip. You can adjust or remove it below.</strong></li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Orbit Right</strong></td>
+<td>Smooth orbit from left to right. Starts with the camera angled one way, then glides across the subject.</td>
+</tr>
+<tr>
+<td><strong>Orbit Left</strong></td>
+<td>Smooth orbit from right to left. Mirrors <strong>Orbit Right</strong> for the opposite sweep.</td>
+</tr>
+<tr>
+<td><strong>Tilt Up</strong></td>
+<td>Vertical tilt from low to high. Useful for revealing height or moving from foreground to hero subject.</td>
+</tr>
+<tr>
+<td><strong>Tilt Down</strong></td>
+<td>Vertical tilt from high to low. Useful for settling onto a subject from above.</td>
+</tr>
+<tr>
+<td><strong>Push In</strong></td>
+<td>Dolly zoom forward with subtle tilt. Creates a gradual punch-in toward the clip.</td>
+</tr>
+<tr>
+<td><strong>Pull Out</strong></td>
+<td>Dolly zoom backward, scene reveals. Starts closer and pulls back to show more context.</td>
+</tr>
+<tr>
+<td><strong>Dramatic</strong></td>
+<td>Multi-point cinematic sweep with zoom. Combines rotation, roll, and zoom for a more expressive move.</td>
+</tr>
+<tr>
+<td><strong>Hover</strong></td>
+<td>Subtle floating motion loop. Adds gentle drifting rotation without a strong direction.</td>
+</tr>
+<tr>
+<td><strong>Ken Burns</strong></td>
+<td>Slow zoom + gentle pan drift. Adds a documentary-style push and pan.</td>
+</tr>
+<tr>
+<td><strong>Slide Right</strong></td>
+<td>Pan from left to right. Moves the camera horizontally across the frame.</td>
+</tr>
+<tr>
+<td><strong>Slide Left</strong></td>
+<td>Pan from right to left. Moves the camera horizontally in the opposite direction.</td>
+</tr>
+<tr>
+<td><strong>Hold / Pause</strong></td>
+<td>Freeze at current values for a segment. Use it as a still moment between stronger moves.</td>
+</tr>
+</tbody>
+</table>
+<ol start="5">
+<li>The move appears in <strong>Your moves</strong> and as a colored bar in <strong>Animation Timeline</strong>.</li>
+<li>If <strong>Your moves</strong> is collapsed, expand it. Each move card shows its name, start/end timing, a <strong>Jump to start</strong> diamond, and <strong>Remove this move</strong>.</li>
+<li>Expand a move to edit:
+   - <strong>Strength</strong>: choose <strong>subtle</strong>, <strong>normal</strong>, or <strong>strong</strong>.
+   - <strong>Start</strong>: moves where the preset begins.
+   - <strong>Duration</strong>: changes how long the preset lasts.</li>
+<li>Use <strong>Clear all</strong> in <strong>Your moves</strong> to remove all movement presets and their camera keyframes.</li>
+</ol>
+<h2 id="how-to-adjust-the-camera-at-the-current-frame">How to adjust the camera at the current frame<a class="headerlink" href="#how-to-adjust-the-camera-at-the-current-frame" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>3D Camera</strong> and choose <strong>Adjust</strong>.</li>
+<li>Use the <strong>Tweak the current frame</strong> area. The helper text says: <strong>Drag to pan, scroll to zoom, sliders for rotation. Changes here only affect the current frame.</strong></li>
+<li>In the direct camera pad:
+   - Drag the pad to pan or position the camera.
+   - Hold Shift while dragging to snap pan to thirds.
+   - Scroll to zoom. When <strong>Scroll-zoom</strong> is on, the pad captures scroll for zooming; when it is off, the page can scroll normally.
+   - Hold Alt while scrolling to zoom on the cursor when there is no active rotation.
+   - Double-click to reset pan and zoom. Shift + double-click also resets rotation.
+   - Use arrow keys to nudge pan; hold Shift for a larger nudge.
+   - Use <strong>+</strong> or <strong>=</strong> to zoom in, <strong>-</strong> or <strong>_</strong> to zoom out, <strong>r</strong> to reset pan and zoom, and <strong>R</strong> to reset rotation.</li>
+<li>Drag the edge chips:
+   - <strong>Pan</strong>: drag left or right to orbit the camera.
+   - <strong>Tilt</strong>: drag up or down to tilt the camera.
+   - <strong>Roll</strong>: drag left or right to roll the camera.</li>
+<li>Use the perspective preset button near the top-left of the pad. It cycles through <strong>Front</strong>, <strong>Hero</strong>, <strong>Reveal</strong>, <strong>Dutch</strong>, <strong>Worm</strong>, and <strong>Top-Down</strong>.</li>
+<li>Use the rotation sliders for precise values:
+   - <strong>Pan ↔</strong> adjusts side-to-side 3D rotation.
+   - <strong>Tilt ↕</strong> adjusts up/down 3D rotation.
+   - <strong>Roll ↻</strong> adjusts roll.</li>
+<li>Click <strong>Set keyframe at playhead</strong> to save the current pan, zoom, and rotation. If a keyframe is already at the playhead, the button reads <strong>Keyframe set — click to remove</strong>.</li>
+<li>Use <strong>Reset</strong> on the pad to reset perspective rotation, or use the reset icon next to the keyframe button to <strong>Reset all channels to neutral at the playhead</strong>.</li>
+</ol>
+<p>The pad tells you how edits will be stored: <strong>on keyframe · edits update</strong> means changes update an existing keyframe; <strong>interpolated · edits add new</strong> means the next edit creates a new keyframe at the playhead.</p>
+<h2 id="how-to-zoom-to-a-point-of-interest">How to zoom to a point of interest<a class="headerlink" href="#how-to-zoom-to-a-point-of-interest" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select the clip.</li>
+<li>Open <strong>Zoom to Spot</strong> and switch it <strong>ON</strong>.</li>
+<li>In <strong>Zoom Targets</strong>, use the large picker to aim the blue target dot.</li>
+<li>Click or drag in the picker to place the target. The picker tooltip says <strong>Click or drag to set zoom target</strong>.</li>
+<li>Scroll on the picker to change zoom. Use <strong>Scroll-zoom</strong> if you need to turn scroll-to-zoom on or off.</li>
+<li>Use these controls before adding the zoom:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Zoom</strong></td>
+<td>The amount of zoom. <strong>1×</strong> is no zoom, <strong>&lt;1×</strong> pulls back to reveal, and <strong>&gt;1×</strong> punches in.</td>
+</tr>
+<tr>
+<td><strong>Hold</strong></td>
+<td>How long the camera stays at the target after zooming in.</td>
+</tr>
+<tr>
+<td><strong>Transition</strong></td>
+<td>How long the camera takes to enter and exit the target.</td>
+</tr>
+</tbody>
+</table>
+<ol start="7">
+<li>Click <strong>Add zoom at playhead</strong> to create the zoom at the current playhead time.</li>
+<li>The zoom appears as a bar in <strong>Animation Timeline</strong> and as a row in the zoom list.</li>
+<li>To create another zoom while editing an existing one, click <strong>+ New</strong> or <strong>Deselect</strong>.</li>
+</ol>
+<h2 id="how-to-edit-zoom-targets-and-focus-points">How to edit zoom targets and focus points<a class="headerlink" href="#how-to-edit-zoom-targets-and-focus-points" title="Permanent link">&para;</a></h2>
+<ol>
+<li>In <strong>Zoom Targets</strong>, click an existing zoom row or click its bar in <strong>Animation Timeline</strong>.</li>
+<li>When selected, the picker helper changes to <strong>✏️  Editing existing zoom — click &amp; drag to reposition · scroll to adjust zoom</strong>.</li>
+<li>Edit the expanded row controls:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Frame</strong></td>
+<td>The frame where the zoom starts. Moving it also seeks the playhead.</td>
+</tr>
+<tr>
+<td><strong>Zoom</strong></td>
+<td>The target zoom amount.</td>
+</tr>
+<tr>
+<td><strong>X %</strong></td>
+<td>The horizontal target point, from left to right.</td>
+</tr>
+<tr>
+<td><strong>Y %</strong></td>
+<td>The vertical target point, from top to bottom.</td>
+</tr>
+<tr>
+<td><strong>Hold</strong></td>
+<td>The center hold duration in seconds.</td>
+</tr>
+<tr>
+<td><strong>Transition</strong></td>
+<td>The in/out transition duration in seconds.</td>
+</tr>
+<tr>
+<td><strong>Easing</strong></td>
+<td>The motion curve used for entering and exiting the zoom.</td>
+</tr>
+</tbody>
+</table>
+<ol start="4">
+<li>In <strong>Animation Timeline</strong>, drag the body of a zoom bar to move it.</li>
+<li>Drag the left edge to <strong>Drag to change start</strong>. Drag the right edge to <strong>Drag to change end</strong>.</li>
+<li>Use the eye button to <strong>Mute this zoom (keep values)</strong>. If muted, use <strong>Enable this zoom</strong> to restore it.</li>
+<li>Use the copy button to <strong>Duplicate this zoom +1s</strong>.</li>
+<li>Use the trash button to <strong>Delete zoom</strong>.</li>
+<li>Press Escape to deselect a zoom. Press Delete or Backspace to remove the selected zoom, unless you are typing in a field.</li>
+</ol>
+<h2 id="how-to-set-a-focus-point-on-the-canvas">How to set a focus point on the canvas<a class="headerlink" href="#how-to-set-a-focus-point-on-the-canvas" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>3D Camera</strong>, choose <strong>Advanced</strong>, and turn on <strong>Show Overlay Markers</strong>.</li>
+<li>The helper text under the switch says <strong>Focus point + rotation indicators on canvas</strong>.</li>
+<li>With the clip selected, hold Alt on the canvas. The overlay can show <strong>Click to place focus point</strong>.</li>
+<li>Click the point you want the camera to focus on.</li>
+<li>If the canvas overlay toolbar is visible, use <strong>Focus</strong> to click a zoom focus point directly on the video. The bottom controls show <strong>Zoom:</strong>, <strong>In:</strong>, <strong>Hold:</strong>, and <strong>Click on video to set focus</strong>.</li>
+<li>Use <strong>Rotate</strong> when you want to drag on the canvas instead. The overlay explains <strong>Drag horizontally = orbit · Drag vertically = tilt</strong>.</li>
+<li>Use <strong>Close controls</strong> to hide the overlay toolbar.</li>
+<li>If a zoom is active at the current time, the click moves that focus point. Otherwise, it creates a new focus point using the default zoom timing.</li>
+</ol>
+<p>You can also set the same kind of focus point in <strong>Zoom to Spot</strong> with the large picker. That is usually easier because <strong>Zoom</strong>, <strong>Hold</strong>, <strong>Transition</strong>, and <strong>Animation Timeline</strong> are all visible together.</p>
+<h2 id="how-to-use-the-camera-timeline">How to use the camera timeline<a class="headerlink" href="#how-to-use-the-camera-timeline" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>3D Camera</strong> and switch it <strong>ON</strong>.</li>
+<li>Look below the tabs for <strong>Animation Timeline</strong>.</li>
+<li>Click empty space in the strip to scrub the selected clip. If no moves or keyframes exist, the hint says <strong>Click anywhere to scrub · Pick a movement below</strong>.</li>
+<li>Colored bars in the upper band represent movement presets. Click a bar to jump to the start of that move.</li>
+<li>Diamond markers in the lower band represent keyframes:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Marker type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scale</strong> / <strong>Zoom</strong></td>
+<td>A zoom or scale keyframe.</td>
+</tr>
+<tr>
+<td><strong>Rotation</strong> / <strong>Rot</strong></td>
+<td>A 3D rotation keyframe.</td>
+</tr>
+<tr>
+<td><strong>Position</strong> / <strong>Pan</strong></td>
+<td>A pan/position keyframe.</td>
+</tr>
+<tr>
+<td><strong>Focus</strong></td>
+<td>A focus-point zoom keyframe.</td>
+</tr>
+</tbody>
+</table>
+<ol start="6">
+<li>Click a diamond to select it and seek to it.</li>
+<li>Drag a diamond to retime that keyframe. The <strong>All keyframes</strong> hint says <strong>Click ▸ to expand · drag diamonds on the strip to retime</strong>.</li>
+<li>With a keyframe selected, press Delete or Backspace to remove it. The diamond tooltip also says <strong>Delete to remove</strong> when selected.</li>
+<li>Press Escape to clear the selection.</li>
+</ol>
+<h2 id="how-to-use-the-keyframes-list">How to use the keyframes list<a class="headerlink" href="#how-to-use-the-keyframes-list" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>3D Camera</strong> and switch it <strong>ON</strong>.</li>
+<li>Below <strong>Animation Timeline</strong>, use <strong>All keyframes</strong>. The count appears in the heading, such as <strong>All keyframes (3)</strong>.</li>
+<li>Click a row to select it and seek to its frame. Click the same row again to deselect.</li>
+<li>Click the arrow to expand a row and edit its values.</li>
+<li>Use this table as a guide:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Row label</th>
+<th>Expanded controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Zoom</strong></td>
+<td><strong>Frame</strong>, <strong>Zoom</strong>, <strong>Easing</strong> for scale keyframes.</td>
+</tr>
+<tr>
+<td><strong>Rot</strong></td>
+<td><strong>Frame</strong>, <strong>Pan Y°</strong>, <strong>Tilt X°</strong>, <strong>Roll Z°</strong>, <strong>Easing</strong>.</td>
+</tr>
+<tr>
+<td><strong>Pan</strong></td>
+<td><strong>Frame</strong>, <strong>Pan X</strong>, <strong>Pan Y</strong>, <strong>Easing</strong>.</td>
+</tr>
+<tr>
+<td><strong>Focus</strong></td>
+<td><strong>Frame</strong>, <strong>Zoom</strong>, <strong>X %</strong>, <strong>Y %</strong>, <strong>Easing</strong>.</td>
+</tr>
+</tbody>
+</table>
+<ol start="6">
+<li>Use the eye button to mute a keyframe without deleting it. The tooltip reads <strong>Mute zoom keyframe (keep values)</strong>, <strong>Mute rot keyframe (keep values)</strong>, <strong>Mute pan keyframe (keep values)</strong>, or <strong>Mute focus keyframe (keep values)</strong> depending on the row.</li>
+<li>When muted, use the same button to enable it again.</li>
+<li>Use the copy button to duplicate a keyframe. The tooltip says <strong>Duplicate zoom keyframe (Ctrl+C / Ctrl+V)</strong>, or the matching keyframe type.</li>
+<li>Use the trash button to delete a keyframe.</li>
+<li>Use <strong>Clear all</strong> in the list to remove the 3D camera scale, rotation, and position keyframes. <strong>Focus</strong> zooms are managed from <strong>Zoom to Spot</strong> and can be deleted from their own rows.</li>
+</ol>
+<h2 id="how-to-use-the-keyframe-right-click-menu">How to use the keyframe right-click menu<a class="headerlink" href="#how-to-use-the-keyframe-right-click-menu" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Right-click a row in <strong>All keyframes</strong>.</li>
+<li>Choose an action:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Menu option</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Jump to keyframe</strong></td>
+<td>Seeks to that keyframe and selects it.</td>
+</tr>
+<tr>
+<td><strong>Duplicate (+1s)</strong></td>
+<td>Creates a copy one second later.</td>
+</tr>
+<tr>
+<td><strong>Copy values</strong></td>
+<td>Copies the keyframe values so you can paste them with <strong>⌘C / ⌘V</strong>.</td>
+</tr>
+<tr>
+<td><strong>Mute (keep values)</strong></td>
+<td>Temporarily disables the keyframe without losing its settings.</td>
+</tr>
+<tr>
+<td><strong>Enable</strong></td>
+<td>Restores a muted keyframe.</td>
+</tr>
+<tr>
+<td><strong>Easing</strong></td>
+<td>Opens the easing choices inside the menu.</td>
+</tr>
+<tr>
+<td><strong>Delete</strong></td>
+<td>Removes the keyframe. The shortcut shown is <strong>Del</strong>.</td>
+</tr>
+</tbody>
+</table>
+<ol start="3">
+<li>The right-click menu easing choices are <strong>linear</strong>, <strong>ease-in</strong>, <strong>ease-out</strong>, <strong>ease-in-out</strong>, <strong>step-start</strong>, and <strong>step-end</strong>.</li>
+<li>Click outside the menu or press Escape to close it.</li>
+</ol>
+<h2 id="how-to-fine-tune-channels-in-advanced">How to fine-tune channels in Advanced<a class="headerlink" href="#how-to-fine-tune-channels-in-advanced" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>3D Camera</strong> and choose <strong>Advanced</strong>.</li>
+<li>The introduction says: <strong>Edit individual keyframes for each channel below. Use the diamond button on each channel to add/remove a keyframe at the playhead.</strong></li>
+<li>Use these channel sections:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Main controls</th>
+<th>What it edits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scale</strong></td>
+<td><strong>Scale</strong>, <strong>Easing</strong>, <strong>Add keyframe</strong>, <strong>Remove</strong>, <strong>Previous keyframe</strong>, <strong>Next keyframe</strong></td>
+<td>Clip zoom over time.</td>
+</tr>
+<tr>
+<td><strong>Rotation</strong></td>
+<td><strong>Pan ↔</strong>, <strong>Tilt ↕</strong>, <strong>Roll ↻</strong>, <strong>Easing</strong>, <strong>Add keyframe</strong>, <strong>Remove</strong>, <strong>Previous keyframe</strong>, <strong>Next keyframe</strong></td>
+<td>3D camera orientation.</td>
+</tr>
+<tr>
+<td><strong>Position</strong></td>
+<td><strong>Pan X %</strong>, <strong>Pan Y %</strong>, <strong>Easing</strong>, <strong>Add keyframe</strong>, <strong>Remove</strong>, <strong>Previous keyframe</strong>, <strong>Next keyframe</strong></td>
+<td>2D camera pan.</td>
+</tr>
+</tbody>
+</table>
+<ol start="4">
+<li>Each section shows either <strong>Keyframe set here</strong> or <strong>No keyframe here — showing tweened value</strong>.</li>
+<li>Click <strong>Add keyframe</strong> to save the current channel value at the playhead. If a keyframe already exists there, click <strong>Remove</strong> to remove it.</li>
+<li>Use <strong>Previous keyframe</strong> and <strong>Next keyframe</strong> to jump between keyframes in that channel.</li>
+<li>Expand individual keyframe rows to edit <strong>Frame</strong>, <strong>Value</strong>, <strong>Y°</strong>, <strong>X°</strong>, <strong>Z°</strong>, <strong>X %</strong>, <strong>Y %</strong>, or <strong>Easing</strong>, depending on the channel.</li>
+<li>Turn on <strong>Show Overlay Markers</strong> if you want focus point and rotation indicators on the canvas.</li>
+<li>Open <strong>Global settings (depth, default zoom)</strong> to edit:
+   - <strong>Depth</strong>: lower values make perspective more dramatic; higher values feel flatter.
+   - <strong>Default Zoom</strong>: changes the base zoom used before keyframe and focus-point zooms are added.</li>
+<li>Use <strong>Reset at Playhead</strong> to set the current frame back to neutral pan, zoom, and rotation.</li>
+<li>Use <strong>Clear All</strong> to remove the 3D camera scale, rotation, and position keyframes for the selected clip.</li>
+</ol>
+<h2 id="how-to-choose-easing">How to choose easing<a class="headerlink" href="#how-to-choose-easing" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open any <strong>Easing</strong> dropdown in <strong>Advanced</strong>, <strong>All keyframes</strong>, or a zoom target row.</li>
+<li>Pick the motion feel you want:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Easing option</th>
+<th>Feel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Linear</strong></td>
+<td>Constant speed.</td>
+</tr>
+<tr>
+<td><strong>Ease In</strong></td>
+<td>Starts slow.</td>
+</tr>
+<tr>
+<td><strong>Ease Out</strong></td>
+<td>Ends slow.</td>
+</tr>
+<tr>
+<td><strong>Ease In Out</strong></td>
+<td>Smooth start and end.</td>
+</tr>
+<tr>
+<td><strong>Cubic In</strong></td>
+<td>Aggressive slow start.</td>
+</tr>
+<tr>
+<td><strong>Cubic Out</strong></td>
+<td>Aggressive slow end.</td>
+</tr>
+<tr>
+<td><strong>Quart In</strong></td>
+<td>Very slow start.</td>
+</tr>
+<tr>
+<td><strong>Quart Out</strong></td>
+<td>Very slow end.</td>
+</tr>
+<tr>
+<td><strong>Overshoot</strong></td>
+<td>Overshoots then settles.</td>
+</tr>
+<tr>
+<td><strong>Bounce</strong></td>
+<td>Overshoot both ends.</td>
+</tr>
+<tr>
+<td><strong>Spring</strong></td>
+<td>Elastic spring effect.</td>
+</tr>
+<tr>
+<td><strong>Snap</strong></td>
+<td>Quick stop.</td>
+</tr>
+</tbody>
+</table>
+<ol start="3">
+<li>Use smoother options like <strong>Ease In Out</strong> for natural camera moves. Use <strong>Linear</strong> for mechanical or constant movement.</li>
+</ol>
+<h2 id="how-to-chain-multiple-camera-movements">How to chain multiple camera movements<a class="headerlink" href="#how-to-chain-multiple-camera-movements" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>3D Camera</strong> and choose <strong>Sequence</strong>.</li>
+<li>Read the panel note: <strong>Chain multiple movements back-to-back. Replaces all current moves when applied.</strong></li>
+<li>Under <strong>Add step</strong>, click any movement preset to add it to the sequence.</li>
+<li>Repeat to add more steps. Each step shows its preset name and a duration control in seconds.</li>
+<li>Use the up/down arrow buttons to reorder steps.</li>
+<li>Use the X button on a step to remove it.</li>
+<li>Use each step’s duration slider to set how long it lasts.</li>
+<li>Watch the total readout, such as <code>3.5s / 8s</code>, so the sequence fits inside the clip.</li>
+<li>Click <strong>Even</strong> to distribute the clip duration evenly across all steps.</li>
+<li>Click <strong>Clear</strong> to empty the sequence builder.</li>
+<li>Click <strong>Apply Sequence</strong> to create the chained camera movement.</li>
+</ol>
+<p>Applying <strong>Apply Sequence</strong> replaces the current 3D camera moves on the selected clip. It does not create separate visible clips; it creates camera keyframes across the selected clip.</p>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>3D Camera</strong> and <strong>Zoom to Spot</strong> are separate switches. You can use either one alone or combine them.</li>
+<li><strong>Zoom to Spot</strong> creates focus-point zooms. It targets a point, not a draggable rectangular crop region.</li>
+<li><strong>3D Camera</strong> creates <strong>Scale</strong>, <strong>Rotation</strong>, and <strong>Position</strong> keyframes. <strong>Zoom to Spot</strong> creates <strong>Focus</strong> keyframes.</li>
+<li><strong>Animation Timeline</strong> uses clip-relative time. Moving the clip on the main timeline does not change where its camera keyframes sit inside the clip.</li>
+<li>The top band of <strong>Animation Timeline</strong> shows preset movement bars; the bottom band shows keyframe diamonds.</li>
+<li>The direct camera pad is fastest for visual edits; <strong>Advanced</strong> is best for exact values.</li>
+<li>Lower <strong>Depth</strong> values make perspective feel stronger. Higher <strong>Depth</strong> values make the move subtler.</li>
+<li><strong>Default Zoom</strong> affects the base camera zoom before keyframes and zoom targets are layered on top.</li>
+<li><strong>Mute (keep values)</strong> is safer than deleting when you are experimenting, because you can restore the keyframe with <strong>Enable</strong>.</li>
+<li>Keyboard shortcuts in this area include Escape to deselect, Delete/Backspace to remove selected zooms or keyframes, arrow keys to nudge in the camera pad or picker, <strong>+</strong>/<strong>=</strong> and <strong>-</strong>/<strong>_</strong> to zoom, <strong>r</strong> to reset pan/zoom, <strong>R</strong> to reset rotation, and <strong>⌘C / ⌘V</strong> for keyframe value copy/paste.</li>
+<li>The editor exposes zoom, pan, tilt, roll, focus points, preset movement, sequences, and easing in this UI. It does not expose a separate named Shake preset in this panel.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="03-scenes-templates-styles.html">Scenes, Templates &amp; Styles</a></li>
+<li><a href="04-timeline-editing.html">Timeline editing</a></li>
+<li><a href="09-effects.html">Effects</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#where-to-find-it">Where to find it</a></li>
+<li><a href="#what-you-can-do">What you can do</a></li>
+<li><a href="#how-to-choose-the-right-camera-tab">How to choose the right camera tab</a></li>
+<li><a href="#how-to-add-a-3d-camera-movement-preset">How to add a 3D camera movement preset</a></li>
+<li><a href="#how-to-adjust-the-camera-at-the-current-frame">How to adjust the camera at the current frame</a></li>
+<li><a href="#how-to-zoom-to-a-point-of-interest">How to zoom to a point of interest</a></li>
+<li><a href="#how-to-edit-zoom-targets-and-focus-points">How to edit zoom targets and focus points</a></li>
+<li><a href="#how-to-set-a-focus-point-on-the-canvas">How to set a focus point on the canvas</a></li>
+<li><a href="#how-to-use-the-camera-timeline">How to use the camera timeline</a></li>
+<li><a href="#how-to-use-the-keyframes-list">How to use the keyframes list</a></li>
+<li><a href="#how-to-use-the-keyframe-right-click-menu">How to use the keyframe right-click menu</a></li>
+<li><a href="#how-to-fine-tune-channels-in-advanced">How to fine-tune channels in Advanced</a></li>
+<li><a href="#how-to-choose-easing">How to choose easing</a></li>
+<li><a href="#how-to-chain-multiple-camera-movements">How to chain multiple camera movements</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

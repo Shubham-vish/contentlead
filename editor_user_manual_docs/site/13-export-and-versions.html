@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exporting, Rendering &amp; Versions — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link active" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Exporting, Rendering &amp; Versions</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>Save your project, render the finished video, download or open the result, and restore earlier snapshots when you need to go back.</p>
+</blockquote>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<p>Use the top bar above the canvas:</p>
+<ul>
+<li><strong>Auto</strong> and <strong>Save</strong> sit near the right side of the top bar.</li>
+<li><strong>Version Snapshots</strong> is the clock/history button next to <strong>Save</strong>.</li>
+<li><strong>Export</strong> is the download button near the far right.</li>
+<li><strong>Resize</strong> is also in the top bar; use it before exporting when you need a different orientation.</li>
+</ul>
+<h2 id="what-you-can-do">What you can do<a class="headerlink" href="#what-you-can-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Save manually with <strong>Save</strong> or the <strong>Ctrl+S</strong> shortcut.</li>
+<li>Turn automatic saving on or off with <strong>Auto</strong>.</li>
+<li>Export as <strong>MP4</strong> or <strong>JSON</strong>.</li>
+<li>Pick an MP4 resolution preset before rendering.</li>
+<li>In the desktop app, choose <strong>Local</strong> or <strong>Cloud</strong> under <strong>Render With</strong>.</li>
+<li>Watch export progress, cancel a render, and download or open the finished video.</li>
+<li>Save up to 5 version snapshots and restore, rename, or delete them.</li>
+</ul>
+<h2 id="how-to-save-the-project">How to save the project<a class="headerlink" href="#how-to-save-the-project" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Check the save area in the top bar. The button can show <strong>Save</strong>, <strong>Saving...</strong>, <strong>Saved!</strong>, or <strong>Saved</strong>.</li>
+<li>Click <strong>Save</strong> when you have unsaved changes, or press <strong>Ctrl+S</strong>.</li>
+<li>Wait for <strong>Saved!</strong> or the tooltip <strong>All changes saved!</strong>.</li>
+<li>Leave <strong>Auto</strong> on if you want automatic saving while you work. While autosave is running, you may see <strong>Saving...</strong> and the tooltip <strong>Autosaving your changes...</strong>.</li>
+</ol>
+<p>If the project is sample content, saving is blocked with <strong>Sample content cannot be saved — duplicate it first</strong>.</p>
+<h2 id="how-to-choose-export-settings">How to choose export settings<a class="headerlink" href="#how-to-choose-export-settings" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Click <strong>Export</strong> in the top bar.</li>
+<li>In <strong>Export Video</strong>, choose your settings.</li>
+<li>For MP4 exports, use <strong>Resize</strong> before exporting if you need to change the video's orientation or canvas shape.</li>
+<li>Click <strong>Start Export</strong> when the settings are ready.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Options shown</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Format</strong></td>
+<td><strong>MP4</strong>, <strong>JSON</strong></td>
+<td><strong>MP4</strong> renders a video. <strong>JSON</strong> downloads the project design data instead of rendering a video.</td>
+</tr>
+<tr>
+<td><strong>Resolution</strong></td>
+<td><strong>Source (no resize)</strong> — <strong>Authored canvas size</strong></td>
+<td>Keeps the current canvas size. This is the default and preserves the size you built in the editor.</td>
+</tr>
+<tr>
+<td><strong>Resolution</strong></td>
+<td><strong>4K (2160p)</strong> — <strong>Largest — slow render</strong></td>
+<td>Exports a larger MP4 while preserving the video's aspect ratio.</td>
+</tr>
+<tr>
+<td><strong>Resolution</strong></td>
+<td><strong>Full HD (1080p)</strong> — <strong>Recommended</strong></td>
+<td>A good default for high-quality sharing.</td>
+</tr>
+<tr>
+<td><strong>Resolution</strong></td>
+<td><strong>HD (720p)</strong> — <strong>Smaller file</strong></td>
+<td>Exports a smaller file for faster sharing or review.</td>
+</tr>
+<tr>
+<td><strong>Resolution</strong></td>
+<td><strong>SD (480p)</strong> — <strong>Quick preview</strong></td>
+<td>Fastest low-resolution preview export.</td>
+</tr>
+<tr>
+<td><strong>Render With</strong></td>
+<td><strong>Local</strong>, <strong>Cloud</strong></td>
+<td>Available in the desktop app for <strong>MP4</strong>. <strong>Local</strong> renders on your computer; <strong>Cloud</strong> uses the online renderer.</td>
+</tr>
+<tr>
+<td>Quality / FPS</td>
+<td>No separate picker is shown</td>
+<td>The export uses the project frame rate. After export, the details show the final size and FPS, such as <strong>30fps</strong>.</td>
+</tr>
+<tr>
+<td>Orientation</td>
+<td><strong>16:9</strong>, <strong>9:16</strong>, <strong>1:1</strong> from <strong>Resize</strong></td>
+<td>Orientation is controlled by the canvas size before export, not by a separate export-only setting.</td>
+</tr>
+</tbody>
+</table>
+<p>You may also see <strong>⚡ Fast Export available</strong>. If it says <strong>Browser ready</strong>, simple video, image, and caption timelines can encode directly in your browser. If it says <strong>Fallback to standard</strong>, the normal export path is used.</p>
+<h2 id="how-to-export-and-download-the-finished-video">How to export and download the finished video<a class="headerlink" href="#how-to-export-and-download-the-finished-video" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Click <strong>Export</strong>.</li>
+<li>Choose <strong>MP4</strong> under <strong>Format</strong>.</li>
+<li>Choose a <strong>Resolution</strong> preset.</li>
+<li>If you are in the desktop app, choose <strong>Local</strong> or <strong>Cloud</strong> under <strong>Render With</strong>.</li>
+<li>Click <strong>Start Export</strong>.</li>
+<li>The <strong>Export Video</strong> window opens and shows progress.</li>
+<li>When you see <strong>Export Complete</strong>, use the available completion buttons:
+   - <strong>Download Video</strong> downloads a browser/cloud result.
+   - <strong>Show in Finder</strong> opens the local file location for a desktop local render.
+   - <strong>Copy URL</strong>, <strong>Open in browser</strong>, and <strong>Download</strong> appear when a cloud video URL is available.</li>
+</ol>
+<p>If files are still uploading, the export button shows <strong>Waiting for 1 upload...</strong> or <strong>Waiting for 2 uploads...</strong> and export is disabled until uploads finish.</p>
+<h2 id="how-to-track-render-progress">How to track render progress<a class="headerlink" href="#how-to-track-render-progress" title="Permanent link">&para;</a></h2>
+<ol>
+<li>After you click <strong>Start Export</strong>, watch the <strong>Export Video</strong> window.</li>
+<li>The status badge can show <strong>Starting New Export...</strong>, <strong>Connecting...</strong>, <strong>Starting...</strong>, <strong>In Queue</strong>, <strong>Processing</strong>, <strong>Rendering</strong>, <strong>Uploading</strong>, <strong>Fast Export (Browser)</strong>, <strong>Completed</strong>, <strong>Failed</strong>, or <strong>Cancelled</strong>.</li>
+<li>Use the large percentage and progress bar to track completion.</li>
+<li>For detailed renders, the window can show <strong>Rendered</strong>, <strong>Encoded</strong>, <strong>Stage</strong>, <strong>Elapsed</strong>, and an estimated <strong>remaining</strong> time.</li>
+<li>You can close the window when you see <strong>You can close this window. The video will continue rendering.</strong></li>
+<li>Reopen <strong>Export</strong> and click <strong>View Progress</strong> to return to the active render.</li>
+<li>To stop a render, click <strong>Cancel render</strong>. If prompted, choose <strong>Keep rendering</strong> or <strong>Yes, cancel</strong>.</li>
+</ol>
+<p>If export fails, the window shows <strong>Export Failed</strong> with <strong>Close</strong> and <strong>Try Again</strong>. If you cancelled it, it shows <strong>Export Cancelled</strong> and <strong>This render was cancelled and no output was generated.</strong></p>
+<h2 id="how-to-use-recent-renders">How to use recent renders<a class="headerlink" href="#how-to-use-recent-renders" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Click <strong>Export</strong>.</li>
+<li>Look under <strong>Recent</strong> for earlier renders. If there are none, you see <strong>No previous renders</strong>.</li>
+<li>Click a render row to open <strong>Render Details</strong>.</li>
+<li>Use <strong>Download Video</strong>, <strong>Show in Finder</strong>, <strong>Copy URL</strong>, <strong>Open in browser</strong>, or <strong>Download</strong> when available.</li>
+<li>Hover a render row and click the delete icon if you want to remove it from the recent list. The delete control is labeled <strong>Delete render</strong> or <strong>Delete this render</strong>.</li>
+</ol>
+<h2 id="how-to-browse-and-restore-versions">How to browse and restore versions<a class="headerlink" href="#how-to-browse-and-restore-versions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Click <strong>Version Snapshots</strong> in the top bar.</li>
+<li>The <strong>Snapshots</strong> panel opens.</li>
+<li>Click <strong>+ Save Current</strong> before a major change. While it is saving, the button reads <strong>Saving...</strong>.</li>
+<li>If there are no saved snapshots, the panel says <strong>No snapshots yet. Save one before a big change.</strong></li>
+<li>Hover a snapshot to reveal actions:
+   - <strong>Restore</strong> opens a confirmation dialog.
+   - <strong>Rename</strong> lets you edit the snapshot label. Press Enter to save the name, or Escape to cancel editing.
+   - <strong>Delete</strong> removes the snapshot.</li>
+<li>When restoring, read <strong>Restore Snapshot?</strong> carefully. It warns: <strong>Your current state will be lost unless you save a snapshot first.</strong></li>
+<li>Click <strong>Restore</strong> to replace the current design, or <strong>Cancel</strong> to leave everything unchanged.</li>
+</ol>
+<p>The footer shows how many snapshot slots are used, such as <strong>3 of 5 snapshots used</strong>.</p>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Save before exporting so the render uses the latest project state.</li>
+<li>Use <strong>Source (no resize)</strong> when your canvas already matches the destination, such as a portrait short or square post.</li>
+<li>Use <strong>Full HD (1080p)</strong> for most final exports unless you specifically need <strong>4K (2160p)</strong>.</li>
+<li>If your project uses Remove Background, you may see <strong>Remove Background needs the desktop app</strong>. In the desktop app, switch <strong>Render With</strong> to <strong>Local</strong>; in the browser, use <strong>Get Desktop App</strong>.</li>
+<li>If <strong>Export</strong> shows a percentage or <strong>Starting...</strong>, a render is already active. Click the export menu and use <strong>View Progress</strong> instead of starting another render.</li>
+<li>Save a snapshot before large edits, restructures, or experimental changes.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="01-overview-and-navigation.html">Overview &amp; Navigation</a></li>
+<li><a href="02-media-library.html">Media Library</a></li>
+<li><a href="06-timeline-and-selection.html">Timeline &amp; Selection</a></li>
+<li><a href="07-item-properties.html">Item Properties</a></li>
+<li><a href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#where-to-find-it">Where to find it</a></li>
+<li><a href="#what-you-can-do">What you can do</a></li>
+<li><a href="#how-to-save-the-project">How to save the project</a></li>
+<li><a href="#how-to-choose-export-settings">How to choose export settings</a></li>
+<li><a href="#how-to-export-and-download-the-finished-video">How to export and download the finished video</a></li>
+<li><a href="#how-to-track-render-progress">How to track render progress</a></li>
+<li><a href="#how-to-use-recent-renders">How to use recent renders</a></li>
+<li><a href="#how-to-browse-and-restore-versions">How to browse and restore versions</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

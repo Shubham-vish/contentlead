@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scenes, Templates &amp; Styles — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link active" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Scenes, Templates &amp; Styles</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>Use pre-built animated scenes, apply complete creator-style sequences, combine multiple items into one editable scene, and save your own edits as reusable styles.</p>
+</blockquote>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Open the <strong>Scenes</strong> tab in the menu panel to browse animated scene templates.</li>
+<li>Open the <strong>Styles</strong> tab in the menu panel to browse full-video creator styles.</li>
+<li>Select items on the canvas or timeline, then right-click and open <strong>Arrange</strong> to combine items into a nested scene.</li>
+<li>Select a scene or nested scene to edit it in the properties panel.</li>
+</ul>
+<h2 id="what-you-can-do">What you can do<a class="headerlink" href="#what-you-can-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Browse the scene <strong>Library</strong> by category, search, favorites, recents, duration, and live previews.</li>
+<li>Add a pre-built animated scene to the timeline at the current playhead.</li>
+<li>Preview a full creator style, inspect its <strong>Look profile</strong>, <strong>Templates</strong>, <strong>Chapters</strong>, and <strong>Scene catalog</strong>, then apply it to your current project.</li>
+<li>Filter styles by <strong>Common</strong>, <strong>My Styles</strong>, <strong>Any</strong>, <strong>Portrait</strong>, <strong>Landscape</strong>, tags, and search.</li>
+<li>Combine selected items into a <strong>Nested Scene</strong> so they move and animate as one item while still exposing editable layers.</li>
+<li>Save your current edit as a style in <strong>My Styles</strong> for reuse later.</li>
+</ul>
+<h2 id="how-to-understand-scenes-templates-and-styles">How to understand scenes, templates, and styles<a class="headerlink" href="#how-to-understand-scenes-templates-and-styles" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Use <strong>Scenes</strong> when you want one animated building block, such as a chart, motion background, opener, closer, text animation, or comparison scene.</li>
+<li>Use <strong>Styles</strong> when you want a full creator-style sequence. A style can add multiple scenes at once and preserve a recognizable pacing, color, layout, and typography direction.</li>
+<li>Use a <strong>Nested Scene</strong> when you want several selected items to become one grouped scene. The group appears as one item on the timeline, but its internal layers remain editable from the properties panel.</li>
+</ol>
+<h2 id="how-to-browse-and-preview-the-scene-library">How to browse and preview the scene library<a class="headerlink" href="#how-to-browse-and-preview-the-scene-library" title="Permanent link">&para;</a></h2>
+<p><img alt="The Scenes panel with category chips (Charts, Motion BG, Layout, Text, Data Viz, Effects, …) and scene cards with Preview, Add, and Code." src="images/panel-scenes.png" /></p>
+<ol>
+<li>Click <strong>Scenes</strong> in the menu panel.</li>
+<li>Make sure the <strong>Library</strong> tab is selected.</li>
+<li>Use <strong>Search scenes...</strong> to find a scene by name, description, category, tag, or best use.</li>
+<li>Filter with category chips such as <strong>All</strong>, <strong>Charts</strong>, <strong>Motion BG</strong>, <strong>Layout</strong>, <strong>Text</strong>, <strong>Data Viz</strong>, <strong>Effects</strong>, <strong>Compare</strong>, <strong>Speaker</strong>, <strong>Closers</strong>, and <strong>Openers</strong>.</li>
+<li>If available, use <strong>Favs</strong> for saved favorites and <strong>Recent</strong> for recently used scenes.</li>
+<li>Click the sort control to cycle through <strong>A→Z</strong>, <strong>Z→A</strong>, <strong>Short</strong>, and <strong>Long</strong>.</li>
+<li>Click a scene card or <strong>Preview</strong> to expand it.</li>
+<li>In the preview player, use <strong>Play</strong>, <strong>Pause</strong>, the seek bar, <strong>Open in fullscreen preview</strong>, or <strong>Browser fullscreen (or double-click video)</strong>.</li>
+<li>Use <strong>Preview all</strong> to show previews for all visible scenes, then <strong>Collapse</strong> to close them.</li>
+</ol>
+<h2 id="how-to-add-a-template-scene">How to add a template scene<a class="headerlink" href="#how-to-add-a-template-scene" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Move the playhead to where you want the scene to begin.</li>
+<li>Open <strong>Scenes</strong> &gt; <strong>Library</strong>.</li>
+<li>Find the scene you want.</li>
+<li>Click <strong>Add</strong> on the scene card, or expand the card and click <strong>Add to Timeline</strong>.</li>
+<li>The scene is inserted on the timeline at the playhead.</li>
+<li>Select the new scene to edit its settings in the properties panel.</li>
+</ol>
+<p>You can also use <strong>Add to Timeline</strong> from the fullscreen preview.</p>
+<h2 id="how-to-apply-a-full-style">How to apply a full style<a class="headerlink" href="#how-to-apply-a-full-style" title="Permanent link">&para;</a></h2>
+<p><img alt="The Styles panel with the Common and My Styles tabs and creator-style cards showing scene counts and tags." src="images/panel-styles.png" /></p>
+<ol>
+<li>Click <strong>Styles</strong> in the menu panel.</li>
+<li>Choose <strong>Common</strong> for curated creator styles, or <strong>My Styles</strong> for styles you saved.</li>
+<li>Use <strong>Search creator styles...</strong> or <strong>Search your styles...</strong>.</li>
+<li>Filter with <strong>All</strong>, <strong>Any</strong>, <strong>Portrait</strong>, <strong>Landscape</strong>, tag chips, <strong>More</strong>, and <strong>Less</strong>.</li>
+<li>Click a style card to open its preview.</li>
+<li>In the preview dialog:
+   - Click <strong>View Sample Edit →</strong> to open the complete sample edit in a new tab.
+   - Review <strong>Look profile</strong> for pacing, density, energy, mood, colors, and fonts.
+   - Review <strong>Templates</strong> and click <strong>Apply full sequence</strong> for the sequence you want.
+   - Use the video controls: <strong>Play</strong>, <strong>Pause</strong>, <strong>Mute</strong>, <strong>Unmute</strong>, the seek bar, and <strong>Playback speed</strong>.
+   - Use <strong>Chapters</strong> or <strong>Scene catalog</strong> to jump through the sample.</li>
+<li>Confirm the dialog titled <strong>Apply {style name}?</strong> by clicking <strong>Apply</strong>.</li>
+</ol>
+<p>The style is added starting at the current playhead. Existing items are not removed.</p>
+<h2 id="how-to-apply-a-style-directly-from-a-card">How to apply a style directly from a card<a class="headerlink" href="#how-to-apply-a-style-directly-from-a-card" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>Styles</strong>.</li>
+<li>Find the style card you want.</li>
+<li>Click <strong>Apply current</strong>.</li>
+<li>In <strong>Apply {style name}?</strong>, review how many scenes and how much duration will be added.</li>
+<li>Click <strong>Apply</strong>.</li>
+</ol>
+<p>After the style is applied, the editor shows a success message with <strong>Undo</strong> if you want to reverse the insertion.</p>
+<h2 id="how-to-group-items-into-a-nested-scene">How to group items into a nested scene<a class="headerlink" href="#how-to-group-items-into-a-nested-scene" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select two or more items on the canvas or timeline.</li>
+<li>Right-click one of the selected items.</li>
+<li>Open <strong>Arrange</strong>.</li>
+<li>Click <strong>Combine {number} items</strong>.</li>
+<li>The selected items become one combined item named like <strong>Nested Scene ({number} layers)</strong>.</li>
+</ol>
+<p>The original items are replaced by the nested scene. The nested scene keeps the combined timing and layer order.</p>
+<h2 id="how-to-edit-inside-a-nested-scene">How to edit inside a nested scene<a class="headerlink" href="#how-to-edit-inside-a-nested-scene" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select the nested scene.</li>
+<li>In the properties panel, find <strong>Nested Scene ({number} layers)</strong>.</li>
+<li>Use <strong>Select All</strong> to select every layer, or click individual layer checkboxes.</li>
+<li>Expand a layer with the chevron.</li>
+<li>Choose <strong>Quick Edit</strong> for fast controls:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Position &amp; Size</strong></td>
+<td>Layer position and dimensions.</td>
+</tr>
+<tr>
+<td><strong>Opacity</strong></td>
+<td>Layer transparency.</td>
+</tr>
+<tr>
+<td><strong>Round</strong></td>
+<td>Corner rounding.</td>
+</tr>
+<tr>
+<td><strong>Vol</strong></td>
+<td>Video layer volume.</td>
+</tr>
+<tr>
+<td><strong>Speed</strong></td>
+<td>Video layer playback speed.</td>
+</tr>
+<tr>
+<td><strong>Blur</strong></td>
+<td>Layer blur amount.</td>
+</tr>
+<tr>
+<td><strong>Bright</strong></td>
+<td>Layer brightness.</td>
+</tr>
+</tbody>
+</table>
+<ol start="6">
+<li>Choose <strong>Full Settings</strong> to edit that layer with its full item controls.</li>
+<li>Use the eye button to show or hide a layer, arrow buttons to reorder layers, and the trash button to remove a layer.</li>
+<li>When multiple layers are selected, use <strong>Editing {number} layers</strong>, <strong>Opacity (all)</strong>, <strong>Show</strong>, and <strong>Hide</strong> for batch changes.</li>
+<li>Use group-level <strong>Animations</strong>, <strong>Keyframes</strong>, and <strong>Effects</strong> to animate or style the nested scene as one item.</li>
+<li>Click <strong>Uncombine</strong> in the properties panel, or right-click the item and choose <strong>Arrange</strong> &gt; <strong>Uncombine layers</strong>, to restore the original items.</li>
+</ol>
+<h2 id="how-to-save-your-work-as-a-reusable-style">How to save your work as a reusable style<a class="headerlink" href="#how-to-save-your-work-as-a-reusable-style" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>Styles</strong>.</li>
+<li>Open the panel’s <strong>More style actions</strong> menu.</li>
+<li>Click <strong>Save current video edit as style</strong>.</li>
+</ol>
+<p>You can also open <strong>My Styles</strong> and click <strong>Save current edit</strong> / <strong>as a new style</strong>, or the empty-state button <strong>Save your current content as a style</strong>.</p>
+<ol start="4">
+<li>In <strong>Save as Style</strong>, fill in:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>What to enter</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Name</strong></td>
+<td>A required style name. The placeholder is <strong>My cinematic look</strong>.</td>
+</tr>
+<tr>
+<td><strong>Tags</strong></td>
+<td>Optional labels. Type a tag and press Enter, Tab, or comma.</td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>Optional notes. The placeholder is <strong>What makes this style distinctive?</strong></td>
+</tr>
+<tr>
+<td><strong>Visibility</strong></td>
+<td>Choose <strong>Private</strong> (<strong>Only you</strong>) or <strong>Public</strong> (<strong>Anyone</strong>).</td>
+</tr>
+<tr>
+<td><strong>Auto-generate semantic layer</strong></td>
+<td>Keep this on if you want the editor to describe the style automatically so future AI edits stay on-brand.</td>
+</tr>
+</tbody>
+</table>
+<ol start="5">
+<li>Click <strong>Save Style</strong>.</li>
+<li>After saving, the editor switches to <strong>My Styles</strong>.</li>
+</ol>
+<p>If you see <strong>This content has no recent render.</strong> click <strong>Render your content first</strong>, render the project, then try saving the style again.</p>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Scene templates and full styles are added at the current playhead, so position the playhead first.</li>
+<li>Applying a style adds new scenes; it does not clear your timeline.</li>
+<li>Use <strong>View Sample</strong> when you want to study a style before applying it.</li>
+<li>Use <strong>Combine {number} items</strong> when you want one movable, animatable group. Use <strong>Link {number} items</strong> only when you want items to stay separate but move/delete together.</li>
+<li>A nested scene cannot remove its last layer.</li>
+<li>When resizing items on the canvas, hold Shift to lock aspect ratio. If crop controls are active, the canvas shows <strong>Crop Mode</strong>.</li>
+<li>If a style is no longer useful, open <strong>My Styles</strong>, use <strong>Style actions</strong>, then choose <strong>Delete</strong>.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="04-timeline-editing.html">Timeline editing</a></li>
+<li><a href="02-text-captions.html">Text, captions &amp; typography</a></li>
+<li><a href="08-exporting-rendering.html">Exporting &amp; rendering</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#where-to-find-it">Where to find it</a></li>
+<li><a href="#what-you-can-do">What you can do</a></li>
+<li><a href="#how-to-understand-scenes-templates-and-styles">How to understand scenes, templates, and styles</a></li>
+<li><a href="#how-to-browse-and-preview-the-scene-library">How to browse and preview the scene library</a></li>
+<li><a href="#how-to-add-a-template-scene">How to add a template scene</a></li>
+<li><a href="#how-to-apply-a-full-style">How to apply a full style</a></li>
+<li><a href="#how-to-apply-a-style-directly-from-a-card">How to apply a style directly from a card</a></li>
+<li><a href="#how-to-group-items-into-a-nested-scene">How to group items into a nested scene</a></li>
+<li><a href="#how-to-edit-inside-a-nested-scene">How to edit inside a nested scene</a></li>
+<li><a href="#how-to-save-your-work-as-a-reusable-style">How to save your work as a reusable style</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

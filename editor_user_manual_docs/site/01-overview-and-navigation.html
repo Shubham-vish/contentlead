@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview &amp; Navigation — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link active" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Overview &amp; Navigation</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>Get oriented in the SkillTown video editor: the main areas of the screen, how to move around, and where every feature lives.</p>
+</blockquote>
+<h2 id="the-editor-at-a-glance">The editor at a glance<a class="headerlink" href="#the-editor-at-a-glance" title="Permanent link">&para;</a></h2>
+<p><img alt="The SkillTown video editor with its main regions: top bar, left menu rail, center canvas, right properties area, and the timeline along the bottom." src="images/editor-overview.png" /></p>
+<p>When you open a project, the editor is organized into a few main regions:</p>
+<table>
+<thead>
+<tr>
+<th>Region</th>
+<th>Where it is</th>
+<th>What it's for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Top bar</strong></td>
+<td>Across the top</td>
+<td>Undo/redo, playback jump, project title, save status, timeline toggle, resize/orientation, <strong>Export</strong>, and the panel toggle.</td>
+</tr>
+<tr>
+<td><strong>Menu panel</strong></td>
+<td>Left edge (icon rail + a slide‑out panel)</td>
+<td>Add content: media, text, shapes, scenes, effects, and more.</td>
+</tr>
+<tr>
+<td><strong>Canvas</strong> (player)</td>
+<td>Center</td>
+<td>A live preview of your video at the current playhead time. What you see here is what you get on export.</td>
+</tr>
+<tr>
+<td><strong>Properties panel</strong></td>
+<td>Right side</td>
+<td>Appears when you select an item; shows all the settings for that item.</td>
+</tr>
+<tr>
+<td><strong>Timeline</strong></td>
+<td>Bottom</td>
+<td>Your tracks and clips laid out over time. Where you arrange, trim, and sequence everything.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-menu-panel-left-rail">The menu panel (left rail)<a class="headerlink" href="#the-menu-panel-left-rail" title="Permanent link">&para;</a></h2>
+<p><img alt="The left icon rail: Upload, Styles, Text, Video, Image, Shapes, Effects, SFX, Scenes, Brand, and AI Edit." src="images/left-rail-tabs.png" /></p>
+<p>Click an icon in the left rail to open that tab. The tabs are:</p>
+<table>
+<thead>
+<tr>
+<th>Tab</th>
+<th>What you add / do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Upload</strong></td>
+<td>Upload your own images, videos, and audio files.</td>
+</tr>
+<tr>
+<td><strong>Styles</strong></td>
+<td>Apply a complete creator "look" to your whole video.</td>
+</tr>
+<tr>
+<td><strong>Text</strong></td>
+<td>Add headings and text elements.</td>
+</tr>
+<tr>
+<td><strong>Video</strong></td>
+<td>Browse and add stock/library video.</td>
+</tr>
+<tr>
+<td><strong>Image</strong></td>
+<td>Browse and add stock/library images.</td>
+</tr>
+<tr>
+<td><strong>Shapes</strong></td>
+<td>Add shapes and graphic elements.</td>
+</tr>
+<tr>
+<td><strong>Effects</strong></td>
+<td>Add transitions and visual effects between clips.</td>
+</tr>
+<tr>
+<td><strong>SFX</strong></td>
+<td>Search and add sound effects.</td>
+</tr>
+<tr>
+<td><strong>Scenes</strong></td>
+<td>Browse and add pre‑built animated scene templates.</td>
+</tr>
+<tr>
+<td><strong>Brand</strong></td>
+<td>Your brand colors, logos, and fonts (brand kit).</td>
+</tr>
+<tr>
+<td><strong>AI Edit</strong></td>
+<td>Chat with the AI assistant to build and edit your video.</td>
+</tr>
+</tbody>
+</table>
+<p>Each tab is documented in detail in its own manual page (see <strong>Related</strong> below).</p>
+<h2 id="the-canvas-preview-player">The canvas (preview player)<a class="headerlink" href="#the-canvas-preview-player" title="Permanent link">&para;</a></h2>
+<p><img alt="The center canvas showing a live preview of the project at the current playhead time." src="images/canvas-preview.png" /></p>
+<p>The center canvas plays your project exactly as it will render.</p>
+<ul>
+<li>Press <strong>Space</strong> (or the play control in the top bar) to play/pause.</li>
+<li>Use the <strong>Go to start</strong> control in the top bar to jump the playhead back to the beginning.</li>
+<li>Select any item directly on the canvas to move, resize, or rotate it, and to open its <strong>properties panel</strong> on the right. For handles, rotation, snapping guides, and drag-and-drop onto the preview, see <a href="16-canvas-editing.html">Canvas Editing</a>.</li>
+</ul>
+<h2 id="the-properties-panel-right-side">The properties panel (right side)<a class="headerlink" href="#the-properties-panel-right-side" title="Permanent link">&para;</a></h2>
+<p>Whenever you select an item — on the canvas or in the timeline — the right‑hand <strong>properties panel</strong> switches to show the controls for that specific item type (text, image, video, audio, shape, template, caption, and so on). Deselect everything to hide it.</p>
+<p>The right panel can also be <strong>popped out</strong> into a floating window and <strong>pinned</strong>, using the panel controls in the top‑right — handy on smaller screens.</p>
+<h2 id="the-top-bar-controls">The top bar controls<a class="headerlink" href="#the-top-bar-controls" title="Permanent link">&para;</a></h2>
+<p><img alt="The editor top bar: Standard/Editor/AI mode toggle, project title, Resize, version history, save status, Export, theme, share, fullscreen, and the panel menu." src="images/top-bar.png" /></p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Undo</strong></td>
+<td>Step backwards. Shortcut: <strong>Ctrl/Cmd + Z</strong>.</td>
+</tr>
+<tr>
+<td><strong>Redo</strong></td>
+<td>Step forwards. Shortcut: <strong>Ctrl/Cmd + Y</strong>.</td>
+</tr>
+<tr>
+<td><strong>Go to start</strong></td>
+<td>Move the playhead to the beginning.</td>
+</tr>
+<tr>
+<td><strong>Play / Pause</strong></td>
+<td>Start or stop preview playback.</td>
+</tr>
+<tr>
+<td>Project <strong>title</strong></td>
+<td>Shows (and lets you edit) the project name.</td>
+</tr>
+<tr>
+<td><strong>Save status</strong></td>
+<td>Shows <em>saving / saved / unsaved</em>.</td>
+</tr>
+<tr>
+<td><strong>Autosave</strong></td>
+<td>Toggle automatic saving on or off.</td>
+</tr>
+<tr>
+<td><strong>Save</strong></td>
+<td>Save the project now. Shortcut: <strong>Ctrl/Cmd + S</strong>.</td>
+</tr>
+<tr>
+<td><strong>Export</strong></td>
+<td>Open the export options to render and download your video.</td>
+</tr>
+<tr>
+<td><strong>Timeline toggle</strong></td>
+<td>Show or hide the bottom timeline.</td>
+</tr>
+<tr>
+<td><strong>Resize</strong></td>
+<td>Change the video's dimensions/orientation (e.g. portrait vs landscape).</td>
+</tr>
+<tr>
+<td><strong>Panel toggle</strong></td>
+<td>Collapse or expand the right properties panel.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="saving-your-work">Saving your work<a class="headerlink" href="#saving-your-work" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The editor <strong>autosaves</strong> while you work (you can turn autosave off from the top bar).</li>
+<li>The save indicator shows the current state; <strong>Ctrl/Cmd + S</strong> saves immediately.</li>
+<li>Every save can be recovered later — see <strong>Exporting &amp; Versions</strong>.</li>
+</ul>
+<h2 id="a-typical-workflow">A typical workflow<a class="headerlink" href="#a-typical-workflow" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Add content</strong> from the left <strong>menu panel</strong> (upload media, add a scene template, add text).</li>
+<li><strong>Arrange it</strong> on the <strong>timeline</strong> — order clips, trim them, stack tracks.</li>
+<li><strong>Select an item</strong> and fine‑tune it in the <strong>properties panel</strong> (position, size, colors, animation).</li>
+<li><strong>Preview</strong> on the canvas until it looks right.</li>
+<li><strong>Export</strong> from the top bar to render and download.</li>
+</ol>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The whole preview is WYSIWYG — the canvas matches the final exported video.</li>
+<li>Collapse the timeline or right panel to get more room for the canvas when reviewing.</li>
+<li>On smaller screens, pop out and pin the properties panel so it doesn't cover the canvas.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="02-media-library.html">Media Library</a></li>
+<li><a href="03-scenes-templates-styles.html">Scenes, Templates &amp; Styles</a></li>
+<li><a href="04-custom-scenes-and-ai.html">Custom Scenes &amp; AI</a></li>
+<li><a href="05-text-and-captions.html">Text &amp; Captions</a></li>
+<li><a href="06-timeline-and-selection.html">Timeline &amp; Selection</a></li>
+<li><a href="07-item-properties.html">Item Properties</a></li>
+<li><a href="08-animations-and-keyframes.html">Animations &amp; Keyframes</a></li>
+<li><a href="09-effects-filters-color.html">Effects, Filters &amp; Color</a></li>
+<li><a href="10-camera-effects.html">Camera Effects</a></li>
+<li><a href="11-audio-mixing-and-enhance.html">Audio Mixing &amp; Enhancement</a></li>
+<li><a href="12-transitions.html">Transitions</a></li>
+<li><a href="13-export-and-versions.html">Exporting &amp; Versions</a></li>
+<li><a href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a></li>
+<li><a href="15-right-click-menus.html">Right-click Menus</a></li>
+<li><a href="16-canvas-editing.html">Canvas Editing</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#the-editor-at-a-glance">The editor at a glance</a></li>
+<li><a href="#the-menu-panel-left-rail">The menu panel (left rail)</a></li>
+<li><a href="#the-canvas-preview-player">The canvas (preview player)</a></li>
+<li><a href="#the-properties-panel-right-side">The properties panel (right side)</a></li>
+<li><a href="#the-top-bar-controls">The top bar controls</a></li>
+<li><a href="#saving-your-work">Saving your work</a></li>
+<li><a href="#a-typical-workflow">A typical workflow</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

@@ -31,6 +31,8 @@
 
 ## How to choose the right camera tab
 
+![The Camera tab: Color Keying (Chroma), AI Auto Matting, 3D Camera, and Zoom to Spot sections.](images/properties-video-camera.png)
+
 1. Open **3D Camera** and switch it **ON**.
 2. Use the three tabs according to what you need:
 

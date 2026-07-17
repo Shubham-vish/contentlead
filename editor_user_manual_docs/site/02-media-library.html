@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Media Library — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link active" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Media Library</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>Use the media library to upload your own files, browse stock photos and videos, add audio, place shapes and visual elements, and keep brand assets handy.</p>
+</blockquote>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<p>Open the editor and use the menu panel. The media-related tabs are <strong>Upload</strong>, <strong>Video</strong>, <strong>Image</strong>, <strong>Shapes</strong>, and <strong>Brand</strong>. On layouts that show the horizontal media row, <strong>Audio</strong> opens the <strong>Audios</strong> panel.</p>
+<p>Click a tab once to open its panel. Click the same active tab again to close it. On desktop, the menu panel can also be hidden or shown with <strong>Collapse panel</strong> and <strong>Expand panel</strong>.</p>
+<h2 id="what-you-can-do">What you can do<a class="headerlink" href="#what-you-can-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Upload local image, video, and audio files from <strong>Upload</strong>.</li>
+<li>Paste a direct media URL in <strong>Upload</strong> and preview it before saving.</li>
+<li>Browse project assets in <strong>Editor Uploads</strong>, <strong>Content Assets</strong>, <strong>Global Assets</strong>, and <strong>All My Uploads</strong>.</li>
+<li>Search Pexels stock media from <strong>Image</strong> and <strong>Video</strong>.</li>
+<li>Preview, copy, download, or open stock media on Pexels.</li>
+<li>Add built-in audio tracks from <strong>Audios</strong> when the <strong>Audio</strong> tab is available.</li>
+<li>Add <strong>Shapes</strong>, <strong>Visualizers</strong>, and <strong>Progress Bars</strong> from <strong>Shapes</strong>.</li>
+<li>Save reusable <strong>Colors</strong>, <strong>Fonts</strong>, and <strong>Logos</strong> in <strong>Brand Kit</strong>.</li>
+<li>Add media by clicking <strong>Add to Timeline</strong> or by dragging media-library assets onto the timeline.</li>
+</ul>
+<h2 id="how-to-switch-between-media-tabs">How to switch between media tabs<a class="headerlink" href="#how-to-switch-between-media-tabs" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Find the menu panel beside the canvas and timeline.</li>
+<li>Click <strong>Upload</strong> to open the full <strong>Media Library</strong> panel for your own files and saved assets.</li>
+<li>Click <strong>Video</strong> for stock <strong>Videos</strong>, <strong>Image</strong> for stock <strong>Photos</strong>, <strong>Shapes</strong> for <strong>Elements</strong>, or <strong>Brand</strong> for <strong>Brand Kit</strong>.</li>
+<li>If your layout shows the horizontal media row, click <strong>Audio</strong> to open <strong>Audios</strong>.</li>
+<li>To return to editing a selected item, close the active menu tab or select an item so the properties panel can take focus.</li>
+</ol>
+<h2 id="how-to-upload-files">How to upload files<a class="headerlink" href="#how-to-upload-files" title="Permanent link">&para;</a></h2>
+<p><img alt="The Upload tab open, showing the Media Library with the Upload button and Add from Library." src="images/panel-uploads.png" /></p>
+<ol>
+<li>Open <strong>Upload</strong>.</li>
+<li>Click <strong>Upload</strong>. The <strong>Upload media</strong> dialog opens.</li>
+<li>Either drag files into the area labeled <strong>Drag and drop files here, or</strong> or click <strong>browse files</strong>.</li>
+<li>The file picker accepts image, video, and audio files. Selected files appear under <strong>Selected files:</strong> with their file name, thumbnail when available, and size in KB or MB.</li>
+<li>Optional: enter a custom name under <strong>Display name (optional)</strong>. The placeholder is <strong>e.g., Product Demo, Background Music...</strong>, and the helper text says <strong>This name will be shown in the media library</strong>.</li>
+<li>Click <strong>Upload</strong> to start uploading, or <strong>Cancel</strong> to close the dialog.</li>
+<li>While files upload, watch <strong>Uploads in Progress</strong>. Waiting files show <strong>Pending</strong>; active uploads show a percentage.</li>
+</ol>
+<p>The upload panel accepts media MIME types: <code>image/*</code>, <code>video/*</code>, and <code>audio/*</code>. No visible file-size limit is shown in the upload dialog.</p>
+<h2 id="how-to-add-media-from-a-url">How to add media from a URL<a class="headerlink" href="#how-to-add-media-from-a-url" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>Upload</strong> and click <strong>Upload</strong>.</li>
+<li>Paste a URL into <strong>Paste media link https://...</strong>.</li>
+<li>Use a link that starts with <code>http://</code> or <code>https://</code>. If it does not, you will see <strong>Please enter a valid URL starting with http:// or https://</strong>.</li>
+<li>The dialog tries to preview common media links:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Preview state</th>
+<th>What you see</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Video link</td>
+<td>A video player with controls</td>
+</tr>
+<tr>
+<td>Image link</td>
+<td>An image preview</td>
+</tr>
+<tr>
+<td>Audio link</td>
+<td>An audio player</td>
+</tr>
+<tr>
+<td>Loading</td>
+<td><strong>Loading preview...</strong></td>
+</tr>
+<tr>
+<td>Broken link</td>
+<td><strong>Failed to load preview</strong> and <strong>The URL may be invalid or inaccessible</strong></td>
+</tr>
+<tr>
+<td>Unknown type</td>
+<td><strong>Unknown media type</strong></td>
+</tr>
+</tbody>
+</table>
+<ol start="5">
+<li>If the preview is acceptable, click <strong>Upload</strong>. The URL is saved as media and the dialog notes <strong>Will be used directly</strong>.</li>
+</ol>
+<h2 id="how-to-browse-and-add-uploaded-assets">How to browse and add uploaded assets<a class="headerlink" href="#how-to-browse-and-add-uploaded-assets" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>Upload</strong>.</li>
+<li>Use <strong>Add from Library</strong> to open the <strong>Add from Library</strong> picker. Its helper text is <strong>Browse content &amp; global assets</strong>.</li>
+<li>Browse the collapsible sections:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>What it contains</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Editor Uploads</strong></td>
+<td>Files uploaded from this editor project</td>
+</tr>
+<tr>
+<td><strong>Content Assets</strong></td>
+<td>Other assets attached to the current content</td>
+</tr>
+<tr>
+<td><strong>Global Assets</strong></td>
+<td>Shared global assets</td>
+</tr>
+<tr>
+<td><strong>All My Uploads</strong></td>
+<td>Uploads from other content items, with <strong>Browse all content</strong></td>
+</tr>
+</tbody>
+</table>
+<ol start="4">
+<li>Inside each section, assets are grouped as <strong>Videos</strong>, <strong>Images</strong>, and <strong>Audio</strong>.</li>
+<li>Click <strong>Add to Timeline</strong> on an asset to add it at the current playhead position.</li>
+<li>Or drag an asset card onto the timeline. A valid drop lands on the compatible track and time under your cursor; otherwise, the editor creates a new <strong>Dropped Media</strong> track.</li>
+<li>While an asset is being added, the button changes to <strong>Adding...</strong>.</li>
+</ol>
+<p>If <strong>Editor Uploads</strong> is empty, the panel says <strong>No editor uploads yet</strong> and <strong>Upload files using the button above</strong>. If the whole media library is empty, it says <strong>No media yet</strong> and <strong>Upload files or add from library</strong>.</p>
+<h2 id="how-to-search-and-browse-stock-images">How to search and browse stock images<a class="headerlink" href="#how-to-search-and-browse-stock-images" title="Permanent link">&para;</a></h2>
+<p><img alt="The stock Images (Photos) panel with the Pexels search box and image cards showing dimensions, author, and Add to Timeline." src="images/panel-image.png" /></p>
+<ol>
+<li>Open <strong>Image</strong>. The panel heading is <strong>Photos</strong>.</li>
+<li>The editor loads curated Pexels images automatically.</li>
+<li>Type a search in <strong>Search Pexels images...</strong> and press Enter or click the search button.</li>
+<li>Use <strong>Clear</strong> to reset the search and return to curated images.</li>
+<li>If more results are available, click <strong>Load More</strong>. While loading, the button says <strong>Loading...</strong> and the panel may show <strong>Searching for images...</strong>.</li>
+<li>Click an image card to open <strong>Image Preview</strong>, or use its menu for <strong>Preview Fullscreen</strong>, <strong>Copy Image URL</strong>, <strong>Download Image</strong>, and <strong>View on Pexels</strong>.</li>
+<li>Click <strong>Add to Timeline</strong> from the card or preview. A success message says <strong>Image Added</strong> and <strong>Image added at current playback position</strong>.</li>
+</ol>
+<p>The image cards can show resolution, photographer credit, and an <strong>IMG</strong> badge.</p>
+<h2 id="how-to-search-and-browse-stock-videos">How to search and browse stock videos<a class="headerlink" href="#how-to-search-and-browse-stock-videos" title="Permanent link">&para;</a></h2>
+<p><img alt="The stock Videos panel with the Pexels search box and video cards showing dimensions, author, fps, and duration." src="images/panel-video.png" /></p>
+<ol>
+<li>Open <strong>Video</strong>. The panel heading is <strong>Videos</strong>.</li>
+<li>The editor loads popular Pexels videos automatically.</li>
+<li>Type a search in <strong>Search Pexels videos...</strong> and press Enter or click the search button.</li>
+<li>Use <strong>Clear</strong> to reset the search and return to popular videos.</li>
+<li>If more results are available, click <strong>Load More</strong>. While loading, the button says <strong>Loading...</strong> and the panel may show <strong>Searching for videos...</strong>.</li>
+<li>Hover over a video card to preview playback. Use the card seek bar to scrub the preview.</li>
+<li>Use the card menu for <strong>Preview Fullscreen</strong>, <strong>Copy Video URL</strong>, <strong>Download Video</strong>, and <strong>View on Pexels</strong>.</li>
+<li>Click <strong>Add to Timeline</strong> from the card or from <strong>Video Preview</strong>. A success message says <strong>Video Added</strong> and <strong>Video added at current playback position</strong>.</li>
+</ol>
+<p>In <strong>Video Preview</strong>, you can use <strong>Play</strong>, <strong>Pause</strong>, mute/unmute, change playback speed, and click <strong>Close</strong> when done.</p>
+<table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Space</td>
+<td>Play or pause the preview</td>
+</tr>
+<tr>
+<td>M</td>
+<td>Mute or unmute</td>
+</tr>
+<tr>
+<td>Left Arrow</td>
+<td>Skip back 5 seconds</td>
+</tr>
+<tr>
+<td>Right Arrow</td>
+<td>Skip forward 5 seconds</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-configure-pexels-search">How to configure Pexels search<a class="headerlink" href="#how-to-configure-pexels-search" title="Permanent link">&para;</a></h2>
+<ol>
+<li>In <strong>Image</strong> or <strong>Video</strong>, look for the Pexels status banner.</li>
+<li>If no personal key is set, the banner says <strong>Using shared API key · Add your own for unlimited searches</strong>. Click <strong>Configure</strong>.</li>
+<li>In <strong>Configure Pexels API Key</strong>, follow the on-screen steps and paste your key into <strong>Pexels API Key</strong>. The placeholder is <strong>Paste your Pexels API key</strong>.</li>
+<li>Click <strong>Save</strong>.</li>
+<li>When a key is active, the banner says <strong>Personal Pexels API key active</strong>. You can click <strong>Configure</strong> again or <strong>Remove</strong>.</li>
+<li>In the setup dialog, <strong>Remove Key</strong> clears a saved key, and saving an empty field switches back to the shared key.</li>
+</ol>
+<h2 id="how-to-add-audio-from-the-audio-library">How to add audio from the audio library<a class="headerlink" href="#how-to-add-audio-from-the-audio-library" title="Permanent link">&para;</a></h2>
+<ol>
+<li>If your layout shows <strong>Audio</strong>, open it to view <strong>Audios</strong>.</li>
+<li>Browse the built-in audio list. Each item shows the track name and author, such as <strong>Open AI</strong>, <strong>Dawn of change</strong>, <strong>Hope</strong>, <strong>Tenderness</strong>, and <strong>Piano moment</strong>.</li>
+<li>Click a track to add it to the timeline, or drag it from the panel.</li>
+</ol>
+<p>Uploaded audio files also appear in <strong>Upload</strong> under <strong>Audio</strong>. Click <strong>Add to Timeline</strong> to add uploaded audio at the current playhead position, or drag it onto the timeline.</p>
+<h2 id="how-to-add-shapes-stickers-visualizers-and-progress-bars">How to add shapes, stickers, visualizers, and progress bars<a class="headerlink" href="#how-to-add-shapes-stickers-visualizers-and-progress-bars" title="Permanent link">&para;</a></h2>
+<p><img alt="The Shapes (Elements) panel with All/Stickers/Shapes/Visualizers pills and sections for Shapes, Visualizers, and Progress Bars." src="images/panel-shapes.png" /></p>
+<ol>
+<li>Open <strong>Shapes</strong>. The panel heading is <strong>Elements</strong>.</li>
+<li>Use the category pills <strong>All</strong>, <strong>Stickers</strong>, <strong>Shapes</strong>, and <strong>Visualizers</strong>.</li>
+<li>In the main view, browse these sections:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>What you can do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Stickers</strong></td>
+<td>Shows placeholder items labeled <strong>Coming soon</strong>. <strong>View all</strong> opens a page that says <strong>Stickers coming soon</strong> and <strong>Animated stickers and emojis will be available here</strong>.</td>
+</tr>
+<tr>
+<td><strong>Shapes</strong></td>
+<td>Click a shape thumbnail to add it to the timeline. Click <strong>View all</strong> for the full <strong>Shapes</strong> gallery.</td>
+</tr>
+<tr>
+<td><strong>Visualizers</strong></td>
+<td>Click a visualizer thumbnail to add it. Click <strong>View all</strong> for the full <strong>Visualizers</strong> gallery.</td>
+</tr>
+<tr>
+<td><strong>Progress Bars</strong></td>
+<td>Click a progress bar thumbnail to add it. Click <strong>View all</strong> for the full <strong>Progress Bars</strong> gallery.</td>
+</tr>
+</tbody>
+</table>
+<ol start="4">
+<li>In <strong>Shapes</strong>, filter with <strong>All</strong>, <strong>Basic</strong>, <strong>Arrows</strong>, <strong>Lines</strong>, <strong>Callouts</strong>, and <strong>Decorative</strong>.</li>
+<li>Available shape labels include <strong>Rectangle</strong>, <strong>Square</strong>, <strong>Rounded Rectangle</strong>, <strong>Circle</strong>, <strong>Ellipse</strong>, <strong>Triangle</strong>, <strong>Diamond</strong>, <strong>Pentagon</strong>, <strong>Hexagon</strong>, <strong>Arrow Right</strong>, <strong>Arrow Left</strong>, <strong>Arrow Up</strong>, <strong>Arrow Down</strong>, <strong>Arrow Diagonal ↗</strong>, <strong>Double Arrow</strong>, <strong>Curved Arrow</strong>, <strong>Block Arrow Right</strong>, <strong>Horizontal Line</strong>, <strong>Vertical Line</strong>, <strong>Diagonal Line</strong>, <strong>Dashed Line</strong>, <strong>Speech Bubble</strong>, <strong>Thought Bubble</strong>, <strong>Banner</strong>, <strong>Star</strong>, <strong>Heart</strong>, <strong>Cross / Plus</strong>, <strong>Octagon</strong>, <strong>Parallelogram</strong>, <strong>Left Bracket</strong>, and <strong>Right Bracket</strong>.</li>
+<li>In <strong>Visualizers</strong>, filter with <strong>All</strong>, <strong>Progress</strong>, and <strong>Sound Waves</strong>.</li>
+<li>Progress-bar labels include <strong>Solid Rounded</strong>, <strong>Solid Flat</strong>, <strong>Segmented</strong>, <strong>Gradient</strong>, <strong>Glow</strong>, <strong>Striped</strong>, <strong>Outline</strong>, <strong>Dual Bars</strong>, <strong>Vertical</strong>, <strong>Thin Line</strong>, <strong>Chunky Pill</strong>, <strong>Banner</strong>, <strong>Corner Frame</strong>, <strong>Full Border</strong>, <strong>Thick Frame</strong>, <strong>Thin Border</strong>, <strong>Countdown</strong>, and <strong>Segmented V</strong>.</li>
+<li>Sound-wave labels include <strong>Lineal 1</strong> through <strong>Lineal 6</strong>, <strong>Radial 1</strong>, <strong>Wave 1</strong>, <strong>Wave 2</strong>, and <strong>Hill 1</strong> through <strong>Hill 4</strong>.</li>
+</ol>
+<p>Shapes are added as 5-second items. Progress bars, progress frames, and audio visualizers are added as 10-second items. These element items are inserted at the start of the timeline.</p>
+<h2 id="how-to-use-the-brand-kit">How to use the brand kit<a class="headerlink" href="#how-to-use-the-brand-kit" title="Permanent link">&para;</a></h2>
+<p><img alt="The Brand Kit panel with Create New Kit and the empty-state prompt to save reusable colors, fonts, and logos." src="images/panel-brand.png" /></p>
+<ol>
+<li>Open <strong>Brand</strong>. The panel heading is <strong>Brand Kit</strong>.</li>
+<li>Under <strong>Create new kit</strong>, enter a name such as <strong>Acme Brand</strong> and click <strong>Create</strong>.</li>
+<li>If you have multiple kits, use <strong>Active kit</strong> to choose one. If no kit exists, the panel says <strong>Create a brand kit to save reusable colors, fonts, and logos.</strong></li>
+<li>In <strong>Colors</strong>, use <strong>Choose brand color</strong> and click <strong>Add Color</strong>. Each saved color can be removed with its <strong>Remove {color}</strong> control.</li>
+<li>In <strong>Fonts</strong>, enter a font name such as <strong>Inter</strong> and click <strong>Add Font</strong>. You can also press Enter. Each saved font can be removed with <strong>Remove {font}</strong>.</li>
+<li>In <strong>Logos</strong>, paste a logo URL such as <strong>https://example.com/logo.png</strong> and click <strong>Add Logo</strong>. Each logo preview can be removed with <strong>Remove logo {number}</strong>.</li>
+<li>Use <strong>Delete kit</strong> to remove the active brand kit.</li>
+</ol>
+<p>Brand kit items are saved for reuse, but this panel does not add a color, font, or logo directly to the timeline by itself.</p>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Add to Timeline</strong> in <strong>Upload</strong> adds media at the current playhead position.</li>
+<li>Dragging an uploaded/library asset onto the timeline lets you choose the target time and, when compatible, the target track.</li>
+<li>Dropping files from your computer onto the canvas or timeline adds supported image, video, and audio files immediately, then uploads them in the background.</li>
+<li>If you drop an unsupported file type, the editor shows <strong>Unsupported file type. Drop images, videos, or audio.</strong></li>
+<li>Uploaded videos and images use default durations while metadata loads: videos start at about 10 seconds, images at 5 seconds, and uploaded audio at about 30 seconds.</li>
+<li>Stock <strong>Image</strong> results add at the current playback position; stock <strong>Video</strong> results also add at the current playback position.</li>
+<li>Pexels image results request 20 items per page; Pexels video results request 15 items per page.</li>
+<li>Curated images and popular videos are cached for 5 minutes in the current editor session.</li>
+<li>Uploaded video cards may show <strong>Clear local cache (force re-download)</strong> for forcing a fresh video download.</li>
+<li>If <strong>Download Failed</strong> or <strong>Could not download the video</strong> appears, the source may be blocked or temporarily unavailable.</li>
+<li>Use <strong>Remove</strong> on an editor upload card to remove it from <strong>Editor Uploads</strong>. This does not describe deleting timeline items.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="01-editor-overview.html">Editor overview</a></li>
+<li><a href="03-timeline.html">Timeline</a></li>
+<li><a href="04-canvas-and-properties.html">Canvas and properties panel</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#where-to-find-it">Where to find it</a></li>
+<li><a href="#what-you-can-do">What you can do</a></li>
+<li><a href="#how-to-switch-between-media-tabs">How to switch between media tabs</a></li>
+<li><a href="#how-to-upload-files">How to upload files</a></li>
+<li><a href="#how-to-add-media-from-a-url">How to add media from a URL</a></li>
+<li><a href="#how-to-browse-and-add-uploaded-assets">How to browse and add uploaded assets</a></li>
+<li><a href="#how-to-search-and-browse-stock-images">How to search and browse stock images</a></li>
+<li><a href="#how-to-search-and-browse-stock-videos">How to search and browse stock videos</a></li>
+<li><a href="#how-to-configure-pexels-search">How to configure Pexels search</a></li>
+<li><a href="#how-to-add-audio-from-the-audio-library">How to add audio from the audio library</a></li>
+<li><a href="#how-to-add-shapes-stickers-visualizers-and-progress-bars">How to add shapes, stickers, visualizers, and progress bars</a></li>
+<li><a href="#how-to-use-the-brand-kit">How to use the brand kit</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

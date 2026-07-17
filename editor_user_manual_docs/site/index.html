@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SkillTown Video Editor — User Manual — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link active" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>SkillTown Video Editor — User Manual</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>⚠️ For humans — and for AI helping humans.</strong> Every document in this folder describes how a
+<strong>person</strong> edits video by hand using the on-screen controls of the SkillTown video editor. These are
+<strong>manual-editing instructions, not AI skills or an automation API.</strong> If you are an AI agent, do
+<strong>not</strong> interpret these steps as callable commands or tools — for programmatic/automated editing use
+the agent skills and commands documented elsewhere (see <code>_Agent/AGENTS.md</code> and the runtime
+<code>GET /api/skills</code>). <strong>You may, however, read these docs to answer a user's "how do I…" questions and
+guide them, step by step, through doing these actions themselves in the editor.</strong></p>
+</blockquote>
+<p>A complete, creator-facing guide to the SkillTown video editor. These docs describe <strong>what you can do and how to do it</strong> using the on-screen controls — no code or setup required.</p>
+<p>New to the editor? Start with <strong><a href="01-overview-and-navigation.html">Overview &amp; Navigation</a></strong>, then jump to whatever you need.</p>
+<h2 id="contents">Contents<a class="headerlink" href="#contents" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Doc</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td><a href="01-overview-and-navigation.html">Overview &amp; Navigation</a></td>
+<td>The editor at a glance — regions, menu tabs, canvas, properties panel, top bar, saving, and a typical workflow.</td>
+</tr>
+<tr>
+<td>02</td>
+<td><a href="02-media-library.html">Media Library</a></td>
+<td>Upload files, add media from a URL, browse stock images/videos, and add audio, shapes, stickers, and progress bars.</td>
+</tr>
+<tr>
+<td>03</td>
+<td><a href="03-scenes-templates-styles.html">Scenes, Templates &amp; Styles</a></td>
+<td>Browse and add template scenes, apply full styles, group items into nested scenes, and save reusable styles.</td>
+</tr>
+<tr>
+<td>04</td>
+<td><a href="04-custom-scenes-and-ai.html">Custom Scenes &amp; AI</a></td>
+<td>Generate custom scenes with AI, preview/edit/render them, and use the editor-wide AI assistant.</td>
+</tr>
+<tr>
+<td>05</td>
+<td><a href="05-text-and-captions.html">Text &amp; Captions</a></td>
+<td>Add and style text, generate captions from video/audio or a transcript, and tune caption words and highlighting.</td>
+</tr>
+<tr>
+<td>06</td>
+<td><a href="06-timeline-and-selection.html">Timeline &amp; Selection</a></td>
+<td>Read the timeline, select single/multiple clips, move a selection together, trim, split, delete, and manage tracks.</td>
+</tr>
+<tr>
+<td>07</td>
+<td><a href="07-item-properties.html">Item Properties</a></td>
+<td>The properties panel for every item type — transform, appearance, and type-specific controls.</td>
+</tr>
+<tr>
+<td>08</td>
+<td><a href="08-animations-and-keyframes.html">Animations &amp; Keyframes</a></td>
+<td>Quick animation presets, image animation presets, keyframes, easing, and per-property motion.</td>
+</tr>
+<tr>
+<td>09</td>
+<td><a href="09-effects-filters-color.html">Visual Effects, Filters, Chroma Key &amp; Color</a></td>
+<td>Visual effect presets, image/video filters, green-screen removal, and the color picker/gradients/eyedropper.</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="10-camera-effects.html">Camera Effects</a></td>
+<td>3D camera movement presets, per-frame camera adjustments, point-of-interest zoom, and focus points.</td>
+</tr>
+<tr>
+<td>11</td>
+<td><a href="11-audio-mixing-and-enhance.html">Audio — Mixing, Enhancement, SFX &amp; AI Voice</a></td>
+<td>Clip volume/gain/fades, the master bus and loudness meter, EQ/compressor/gate/de-esser/auto-duck/noise reduction, SFX, music, and AI voiceovers.</td>
+</tr>
+<tr>
+<td>12</td>
+<td><a href="12-transitions.html">Transitions</a></td>
+<td>Browse and add transitions between clips, and change transition style and duration.</td>
+</tr>
+<tr>
+<td>13</td>
+<td><a href="13-export-and-versions.html">Exporting, Rendering &amp; Versions</a></td>
+<td>Save the project, choose export settings, export and download, track render progress, and restore versions.</td>
+</tr>
+<tr>
+<td>14</td>
+<td><a href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a></td>
+<td>Every registered shortcut, grouped by category, plus how to view and customize them.</td>
+</tr>
+<tr>
+<td>15</td>
+<td><a href="15-right-click-menus.html">Right-click Menus</a></td>
+<td>Every right-click action and submenu — arrange, compose to scene, transform, speed, volume, transitions, face track, copy/paste style, transcribe, and empty-area menus.</td>
+</tr>
+<tr>
+<td>16</td>
+<td><a href="16-canvas-editing.html">Canvas Editing (Direct Manipulation)</a></td>
+<td>Select, move, resize, rotate, and align items directly on the preview with snapping guides; crop on canvas; drag media onto the canvas.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-these-docs-are-written">How these docs are written<a class="headerlink" href="#how-these-docs-are-written" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Audience:</strong> creators using the editor, not developers.</li>
+<li><strong>Labels:</strong> every button, tab, and control is quoted exactly as it appears on screen.</li>
+<li><strong>Naming:</strong> the left tab column is the <em>menu panel</em>, the right side is the <em>properties panel</em>, the bottom strip is the <em>timeline</em>, and the preview area is the <em>canvas</em>.</li>
+<li><strong>Structure:</strong> each doc follows the same shape — a short summary, <em>Where to find it</em>, <em>What you can do</em>, step-by-step <em>How to…</em> sections, <em>Tips &amp; good to know</em>, and <em>Related</em> links.</li>
+</ul>
+<p>See <a href="_STYLE_GUIDE.html"><code>_STYLE_GUIDE.md</code></a> for the full authoring conventions.</p>
+<h2 id="screenshots">Screenshots<a class="headerlink" href="#screenshots" title="Permanent link">&para;</a></h2>
+<p>The screenshots in these docs are <strong>real, automatically captured</strong> images of the live editor, not
+mock-ups. They are produced by the pipeline in <a href=".capture/README.html"><code>.capture/</code></a>, which drives the
+SkillTown Desktop app through its control API, puts the editor into specific states, captures the
+window, and crops clean regions. To refresh them after a UI change, re-run <code>.capture/capture.py</code>.</p>
+<h2 id="html-version">HTML version<a class="headerlink" href="#html-version" title="Permanent link">&para;</a></h2>
+<p>A themed, browsable <strong>HTML site</strong> can be generated from these markdown docs (single source of
+truth) for the website / Hub. Build it with <a href=".site/README.html"><code>.site/build.py</code></a>; output lands in
+<code>site/</code> as a self-contained static site (sidebar, per-page table of contents, and search).</p>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#contents">Contents</a></li>
+<li><a href="#how-these-docs-are-written">How these docs are written</a></li>
+<li><a href="#screenshots">Screenshots</a></li>
+<li><a href="#html-version">HTML version</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

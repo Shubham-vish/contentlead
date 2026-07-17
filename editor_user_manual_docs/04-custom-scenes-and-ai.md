@@ -201,6 +201,8 @@ Bundled scenes are community scenes that can include a broader set of animation 
 
 ## How to use the editor-wide AI assistant
 
+![The AI Editor panel: AI Content Creator empty state, Start Creating, model selector (LLM), MCP toggle, and the message input with attach/context/send.](images/panel-ai-edit.png)
+
 1. Click **AI Edit** in the menu panel, or click **Open AI Editor** on the left edge.
 2. The **AI Editor** panel opens. Use **Close** / **Close AI Panel** / **Close AI Editor** to close it, or **Collapse AI Editor** to collapse the panel.
 3. Type in the box labeled **Type a message...** and click **Send message**. In fullscreen input mode, the placeholder may say **Type a message... (Ctrl+Enter to send)** and “Use $ for predefined customprompts”.

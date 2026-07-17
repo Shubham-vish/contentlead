@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keyboard Shortcuts — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link active" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Keyboard Shortcuts</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>Use keyboard shortcuts to move faster through playback, selection, editing, timeline navigation, project saving, and shortcut help.</p>
+</blockquote>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<p>Open the editor and look in the timeline toolbar for the button with the tooltip <strong>Keyboard shortcuts (?)</strong>. Click it to open <strong>Keyboard shortcuts</strong>.</p>
+<p>You can also press <code>?</code> anywhere in the editor, as long as you are not typing in a text field, to open or close <strong>Keyboard shortcuts</strong>. The dialog includes <strong>Search shortcuts…</strong>, shortcut rows, and customization controls such as <strong>Change shortcut</strong>, <strong>Save</strong>, <strong>Cancel</strong>, <strong>Reset to default</strong>, and <strong>Reset all</strong>.</p>
+<h2 id="what-you-can-do">What you can do<a class="headerlink" href="#what-you-can-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>View all 45 registered shortcut actions in <strong>Keyboard shortcuts</strong>.</li>
+<li>Search by action name, description, or key combo with <strong>Search shortcuts…</strong>.</li>
+<li>Customize a shortcut with <strong>Change shortcut</strong>.</li>
+<li>Resolve a duplicate binding when the dialog shows <strong>Conflicts with</strong> and <strong>Replace</strong>.</li>
+<li>Return one shortcut to its default with <strong>Reset to default</strong>.</li>
+<li>Return every customized shortcut to its default with <strong>Reset all</strong>.</li>
+</ul>
+<h2 id="how-to-open-the-in-app-shortcuts-help">How to open the in-app shortcuts help<a class="headerlink" href="#how-to-open-the-in-app-shortcuts-help" title="Permanent link">&para;</a></h2>
+<ol>
+<li>In the timeline toolbar, click <strong>Keyboard shortcuts (?)</strong>.</li>
+<li>Or press <code>?</code> while you are not typing.</li>
+<li>The <strong>Keyboard shortcuts</strong> dialog opens.</li>
+<li>Use <strong>Search shortcuts…</strong> to filter the list.</li>
+<li>Press <code>?</code> again, click outside the dialog, or use the dialog close control to return to editing.</li>
+</ol>
+<h2 id="how-to-read-shortcut-keys">How to read shortcut keys<a class="headerlink" href="#how-to-read-shortcut-keys" title="Permanent link">&para;</a></h2>
+<p>The shortcut dialog adapts modifier labels to your computer:</p>
+<table>
+<thead>
+<tr>
+<th>Source key</th>
+<th>Mac label</th>
+<th>Windows/Linux label</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Mod</code></td>
+<td><code>⌘</code></td>
+<td><code>Ctrl</code></td>
+</tr>
+<tr>
+<td><code>Alt</code></td>
+<td><code>⌥</code></td>
+<td><code>Alt</code></td>
+</tr>
+<tr>
+<td><code>Shift</code></td>
+<td><code>⇧</code></td>
+<td><code>Shift</code></td>
+</tr>
+<tr>
+<td><code>Ctrl</code></td>
+<td><code>⌃</code></td>
+<td><code>Ctrl</code></td>
+</tr>
+<tr>
+<td><code>ArrowLeft</code></td>
+<td><code>←</code></td>
+<td><code>←</code></td>
+</tr>
+<tr>
+<td><code>ArrowRight</code></td>
+<td><code>→</code></td>
+<td><code>→</code></td>
+</tr>
+</tbody>
+</table>
+<p>In the tables below, <code>⌘ Z / Ctrl+Z</code> means press <code>⌘ Z</code> on Mac or <code>Ctrl+Z</code> on Windows/Linux. Alternate shortcuts are shown in the same row when the editor accepts more than one key combo.</p>
+<h2 id="how-to-use-history-selection-shortcuts">How to use History &amp; Selection shortcuts<a class="headerlink" href="#how-to-use-history-selection-shortcuts" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>⌘ Z</code> / <code>Ctrl+Z</code></td>
+<td><strong>Undo</strong></td>
+</tr>
+<tr>
+<td><code>⌘ ⇧ Z</code>, <code>⌘ Y</code>, or <code>⌃ Y</code> / <code>Ctrl+Shift+Z</code> or <code>Ctrl+Y</code></td>
+<td><strong>Redo</strong></td>
+</tr>
+<tr>
+<td><code>⌘ A</code> / <code>Ctrl+A</code></td>
+<td><strong>Select all timeline items</strong></td>
+</tr>
+<tr>
+<td><code>Escape</code></td>
+<td><strong>Deselect all</strong></td>
+</tr>
+<tr>
+<td><code>⌥ ←</code> / <code>Alt+←</code></td>
+<td><strong>Select previous item on track</strong></td>
+</tr>
+<tr>
+<td><code>⌥ →</code> / <code>Alt+→</code></td>
+<td><strong>Select next item on track</strong></td>
+</tr>
+<tr>
+<td><code>⌘ D</code> / <code>Ctrl+D</code></td>
+<td><strong>Duplicate selected items</strong></td>
+</tr>
+<tr>
+<td><code>⌘ C</code> / <code>Ctrl+C</code></td>
+<td><strong>Copy selected items</strong></td>
+</tr>
+<tr>
+<td><code>⌘ X</code> / <code>Ctrl+X</code></td>
+<td><strong>Cut selected items</strong></td>
+</tr>
+<tr>
+<td><code>⌘ V</code> / <code>Ctrl+V</code></td>
+<td><strong>Paste (items or clipboard image/video)</strong></td>
+</tr>
+<tr>
+<td><code>Delete</code> or <code>Backspace</code></td>
+<td><strong>Delete selected items</strong></td>
+</tr>
+<tr>
+<td><code>⇧ Delete</code> or <code>⇧ Backspace</code> / <code>Shift+Delete</code> or <code>Shift+Backspace</code></td>
+<td><strong>Ripple delete (close the gap)</strong><br>Delete selected clip(s) AND shift every later clip on the same track left by the deleted duration so no gap remains.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-use-playback-shortcuts">How to use Playback shortcuts<a class="headerlink" href="#how-to-use-playback-shortcuts" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Space</code></td>
+<td><strong>Play / Pause</strong></td>
+</tr>
+<tr>
+<td><code>J</code></td>
+<td><strong>Play backward (J)</strong><br>Press again to speed up reverse (2x, 3x, 4x)</td>
+</tr>
+<tr>
+<td><code>K</code></td>
+<td><strong>Pause (K)</strong></td>
+</tr>
+<tr>
+<td><code>L</code></td>
+<td><strong>Play forward (L)</strong><br>Press again to speed up (2x, 3x, 4x). Standard JKL shuttle.</td>
+</tr>
+<tr>
+<td><code>←</code></td>
+<td><strong>Step 1 frame back</strong></td>
+</tr>
+<tr>
+<td><code>→</code></td>
+<td><strong>Step 1 frame forward</strong></td>
+</tr>
+<tr>
+<td><code>⇧ ←</code> / <code>Shift+←</code></td>
+<td><strong>Step 10 frames back</strong></td>
+</tr>
+<tr>
+<td><code>⇧ →</code> / <code>Shift+→</code></td>
+<td><strong>Step 10 frames forward</strong></td>
+</tr>
+<tr>
+<td><code>Home</code></td>
+<td><strong>Jump to start</strong></td>
+</tr>
+<tr>
+<td><code>End</code></td>
+<td><strong>Jump to end</strong></td>
+</tr>
+<tr>
+<td><code>⇧ L</code> / <code>Shift+L</code></td>
+<td><strong>Toggle loop playback</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-use-editing-shortcuts">How to use Editing shortcuts<a class="headerlink" href="#how-to-use-editing-shortcuts" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Q</code>, <code>⌘ B</code>, or <code>⌘ \</code> / <code>Q</code>, <code>Ctrl+B</code>, or <code>Ctrl+\</code></td>
+<td><strong>Split at playhead (current mode)</strong></td>
+</tr>
+<tr>
+<td><code>A</code></td>
+<td><strong>Split — keep Left segment selected</strong></td>
+</tr>
+<tr>
+<td><code>R</code></td>
+<td><strong>Split — keep Right segment selected</strong></td>
+</tr>
+<tr>
+<td><code>B</code></td>
+<td><strong>Split — keep Both segments selected</strong></td>
+</tr>
+<tr>
+<td><code>G</code></td>
+<td><strong>Merge adjacent split clips (rejoin)</strong><br>Rejoin the selected clip(s) with a touching same-source neighbour created by a previous Split, back into a single clip.</td>
+</tr>
+<tr>
+<td><code>W</code> or <code>⇧ Q</code> / <code>W</code> or <code>Shift+Q</code></td>
+<td><strong>Split + cut at playhead (current cut mode)</strong><br>Splits the selected clip(s) at the playhead and deletes one side of the cut (only the segments just generated, scoped to the current selection). Side is set by the Split + Cut mode dropdown.</td>
+</tr>
+<tr>
+<td><code>⇧ A</code> / <code>Shift+A</code></td>
+<td><strong>Split + keep LEFT — delete right segment after split</strong></td>
+</tr>
+<tr>
+<td><code>⇧ R</code> / <code>Shift+R</code></td>
+<td><strong>Split + keep RIGHT — delete left segment after split</strong></td>
+</tr>
+<tr>
+<td><code>⇧ B</code> / <code>Shift+B</code></td>
+<td><strong>Blade — split ALL items at playhead</strong></td>
+</tr>
+<tr>
+<td><code>[</code></td>
+<td><strong>Trim start of selected item(s) to playhead</strong></td>
+</tr>
+<tr>
+<td><code>]</code></td>
+<td><strong>Trim end of selected item(s) to playhead</strong></td>
+</tr>
+<tr>
+<td><code>,</code></td>
+<td><strong>Nudge selected items left by 1 frame</strong></td>
+</tr>
+<tr>
+<td><code>.</code></td>
+<td><strong>Nudge selected items right by 1 frame</strong></td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td><strong>Toggle magnetic snapping</strong></td>
+</tr>
+<tr>
+<td><code>M</code></td>
+<td><strong>Mute / unmute track of selected item</strong></td>
+</tr>
+<tr>
+<td><code>⇧ M</code> / <code>Shift+M</code></td>
+<td><strong>Add marker at playhead</strong></td>
+</tr>
+<tr>
+<td><code>⇧ F</code> / <code>Shift+F</code></td>
+<td><strong>Freeze frame — insert still image at playhead</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-use-timeline-view-shortcuts">How to use Timeline &amp; View shortcuts<a class="headerlink" href="#how-to-use-timeline-view-shortcuts" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>⌘ =</code> or <code>⌘ +</code> / <code>Ctrl+=</code> or <code>Ctrl++</code></td>
+<td><strong>Zoom timeline in</strong></td>
+</tr>
+<tr>
+<td><code>⌘ -</code> / <code>Ctrl+-</code></td>
+<td><strong>Zoom timeline out</strong></td>
+</tr>
+<tr>
+<td><code>⇧ Z</code> / <code>Shift+Z</code></td>
+<td><strong>Zoom to fit all content</strong></td>
+</tr>
+<tr>
+<td><code>⌘ S</code> / <code>Ctrl+S</code></td>
+<td><strong>Save project</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-use-help-shortcuts">How to use Help shortcuts<a class="headerlink" href="#how-to-use-help-shortcuts" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>?</code></td>
+<td><strong>Open keyboard shortcuts dialog</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-customize-a-shortcut">How to customize a shortcut<a class="headerlink" href="#how-to-customize-a-shortcut" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>Keyboard shortcuts</strong>.</li>
+<li>Find the action you want, or use <strong>Search shortcuts…</strong>.</li>
+<li>Click <strong>Change shortcut</strong> on that row.</li>
+<li>When you see <strong>Press shortcut…</strong>, press the new key combo.</li>
+<li>If there is no conflict, click <strong>Save</strong>.</li>
+<li>If the dialog shows <strong>Conflicts with</strong>, either choose another key combo or click <strong>Replace</strong>.</li>
+<li>To undo a custom shortcut later, click <strong>Reset to default</strong> on that row. To clear all custom shortcuts, click <strong>Reset all</strong>.</li>
+</ol>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Most editor shortcuts do not run while you are typing in text fields, caption editors, or other editable text areas.</li>
+<li><code>Space</code> is reserved for <strong>Play / Pause</strong> when you are not typing, so it does not scroll panels or toggle focused buttons.</li>
+<li>Holding <code>←</code> or <code>→</code> can accelerate frame stepping. Holding <code>Shift</code> uses the larger frame-step shortcut.</li>
+<li>If you customize an action, its alternate default shortcuts are replaced by your custom shortcut until you reset it.</li>
+<li>Shortcut customizations are saved in your browser, so another browser or device can still use the defaults.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="02-media-library.html">Media Library</a></li>
+<li><a href="03-scenes-templates-styles.html">Scenes, Templates &amp; Styles</a></li>
+<li><a href="05-text-and-captions.html">Text &amp; Captions</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#where-to-find-it">Where to find it</a></li>
+<li><a href="#what-you-can-do">What you can do</a></li>
+<li><a href="#how-to-open-the-in-app-shortcuts-help">How to open the in-app shortcuts help</a></li>
+<li><a href="#how-to-read-shortcut-keys">How to read shortcut keys</a></li>
+<li><a href="#how-to-use-history-selection-shortcuts">How to use History &amp; Selection shortcuts</a></li>
+<li><a href="#how-to-use-playback-shortcuts">How to use Playback shortcuts</a></li>
+<li><a href="#how-to-use-editing-shortcuts">How to use Editing shortcuts</a></li>
+<li><a href="#how-to-use-timeline-view-shortcuts">How to use Timeline &amp; View shortcuts</a></li>
+<li><a href="#how-to-use-help-shortcuts">How to use Help shortcuts</a></li>
+<li><a href="#how-to-customize-a-shortcut">How to customize a shortcut</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

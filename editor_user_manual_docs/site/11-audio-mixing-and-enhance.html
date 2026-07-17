@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audio — Mixing, Enhancement, SFX &amp; AI Voice — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link active" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Audio — Mixing, Enhancement, SFX &amp; AI Voice</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>Mix clip audio, control final loudness, enhance speech and music, add sound effects, and generate AI voiceovers.</p>
+</blockquote>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<p>Open the editor and use the menu panel. Choose <strong>SFX</strong> to open <strong>Sound Effects</strong>. On layouts that show the horizontal media row, <strong>Audio</strong> opens the <strong>Audios</strong> panel for built-in music.</p>
+<p>Select an audio or video item on the canvas or timeline to open its properties panel. Audio items show <strong>Audio</strong> with tabs for <strong>Basic</strong>, <strong>Effects</strong>, and <strong>Auto-Captions</strong>. Videos with sound show audio controls in their properties panel. The bottom timeline header has the project-wide <strong>Mute</strong> / <strong>Unmute</strong> button and master volume slider, and the master output strip sits above the timeline with <strong>Peak</strong>, <strong>LUFS</strong>, and the active master preset.</p>
+<h2 id="what-you-can-do">What you can do<a class="headerlink" href="#what-you-can-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Adjust each clip with <strong>Gain</strong>, <strong>Volume</strong>, <strong>Active</strong> / <strong>Off</strong>, <strong>Audio</strong> / <strong>Muted</strong>, <strong>Playback rate</strong>, <strong>Custom</strong>, <strong>Reverse</strong>, live metering, and <strong>Volume</strong> keyframes for fades.</li>
+<li>Read the dB fader scale from <strong>−∞</strong> through <strong>0</strong> to boosted values up to <strong>+48</strong>, and use the dB meter channels <strong>L</strong>, <strong>R</strong>, or <strong>M</strong> to spot clipping.</li>
+<li>Use the master bus strip for <strong>Peak</strong>, <strong>LUFS</strong>, <strong>Momentary</strong>, <strong>Short-term</strong>, <strong>Integrated</strong>, <strong>GR</strong>, <strong>Duck</strong>, <strong>Preset</strong>, <strong>Target LUFS</strong>, and <strong>True peak</strong> control.</li>
+<li>Apply <strong>Audio Processing</strong> with <strong>Equalizer</strong>, <strong>Compressor</strong>, <strong>Noise Gate</strong>, <strong>De-Esser</strong>, <strong>Auto-Duck</strong>, and <strong>Noise Reduction</strong>.</li>
+<li>Set <strong>Track role (auto-duck)</strong> to <strong>Default</strong>, <strong>Voice</strong>, or <strong>Music</strong> so <strong>Auto-Duck</strong> knows what should trigger ducking and what should lower.</li>
+<li>Search <strong>Sound Effects</strong>, preview them, add them to the timeline, manage <strong>Favourites</strong> and <strong>Recents</strong>, and upload personal sounds in <strong>My Sounds</strong>.</li>
+<li>Generate narration in <strong>AI Voice Generation</strong> from <strong>Enter your script</strong>, <strong>Select voice</strong>, and <strong>Generate Voice</strong>.</li>
+</ul>
+<h2 id="how-to-adjust-clip-volume-gain-fades-and-speed">How to adjust clip volume, gain, fades, and speed<a class="headerlink" href="#how-to-adjust-clip-volume-gain-fades-and-speed" title="Permanent link">&para;</a></h2>
+<p><img alt="Audio Settings — Basic tab: Source, GAIN meter (−∞ to +48 dB), Volume, Active/Audio toggles, Track role (auto-duck), Live Meter, and Loudness." src="images/explore-audio-default.png" /></p>
+<ol>
+<li>Select an audio clip or a video clip with sound.</li>
+<li>Open <strong>Basic</strong> in the properties panel.</li>
+<li>Drag <strong>Gain</strong> for dB-style mixing. The readout shows values such as <strong>−∞ dB</strong>, <strong>0.0 dB</strong>, or <strong>+6.0 dB</strong>. Double-click the fader to reset to <strong>0 dB</strong>.</li>
+<li>Use <strong>Volume</strong> for a numeric level. In the full audio panel it runs from <strong>0</strong> to <strong>25200</strong> so audio can be boosted far above 100%; on simpler controls it may appear as a <strong>0</strong> to <strong>100</strong> percent slider.</li>
+<li>Use <strong>Active</strong> / <strong>Off</strong> to include or exclude the clip from preview/export. Use <strong>Audio</strong> / <strong>Muted</strong> to silence or restore only that clip’s sound.</li>
+<li>Open <strong>Speed</strong> and change <strong>Playback rate</strong>. Click <strong>0.25x</strong>, <strong>0.5x</strong>, <strong>0.75x</strong>, <strong>1x</strong>, <strong>1.5x</strong>, <strong>2x</strong>, <strong>3x</strong>, or <strong>4x</strong>, or drag <strong>Custom</strong> from <strong>0.1x</strong> to <strong>4x</strong>. Turn on <strong>Reverse</strong> to play the selected audio or video backward.</li>
+<li>For audio fade-ins, fade-outs, and manual ducking, open <strong>Keyframes</strong> and animate <strong>Volume</strong>. Place one low-volume keyframe at the start or end and one normal-volume keyframe after or before it.</li>
+<li>If you are using an effect card that exposes <strong>Fade In</strong> and <strong>Fade Out</strong>, those values are measured in frames and fade the effect’s intensity. For audio-only loudness fades, use <strong>Keyframes</strong> → <strong>Volume</strong>.</li>
+<li>Optional: right-click a clip and use <strong>Mute clip</strong>, <strong>Unmute clip</strong>, <strong>Volume</strong>, or <strong>Track Role</strong> for quick changes.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Gain</strong></td>
+<td>Main dB fader for clip gain. The fader is logarithmic, has a <strong>0</strong> unity mark, and can boost into the yellow/red zone.</td>
+</tr>
+<tr>
+<td><strong>Volume</strong></td>
+<td>Numeric clip volume. Use it for exact values, quick percentage changes, or boosting audio items; the full audio panel range is <strong>0</strong> to <strong>25200</strong>.</td>
+</tr>
+<tr>
+<td><strong>Active</strong> / <strong>Off</strong></td>
+<td>Keeps the clip in the project but turns it on or excludes it from preview/export.</td>
+</tr>
+<tr>
+<td><strong>Audio</strong> / <strong>Muted</strong></td>
+<td>Mutes or restores only the selected clip’s audio.</td>
+</tr>
+<tr>
+<td><strong>Playback rate</strong></td>
+<td>Changes clip speed. The current value appears as a value such as <strong>1x</strong> or <strong>1.5x</strong>.</td>
+</tr>
+<tr>
+<td><strong>Custom</strong></td>
+<td>Fine speed control from <strong>0.1x</strong> to <strong>4x</strong> in small steps.</td>
+</tr>
+<tr>
+<td><strong>Reverse</strong></td>
+<td><strong>Play the selected clip backward.</strong></td>
+</tr>
+<tr>
+<td><strong>Keyframes</strong> → <strong>Volume</strong></td>
+<td>Creates precise fades, ramps, and manual ducking moves over time.</td>
+</tr>
+<tr>
+<td><strong>Track role (auto-duck)</strong></td>
+<td>Sets the parent track to <strong>Default</strong>, <strong>Voice</strong>, or <strong>Music</strong>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-read-the-db-fader-and-db-meter">How to read the dB fader and dB meter<a class="headerlink" href="#how-to-read-the-db-fader-and-db-meter" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Use <strong>Gain</strong> first when balancing clips. It shows the clip level in dB instead of only percent.</li>
+<li>Treat <strong>0</strong> as unity: the clip plays at its original level. Values below <strong>0</strong> reduce level; values above <strong>0</strong> boost level.</li>
+<li>Watch the fader colors. Green means quieter/safe, yellow approaches loud, and red means boosted headroom where clipping is more likely.</li>
+<li>If analysis is available, the cyan source-peak marker shows the clip’s measured peak on the fader. The tooltip reads <strong>Source peak:</strong> followed by the dB value.</li>
+<li>Turn on <strong>Live meter</strong> to see real-time <strong>L</strong> and <strong>R</strong> levels for stereo or <strong>M</strong> for mono. The numeric readout shows <strong>—</strong> when there is no current signal.</li>
+<li>Read the meter scale as dBFS: <strong>−∞</strong>, <strong>-40</strong>, <strong>-20</strong>, <strong>-12</strong>, <strong>-6</strong>, and <strong>0</strong>. Red near <strong>0</strong> means the signal is at or above full scale.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Meter label</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Live meter</strong></td>
+<td>Per-clip real-time meter. When paused it can show <strong>(paused)</strong>; when outside the clip it can show <strong>(playhead outside clip)</strong>.</td>
+</tr>
+<tr>
+<td><strong>L</strong> / <strong>R</strong></td>
+<td>Left and right stereo channels. If one side is much louder, the clip may be unbalanced.</td>
+</tr>
+<tr>
+<td><strong>M</strong></td>
+<td>Mono channel.</td>
+</tr>
+<tr>
+<td><strong>—</strong></td>
+<td>No usable signal at the current playhead position.</td>
+</tr>
+<tr>
+<td><strong>Live meter unavailable.</strong></td>
+<td>The editor could not read waveform data for live metering.</td>
+</tr>
+<tr>
+<td><strong>Off — turn on to see real-time L/R levels during playback.</strong></td>
+<td>The live meter is disabled to save CPU.</td>
+</tr>
+<tr>
+<td><strong>Loudness</strong></td>
+<td>Static source analysis for <strong>Peak</strong> and <strong>RMS</strong>. It can show <strong>analyzing…</strong> while loading.</td>
+</tr>
+<tr>
+<td><strong>Peak</strong> / <strong>source</strong></td>
+<td>Highest source level before your current gain.</td>
+</tr>
+<tr>
+<td><strong>RMS</strong> / <strong>source</strong></td>
+<td>Average source energy before your current gain.</td>
+</tr>
+<tr>
+<td><strong>Peak</strong> / <strong>after gain</strong></td>
+<td>Estimated peak after the current <strong>Gain</strong> / <strong>Volume</strong> setting.</td>
+</tr>
+<tr>
+<td><strong>RMS</strong> / <strong>after gain</strong></td>
+<td>Estimated average level after the current <strong>Gain</strong> / <strong>Volume</strong> setting.</td>
+</tr>
+<tr>
+<td><strong>Couldn’t analyze (silent track or unsupported codec).</strong></td>
+<td>Static loudness analysis is not available for that clip.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-use-the-master-bus-and-loudness-meter">How to use the master bus and loudness meter<a class="headerlink" href="#how-to-use-the-master-bus-and-loudness-meter" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Play the timeline so the master output strip has signal.</li>
+<li>Watch the compact strip. <strong>Peak</strong> shows peak level in dB, <strong>LUFS</strong> shows momentary loudness, and the preset pill shows the active target, for example <strong>📻 Instagram</strong>.</li>
+<li>Click the strip to expand it. You can also click <strong>Master bus: 📻 Instagram</strong> in a clip’s audio panel to open the master controls.</li>
+<li>Read the expanded meters:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Meter</th>
+<th>What it tells you</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Peak</strong></td>
+<td>Current master peak. Red/orange segments mean you are close to clipping.</td>
+</tr>
+<tr>
+<td><strong>LUFS</strong></td>
+<td>Compact momentary loudness readout on the collapsed strip.</td>
+</tr>
+<tr>
+<td><strong>Momentary</strong></td>
+<td>400 ms loudness window for what is happening right now.</td>
+</tr>
+<tr>
+<td><strong>Short-term</strong></td>
+<td>3 second loudness window for smoother loudness decisions.</td>
+</tr>
+<tr>
+<td><strong>Integrated</strong></td>
+<td>Overall mix loudness. It can show a spinner and <strong>…</strong> while the pre-scan runs.</td>
+</tr>
+<tr>
+<td><strong>GR</strong></td>
+<td>Gain reduction from the master limiter. Bigger numbers mean the limiter is working harder.</td>
+</tr>
+<tr>
+<td><strong>Duck</strong></td>
+<td>Auto-duck reduction. It shows <strong>Off</strong> when disabled, <strong>Idle</strong> when waiting for speech, or a dB reduction during ducking.</td>
+</tr>
+</tbody>
+</table>
+<ol start="5">
+<li>Open <strong>Preset</strong> and choose a target:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Description shown in the editor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Instagram / TikTok / Reels</strong></td>
+<td><strong>-14 LUFS, -0.1 dBTP — social short-form default (Option B: transparent)</strong></td>
+</tr>
+<tr>
+<td><strong>YouTube</strong></td>
+<td><strong>-14 LUFS, -0.1 dBTP — long-form video (Option B: transparent)</strong></td>
+</tr>
+<tr>
+<td><strong>Spotify / Apple Podcast</strong></td>
+<td><strong>-16 LUFS, -0.1 dBTP — podcast platforms (Option B: transparent)</strong></td>
+</tr>
+<tr>
+<td><strong>Broadcast TV (EBU R128)</strong></td>
+<td><strong>-23 LUFS, -2 dBTP — European broadcast standard</strong></td>
+</tr>
+<tr>
+<td><strong>Cinema</strong></td>
+<td><strong>-24 LUFS, -2 dBTP — theatrical</strong></td>
+</tr>
+<tr>
+<td><strong>Custom</strong></td>
+<td><strong>User-defined loudness and limiter parameters</strong></td>
+</tr>
+<tr>
+<td><strong>Off (no master processing)</strong></td>
+<td><strong>Disables master bus. Risk of clipping.</strong></td>
+</tr>
+</tbody>
+</table>
+<ol start="6">
+<li>If you choose <strong>Custom</strong>, edit the custom master controls:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th style="text-align: right;">Range</th>
+<th style="text-align: right;">Unit</th>
+<th>What it changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Threshold</strong></td>
+<td style="text-align: right;"><strong>-24</strong> to <strong>0</strong></td>
+<td style="text-align: right;"><strong>dBFS</strong></td>
+<td>Limiter threshold where peak control begins.</td>
+</tr>
+<tr>
+<td><strong>Ratio</strong></td>
+<td style="text-align: right;"><strong>1</strong> to <strong>30</strong></td>
+<td style="text-align: right;"><strong>:1</strong></td>
+<td>Limiter strength above the threshold.</td>
+</tr>
+<tr>
+<td><strong>Attack</strong></td>
+<td style="text-align: right;"><strong>0.1</strong> to <strong>20</strong></td>
+<td style="text-align: right;"><strong>ms</strong></td>
+<td>How quickly the limiter reacts.</td>
+</tr>
+<tr>
+<td><strong>Release</strong></td>
+<td style="text-align: right;"><strong>10</strong> to <strong>500</strong></td>
+<td style="text-align: right;"><strong>ms</strong></td>
+<td>How quickly the limiter relaxes.</td>
+</tr>
+<tr>
+<td><strong>Target LUFS</strong></td>
+<td style="text-align: right;"><strong>-30</strong> to <strong>-8</strong></td>
+<td style="text-align: right;"><strong>LUFS</strong></td>
+<td>Final integrated loudness target.</td>
+</tr>
+<tr>
+<td><strong>True peak</strong></td>
+<td style="text-align: right;"><strong>-6</strong> to <strong>0</strong></td>
+<td style="text-align: right;"><strong>dBTP</strong></td>
+<td>Maximum allowed true-peak ceiling.</td>
+</tr>
+<tr>
+<td><strong>LRA</strong></td>
+<td style="text-align: right;"><strong>1</strong> to <strong>20</strong></td>
+<td style="text-align: right;"><strong>LU</strong></td>
+<td>Loudness range target.</td>
+</tr>
+</tbody>
+</table>
+<ol start="7">
+<li>Use <strong>Reset</strong> to return from <strong>Custom</strong> to the default master preset.</li>
+<li>In the timeline header, use <strong>Mute</strong> or <strong>Unmute</strong> for the whole project. Drag the adjacent slider from <strong>0%</strong> to <strong>100%</strong>; moving it above 0 while muted restores audio.</li>
+</ol>
+<h2 id="how-to-apply-equalizer">How to apply Equalizer<a class="headerlink" href="#how-to-apply-equalizer" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select a clip with audio.</li>
+<li>Open <strong>Audio Processing</strong>.</li>
+<li>Turn on <strong>Equalizer</strong>.</li>
+<li>Choose <strong>Preset</strong> or adjust the band sliders.</li>
+<li>Use <strong>Reset EQ to flat</strong> to return the bands to zero.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Range or choices</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Equalizer</strong></td>
+<td>On/off</td>
+<td>Enables or bypasses EQ for this clip.</td>
+</tr>
+<tr>
+<td><strong>Preset</strong></td>
+<td><strong>Flat</strong>, <strong>Voice Enhance</strong>, <strong>Bass Boost</strong>, <strong>Podcast</strong>, <strong>Warm</strong>, <strong>Bright</strong>, <strong>De-mud</strong>, <strong>Telephone</strong>, <strong>Custom</strong></td>
+<td>Starts from a named tonal curve.</td>
+</tr>
+<tr>
+<td><strong>Low</strong></td>
+<td><strong>200 Hz</strong>, <strong>-12.0 dB</strong> to <strong>+12.0 dB</strong></td>
+<td>Low-shelf band for bass, rumble, and warmth.</td>
+</tr>
+<tr>
+<td><strong>Mid</strong></td>
+<td><strong>1 kHz</strong>, <strong>-12.0 dB</strong> to <strong>+12.0 dB</strong></td>
+<td>Peaking band for body and speech clarity.</td>
+</tr>
+<tr>
+<td><strong>High</strong></td>
+<td><strong>4 kHz</strong>, <strong>-12.0 dB</strong> to <strong>+12.0 dB</strong></td>
+<td>High-shelf band for brightness and edge.</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Description shown in the editor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Flat</strong></td>
+<td><strong>No change — bypass EQ</strong></td>
+</tr>
+<tr>
+<td><strong>Voice Enhance</strong></td>
+<td><strong>Clearer speech with presence</strong></td>
+</tr>
+<tr>
+<td><strong>Bass Boost</strong></td>
+<td><strong>Deeper, fuller bass</strong></td>
+</tr>
+<tr>
+<td><strong>Podcast</strong></td>
+<td><strong>Crisp voice, reduced rumble</strong></td>
+</tr>
+<tr>
+<td><strong>Warm</strong></td>
+<td><strong>Smooth and less harsh</strong></td>
+</tr>
+<tr>
+<td><strong>Bright</strong></td>
+<td><strong>Airy and present</strong></td>
+</tr>
+<tr>
+<td><strong>De-mud</strong></td>
+<td><strong>Remove boxy, muddy sound</strong></td>
+</tr>
+<tr>
+<td><strong>Telephone</strong></td>
+<td><strong>Simulated phone call effect</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The panel notes <strong>EQ preview is live • also applied during export</strong>.</p>
+<h2 id="how-to-apply-compressor">How to apply Compressor<a class="headerlink" href="#how-to-apply-compressor" title="Permanent link">&para;</a></h2>
+<ol>
+<li>In <strong>Audio Processing</strong>, turn on <strong>Compressor</strong>.</li>
+<li>Choose a preset first.</li>
+<li>Open <strong>Advanced</strong> for detailed controls.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Range or choices</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Compressor</strong></td>
+<td>On/off</td>
+<td>Enables or bypasses compression for this clip.</td>
+</tr>
+<tr>
+<td>Preset picker</td>
+<td><strong>Off</strong>, <strong>Gentle Voice</strong>, <strong>Podcast</strong>, <strong>Aggressive Voice</strong>, <strong>Broadcast</strong>, <strong>Limiter</strong>, <strong>Custom</strong></td>
+<td>Sets compression for common voice, broadcast, and peak-control needs.</td>
+</tr>
+<tr>
+<td><strong>Advanced</strong></td>
+<td>Collapsed/expanded</td>
+<td>Shows detailed compressor controls.</td>
+</tr>
+<tr>
+<td><strong>Threshold</strong></td>
+<td><strong>-60</strong> to <strong>0</strong></td>
+<td>Level where compression starts.</td>
+</tr>
+<tr>
+<td><strong>Ratio</strong></td>
+<td><strong>1</strong> to <strong>20</strong></td>
+<td>Compression strength. <strong>1</strong> is little/no compression; high values approach limiting.</td>
+</tr>
+<tr>
+<td><strong>Attack (ms)</strong></td>
+<td><strong>0.1</strong> to <strong>100</strong></td>
+<td>How quickly compression reacts after audio crosses the threshold.</td>
+</tr>
+<tr>
+<td><strong>Release (ms)</strong></td>
+<td><strong>10</strong> to <strong>1000</strong></td>
+<td>How quickly compression stops after the signal drops.</td>
+</tr>
+<tr>
+<td><strong>Knee (dB)</strong></td>
+<td><strong>1</strong> to <strong>8</strong></td>
+<td>How smoothly compression begins around the threshold.</td>
+</tr>
+<tr>
+<td><strong>Makeup (dB)</strong></td>
+<td><strong>0</strong> to <strong>24</strong></td>
+<td>Adds gain after compression.</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Description shown in the editor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Off</strong></td>
+<td><strong>No compression</strong></td>
+</tr>
+<tr>
+<td><strong>Gentle Voice</strong></td>
+<td><strong>Light vocal leveling — natural dynamics preserved</strong></td>
+</tr>
+<tr>
+<td><strong>Podcast</strong></td>
+<td><strong>Even vocal levels for spoken content</strong></td>
+</tr>
+<tr>
+<td><strong>Aggressive Voice</strong></td>
+<td><strong>Heavy compression — loud, in-your-face vocals</strong></td>
+</tr>
+<tr>
+<td><strong>Broadcast</strong></td>
+<td><strong>Broadcast-standard compression for consistent levels</strong></td>
+</tr>
+<tr>
+<td><strong>Limiter</strong></td>
+<td><strong>Brickwall peak control — no signal above threshold</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The panel notes <strong>Live preview • applied during export</strong>.</p>
+<h2 id="how-to-apply-noise-gate">How to apply Noise Gate<a class="headerlink" href="#how-to-apply-noise-gate" title="Permanent link">&para;</a></h2>
+<ol>
+<li>In <strong>Audio Processing</strong>, turn on <strong>Noise Gate</strong>.</li>
+<li>Choose a preset such as <strong>Gentle</strong>, <strong>Studio</strong>, <strong>Aggressive</strong>, or <strong>Breath Remove</strong>.</li>
+<li>Open <strong>Advanced</strong> to tune how quiet gaps are reduced.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Range or choices</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Noise Gate</strong></td>
+<td>On/off</td>
+<td>Enables or bypasses gating for this clip.</td>
+</tr>
+<tr>
+<td>Preset picker</td>
+<td><strong>Off</strong>, <strong>Gentle</strong>, <strong>Studio</strong>, <strong>Aggressive</strong>, <strong>Breath Remove</strong>, <strong>Custom</strong></td>
+<td>Controls how strongly quiet gaps are reduced.</td>
+</tr>
+<tr>
+<td><strong>Advanced</strong></td>
+<td>Collapsed/expanded</td>
+<td>Shows detailed gate controls.</td>
+</tr>
+<tr>
+<td><strong>Threshold (dB)</strong></td>
+<td><strong>-60</strong> to <strong>-10</strong></td>
+<td>Level below which the gate reduces sound.</td>
+</tr>
+<tr>
+<td><strong>Range (dB)</strong></td>
+<td><strong>-80</strong> to <strong>0</strong></td>
+<td>How much quieter gated sections become.</td>
+</tr>
+<tr>
+<td><strong>Attack (ms)</strong></td>
+<td><strong>0.1</strong> to <strong>50</strong></td>
+<td>How quickly the gate opens for speech or sound.</td>
+</tr>
+<tr>
+<td><strong>Release (ms)</strong></td>
+<td><strong>10</strong> to <strong>500</strong></td>
+<td>How naturally the gate closes after sound ends.</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Description shown in the editor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Off</strong></td>
+<td><strong>No gating</strong></td>
+</tr>
+<tr>
+<td><strong>Gentle</strong></td>
+<td><strong>Light background reduction between words</strong></td>
+</tr>
+<tr>
+<td><strong>Studio</strong></td>
+<td><strong>Clean silence between phrases — ideal for SM7B</strong></td>
+</tr>
+<tr>
+<td><strong>Aggressive</strong></td>
+<td><strong>Deep cuts — removes all noise between words</strong></td>
+</tr>
+<tr>
+<td><strong>Breath Remove</strong></td>
+<td><strong>Targets breath noise without cutting speech tails</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The panel notes <strong>Live preview • applied during export</strong>.</p>
+<h2 id="how-to-apply-de-esser">How to apply De-Esser<a class="headerlink" href="#how-to-apply-de-esser" title="Permanent link">&para;</a></h2>
+<ol>
+<li>In <strong>Audio Processing</strong>, turn on <strong>De-Esser</strong>.</li>
+<li>Choose a preset that matches the voice or the amount of sibilance.</li>
+<li>Open <strong>Advanced</strong> to tune the target frequency range.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Range or choices</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>De-Esser</strong></td>
+<td>On/off</td>
+<td>Enables or bypasses sibilance reduction.</td>
+</tr>
+<tr>
+<td>Preset picker</td>
+<td><strong>Off</strong>, <strong>Gentle</strong>, <strong>Standard</strong>, <strong>Aggressive</strong>, <strong>Female Voice</strong>, <strong>Male Voice</strong>, <strong>Custom</strong></td>
+<td>Reduces harsh “s”, “sh”, and bright consonant sounds.</td>
+</tr>
+<tr>
+<td><strong>Advanced</strong></td>
+<td>Collapsed/expanded</td>
+<td>Shows detailed de-esser controls.</td>
+</tr>
+<tr>
+<td><strong>Frequency (Hz)</strong></td>
+<td><strong>3000</strong> to <strong>10000</strong></td>
+<td>Center frequency for sibilance detection.</td>
+</tr>
+<tr>
+<td><strong>Bandwidth (Hz)</strong></td>
+<td><strong>1000</strong> to <strong>8000</strong></td>
+<td>Width of the frequency area being controlled.</td>
+</tr>
+<tr>
+<td><strong>Threshold (dB)</strong></td>
+<td><strong>-40</strong> to <strong>0</strong></td>
+<td>Level where de-essing starts.</td>
+</tr>
+<tr>
+<td><strong>Ratio</strong></td>
+<td><strong>1</strong> to <strong>20</strong></td>
+<td>How strongly sibilance is reduced.</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Description shown in the editor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Off</strong></td>
+<td><strong>No de-essing</strong></td>
+</tr>
+<tr>
+<td><strong>Gentle</strong></td>
+<td><strong>Light sibilance taming — natural sound</strong></td>
+</tr>
+<tr>
+<td><strong>Standard</strong></td>
+<td><strong>Balanced de-essing for most voices</strong></td>
+</tr>
+<tr>
+<td><strong>Aggressive</strong></td>
+<td><strong>Heavy sibilance removal — careful of lisping</strong></td>
+</tr>
+<tr>
+<td><strong>Female Voice</strong></td>
+<td><strong>Higher frequency target for female sibilance</strong></td>
+</tr>
+<tr>
+<td><strong>Male Voice</strong></td>
+<td><strong>Lower frequency target for male sibilance</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The panel notes <strong>Live preview • applied during export</strong>.</p>
+<h2 id="how-to-use-auto-duck">How to use Auto-Duck<a class="headerlink" href="#how-to-use-auto-duck" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Put narration, dialogue, or speech on a track set to <strong>Voice</strong>.</li>
+<li>Put background music on a track set to <strong>Music</strong>.</li>
+<li>Select the music clip you want to lower during speech.</li>
+<li>In <strong>Audio Processing</strong>, turn on <strong>Auto-Duck</strong>.</li>
+<li>Choose a preset, play the timeline, and watch <strong>Duck</strong> in the master strip.</li>
+<li>Open <strong>Advanced</strong> if you need to change ducking amount, speech detection, or fade timing.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Range or choices</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Auto-Duck</strong></td>
+<td>On/off</td>
+<td>Enables or bypasses automatic music ducking.</td>
+</tr>
+<tr>
+<td>Preset picker</td>
+<td><strong>Off</strong>, <strong>Subtle</strong>, <strong>Standard</strong>, <strong>Aggressive</strong>, <strong>Podcast</strong>, <strong>Custom</strong></td>
+<td>Sets duck amount, speech threshold, and fade timing.</td>
+</tr>
+<tr>
+<td><strong>Advanced</strong></td>
+<td>Collapsed/expanded</td>
+<td>Shows detailed ducking controls.</td>
+</tr>
+<tr>
+<td><strong>Duck (dB)</strong></td>
+<td><strong>-30</strong> to <strong>0</strong></td>
+<td>How far the music lowers during detected speech.</td>
+</tr>
+<tr>
+<td><strong>Speech Thresh (dB)</strong></td>
+<td><strong>-60</strong> to <strong>-10</strong></td>
+<td>How loud voice must be to trigger ducking.</td>
+</tr>
+<tr>
+<td><strong>Fade In (ms)</strong></td>
+<td><strong>10</strong> to <strong>1000</strong></td>
+<td>How quickly music ducks when speech starts.</td>
+</tr>
+<tr>
+<td><strong>Fade Out (ms)</strong></td>
+<td><strong>10</strong> to <strong>1000</strong></td>
+<td>How quickly music returns after speech ends.</td>
+</tr>
+<tr>
+<td><strong>Track role (auto-duck)</strong></td>
+<td><strong>Default</strong>, <strong>Voice</strong>, <strong>Music</strong></td>
+<td>Tells the editor which tracks are speech triggers and which tracks should duck.</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Description shown in the editor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Off</strong></td>
+<td><strong>No auto-ducking</strong></td>
+</tr>
+<tr>
+<td><strong>Subtle</strong></td>
+<td><strong>Light ducking — music stays present</strong></td>
+</tr>
+<tr>
+<td><strong>Standard</strong></td>
+<td><strong>Balanced — vocals clearly above music</strong></td>
+</tr>
+<tr>
+<td><strong>Aggressive</strong></td>
+<td><strong>Music nearly silent during speech</strong></td>
+</tr>
+<tr>
+<td><strong>Podcast</strong></td>
+<td><strong>Smooth transitions — long fades, moderate reduction</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The panel notes <strong>Preview is live · also applied during export</strong> and <strong>Set track roles (🎤 Voice / 🎵 Music) via right-click or panel below</strong>.</p>
+<h2 id="how-to-apply-noise-reduction">How to apply Noise Reduction<a class="headerlink" href="#how-to-apply-noise-reduction" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select a clip with steady background noise, such as fan hum or room tone.</li>
+<li>Open <strong>Audio Processing</strong> and find <strong>Noise Reduction</strong>.</li>
+<li>In a browser, the card may show <strong>Desktop App Only</strong>, the explanation <strong>Spectral subtraction noise reduction requires the ContentLead desktop app for local FFT processing.</strong>, and <strong>Get Desktop App</strong>. Use the desktop app for this feature.</li>
+<li>In the desktop app, turn on <strong>Noise Reduction</strong>.</li>
+<li>Adjust <strong>Reduction Amount</strong>, or click <strong>Light</strong>, <strong>Medium</strong>, or <strong>Heavy</strong>.</li>
+<li>Use the noise reference line. It shows <strong>Noise sample: 0.0s – 1.0s</strong> for the selected segment or <strong>Active reference:</strong> when using a saved reference.</li>
+<li>In <strong>Noise Profiles</strong>, choose an existing saved profile or click <strong>Save New</strong> when a quiet segment is available.</li>
+<li>To save a profile, enter <strong>Profile name (e.g., Office Fan)</strong>, click <strong>Save Profile</strong>, or wait if the button says <strong>Saving...</strong>. You can also <strong>Cancel</strong>.</li>
+<li>Click <strong>Process Audio</strong>. While processing, the button and status show <strong>Processing...</strong>.</li>
+<li>When processing finishes, the status shows <strong>Ready</strong>. Use <strong>Reset</strong> to return to the original source. If it fails, the status shows <strong>Failed</strong> with an error message.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Range or choices</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Noise Reduction</strong></td>
+<td>On/off</td>
+<td>Enables or bypasses the processed audio.</td>
+</tr>
+<tr>
+<td>Status badge</td>
+<td><strong>Not processed</strong>, <strong>Processing...</strong>, <strong>Ready</strong>, <strong>Failed</strong></td>
+<td>Shows whether cleaned audio is available.</td>
+</tr>
+<tr>
+<td><strong>Reduction Amount</strong></td>
+<td><strong>0%</strong> to <strong>100%</strong>, step <strong>5%</strong></td>
+<td>Spectral noise reduction strength.</td>
+</tr>
+<tr>
+<td>Amount presets</td>
+<td><strong>Light</strong>, <strong>Medium</strong>, <strong>Heavy</strong></td>
+<td>Quick strength choices: light, medium, or heavy cleanup.</td>
+</tr>
+<tr>
+<td>Noise sample readout</td>
+<td><strong>Noise sample: 0.0s – 1.0s</strong> or <strong>Active reference:</strong></td>
+<td>Shows the reference noise currently used.</td>
+</tr>
+<tr>
+<td><strong>Noise Profiles</strong></td>
+<td>Saved profile list</td>
+<td>Reuses a noise reference across clips.</td>
+</tr>
+<tr>
+<td><strong>Using saved reference:</strong></td>
+<td>Saved profile banner</td>
+<td>Confirms which saved noise reference is active.</td>
+</tr>
+<tr>
+<td><strong>Save New</strong></td>
+<td>Button</td>
+<td>Opens the save form for the selected quiet segment.</td>
+</tr>
+<tr>
+<td><strong>Profile name (e.g., Office Fan)</strong></td>
+<td>Text field</td>
+<td>Names the reusable noise profile.</td>
+</tr>
+<tr>
+<td><strong>Save the selected noise segment as a reusable profile</strong></td>
+<td>Helper text</td>
+<td>Explains what the profile will store.</td>
+</tr>
+<tr>
+<td><strong>Save Profile</strong> / <strong>Saving...</strong></td>
+<td>Button states</td>
+<td>Saves the current noise segment.</td>
+</tr>
+<tr>
+<td><strong>Listen to noise sample</strong> / <strong>Stop</strong></td>
+<td>Profile preview button title</td>
+<td>Previews or stops a saved profile sample.</td>
+</tr>
+<tr>
+<td><strong>Rename</strong></td>
+<td>Button title</td>
+<td>Renames a saved profile.</td>
+</tr>
+<tr>
+<td><strong>Delete</strong></td>
+<td>Button title</td>
+<td>Deletes a saved profile.</td>
+</tr>
+<tr>
+<td><strong>Process Audio</strong> / <strong>Processing...</strong></td>
+<td>Button states</td>
+<td>Creates the cleaned audio file.</td>
+</tr>
+<tr>
+<td><strong>Reset</strong></td>
+<td>Button</td>
+<td>Restores the original audio.</td>
+</tr>
+<tr>
+<td><strong>No saved profiles yet</strong></td>
+<td>Empty state</td>
+<td>No reusable references have been saved.</td>
+</tr>
+<tr>
+<td><strong>Select a quiet segment and save it as a profile</strong></td>
+<td>Empty-state helper</td>
+<td>Tells you how to create the first profile.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-add-sound-effects">How to add sound effects<a class="headerlink" href="#how-to-add-sound-effects" title="Permanent link">&para;</a></h2>
+<p><img alt="The SFX panel for searching and adding sound effects." src="images/panel-sfx.png" /></p>
+<ol>
+<li>Open <strong>SFX</strong> in the menu panel. The panel heading is <strong>Sound Effects</strong>.</li>
+<li>Use <strong>Library</strong> for built-in SFX, or <strong>My Sounds</strong> for your uploaded effects.</li>
+<li>In <strong>Library</strong>, search with <strong>Search...</strong> and filter by <strong>All</strong>, <strong>UI</strong>, <strong>Impacts</strong>, <strong>Transitions</strong>, <strong>Notifications</strong>, <strong>Music</strong>, or <strong>Foley</strong>.</li>
+<li>Browse <strong>Recents</strong> for recently used effects and <strong>Favourites</strong> for saved favorites.</li>
+<li>Click the play button on a sound to preview it. While previewing, use the seek bar and speed buttons such as <strong>1x</strong>, <strong>1.5x</strong>, and <strong>2x</strong> if shown.</li>
+<li>Click a sound or its plus button to add it at the playhead, or drag the sound onto the timeline. A success message says <strong>Added "..." to timeline</strong>.</li>
+<li>Use the heart button to add or remove favorites. The editor confirms <strong>Added to favourites</strong> or <strong>Removed from favourites</strong>.</li>
+<li>If nothing matches, the panel says <strong>No sound effects found</strong>.</li>
+</ol>
+<h2 id="how-to-upload-and-organize-your-own-sfx">How to upload and organize your own SFX<a class="headerlink" href="#how-to-upload-and-organize-your-own-sfx" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>SFX</strong>, then <strong>My Sounds</strong>.</li>
+<li>Filter uploaded sounds by <strong>All</strong>, <strong>Whoosh</strong>, <strong>Impact</strong>, <strong>Riser</strong>, <strong>Transition</strong>, <strong>UI</strong>, <strong>Ambient</strong>, <strong>Music</strong>, <strong>Voice</strong>, <strong>Notification</strong>, <strong>Boom</strong>, or <strong>Other</strong>.</li>
+<li>Use <strong>Folders</strong> to switch between <strong>All</strong>, <strong>Unfiled</strong>, and custom folders.</li>
+<li>Click the folder-plus button to create a folder. Enter <strong>Folder name...</strong>, then click <strong>Create</strong>. Use <strong>Cancel</strong> to stop creating it.</li>
+<li>Folder controls include <strong>Rename folder</strong>, <strong>Delete folder</strong>, and <strong>Create folder</strong>.</li>
+<li>Drag files onto <strong>Drag &amp; drop sounds here</strong>, or click <strong>Choose Files</strong>. The helper says <strong>Upload multiple audio files sequentially</strong>.</li>
+<li>Upload status can show <strong>Uploading...</strong>, <strong>Processing...</strong>, <strong>Complete!</strong>, or <strong>Upload failed</strong>. Accepted files are <strong>MP3, WAV, OGG, AAC, FLAC, WEBM • Max 10MB each</strong>.</li>
+<li>Right-click a sound for <strong>Rename</strong>, <strong>Move to Folder</strong>, <strong>Add/Edit Tags</strong>, <strong>Add to Timeline</strong>, <strong>Favourite</strong>, <strong>Unfavourite</strong>, or <strong>Delete</strong>.</li>
+<li>Empty states include <strong>No sounds yet</strong>, <strong>No sounds match this filter</strong>, and <strong>No sounds in this folder</strong>.</li>
+</ol>
+<h2 id="how-to-add-music-from-audios">How to add music from Audios<a class="headerlink" href="#how-to-add-music-from-audios" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>Audio</strong> when the horizontal media row is available.</li>
+<li>The panel heading is <strong>Audios</strong>.</li>
+<li>Click a track or drag it to the timeline. Built-in items include <strong>Open AI</strong>, <strong>Dawn of change</strong>, <strong>Hope</strong>, <strong>Tenderness</strong>, and <strong>Piano moment</strong>.</li>
+<li>Select the added music clip and balance it with <strong>Gain</strong>, <strong>Volume</strong>, <strong>Audio Processing</strong>, and <strong>Track role (auto-duck)</strong>.</li>
+<li>For background beds, set the music track to <strong>Music</strong> before using <strong>Auto-Duck</strong>.</li>
+</ol>
+<p>For browsing uploaded music and project assets, use the media library. This section focuses on mixing and processing after audio is on the timeline.</p>
+<h2 id="how-to-generate-ai-voiceovers">How to generate AI voiceovers<a class="headerlink" href="#how-to-generate-ai-voiceovers" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>AI Voice Generation</strong> when the AI voice panel is available.</li>
+<li>In <strong>Enter your script</strong>, type or paste text into <strong>Type or paste your text here to generate AI voice...</strong>.</li>
+<li>Open <strong>Select voice</strong>.</li>
+<li>Use <strong>Language</strong> to filter voices. Choices include <strong>All Languages</strong>, <strong>English</strong>, <strong>Hindi</strong>, <strong>Spanish</strong>, <strong>Polish</strong>, <strong>French</strong>, <strong>German</strong>, <strong>Turkish</strong>, <strong>Hungarian</strong>, <strong>Italian</strong>, <strong>Russian</strong>, <strong>Croatian</strong>, <strong>Chinese</strong>, <strong>Filipino</strong>, <strong>Greek</strong>, <strong>Finnish</strong>, <strong>Korean</strong>, <strong>Norwegian</strong>, <strong>Tamil</strong>, <strong>Indonesian</strong>, <strong>Arabic</strong>, <strong>Japanese</strong>, <strong>Romanian</strong>, <strong>Portuguese</strong>, <strong>Czech</strong>, <strong>Vietnamese</strong>, <strong>Swedish</strong>, <strong>Dutch</strong>, and <strong>Danish</strong>.</li>
+<li>Use <strong>Gender</strong> to filter by <strong>Female</strong>, <strong>Male</strong>, or <strong>Neutral</strong>. The closed filter may show <strong>Gender</strong> before a choice is selected.</li>
+<li>Click a voice row to choose it. Use the play button beside a voice to preview it; the selected voice button says <strong>Change selected voice</strong> for accessibility.</li>
+<li>Click <strong>Generate Voice</strong>. While it runs, the button says <strong>Generating...</strong>.</li>
+<li>When generation succeeds, the editor says <strong>Voice generated and added to timeline</strong> and places the generated clip on the timeline.</li>
+</ol>
+<p>If no results appear in the picker, the panel says <strong>No voices found. Try adjusting your filters.</strong> An older voiceover panel may instead show <strong>Generate AI voice over</strong>, <strong>type your script here</strong>, <strong>Speaker voice</strong>, and <strong>Generate Voice</strong>.</p>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Start with each clip’s <strong>Gain</strong> and <strong>Volume</strong>, then use a master <strong>Preset</strong> to hit the final platform loudness.</li>
+<li>Keep most dialogue peaks below the red area on the <strong>Live meter</strong> and use <strong>Compressor</strong> before boosting with <strong>Makeup (dB)</strong>.</li>
+<li>For voice clarity, try <strong>Equalizer</strong> → <strong>Voice Enhance</strong> or <strong>Podcast</strong>, then <strong>Compressor</strong> → <strong>Gentle Voice</strong> or <strong>Podcast</strong>.</li>
+<li>Use <strong>Noise Gate</strong> for quiet gaps between words; use <strong>Noise Reduction</strong> for steady background noise such as fans, hum, or room tone.</li>
+<li>Use <strong>De-Esser</strong> carefully. Too much reduction can make speech sound lispy.</li>
+<li><strong>Auto-Duck</strong> depends on track roles. If music does not lower, confirm one track is <strong>Voice</strong> and the music track is <strong>Music</strong>.</li>
+<li>Turn on <strong>Live meter</strong> only when needed; its toggle tooltip says <strong>Disable live meter (saves CPU)</strong> when enabled.</li>
+<li>Keep SFX short and intentional. After adding SFX, select each one and set <strong>Gain</strong> or <strong>Volume</strong> so it supports the edit without overpowering voice.</li>
+<li>The timeline header <strong>Mute</strong> button affects the whole project without changing individual clip settings.</li>
+<li><strong>Off (no master processing)</strong> is useful for troubleshooting but can clip because it disables master loudness and limiting.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="02-media-library.html">Media Library</a></li>
+<li><a href="05-text-and-captions.html">Text &amp; Captions</a></li>
+<li><a href="03-scenes-templates-styles.html">Scenes, Templates &amp; Styles</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#where-to-find-it">Where to find it</a></li>
+<li><a href="#what-you-can-do">What you can do</a></li>
+<li><a href="#how-to-adjust-clip-volume-gain-fades-and-speed">How to adjust clip volume, gain, fades, and speed</a></li>
+<li><a href="#how-to-read-the-db-fader-and-db-meter">How to read the dB fader and dB meter</a></li>
+<li><a href="#how-to-use-the-master-bus-and-loudness-meter">How to use the master bus and loudness meter</a></li>
+<li><a href="#how-to-apply-equalizer">How to apply Equalizer</a></li>
+<li><a href="#how-to-apply-compressor">How to apply Compressor</a></li>
+<li><a href="#how-to-apply-noise-gate">How to apply Noise Gate</a></li>
+<li><a href="#how-to-apply-de-esser">How to apply De-Esser</a></li>
+<li><a href="#how-to-use-auto-duck">How to use Auto-Duck</a></li>
+<li><a href="#how-to-apply-noise-reduction">How to apply Noise Reduction</a></li>
+<li><a href="#how-to-add-sound-effects">How to add sound effects</a></li>
+<li><a href="#how-to-upload-and-organize-your-own-sfx">How to upload and organize your own SFX</a></li>
+<li><a href="#how-to-add-music-from-audios">How to add music from Audios</a></li>
+<li><a href="#how-to-generate-ai-voiceovers">How to generate AI voiceovers</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

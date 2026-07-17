@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visual Effects, Filters, Chroma Key &amp; Color — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link active" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Visual Effects, Filters, Chroma Key &amp; Color</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>Add stylized effects, tune image/video color, remove green or blue screens, mask clips, blend layers, and choose exact solid or gradient colors.</p>
+</blockquote>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<p>Select an image, video, text, caption, shape, audio item, or scene on the canvas or timeline to open the properties panel. Visual presets are in <strong>Effects</strong>. Images and videos also have <strong>Basic</strong>, <strong>Border &amp; Shadow</strong>, <strong>Clip Mask</strong>, <strong>Blend Mode</strong>, and <strong>Color &amp; Filters</strong> sections.</p>
+<p>For images, open <strong>Remove Background</strong> for chroma key controls. For videos, open <strong>Color Keying (Chroma)</strong> or <strong>AI Auto Matting</strong>. Videos also include <strong>Face Track</strong> when you want the crop to follow faces.</p>
+<p>Color pickers appear anywhere you click a color field, such as <strong>Color</strong>, <strong>Fill</strong>, <strong>Background Color</strong>, <strong>Stroke Color</strong>, <strong>Shadow Color</strong>, <strong>Color 1</strong>, or <strong>Color 2</strong>.</p>
+<h2 id="what-you-can-do">What you can do<a class="headerlink" href="#what-you-can-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Apply stackable visual presets from <strong>Color</strong>, <strong>Visual</strong>, <strong>Glow &amp; Shadow</strong>, and <strong>Motion</strong> groups.</li>
+<li>Search presets with <strong>Search effects...</strong>, reuse <strong>Recently Used</strong>, and manage <strong>Applied</strong> effects.</li>
+<li>Time each applied effect with <strong>Start</strong>, <strong>End</strong>, <strong>Fade In</strong>, <strong>Fade Out</strong>, and <strong>Easing</strong>.</li>
+<li>Apply filter presets such as <strong>Cinematic</strong>, <strong>Vintage</strong>, <strong>B&amp;W Film</strong>, <strong>Warm</strong>, <strong>Cool</strong>, and <strong>Vivid</strong>.</li>
+<li>Manually tune <strong>Blur</strong>, <strong>Brightness</strong>, <strong>Contrast</strong>, <strong>Saturation</strong>, <strong>Hue</strong>, <strong>Sepia</strong>, and <strong>Grayscale</strong>.</li>
+<li>Change layer interaction with <strong>Blend Mode</strong> options like <strong>Multiply</strong>, <strong>Screen</strong>, <strong>Overlay</strong>, and <strong>Color Dodge</strong>.</li>
+<li>Crop visible media into <strong>Clip Mask</strong> shapes such as <strong>Circle</strong>, <strong>Diamond</strong>, <strong>Hexagon</strong>, <strong>Star</strong>, and <strong>Heart</strong>.</li>
+<li>Remove backgrounds with <strong>Remove Background</strong>, <strong>Color Keying (Chroma)</strong>, or <strong>AI Auto Matting</strong>.</li>
+<li>Track faces in video with <strong>Face Track</strong>, <strong>Auto</strong>, <strong>Follow</strong>, <strong>Sensitivity</strong>, and <strong>Preview</strong>.</li>
+<li>Style images/videos with <strong>Border &amp; Shadow</strong>, <strong>Border</strong>, <strong>Shadow</strong>, <strong>Radius</strong>, <strong>Blur</strong>, <strong>Brightness</strong>, and <strong>Flip</strong>.</li>
+<li>Pick colors with <strong>Solid</strong>, <strong>Gradient</strong>, <strong>Hex</strong>, opacity <strong>%</strong>, and <strong>Pick color from screen</strong>.</li>
+</ul>
+<h2 id="how-to-apply-visual-effect-presets">How to apply visual effect presets<a class="headerlink" href="#how-to-apply-visual-effect-presets" title="Permanent link">&para;</a></h2>
+<p><img alt="The Effects section: Search effects, Recently Used, and preset groups (Dimmed, Low Contrast, Warm Tone, Noir, Black &amp; White)." src="images/properties-video-effects.png" /></p>
+<ol>
+<li>Select the item you want to stylize.</li>
+<li>In the properties panel, open <strong>Effects</strong>.</li>
+<li>Use <strong>Search effects...</strong> if you know the look you want. Search checks the preset name, description, and effect type. If nothing matches, the panel shows <strong>No effects found for "{searchQuery}"</strong>.</li>
+<li>If you have used effects before, use <strong>Recently Used</strong> to reapply one of the last six presets.</li>
+<li>Browse the preset groups and click a preset to apply it:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Presets</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Color</strong></td>
+<td><strong>Black &amp; White</strong>, <strong>Desaturated</strong>, <strong>Noir</strong>, <strong>Vintage Sepia</strong>, <strong>Warm Tone</strong>, <strong>Retro Film</strong>, <strong>Negative</strong>, <strong>X-Ray</strong>, <strong>Hue Shift 90°</strong>, <strong>Hue Shift 180°</strong>, <strong>Hue Shift 270°</strong>, <strong>Rainbow Shift</strong>, <strong>Vivid Colors</strong>, <strong>Muted Colors</strong>, <strong>Color Pop</strong>, <strong>High Contrast</strong>, <strong>Low Contrast</strong>, <strong>Dramatic</strong>, <strong>Washed Out</strong></td>
+</tr>
+<tr>
+<td><strong>Visual</strong></td>
+<td><strong>Soft Focus</strong>, <strong>Heavy Blur</strong>, <strong>Dreamy</strong>, <strong>Motion Blur</strong>, <strong>Flash</strong>, <strong>Dimmed</strong>, <strong>Blackout</strong>, <strong>Overexposed</strong>, <strong>Subtle Vignette</strong>, <strong>Dramatic Vignette</strong>, <strong>Spotlight</strong>, <strong>Light Grain</strong>, <strong>Heavy Grain</strong>, <strong>8mm Film</strong></td>
+</tr>
+<tr>
+<td><strong>Glow &amp; Shadow</strong></td>
+<td><strong>Soft Shadow</strong>, <strong>Hard Shadow</strong>, <strong>Long Shadow</strong>, <strong>Colored Shadow</strong>, <strong>White Glow</strong>, <strong>Neon Blue</strong>, <strong>Neon Pink</strong>, <strong>Neon Green</strong>, <strong>Neon Red</strong>, <strong>Neon Orange</strong>, <strong>Golden Glow</strong>, <strong>Soft Glow</strong></td>
+</tr>
+<tr>
+<td><strong>Motion</strong></td>
+<td><strong>Light Shake</strong>, <strong>Heavy Shake</strong>, <strong>Earthquake</strong>, <strong>Slow Pulse</strong>, <strong>Fast Pulse</strong>, <strong>Breathing</strong>, <strong>Subtle Glitch</strong>, <strong>Heavy Glitch</strong>, <strong>VHS Tracking</strong></td>
+</tr>
+</tbody>
+</table>
+<ol start="6">
+<li>After a preset is added, it appears under <strong>Applied (1)</strong>, <strong>Applied (2)</strong>, and so on.</li>
+<li>Click an applied effect row to expand or collapse its detailed controls.</li>
+<li>Use <strong>Disable</strong> to temporarily turn an effect off, <strong>Enable</strong> to turn it back on, or <strong>Delete</strong> to remove it.</li>
+</ol>
+<h2 id="how-to-adjust-an-applied-effect">How to adjust an applied effect<a class="headerlink" href="#how-to-adjust-an-applied-effect" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>Effects</strong> and expand an item under <strong>Applied</strong>.</li>
+<li>Applied rows use the effect type label, so a preset may appear as <strong>Grayscale</strong>, <strong>Sepia</strong>, <strong>Invert</strong>, <strong>Hue Rotate</strong>, <strong>Saturate</strong>, <strong>Contrast</strong>, <strong>Blur</strong>, <strong>Brightness</strong>, <strong>Vignette</strong>, <strong>Film Grain</strong>, <strong>Drop Shadow</strong>, <strong>Glow</strong>, <strong>Shake</strong>, <strong>Pulse</strong>, or <strong>Glitch</strong>.</li>
+<li>Under <strong>Timing</strong>, set <strong>Start</strong> and <strong>End</strong>. Values display in frames, such as <code>0f</code>; <strong>End</strong> shows <code>end</code> when the effect runs until the item finishes.</li>
+<li>Under <strong>Transitions</strong>, set <strong>Fade In</strong> and <strong>Fade Out</strong>. Both use frames and can be set from 0 to 60 frames.</li>
+<li>Choose <strong>Easing</strong> from the dropdown:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th><strong>Easing</strong> options</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Linear</strong>, <strong>Ease</strong>, <strong>Ease In</strong>, <strong>Ease Out</strong>, <strong>Ease In Out</strong>, <strong>Ease In Quad</strong>, <strong>Ease Out Quad</strong>, <strong>Ease In Out Quad</strong>, <strong>Ease In Cubic</strong>, <strong>Ease Out Cubic</strong>, <strong>Ease In Out Cubic</strong></td>
+</tr>
+</tbody>
+</table>
+<ol start="6">
+<li>Under <strong>Parameters</strong>, tune the controls shown for that effect:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Appears for</th>
+<th>What it changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Intensity</strong></td>
+<td>Most effects</td>
+<td>Overall strength, shown as a percentage.</td>
+</tr>
+<tr>
+<td><strong>Hue</strong></td>
+<td>Hue shift effects</td>
+<td>Color rotation in degrees.</td>
+</tr>
+<tr>
+<td><strong>Blur</strong></td>
+<td>Shadow and glow effects</td>
+<td>Softness of the shadow or glow in pixels.</td>
+</tr>
+<tr>
+<td><strong>Color</strong></td>
+<td>Shadow and glow effects</td>
+<td>The shadow or glow color.</td>
+</tr>
+<tr>
+<td><strong>Amount</strong></td>
+<td>Shake effects</td>
+<td>Shake distance in pixels.</td>
+</tr>
+<tr>
+<td><strong>Scale</strong></td>
+<td>Pulse effects</td>
+<td>Maximum pulse size as a percentage.</td>
+</tr>
+<tr>
+<td><strong>Speed</strong></td>
+<td>Pulse effects</td>
+<td>Pulse speed multiplier.</td>
+</tr>
+<tr>
+<td><strong>Frequency</strong></td>
+<td>Glitch effects</td>
+<td>How often the glitch appears.</td>
+</tr>
+<tr>
+<td><strong>Amplitude</strong></td>
+<td>Glitch effects</td>
+<td>Glitch offset strength in pixels.</td>
+</tr>
+</tbody>
+</table>
+<ol start="7">
+<li>For entry/exit preset parameter controls elsewhere in the panel, the editable labels are <strong>Scale</strong>, <strong>Scale X</strong>, <strong>Scale Y</strong>, <strong>Opacity</strong>, <strong>Position X</strong>, <strong>Position Y</strong>, <strong>Rotation</strong>, <strong>Blur</strong>, and <strong>Brightness</strong>, with <strong>Start</strong>, <strong>End</strong>, <strong>Duration (frames)</strong>, <strong>Easing</strong>, and <strong>Reset to Defaults</strong>.</li>
+</ol>
+<h2 id="how-to-use-image-and-video-filters">How to use image and video filters<a class="headerlink" href="#how-to-use-image-and-video-filters" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select an image or video.</li>
+<li>Open <strong>Color &amp; Filters</strong>.</li>
+<li>Under <strong>Presets</strong>, click a quick look:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th style="text-align: right;">Brightness</th>
+<th style="text-align: right;">Contrast</th>
+<th style="text-align: right;">Saturation</th>
+<th style="text-align: right;">Hue</th>
+<th style="text-align: right;">Sepia</th>
+<th style="text-align: right;">Grayscale</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reset</strong></td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td>Neutral color.</td>
+</tr>
+<tr>
+<td><strong>Cinematic</strong></td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">120</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">0</td>
+<td>Lower saturation with stronger contrast.</td>
+</tr>
+<tr>
+<td><strong>Vintage</strong></td>
+<td style="text-align: right;">105</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">-10</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">0</td>
+<td>Soft, warm retro color.</td>
+</tr>
+<tr>
+<td><strong>B&amp;W Film</strong></td>
+<td style="text-align: right;">105</td>
+<td style="text-align: right;">130</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">100</td>
+<td>High-contrast black-and-white.</td>
+</tr>
+<tr>
+<td><strong>Warm</strong></td>
+<td style="text-align: right;">105</td>
+<td style="text-align: right;">105</td>
+<td style="text-align: right;">120</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0</td>
+<td>Warmer, more saturated color.</td>
+</tr>
+<tr>
+<td><strong>Cool</strong></td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">105</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">-20</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td>Cooler color shift.</td>
+</tr>
+<tr>
+<td><strong>Noir</strong></td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">150</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">100</td>
+<td>Dark, high-contrast monochrome.</td>
+</tr>
+<tr>
+<td><strong>Faded</strong></td>
+<td style="text-align: right;">115</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">0</td>
+<td>Bright, low-contrast faded look.</td>
+</tr>
+<tr>
+<td><strong>Vivid</strong></td>
+<td style="text-align: right;">105</td>
+<td style="text-align: right;">115</td>
+<td style="text-align: right;">160</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td>Bright, saturated color.</td>
+</tr>
+<tr>
+<td><strong>Sunset</strong></td>
+<td style="text-align: right;">105</td>
+<td style="text-align: right;">110</td>
+<td style="text-align: right;">130</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">0</td>
+<td>Warm orange sunset tone.</td>
+</tr>
+<tr>
+<td><strong>Moody</strong></td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">125</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">-5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0</td>
+<td>Darker, dramatic color.</td>
+</tr>
+<tr>
+<td><strong>Pastel</strong></td>
+<td style="text-align: right;">115</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">0</td>
+<td>Bright, soft, low-saturation look.</td>
+</tr>
+<tr>
+<td><strong>Teal &amp; Orange</strong></td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">115</td>
+<td style="text-align: right;">130</td>
+<td style="text-align: right;">-15</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">0</td>
+<td>Teal/orange-style grade.</td>
+</tr>
+<tr>
+<td><strong>Dream</strong></td>
+<td style="text-align: right;">115</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0</td>
+<td>Bright, soft, warm look.</td>
+</tr>
+<tr>
+<td><strong>Hi Contrast</strong></td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">160</td>
+<td style="text-align: right;">110</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td>Very strong contrast.</td>
+</tr>
+<tr>
+<td><strong>Matte</strong></td>
+<td style="text-align: right;">110</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0</td>
+<td>Soft matte finish.</td>
+</tr>
+</tbody>
+</table>
+<ol start="4">
+<li>Under <strong>Adjust</strong>, use the manual sliders:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Slider</th>
+<th style="text-align: right;">Range shown</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Contrast</strong></td>
+<td style="text-align: right;">0–200%</td>
+<td>Reduces or increases separation between dark and light areas.</td>
+</tr>
+<tr>
+<td><strong>Saturation</strong></td>
+<td style="text-align: right;">0–200%</td>
+<td>Removes color at low values or boosts color at high values.</td>
+</tr>
+<tr>
+<td><strong>Hue</strong></td>
+<td style="text-align: right;">-180°–180°</td>
+<td>Rotates all colors around the color wheel.</td>
+</tr>
+<tr>
+<td><strong>Sepia</strong></td>
+<td style="text-align: right;">0–100%</td>
+<td>Adds a brown vintage tone.</td>
+</tr>
+<tr>
+<td><strong>Grayscale</strong></td>
+<td style="text-align: right;">0–100%</td>
+<td>Converts the image or video toward black-and-white.</td>
+</tr>
+</tbody>
+</table>
+<ol start="5">
+<li>For basic image/video tuning, open <strong>Basic</strong> and use:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th style="text-align: right;">Range shown</th>
+<th>Where it appears</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Blur</strong></td>
+<td style="text-align: right;">0–100</td>
+<td><strong>Basic</strong></td>
+<td>Softens the selected image or video.</td>
+</tr>
+<tr>
+<td><strong>Brightness</strong></td>
+<td style="text-align: right;">0–200</td>
+<td><strong>Basic</strong></td>
+<td>Darkens below 100 or brightens above 100.</td>
+</tr>
+<tr>
+<td><strong>Opacity</strong></td>
+<td style="text-align: right;">0–100</td>
+<td><strong>Basic</strong></td>
+<td>Makes the selected image or video more transparent.</td>
+</tr>
+<tr>
+<td><strong>Radius</strong></td>
+<td style="text-align: right;">0–100</td>
+<td><strong>Basic</strong></td>
+<td>Rounds the corners of the selected image or video.</td>
+</tr>
+<tr>
+<td><strong>Rounded</strong></td>
+<td style="text-align: right;">0–100px</td>
+<td>Other rounded-corner controls</td>
+<td>Rounds corners where the control is labeled <strong>Rounded</strong>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-use-blend-modes">How to use blend modes<a class="headerlink" href="#how-to-use-blend-modes" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select an image or video.</li>
+<li>Open <strong>Blend Mode</strong>.</li>
+<li>Choose a mode from the dropdown, or click one of the quick buttons shown in the grid.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Options</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Basic</strong></td>
+<td><strong>Normal</strong></td>
+</tr>
+<tr>
+<td><strong>Darken</strong></td>
+<td><strong>Multiply</strong>, <strong>Darken</strong>, <strong>Color Burn</strong></td>
+</tr>
+<tr>
+<td><strong>Lighten</strong></td>
+<td><strong>Screen</strong>, <strong>Lighten</strong>, <strong>Color Dodge</strong></td>
+</tr>
+<tr>
+<td><strong>Contrast</strong></td>
+<td><strong>Overlay</strong>, <strong>Hard Light</strong>, <strong>Soft Light</strong></td>
+</tr>
+<tr>
+<td><strong>Inversion</strong></td>
+<td><strong>Difference</strong>, <strong>Exclusion</strong></td>
+</tr>
+<tr>
+<td><strong>Component</strong></td>
+<td><strong>Hue</strong>, <strong>Saturation</strong>, <strong>Color</strong>, <strong>Luminosity</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Use <strong>Normal</strong> when you do not want the clip to blend with layers underneath it.</p>
+<h2 id="how-to-mask-an-image-or-video-into-a-shape">How to mask an image or video into a shape<a class="headerlink" href="#how-to-mask-an-image-or-video-into-a-shape" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select an image or video.</li>
+<li>Open <strong>Clip Mask</strong>.</li>
+<li>Click a mask preset. The selected item is clipped into that shape without changing the original media.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th><strong>Clip Mask</strong> options</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>None</strong>, <strong>Circle</strong>, <strong>Rounded</strong>, <strong>Diamond</strong>, <strong>Hexagon</strong>, <strong>Star</strong>, <strong>Triangle</strong>, <strong>Pentagon</strong>, <strong>Octagon</strong>, <strong>Heart</strong>, <strong>Cross</strong>, <strong>Arrow</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Choose <strong>None</strong> to remove the mask.</p>
+<h2 id="how-to-remove-a-green-screen-or-blue-screen-with-chroma-key">How to remove a green screen or blue screen with chroma key<a class="headerlink" href="#how-to-remove-a-green-screen-or-blue-screen-with-chroma-key" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select the image or video with the colored background.</li>
+<li>For an image, open <strong>Remove Background</strong>. For a video, open <strong>Color Keying (Chroma)</strong>.</li>
+<li>Turn on <strong>Remove Background</strong>.</li>
+<li>Under <strong>Key Colors (Max 5)</strong>, choose the color to remove:
+   - Click <strong>Green</strong> for a green screen.
+   - Click <strong>Blue</strong> for a blue screen.
+   - Click <strong>+</strong> to add another key color.
+   - Click <strong>Eyedropper</strong> to sample a color from the preview. While active, it shows <strong>Picking…</strong>.</li>
+<li>If the toggle is off, the panel reminds you: <strong>Pick the backdrop color now, then toggle Remove Background on.</strong></li>
+<li>Click a color swatch to expand that color’s controls. The color row shows the hex color and a compact readout like <code>T:45 E:20 S:35</code> for tolerance, edge softness, and spill removal.</li>
+<li>Tune each key color separately:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th style="text-align: right;">Default</th>
+<th style="text-align: right;">Range</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tolerance</strong></td>
+<td style="text-align: right;">45</td>
+<td style="text-align: right;">0–100</td>
+<td>Expands or narrows the range of colors removed around the key color. Increase it when the backdrop remains visible. Decrease it if the subject starts disappearing.</td>
+</tr>
+<tr>
+<td><strong>Edge Softness</strong></td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0–100</td>
+<td>Feathers the transparent edge. Increase it for smoother hair, fabric, or motion edges.</td>
+</tr>
+<tr>
+<td><strong>Spill Removal</strong></td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">0–100</td>
+<td>Reduces green/blue color reflected on the subject. Increase it if edges look tinted.</td>
+</tr>
+<tr>
+<td><strong>Reset</strong></td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">—</td>
+<td>Restores that color’s chroma settings to default values.</td>
+</tr>
+</tbody>
+</table>
+<ol start="8">
+<li>Use <strong>Denoise (clean edges)</strong> if compressed footage leaves blocky or noisy edges. The note <strong>Global — smooths chroma for all colors</strong> means this one slider affects every key color.</li>
+<li>If you added the wrong color, hover the swatch and use <strong>Remove this color</strong>.</li>
+</ol>
+<h2 id="how-to-remove-a-video-background-with-ai-auto-matting">How to remove a video background with AI Auto Matting<a class="headerlink" href="#how-to-remove-a-video-background-with-ai-auto-matting" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select a video.</li>
+<li>Open <strong>AI Auto Matting</strong>.</li>
+<li>Turn on <strong>AI Auto Matting</strong>.</li>
+<li>If you are not using the desktop app, you may see <strong>AI Auto Matting</strong> with the message <strong>Requires the Desktop app for local GPU processing.</strong></li>
+<li>If the local model is not installed, the panel says <strong>Requires an AI model (~15MB) to be downloaded once to your device.</strong> Click <strong>Download AI Model</strong>.</li>
+<li>During setup, the panel shows <strong>Downloading...</strong> and a percentage.</li>
+<li>When the feature is on and ready, the status shows <strong>AI Matting Active (Local GPU)</strong>.</li>
+</ol>
+<p>AI matting is separate from chroma key. Use chroma key for green/blue screens; use <strong>AI Auto Matting</strong> when the background is not a single key color.</p>
+<h2 id="how-to-use-face-track-on-a-video">How to use Face Track on a video<a class="headerlink" href="#how-to-use-face-track-on-a-video" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select a video.</li>
+<li>Open <strong>Face Track</strong>.</li>
+<li>Click <strong>Auto</strong> or <strong>Follow</strong>:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Button</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Auto</strong></td>
+<td>Detects faces and can split if there are 2 faces. The helper text says <strong>Auto</strong> — split if 2 faces.</td>
+</tr>
+<tr>
+<td><strong>Follow</strong></td>
+<td>Detects one speaker and pans the crop window to follow. The helper text says <strong>Follow</strong> — single pan.</td>
+</tr>
+</tbody>
+</table>
+<ol start="4">
+<li>While detection runs, the section shows <strong>Processing…</strong>.</li>
+<li>After face tracking is active, use the controls:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Preview</strong></td>
+<td>Shows or hides the face preview overlay. The tooltip changes between <strong>Show face preview overlay</strong> and <strong>Hide face preview overlay</strong>.</td>
+</tr>
+<tr>
+<td><strong>Re-detect</strong></td>
+<td>Runs detection again. Use <strong>Auto</strong> or <strong>Follow</strong> in this row to update the result.</td>
+</tr>
+<tr>
+<td><strong>Sensitivity</strong></td>
+<td>Re-runs tracking with <strong>Tight</strong>, <strong>Normal</strong>, or <strong>Loose</strong>.</td>
+</tr>
+<tr>
+<td><strong>Regen</strong></td>
+<td>Regenerates the tracking keyframes from the detected faces.</td>
+</tr>
+<tr>
+<td><strong>Remove</strong></td>
+<td>Removes face tracking from the video.</td>
+</tr>
+</tbody>
+</table>
+<ol start="6">
+<li>The active badge can show <strong>Split (...)</strong> for split layouts or <strong>Follow</strong> for a single following crop.</li>
+</ol>
+<h2 id="how-to-add-borders-shadows-radius-blur-brightness-and-flip">How to add borders, shadows, radius, blur, brightness, and flip<a class="headerlink" href="#how-to-add-borders-shadows-radius-blur-brightness-and-flip" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select an image or video.</li>
+<li>Open <strong>Basic</strong> for quick appearance controls:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Radius</strong></td>
+<td>Rounds corners.</td>
+</tr>
+<tr>
+<td><strong>Blur</strong></td>
+<td>Softens the whole image or video.</td>
+</tr>
+<tr>
+<td><strong>Brightness</strong></td>
+<td>Darkens or brightens the whole image or video.</td>
+</tr>
+<tr>
+<td><strong>Opacity</strong></td>
+<td>Changes transparency.</td>
+</tr>
+</tbody>
+</table>
+<ol start="3">
+<li>Open <strong>Border &amp; Shadow</strong> for outline and shadow styling:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Border</strong></td>
+<td><strong>Color</strong> and <strong>Size</strong>. In some border controls the width slider is labeled <strong>Width</strong>.</td>
+</tr>
+<tr>
+<td><strong>Shadow</strong></td>
+<td><strong>Color</strong>, <strong>X</strong>, <strong>Y</strong>, and <strong>Blur</strong>.</td>
+</tr>
+</tbody>
+</table>
+<ol start="4">
+<li>Click the border or shadow <strong>Color</strong> field to open the color picker.</li>
+<li>If the selected item exposes <strong>Flip</strong>, use <strong>Flip X</strong> to mirror horizontally or <strong>Flip Y</strong> to mirror vertically.</li>
+</ol>
+<h2 id="how-to-use-the-color-picker-gradients-and-eyedropper">How to use the color picker, gradients, and eyedropper<a class="headerlink" href="#how-to-use-the-color-picker-gradients-and-eyedropper" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Click any visible color field, such as <strong>Color</strong>, <strong>Fill</strong>, <strong>Stroke Color</strong>, or <strong>Shadow Color</strong>.</li>
+<li>If both modes are available, choose <strong>Solid</strong> for one color or <strong>Gradient</strong> for multiple color stops.</li>
+<li>For a solid color:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Color board</td>
+<td>Drag inside the square color board to choose shade and brightness.</td>
+</tr>
+<tr>
+<td>Hue ribbon</td>
+<td>Drag along the rainbow ribbon to change the base hue.</td>
+</tr>
+<tr>
+<td>Alpha ribbon / <strong>%</strong></td>
+<td>Set opacity. <code>100</code> is fully opaque; lower values are more transparent.</td>
+</tr>
+<tr>
+<td><strong>Hex</strong></td>
+<td>Type a hex value and press Enter or click away.</td>
+</tr>
+<tr>
+<td><strong>Pick color from screen</strong></td>
+<td>Click the eyedropper button, then sample any visible pixel.</td>
+</tr>
+</tbody>
+</table>
+<ol start="4">
+<li>For a gradient:
+   - Use the same board, <strong>Hex</strong>, <strong>%</strong>, and <strong>Pick color from screen</strong> controls to edit the active stop.
+   - Click the gradient stop bar to add a stop when adding stops is available.
+   - Drag stops to reposition them.
+   - Double-click a stop to remove it.
+   - Click the gradient mode control to switch between linear and radial styles.
+   - Drag the angle handle to change the gradient direction for linear gradients.
+   - For radial gradients, click one of the position points to move the center.</li>
+<li>For text gradients, turn on <strong>Gradient</strong>, then set <strong>Color 1</strong>, <strong>Color 2</strong>, and <strong>Direction</strong>. The helper text says <strong>Use a text gradient instead of a solid color</strong>.</li>
+</ol>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Effects can stack. For example, a color preset, a glow, and a motion effect can all be applied to the same item.</li>
+<li><strong>Recently Used</strong> appears after you have applied effects before and is hidden while you are searching.</li>
+<li><strong>End</strong> shows <code>end</code> when the effect runs until the item finishes.</li>
+<li>Chroma key supports up to five key colors, which helps with uneven screens, shadows, or mixed green/blue backgrounds.</li>
+<li>If chroma key removes parts of your subject, lower <strong>Tolerance</strong> before changing other settings.</li>
+<li>If the background is gone but the edge looks harsh, raise <strong>Edge Softness</strong> slightly.</li>
+<li>If the subject has a green or blue fringe, raise <strong>Spill Removal</strong>.</li>
+<li>Raise <strong>Denoise (clean edges)</strong> only as much as needed; high denoise can soften fine detail.</li>
+<li>Use <strong>Reset</strong> in <strong>Color &amp; Filters</strong> before trying a new grade if you want to start from neutral.</li>
+<li>Use <strong>Normal</strong> in <strong>Blend Mode</strong> to return a layer to standard compositing.</li>
+<li>Use <strong>None</strong> in <strong>Clip Mask</strong> to remove shape clipping.</li>
+<li>Use <strong>AI Auto Matting</strong> for regular backgrounds and <strong>Remove Background</strong> / <strong>Color Keying (Chroma)</strong> for green or blue screens.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="02-timeline.html">Timeline editing</a></li>
+<li><a href="05-text-captions.html">Text, captions, and typography</a></li>
+<li><a href="06-media.html">Images, video, and media</a></li>
+<li><a href="08-transitions-motion.html">Transitions and motion</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#where-to-find-it">Where to find it</a></li>
+<li><a href="#what-you-can-do">What you can do</a></li>
+<li><a href="#how-to-apply-visual-effect-presets">How to apply visual effect presets</a></li>
+<li><a href="#how-to-adjust-an-applied-effect">How to adjust an applied effect</a></li>
+<li><a href="#how-to-use-image-and-video-filters">How to use image and video filters</a></li>
+<li><a href="#how-to-use-blend-modes">How to use blend modes</a></li>
+<li><a href="#how-to-mask-an-image-or-video-into-a-shape">How to mask an image or video into a shape</a></li>
+<li><a href="#how-to-remove-a-green-screen-or-blue-screen-with-chroma-key">How to remove a green screen or blue screen with chroma key</a></li>
+<li><a href="#how-to-remove-a-video-background-with-ai-auto-matting">How to remove a video background with AI Auto Matting</a></li>
+<li><a href="#how-to-use-face-track-on-a-video">How to use Face Track on a video</a></li>
+<li><a href="#how-to-add-borders-shadows-radius-blur-brightness-and-flip">How to add borders, shadows, radius, blur, brightness, and flip</a></li>
+<li><a href="#how-to-use-the-color-picker-gradients-and-eyedropper">How to use the color picker, gradients, and eyedropper</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

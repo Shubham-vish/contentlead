@@ -27,6 +27,8 @@ When you select a text item, the properties panel shows **Design**, **Animate**,
 
 ## How to add a text element
 
+![Text Settings — Design tab: Preset, Font, Weight, Size, Color, Fill, Gradient, Align, Case, Decoration, Opacity, and Typography.](images/explore-text-design.png)
+
 1. Open the **Text** menu panel.
 2. Click **Add text** to place a new text item at the current playhead position.
 3. Or drag **Add text** from the menu panel onto the timeline.

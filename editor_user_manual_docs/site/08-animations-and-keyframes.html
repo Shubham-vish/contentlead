@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Animations &amp; Keyframes — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link active" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Animations &amp; Keyframes</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>Add preset motion to selected items, then fine-tune movement, appearance, speed, and audio changes over time with keyframes.</p>
+</blockquote>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<p>Select an item on the canvas or timeline, then open the <strong>Properties</strong> panel. Most editable items show an <strong>Animations</strong> section and a <strong>Keyframes</strong> section.</p>
+<p>For images, the motion workflow is expanded into <strong>Style Template</strong>, <strong>Entry Animation</strong>, <strong>Exit Animation</strong>, <strong>Animations</strong>, and <strong>Keyframes</strong> sections. For shapes and scene/template items, keyframes appear in the <strong>Effects</strong> tab. Keyframe markers also appear as yellow diamonds directly on the timeline.</p>
+<p>Caption items can show an <strong>Animations</strong> section with an <strong>Animation</strong> button, and caption style preset pickers include live preview cards.</p>
+<h2 id="what-you-can-do">What you can do<a class="headerlink" href="#what-you-can-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Apply quick animation presets from <strong>In</strong>, <strong>Loop</strong>, and <strong>Out</strong> tabs.</li>
+<li>Adjust <strong>Animation In Duration</strong>, <strong>Animation Loop Duration</strong>, and <strong>Animation Out Duration</strong> after choosing a quick preset.</li>
+<li>Choose image-focused <strong>Entry Animation</strong> and <strong>Exit Animation</strong> keyframe presets, or choose <strong>None</strong> to clear one side.</li>
+<li>Apply a complete <strong>Style Template</strong> such as <strong>Documentary</strong>, <strong>Social Media</strong>, <strong>Cinematic</strong>, <strong>Dynamic</strong>, <strong>Elegant</strong>, or <strong>Energetic</strong>.</li>
+<li>Tune preset tracks with <strong>Tweak Parameters</strong>, including <strong>Start</strong>, <strong>End</strong>, <strong>Duration (frames)</strong>, and <strong>Easing</strong>.</li>
+<li>Preview caption presets live, search them, switch <strong>Words</strong>/<strong>Lines</strong>, change the preview background, and try <strong>Preview with your own text...</strong>.</li>
+<li>Turn <strong>Sound Effects</strong> <strong>ON</strong> so matching sounds are added with animation presets.</li>
+<li>Add keyframes to supported properties such as <strong>Position X</strong>, <strong>Position Y</strong>, <strong>Scale</strong>, <strong>Opacity</strong>, <strong>Rotation</strong>, <strong>Blur</strong>, <strong>Brightness</strong>, <strong>Speed</strong>, and <strong>Volume</strong>.</li>
+<li>Edit keyframe values, delete keyframes, and choose easing from the <strong>Keyframe List</strong>.</li>
+<li>Use yellow timeline diamonds to see which moments are keyframed.</li>
+<li>Apply animations to multiple selected items, including bulk caption selections.</li>
+</ul>
+<h2 id="how-to-apply-quick-item-animations">How to apply quick item animations<a class="headerlink" href="#how-to-apply-quick-item-animations" title="Permanent link">&para;</a></h2>
+<p><img alt="The Effects tab showing keyframeable Transform (Position, Scale, Width, Height, Rotation) and Appearance (Opacity, Blur, Brightness) controls." src="images/explore-caption-effects.png" /></p>
+<ol>
+<li>Select the item you want to animate.</li>
+<li>In <strong>Properties</strong>, expand <strong>Animations</strong>.</li>
+<li>Click the <strong>Animation</strong> dropdown. A floating <strong>Animations</strong> picker opens.</li>
+<li>Choose a tab:
+   - <strong>In</strong> controls how the item appears.
+   - <strong>Loop</strong> controls motion while the item remains visible.
+   - <strong>Out</strong> controls how the item leaves.</li>
+<li>Click a preset tile. The selected tile is highlighted, and the item animates in the player.</li>
+<li>On small screens, the same <strong>In</strong>, <strong>Loop</strong>, and <strong>Out</strong> tabs appear directly in the <strong>Animations</strong> section.</li>
+<li>If duration controls appear, drag <strong>Animation In Duration</strong>, <strong>Animation Loop Duration</strong>, or <strong>Animation Out Duration</strong> to change how long that part of the animation lasts.</li>
+</ol>
+<p>Quick animation preset labels:</p>
+<table>
+<thead>
+<tr>
+<th>Tab</th>
+<th>Presets</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>In</strong></td>
+<td><strong>Fade</strong>, <strong>Scale</strong>, <strong>Slide Right</strong>, <strong>Slide Left</strong>, <strong>Slide Top</strong>, <strong>Slide Bottom</strong>, <strong>Rotate</strong>, <strong>Flip</strong>, <strong>Shake Horizontal</strong>, <strong>Shake Vertical</strong>, <strong>Type Writer</strong>, <strong>Animated Text</strong>, <strong>Sunny Mornings</strong>, <strong>Domino Dreams</strong>, <strong>Great Thinkers</strong>, <strong>Beatiful Questions</strong>, <strong>Made With Love</strong>, <strong>Reality is Broken</strong>, <strong>Drop Animation In</strong>, <strong>Descompress Animation In</strong>, <strong>Count Down Animation In</strong>, <strong>Sound Wave Animation In</strong>, <strong>Background Animation In</strong></td>
+</tr>
+<tr>
+<td><strong>Loop</strong></td>
+<td><strong>Pulse Animation Loop</strong>, <strong>Glitch Animation Loop</strong>, <strong>Font Change Animation Loop</strong>, <strong>Vintage Animation Loop</strong>, <strong>Shaky Letters Animation Loop</strong>, <strong>Shake Text Animation Loop</strong>, <strong>Rotate 3D Animation Loop</strong>, <strong>Heartbeat Animation Loop</strong>, <strong>Spin Animation Loop</strong>, <strong>Wave Animation Loop</strong>, <strong>Vogue Animation Loop</strong>, <strong>Dragon Fly Animation Loop</strong>, <strong>Billboard Animation Loop</strong></td>
+</tr>
+<tr>
+<td><strong>Out</strong></td>
+<td><strong>Fade</strong>, <strong>Scale</strong>, <strong>Slide Right</strong>, <strong>Slide Left</strong>, <strong>Slide Top</strong>, <strong>Slide Bottom</strong>, <strong>Shake Horizontal</strong>, <strong>Shake Vertical</strong>, <strong>Type Writer</strong>, <strong>Animated Text</strong>, <strong>Sunny Mornings</strong>, <strong>Domino Dreams</strong>, <strong>Great Thinkers</strong>, <strong>Beautiful Questions</strong>, <strong>Made With Love</strong>, <strong>Reality is Broken</strong>, <strong>Drop Animation Out</strong>, <strong>Descompress Animation Out</strong>, <strong>Background Animation Out</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-adjust-quick-animation-duration">How to adjust quick animation duration<a class="headerlink" href="#how-to-adjust-quick-animation-duration" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Apply a quick <strong>In</strong>, <strong>Loop</strong>, or <strong>Out</strong> animation.</li>
+<li>Use the matching duration slider:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Slider</th>
+<th>What it changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Animation In Duration</strong></td>
+<td>Length of the item's entrance animation.</td>
+</tr>
+<tr>
+<td><strong>Animation Loop Duration</strong></td>
+<td>Length of the repeating loop segment.</td>
+</tr>
+<tr>
+<td><strong>Animation Out Duration</strong></td>
+<td>Length of the item's exit animation.</td>
+</tr>
+</tbody>
+</table>
+<p>Each duration slider shows <strong>0</strong> on the left and the maximum available seconds on the right. The maximum depends on the item's total length and the other animation durations already applied.</p>
+<h2 id="how-to-use-image-animation-presets">How to use image animation presets<a class="headerlink" href="#how-to-use-image-animation-presets" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select an image.</li>
+<li>Open <strong>Properties</strong> and expand <strong>Style Template</strong> if you want a one-click combination.</li>
+<li>Open <strong>Choose a style...</strong> and choose a style template.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Style</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Custom (manual)</strong></td>
+<td>Leaves entry and exit choices under your control.</td>
+</tr>
+<tr>
+<td><strong>Documentary</strong></td>
+<td>Slow Ken Burns zoom with gentle fade out. Classic documentary feel.</td>
+</tr>
+<tr>
+<td><strong>Social Media</strong></td>
+<td>Punchy scale in/out with quick timing. Attention-grabbing.</td>
+</tr>
+<tr>
+<td><strong>Cinematic</strong></td>
+<td>Elegant fade with blur transitions. Film-like quality.</td>
+</tr>
+<tr>
+<td><strong>Dynamic</strong></td>
+<td>Slide in from left, slide out to right. High-energy transitions.</td>
+</tr>
+<tr>
+<td><strong>Elegant</strong></td>
+<td>Subtle scale &amp; fade entrance with soft fade exit. Refined look.</td>
+</tr>
+<tr>
+<td><strong>Energetic</strong></td>
+<td>Rotate in with slide out. Bold and playful.</td>
+</tr>
+</tbody>
+</table>
+<ol start="4">
+<li>To choose manually, expand <strong>Entry Animation</strong> or <strong>Exit Animation</strong>.</li>
+<li>Open the preset menu and choose a preset, or choose <strong>None</strong> to clear that side.</li>
+<li>The preset description appears below the menu.</li>
+<li>Click <strong>Tweak Parameters</strong> if you want to customize it.</li>
+<li>If you changed values and want to apply the same choices again, click <strong>Re-apply with current settings</strong>.</li>
+</ol>
+<h2 id="entry-and-exit-preset-reference">Entry and exit preset reference<a class="headerlink" href="#entry-and-exit-preset-reference" title="Permanent link">&para;</a></h2>
+<p>Available <strong>Entry Animation</strong> presets:</p>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Description</th>
+<th>Animated properties</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scale In</strong></td>
+<td>Item scales from 50% to 100% with smooth easing</td>
+<td><strong>Scale</strong></td>
+</tr>
+<tr>
+<td><strong>Scale In (Bounce)</strong></td>
+<td>Item scales from small with a bouncy overshoot</td>
+<td><strong>Scale</strong></td>
+</tr>
+<tr>
+<td><strong>Fade In</strong></td>
+<td>Item fades in from transparent</td>
+<td><strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Scale &amp; Fade In</strong></td>
+<td>Item scales and fades in simultaneously</td>
+<td><strong>Scale</strong>, <strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Zoom In</strong></td>
+<td>Dramatic zoom from very small size</td>
+<td><strong>Scale</strong>, <strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Slide Up</strong></td>
+<td>Item slides up from below</td>
+<td><strong>Position Y</strong>, <strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Slide Down</strong></td>
+<td>Item slides down from above</td>
+<td><strong>Position Y</strong>, <strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Slide In Left</strong></td>
+<td>Item slides in from the left with a fade</td>
+<td><strong>Position X</strong>, <strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Slide In Right</strong></td>
+<td>Item slides in from the right with a fade</td>
+<td><strong>Position X</strong>, <strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Blur In</strong></td>
+<td>Item starts blurry and comes into focus</td>
+<td><strong>Blur</strong>, <strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Rotate In</strong></td>
+<td>Item rotates and scales up into view</td>
+<td><strong>Rotation</strong>, <strong>Scale</strong>, <strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Draw On (Shape)</strong></td>
+<td>Stroke-based shape draws itself from start to end</td>
+<td><strong>Dash Offset</strong>, <strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Fill Fade In (Shape)</strong></td>
+<td>Shape fill fades in while stroke stays visible</td>
+<td><strong>Fill Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Grow (Shape)</strong></td>
+<td>Shape width and height animate from small to full size</td>
+<td><strong>Width</strong>, <strong>Height</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Available <strong>Exit Animation</strong> presets:</p>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Description</th>
+<th>Animated properties</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scale Out</strong></td>
+<td>Item scales down and disappears</td>
+<td><strong>Scale</strong></td>
+</tr>
+<tr>
+<td><strong>Fade Out</strong></td>
+<td>Item fades out to transparent</td>
+<td><strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Scale &amp; Fade Out</strong></td>
+<td>Item scales down and fades out simultaneously</td>
+<td><strong>Scale</strong>, <strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Slide Out Left</strong></td>
+<td>Item slides off to the left</td>
+<td><strong>Position X</strong>, <strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Slide Out Right</strong></td>
+<td>Item slides off to the right</td>
+<td><strong>Position X</strong>, <strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Slide Up Out</strong></td>
+<td>Item slides up out of view</td>
+<td><strong>Position Y</strong>, <strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Slide Down Out</strong></td>
+<td>Item slides down out of view</td>
+<td><strong>Position Y</strong>, <strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Blur Out</strong></td>
+<td>Item blurs and fades away</td>
+<td><strong>Blur</strong>, <strong>Opacity</strong></td>
+</tr>
+<tr>
+<td><strong>Rotate Out</strong></td>
+<td>Item rotates and scales down to disappear</td>
+<td><strong>Rotation</strong>, <strong>Scale</strong>, <strong>Opacity</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="other-keyframe-preset-types-you-may-see">Other keyframe preset types you may see<a class="headerlink" href="#other-keyframe-preset-types-you-may-see" title="Permanent link">&para;</a></h2>
+<p>Some preset tools also include motion and emphasis presets. These are not the main <strong>Entry Animation</strong>/<strong>Exit Animation</strong> dropdown choices, but they describe the same keyframe preset system.</p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Presets</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Motion</strong></td>
+<td><strong>Ken Burns</strong>, <strong>Ken Burns + Drift</strong>, <strong>Drift</strong></td>
+</tr>
+<tr>
+<td><strong>Emphasis</strong></td>
+<td><strong>Pulse</strong>, <strong>Breathe</strong>, <strong>Stroke Pulse (Shape)</strong></td>
+</tr>
+<tr>
+<td><strong>Transform</strong></td>
+<td><strong>Pop In &amp; Out</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-tweak-preset-parameters">How to tweak preset parameters<a class="headerlink" href="#how-to-tweak-preset-parameters" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Choose an <strong>Entry Animation</strong> or <strong>Exit Animation</strong> preset.</li>
+<li>Click <strong>Tweak Parameters</strong>.</li>
+<li>Each animated property appears as a card, such as <strong>Scale</strong>, <strong>Opacity</strong>, <strong>Position X</strong>, <strong>Position Y</strong>, <strong>Rotation</strong>, <strong>Blur</strong>, or <strong>Brightness</strong>.</li>
+<li>Edit the controls in the card.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Start</strong></td>
+<td>The first value in the preset motion. For an exit preset, this is still shown as the first editable value in the card.</td>
+</tr>
+<tr>
+<td><strong>End</strong></td>
+<td>The final value in the preset motion.</td>
+</tr>
+<tr>
+<td><strong>Duration (frames)</strong></td>
+<td>How many frames the preset takes. The displayed value ends in <strong>f</strong>.</td>
+</tr>
+<tr>
+<td><strong>Easing</strong></td>
+<td>The acceleration curve used by the preset.</td>
+</tr>
+</tbody>
+</table>
+<p>When you change a parameter, <strong>(modified)</strong> appears beside <strong>Tweak Parameters</strong>. Click <strong>Reset to Defaults</strong> to return that preset to its original values.</p>
+<h2 id="how-to-use-the-live-preset-preview">How to use the live preset preview<a class="headerlink" href="#how-to-use-the-live-preset-preview" title="Permanent link">&para;</a></h2>
+<p>Caption preset pickers show live preview cards instead of static thumbnails when possible. The preview plays the same caption renderer used in the editor, so you can judge motion, word highlighting, stroke, fill, and background behavior before applying a preset.</p>
+<ol>
+<li>Open a caption preset picker.</li>
+<li>Use <strong>Words</strong> to preview word-by-word styles, or <strong>Lines</strong> to preview line-based styles.</li>
+<li>Type in <strong>Search presets...</strong> to filter by preset name.</li>
+<li>Click the preview background button. Its tooltip says <strong>Change preview background — preview how captions look on your video</strong>.</li>
+<li>In the background panel, use <strong>Preview background — see how captions look on your video color</strong>.</li>
+<li>Choose <strong>Dark</strong>, <strong>White</strong>, <strong>Gray</strong>, <strong>Green</strong>, <strong>Blue</strong>, <strong>Red</strong>, or use the custom color picker whose tooltip says <strong>Pick custom color</strong>.</li>
+<li>Click <strong>Reset</strong> to clear the chosen preview background.</li>
+<li>Type in <strong>Preview with your own text...</strong> to test the preset with your own words. The preview text is capped at 40 characters and up to 6 words.</li>
+<li>Click <strong>×</strong> to clear custom preview text. The tooltip says <strong>Clear custom text</strong>.</li>
+<li>Click a preset card to apply it, or click <strong>None</strong> to remove the preset.</li>
+</ol>
+<p>If a live preview cannot render, the card falls back to a simple <strong>Text</strong> style preview instead of interrupting the picker.</p>
+<h2 id="how-to-add-keyframes-to-a-property">How to add keyframes to a property<a class="headerlink" href="#how-to-add-keyframes-to-a-property" title="Permanent link">&para;</a></h2>
+<p>A keyframe stores a property value at a specific frame. Two or more keyframes on the same property create a smooth change between those values.</p>
+<ol>
+<li>Select the item you want to animate.</li>
+<li>Move the playhead to the frame where the change should start.</li>
+<li>Open <strong>Keyframes</strong>.</li>
+<li>Find the property you want under <strong>Transform</strong>, <strong>Appearance</strong>, <strong>Speed</strong>, <strong>Volume</strong>, or <strong>Shape</strong>.</li>
+<li>Click the diamond beside the property. The tooltip changes based on state:
+   - <strong>Add keyframe (enables keyframing)</strong> means the property has no keyframes yet.
+   - <strong>Add keyframe at current frame</strong> means the property is already keyframed, but not at the current frame.
+   - <strong>Remove keyframe</strong> means the current frame already has a keyframe.
+   - <strong>Unavailable for auto sizing</strong> means the property cannot be keyframed in the item's current sizing mode.</li>
+<li>Adjust the property value with the slider or number field.</li>
+<li>Move the playhead to another frame.</li>
+<li>Change the value again. If the property is already keyframed, the editor adds or updates the keyframe at that frame.</li>
+</ol>
+<p>Supported property groups:</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Properties</th>
+<th>Where it appears</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Transform</strong></td>
+<td><strong>Position X</strong>, <strong>Position Y</strong>, <strong>Scale</strong>, <strong>Scale X</strong>, <strong>Scale Y</strong>, <strong>Width</strong>, <strong>Height</strong>, <strong>Rotation</strong></td>
+<td>Most visual items.</td>
+</tr>
+<tr>
+<td><strong>Appearance</strong></td>
+<td><strong>Opacity</strong>, <strong>Blur</strong>, <strong>Brightness</strong></td>
+<td>Most visual items.</td>
+</tr>
+<tr>
+<td><strong>Speed</strong></td>
+<td><strong>Speed</strong></td>
+<td>Video and audio-capable media items.</td>
+</tr>
+<tr>
+<td><strong>Volume</strong></td>
+<td><strong>Volume</strong></td>
+<td>Video and audio items.</td>
+</tr>
+<tr>
+<td><strong>Shape</strong></td>
+<td><strong>Stroke Width</strong>, <strong>Fill Opacity</strong>, <strong>Dash Offset</strong></td>
+<td>Shape or rectangle items.</td>
+</tr>
+</tbody>
+</table>
+<p>If a text-like item uses automatic height, the height control may show <strong>Auto</strong> and the tooltip <strong>Unavailable for auto sizing</strong>.</p>
+<h2 id="how-keyframe-values-behave">How keyframe values behave<a class="headerlink" href="#how-keyframe-values-behave" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>How to think about the value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Position X</strong></td>
+<td>Shown as the item's canvas X position, but animated as movement from that item's base position.</td>
+</tr>
+<tr>
+<td><strong>Position Y</strong></td>
+<td>Shown as the item's canvas Y position, but animated as movement from that item's base position.</td>
+</tr>
+<tr>
+<td><strong>Scale</strong></td>
+<td>A multiplier of the item's current fitted size; <strong>1</strong> means the item's normal size.</td>
+</tr>
+<tr>
+<td><strong>Scale X</strong> / <strong>Scale Y</strong></td>
+<td>Separate horizontal and vertical scale controls.</td>
+</tr>
+<tr>
+<td><strong>Rotation</strong></td>
+<td>Degrees. The field shows values such as <strong>0</strong> or <strong>90</strong> while the item rotates visually.</td>
+</tr>
+<tr>
+<td><strong>Opacity</strong></td>
+<td>Percent from <strong>0</strong> to <strong>100</strong>.</td>
+</tr>
+<tr>
+<td><strong>Blur</strong></td>
+<td>Pixels of blur.</td>
+</tr>
+<tr>
+<td><strong>Brightness</strong></td>
+<td>Percent brightness; <strong>100</strong> is normal.</td>
+</tr>
+<tr>
+<td><strong>Speed</strong></td>
+<td>Playback speed multiplier.</td>
+</tr>
+<tr>
+<td><strong>Volume</strong></td>
+<td>Percent volume.</td>
+</tr>
+<tr>
+<td><strong>Stroke Width</strong></td>
+<td>Shape outline width in pixels.</td>
+</tr>
+<tr>
+<td><strong>Fill Opacity</strong></td>
+<td>Shape fill opacity percent.</td>
+</tr>
+<tr>
+<td><strong>Dash Offset</strong></td>
+<td>Shape stroke dash offset in pixels.</td>
+</tr>
+<tr>
+<td><strong>Width</strong> / <strong>Height</strong></td>
+<td>Item size in pixels, unless <strong>Height</strong> is locked as <strong>Auto</strong>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-edit-and-remove-keyframes">How to edit and remove keyframes<a class="headerlink" href="#how-to-edit-and-remove-keyframes" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open <strong>Keyframes</strong> on the selected item.</li>
+<li>If the item has keyframes, yellow property chips appear, such as <strong>Opacity (2)</strong> or <strong>Position X (3)</strong>.</li>
+<li>Click a property chip to show its <strong>Keyframe List</strong>.</li>
+<li>Click the <strong>Keyframe List</strong> header to collapse or expand the list.</li>
+<li>In the list, click a row to jump the playhead to that keyframe.</li>
+<li>Use the left and right arrow buttons to jump to the previous or next keyframe for that property.</li>
+<li>Edit the number field in a row to change the keyframe value.</li>
+<li>Use the easing dropdown in the row to change motion into the next keyframe.</li>
+<li>Click the trash button to delete a keyframe.</li>
+</ol>
+<p>If the selected property has no keyframes, the list says <strong>No keyframes</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>On-screen cue</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Add first keyframe</td>
+<td>Empty diamond; tooltip <strong>Add keyframe (enables keyframing)</strong></td>
+<td>Creates the property track and stores the current value.</td>
+</tr>
+<tr>
+<td>Add another keyframe</td>
+<td>Yellow outlined diamond; tooltip <strong>Add keyframe at current frame</strong></td>
+<td>Adds a keyframe at the current playhead frame.</td>
+</tr>
+<tr>
+<td>Remove current keyframe</td>
+<td>Filled yellow diamond; tooltip <strong>Remove keyframe</strong></td>
+<td>Deletes the keyframe at the current frame.</td>
+</tr>
+<tr>
+<td>Select a keyframed property</td>
+<td>Chip such as <strong>Scale (2)</strong></td>
+<td>Opens that property's <strong>Keyframe List</strong>.</td>
+</tr>
+<tr>
+<td>Navigate keyframes</td>
+<td>Left and right arrow buttons in <strong>Keyframe List</strong></td>
+<td>Seeks to the previous or next keyframe.</td>
+</tr>
+<tr>
+<td>Edit a keyframe</td>
+<td>Number field in a keyframe row</td>
+<td>Changes that keyframe's stored value.</td>
+</tr>
+<tr>
+<td>Change interpolation</td>
+<td>Easing dropdown in a keyframe row</td>
+<td>Changes how the value moves into the next keyframe.</td>
+</tr>
+<tr>
+<td>Delete from list</td>
+<td>Trash button</td>
+<td>Removes that keyframe.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-easing-and-interpolation-work">How easing and interpolation work<a class="headerlink" href="#how-easing-and-interpolation-work" title="Permanent link">&para;</a></h2>
+<p>Easing controls how the value travels from one keyframe to the next. In the <strong>Keyframe List</strong>, the easing on a row belongs to the keyframe you are leaving; it controls the movement into the next keyframe.</p>
+<p>The <strong>Keyframe List</strong> easing menu includes:</p>
+<table>
+<thead>
+<tr>
+<th>Easing labels</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Linear</strong>, <strong>Ease</strong>, <strong>Ease In</strong>, <strong>Ease Out</strong>, <strong>Ease In Out</strong></td>
+</tr>
+<tr>
+<td><strong>In Quad</strong>, <strong>Out Quad</strong>, <strong>InOut Quad</strong></td>
+</tr>
+<tr>
+<td><strong>In Cubic</strong>, <strong>Out Cubic</strong>, <strong>InOut Cubic</strong></td>
+</tr>
+<tr>
+<td><strong>In Back</strong>, <strong>Out Back</strong>, <strong>InOut Back</strong></td>
+</tr>
+<tr>
+<td><strong>In Elastic</strong>, <strong>Out Elastic</strong></td>
+</tr>
+<tr>
+<td><strong>In Bounce</strong>, <strong>Out Bounce</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Preset parameter editors use the expanded labels:</p>
+<table>
+<thead>
+<tr>
+<th>Easing labels</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Linear</strong>, <strong>Ease</strong>, <strong>Ease In</strong>, <strong>Ease Out</strong>, <strong>Ease In Out</strong></td>
+</tr>
+<tr>
+<td><strong>Ease In Quad</strong>, <strong>Ease Out Quad</strong>, <strong>Ease In Out Quad</strong></td>
+</tr>
+<tr>
+<td><strong>Ease In Cubic</strong>, <strong>Ease Out Cubic</strong>, <strong>Ease In Out Cubic</strong></td>
+</tr>
+<tr>
+<td><strong>Ease Out Back</strong>, <strong>Ease In Back</strong></td>
+</tr>
+<tr>
+<td><strong>Ease Out Expo</strong>, <strong>Ease In Expo</strong></td>
+</tr>
+<tr>
+<td><strong>Ease Out Bounce</strong>, <strong>Ease In Bounce</strong></td>
+</tr>
+<tr>
+<td><strong>Ease Out Elastic</strong>, <strong>Ease In Elastic</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-use-keyframes-on-the-timeline">How to use keyframes on the timeline<a class="headerlink" href="#how-to-use-keyframes-on-the-timeline" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Add keyframes from the <strong>Keyframes</strong> section.</li>
+<li>Look at the timeline: each keyframed moment appears as a yellow diamond marker on the item or track row.</li>
+<li>Use the diamonds as visual navigation markers for where keyframes exist inside the selected item's duration.</li>
+<li>Open <strong>Properties</strong> to continue editing the selected item's <strong>Keyframes</strong>.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Timeline marker</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Yellow diamond</td>
+<td>One or more properties have a keyframe at that moment.</td>
+</tr>
+<tr>
+<td>Multiple properties at the same frame</td>
+<td>Still shown as one diamond at that frame.</td>
+</tr>
+<tr>
+<td>No diamond</td>
+<td>No keyframe exists at that moment for that item.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-add-sound-effects-with-presets">How to add sound effects with presets<a class="headerlink" href="#how-to-add-sound-effects-with-presets" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select an image and open <strong>Style Template</strong>.</li>
+<li>Click <strong>Sound Effects</strong> to switch it <strong>ON</strong>.</li>
+<li>Apply a <strong>Style Template</strong>, <strong>Entry Animation</strong>, or <strong>Exit Animation</strong>.</li>
+<li>The editor adds matching audio items on a <strong>Preset SFX</strong> track. When sound effects are active, the section can show <strong>(N SFX applied)</strong>.</li>
+<li>Click <strong>Sound Effects</strong> again to switch it <strong>OFF</strong> before applying presets if you want silent motion.</li>
+</ol>
+<p>When <strong>Vary</strong> is <strong>ON</strong> for multiple selected images, the editor can alternate both motion choices and matching sounds. Presets with mapped sounds include <strong>Scale In</strong>, <strong>Scale In (Bounce)</strong>, <strong>Fade In</strong>, <strong>Scale &amp; Fade In</strong>, <strong>Zoom In</strong>, <strong>Slide Up</strong>, <strong>Slide Down</strong>, <strong>Slide In Left</strong>, <strong>Slide In Right</strong>, <strong>Blur In</strong>, <strong>Rotate In</strong>, <strong>Scale Out</strong>, <strong>Fade Out</strong>, <strong>Scale &amp; Fade Out</strong>, <strong>Slide Out Left</strong>, <strong>Slide Out Right</strong>, <strong>Slide Up Out</strong>, <strong>Slide Down Out</strong>, <strong>Blur Out</strong>, and <strong>Rotate Out</strong>.</p>
+<p>Sound timing follows the visual preset:</p>
+<table>
+<thead>
+<tr>
+<th>Sound behavior</th>
+<th>What happens</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Entry sound</td>
+<td>Starts near the entry animation start.</td>
+</tr>
+<tr>
+<td>Exit sound</td>
+<td>Starts near the exit animation start.</td>
+</tr>
+<tr>
+<td>Staggered items</td>
+<td>Entry sounds are offset to match the visual stagger.</td>
+</tr>
+<tr>
+<td><strong>Vary</strong></td>
+<td>Alternates between the primary sound and alternate sound choices where available.</td>
+</tr>
+<tr>
+<td>Re-applying presets</td>
+<td>Previous preset SFX for the same image are removed, then new ones are added.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-work-with-multiple-selected-items">How to work with multiple selected items<a class="headerlink" href="#how-to-work-with-multiple-selected-items" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select multiple images or items that support bulk animation controls.</li>
+<li>In <strong>Animations</strong>, the label can show <strong>(All N)</strong> to indicate all selected items are targeted.</li>
+<li>In the quick animation picker, preset tiles can show <strong>(N)</strong> under the preset name to show how many selected items will receive the animation.</li>
+<li>Use <strong>Stagger (frames between items)</strong> to delay each selected item by a small number of frames.</li>
+<li>Turn <strong>Vary</strong> <strong>ON</strong> to give each image a different animation.</li>
+<li>Use <strong>Copy</strong> to copy animation settings from the first selected item.</li>
+<li>Use <strong>Paste to All</strong> to apply the copied animation to the full selection.</li>
+<li>For captions, the floating <strong>Animations</strong> picker can show <strong>Bulk (N)</strong> when multiple captions are selected.</li>
+</ol>
+<p>Bulk behavior:</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Bulk result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quick <strong>Animations</strong> preset</td>
+<td>Applies the chosen <strong>In</strong>, <strong>Loop</strong>, or <strong>Out</strong> preset to all targeted items.</td>
+</tr>
+<tr>
+<td><strong>Entry Animation</strong> / <strong>Exit Animation</strong></td>
+<td>Applies the chosen keyframe preset to all targeted images or supported items.</td>
+</tr>
+<tr>
+<td><strong>Stagger (frames between items)</strong></td>
+<td>Offsets each successive item's entry keyframes by that many frames.</td>
+</tr>
+<tr>
+<td><strong>Vary</strong></td>
+<td>Cycles through complementary entry and exit presets instead of using the exact same preset on every item.</td>
+</tr>
+<tr>
+<td><strong>Copy</strong></td>
+<td>Copies animation settings from the first selected item.</td>
+</tr>
+<tr>
+<td><strong>Paste to All</strong></td>
+<td>Applies the copied settings to every selected item.</td>
+</tr>
+<tr>
+<td>Caption <strong>Bulk (N)</strong></td>
+<td>Applies the caption animation to all selected captions.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-clear-animations-keyframes-and-effects">How to clear animations, keyframes, and effects<a class="headerlink" href="#how-to-clear-animations-keyframes-and-effects" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open the selected item’s properties.</li>
+<li>Click <strong>Remove All Keyframes &amp; Effects</strong>. In bulk mode, the button reads <strong>Remove All Keyframes &amp; Effects (N)</strong>.</li>
+<li>Review the warning dialog <strong>Remove All Keyframes &amp; Effects?</strong>.</li>
+<li>The dialog summarizes <strong>Content to be removed:</strong> and may list <strong>Keyframes: N/N items</strong>, <strong>Effects: N/N items</strong>, or <strong>Animations: N/N items</strong>.</li>
+<li>Click <strong>Remove All</strong> to confirm, or <strong>Cancel</strong> to keep everything.</li>
+</ol>
+<p>The confirmation text notes that <strong>You can undo this action with Ctrl+Z.</strong> If preset sound effects were added with those animations, clearing can remove the linked preset SFX too.</p>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Quick <strong>Animations</strong> presets and <strong>Keyframes</strong> can both affect the same item. If motion becomes hard to reason about, simplify one system first.</li>
+<li><strong>Entry Animation</strong> keyframes start near the beginning of the item. <strong>Exit Animation</strong> keyframes are placed near the end of the item.</li>
+<li>Some preset durations are automatically shortened for very short clips so the animation does not take over the whole item.</li>
+<li>Slide-style presets adapt to the current canvas size, so the same preset works on portrait and landscape projects.</li>
+<li><strong>Scale</strong> keyframes are relative to the item’s current fitted size. This keeps image presets from jumping when an image was automatically fit to the canvas.</li>
+<li><strong>Position X</strong> and <strong>Position Y</strong> keyframes behave like movement from the item’s base position, even though the controls show the canvas position.</li>
+<li>In the <strong>Keyframe List</strong>, easing belongs to the keyframe you are leaving; it controls the movement into the next keyframe.</li>
+<li>Use <strong>Linear</strong> for constant motion, <strong>Ease Out</strong> for natural settling, <strong>Out Back</strong> for overshoot, and <strong>Out Bounce</strong> for playful motion.</li>
+<li>Timeline diamonds show where keyframes exist. To change values, open the item’s <strong>Keyframes</strong> controls.</li>
+<li><strong>Sound Effects</strong> are applied when you apply or re-apply animation presets while the toggle is <strong>ON</strong>.</li>
+<li>If you remove all keyframes and effects, linked preset SFX are removed too.</li>
+<li><strong>None</strong> in an animation preset menu clears that preset side without choosing a replacement.</li>
+<li><strong>Custom</strong> before a preset name means the preset's keyframes were manually modified after the preset was applied.</li>
+<li>Live caption preview cards only mount while they are near the visible picker area, so scrolling may start or stop previews.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="07-item-properties.html">Item Properties</a></li>
+<li><a href="10-camera-effects.html">Camera Effects</a></li>
+<li><a href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#where-to-find-it">Where to find it</a></li>
+<li><a href="#what-you-can-do">What you can do</a></li>
+<li><a href="#how-to-apply-quick-item-animations">How to apply quick item animations</a></li>
+<li><a href="#how-to-adjust-quick-animation-duration">How to adjust quick animation duration</a></li>
+<li><a href="#how-to-use-image-animation-presets">How to use image animation presets</a></li>
+<li><a href="#entry-and-exit-preset-reference">Entry and exit preset reference</a></li>
+<li><a href="#other-keyframe-preset-types-you-may-see">Other keyframe preset types you may see</a></li>
+<li><a href="#how-to-tweak-preset-parameters">How to tweak preset parameters</a></li>
+<li><a href="#how-to-use-the-live-preset-preview">How to use the live preset preview</a></li>
+<li><a href="#how-to-add-keyframes-to-a-property">How to add keyframes to a property</a></li>
+<li><a href="#how-keyframe-values-behave">How keyframe values behave</a></li>
+<li><a href="#how-to-edit-and-remove-keyframes">How to edit and remove keyframes</a></li>
+<li><a href="#how-easing-and-interpolation-work">How easing and interpolation work</a></li>
+<li><a href="#how-to-use-keyframes-on-the-timeline">How to use keyframes on the timeline</a></li>
+<li><a href="#how-to-add-sound-effects-with-presets">How to add sound effects with presets</a></li>
+<li><a href="#how-to-work-with-multiple-selected-items">How to work with multiple selected items</a></li>
+<li><a href="#how-to-clear-animations-keyframes-and-effects">How to clear animations, keyframes, and effects</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

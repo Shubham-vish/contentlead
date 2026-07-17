@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Canvas Editing (Direct Manipulation) — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link active" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Canvas Editing (Direct Manipulation)</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>Work directly on the preview: select, move, resize, rotate, and align items right on the canvas — with live snapping guides — instead of typing numbers into the properties panel.</p>
+</blockquote>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<p>The <strong>canvas</strong> is the large preview area in the center of the editor. Anything visible at the current playhead time can be grabbed and edited directly with your mouse or trackpad. Changes you make on the canvas are the same as changes made through the properties panel — use whichever is faster for the task.</p>
+<p>The canvas is also a drop target: it shows a <strong>Droppable area for images, videos, and audio</strong> highlight when you drag files or library items over it.</p>
+<h2 id="what-you-can-do">What you can do<a class="headerlink" href="#what-you-can-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Click an item on the canvas to select it and open its properties panel.</li>
+<li>Drag an item to reposition it.</li>
+<li>Drag the corner and edge handles to resize or scale.</li>
+<li>Hold <strong>Shift</strong> while dragging a handle to lock the aspect ratio.</li>
+<li>Drag the rotation handle to rotate.</li>
+<li>Select several items and move, resize, or rotate them together.</li>
+<li>Use the live snapping guides to align to other items' edges, centers, and middles.</li>
+<li>Drag media from the library — or files from your computer — straight onto the canvas.</li>
+<li>Crop an image or video using on-canvas edge handles in crop mode.</li>
+</ul>
+<h2 id="how-to-select-items-on-the-canvas">How to select items on the canvas<a class="headerlink" href="#how-to-select-items-on-the-canvas" title="Permanent link">&para;</a></h2>
+<p><img alt="A selected item on the canvas showing the selection box with corner and edge resize handles." src="images/canvas-selection-handles.png" /></p>
+<ol>
+<li>Click an item to select it. A selection box with handles appears around it, and the properties panel opens on the right.</li>
+<li><strong>Shift</strong>-click another item to add it to the selection (or remove it if already selected).</li>
+<li>Click an empty area of the canvas to deselect everything.</li>
+<li>Overlapping items select the top-most one first; keep clicking to reach items beneath, or select them from the timeline instead.</li>
+</ol>
+<p>Items on a locked or hidden track can't be selected or changed on the canvas until you unlock or show that track.</p>
+<h2 id="how-to-move-items">How to move items<a class="headerlink" href="#how-to-move-items" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select the item.</li>
+<li>Drag anywhere inside its selection box to move it.</li>
+<li>As you drag, snapping guides appear when the item lines up with another item's edge, horizontal center, or vertical middle — release while a guide is showing to snap to it.</li>
+<li>To move several items at once, select them all first, then drag any one of them; the whole group moves together and keeps its internal spacing.</li>
+</ol>
+<h2 id="how-to-resize-and-scale">How to resize and scale<a class="headerlink" href="#how-to-resize-and-scale" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select the item to reveal its handles.</li>
+<li>Drag a <strong>corner handle</strong> to resize from that corner, or an <strong>edge handle</strong> to stretch one side.</li>
+<li>Hold <strong>Shift</strong> while dragging to keep the original proportions (aspect-ratio lock). Release Shift mid-drag to resize freely again — the lock updates immediately.</li>
+<li>Some item types keep their proportions by default; holding Shift still forces proportional resizing for the ones that don't.</li>
+<li>For precise sizes, type exact values in the properties panel instead (see <a href="07-item-properties.html">Item Properties</a>).</li>
+</ol>
+<p>When several items are selected, dragging a handle scales the whole selection together.</p>
+<h2 id="how-to-rotate">How to rotate<a class="headerlink" href="#how-to-rotate" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select the item.</li>
+<li>Grab the rotation handle (the handle that sits away from the box) and drag left or right.</li>
+<li>Release at the angle you want.</li>
+<li>To set an exact angle, use the rotation field in the properties panel.</li>
+</ol>
+<p>Selecting multiple items lets you rotate them all around the group as one.</p>
+<h2 id="how-to-use-snapping-guides">How to use snapping guides<a class="headerlink" href="#how-to-use-snapping-guides" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Guides appear automatically while you drag, resize, or rotate, and disappear when you release.</li>
+<li>They snap to other items' <strong>top</strong>, <strong>bottom</strong>, <strong>left</strong>, <strong>right</strong>, <strong>center</strong>, and <strong>middle</strong> lines, so items align cleanly without guesswork.</li>
+<li>If you need to place something without snapping, move it in small steps or fine-tune the position numerically in the properties panel.</li>
+<li>Snapping on the canvas is separate from magnetic snapping on the timeline (which snaps clip timing, not on-screen position) — see <a href="06-timeline-and-selection.html">Timeline &amp; Selection</a>.</li>
+</ul>
+<h2 id="how-to-crop-on-the-canvas">How to crop on the canvas<a class="headerlink" href="#how-to-crop-on-the-canvas" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select an image or video and turn on crop mode (the <strong>Crop</strong> control in the properties panel, or the crop action in the right-click menu).</li>
+<li>In crop mode the edge handles trim what's visible instead of resizing the whole item, so you can frame just the part you want.</li>
+<li>Adjust the handles, then leave crop mode to apply the crop.</li>
+</ol>
+<p>See <a href="07-item-properties.html">Item Properties</a> for the numeric crop and scale (<strong>Fill</strong>, <strong>Fit</strong>, <strong>Original</strong>, <strong>Custom</strong>) options.</p>
+<h2 id="how-to-add-media-by-dragging-onto-the-canvas">How to add media by dragging onto the canvas<a class="headerlink" href="#how-to-add-media-by-dragging-onto-the-canvas" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Drag a photo, video, or audio clip from the media library, or drag a file from your computer.</li>
+<li>As you drag over the preview, the canvas highlights as a <strong>Droppable area for images, videos, and audio</strong>.</li>
+<li>Release to drop it in. Images and videos are placed on the canvas; audio is added to the timeline.</li>
+</ol>
+<p>You can also add media from the menu panel without dragging — see <a href="02-media-library.html">Media Library</a>.</p>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The canvas is WYSIWYG: what you position here is exactly what appears in the exported video.</li>
+<li>Use the canvas for quick visual placement, and the properties panel when you need exact numbers.</li>
+<li>Hold <strong>Shift</strong> for aspect-ratio lock whenever you resize photos or logos so they don't distort.</li>
+<li>If an item won't move or resize, check that its track isn't locked or hidden.</li>
+<li>To nudge a selection by tiny amounts, use the keyboard nudge shortcuts — see <a href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="01-overview-and-navigation.html">Overview &amp; Navigation</a></li>
+<li><a href="07-item-properties.html">Item Properties</a></li>
+<li><a href="06-timeline-and-selection.html">Timeline &amp; Selection</a></li>
+<li><a href="15-right-click-menus.html">Right-click Menus</a></li>
+<li><a href="02-media-library.html">Media Library</a></li>
+<li><a href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#where-to-find-it">Where to find it</a></li>
+<li><a href="#what-you-can-do">What you can do</a></li>
+<li><a href="#how-to-select-items-on-the-canvas">How to select items on the canvas</a></li>
+<li><a href="#how-to-move-items">How to move items</a></li>
+<li><a href="#how-to-resize-and-scale">How to resize and scale</a></li>
+<li><a href="#how-to-rotate">How to rotate</a></li>
+<li><a href="#how-to-use-snapping-guides">How to use snapping guides</a></li>
+<li><a href="#how-to-crop-on-the-canvas">How to crop on the canvas</a></li>
+<li><a href="#how-to-add-media-by-dragging-onto-the-canvas">How to add media by dragging onto the canvas</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

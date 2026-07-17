@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Timeline &amp; Selection — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link active" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Timeline &amp; Selection</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>Use the timeline to read your edit, select clips, move them together, trim timing, split cuts, manage tracks, add transitions, place markers, and copy or paste timeline items.</p>
+</blockquote>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<p>The <strong>timeline</strong> is the horizontal strip at the bottom of the editor, under the canvas/player. It contains the timeline toolbar, time ruler, pink playhead, track lanes, clip blocks, track controls, scrollbars, markers, keyframe diamonds, transitions, waveforms, and edit overlays.</p>
+<p>Use the timeline directly with your mouse, trackpad, and keyboard. Click <strong>Keyboard shortcuts (?)</strong> in the timeline toolbar to view or change shortcuts; the dialog is titled <strong>Keyboard shortcuts</strong> and includes <strong>Search shortcuts…</strong>, <strong>Change shortcut</strong>, <strong>Save</strong>, <strong>Replace</strong>, and <strong>Reset to default</strong>.</p>
+<h2 id="what-you-can-do">What you can do<a class="headerlink" href="#what-you-can-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Read your edit using the ruler, playhead, current time, total duration, tracks, markers, waveforms, keyframes, transitions, and deletion overlays.</li>
+<li>Use every timeline toolbar control: delete, split, split-cut, clone, magnetic snapping, crop mode, pan mode, waveforms, freeze frame, markers, track size, playback feel, shortcuts, playback/loop, current time, duration, master volume, and zoom.</li>
+<li>Select one clip, add/remove individual clips from the selection, select a range, select all items, select a track’s items, select clips to the right on a track, or box-select clips.</li>
+<li>Drag one selected clip or move multiple selected clips together while preserving their spacing.</li>
+<li>Trim clip edges by dragging handles, or trim selected clips to the playhead with shortcuts.</li>
+<li>Use <strong>Split</strong> and <strong>Split+Cut</strong> at the playhead with selectable split modes.</li>
+<li>Delete, ripple delete, duplicate, copy, cut, and paste timeline items.</li>
+<li>Add and edit timeline transitions with the <strong>Transition</strong> picker.</li>
+<li>Drag clips across tracks, drop into gaps to create new tracks, reorder tracks, resize track rows, and delete tracks.</li>
+<li>Turn magnetic snapping on/off, zoom the timeline, scroll around long edits, and jump back to the playhead.</li>
+</ul>
+<h2 id="how-to-use-the-timeline-toolbar">How to use the timeline toolbar<a class="headerlink" href="#how-to-use-the-timeline-toolbar" title="Permanent link">&para;</a></h2>
+<p><img alt="The timeline toolbar: delete, Split, Split+Cut, duplicate, magnet/snap, crop, hand tool, waveform, snapshot, marker, and more." src="images/timeline-toolbar.png" /></p>
+<p>The timeline toolbar runs across the top of the timeline. Controls are grouped from left to right: clip actions, split tools, timeline toggles, view tools, playback/time, master volume, and zoom.</p>
+<table>
+<thead>
+<tr>
+<th>Toolbar control</th>
+<th>Exact label or tooltip</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Delete button</td>
+<td><strong>Delete selected clip(s) (Del / Backspace)</strong> / <strong>Select a clip to delete</strong></td>
+<td>Deletes selected editable clips. Locked tracks are protected.</td>
+</tr>
+<tr>
+<td><strong>Split</strong></td>
+<td><strong>Split at playhead — Select Both</strong>, <strong>Split at playhead — Select Right</strong>, or <strong>Split at playhead — Select Left</strong></td>
+<td>Splits selected clips at the playhead using the current split selection mode.</td>
+</tr>
+<tr>
+<td>Split mode menu</td>
+<td><strong>Choose split selection mode</strong></td>
+<td>Opens <strong>Split Selection Mode</strong> with <strong>Select Both</strong>, <strong>Select Right</strong>, and <strong>Select Left</strong>.</td>
+</tr>
+<tr>
+<td><strong>Split+Cut</strong></td>
+<td><strong>Split + Cut at playhead — Keep Left</strong> or <strong>Split + Cut at playhead — Keep Right</strong></td>
+<td>Splits selected clips at the playhead and immediately deletes one side.</td>
+</tr>
+<tr>
+<td>Split+Cut mode menu</td>
+<td><strong>Choose split + cut mode</strong></td>
+<td>Opens <strong>Split + Cut Mode</strong> with <strong>Keep Left</strong> and <strong>Keep Right</strong>.</td>
+</tr>
+<tr>
+<td>Clone button</td>
+<td><strong>Clone selected clip(s)</strong> / <strong>Select a clip to clone</strong></td>
+<td>Duplicates selected clips.</td>
+</tr>
+<tr>
+<td>Magnet button</td>
+<td><strong>Magnetic snapping: ON — click to disable</strong> / <strong>Magnetic snapping: OFF — click to enable</strong></td>
+<td>Turns snapping on or off for timeline drags and trims.</td>
+</tr>
+<tr>
+<td>Crop button</td>
+<td><strong>Crop mode: ON — drag handles will crop. Click to disable.</strong> / <strong>Crop mode: OFF — click to enable (or hold Alt while dragging)</strong></td>
+<td>Changes edge-handle behavior for visual media so handles crop instead of trimming/resizing duration.</td>
+</tr>
+<tr>
+<td>Hand button</td>
+<td><strong>Pan mode: ON — drag the player to pan when zoomed in. Click to disable. (Ctrl+Space)</strong> / <strong>Pan mode: OFF — click to enable, then drag the player to pan when zoomed in. (Ctrl+Space · Ctrl+scroll = zoom · plain scroll = pan · Ctrl+0 = reset)</strong></td>
+<td>Controls canvas/player panning when the preview is zoomed.</td>
+</tr>
+<tr>
+<td>Waveform button</td>
+<td><strong>Waveforms on video clips: ON — click to hide</strong> / <strong>Waveforms on video clips: OFF — click to show</strong></td>
+<td>Shows or hides audio waveforms on video clips globally.</td>
+</tr>
+<tr>
+<td>Freeze-frame button</td>
+<td><strong>Freeze frame — insert still image at playhead (Shift+F)</strong></td>
+<td>Inserts a still image from the current frame at the playhead.</td>
+</tr>
+<tr>
+<td>Marker button</td>
+<td><strong>Add marker at playhead (Shift+M)</strong></td>
+<td>Adds a marker on the ruler at the playhead.</td>
+</tr>
+<tr>
+<td>Track size button</td>
+<td><strong>Track size: [size]</strong> and <strong>Click to change</strong></td>
+<td>Opens <strong>Track Size</strong> with <strong>Small</strong>, <strong>Normal</strong>, <strong>Large</strong>, and <strong>X-Large</strong>.</td>
+</tr>
+<tr>
+<td>Playback feel button</td>
+<td><strong>Playback feel — arrow-key acceleration</strong></td>
+<td>Opens <strong>Playback feel</strong> controls for held-arrow scrubbing.</td>
+</tr>
+<tr>
+<td>Shortcuts button</td>
+<td><strong>Keyboard shortcuts (?)</strong></td>
+<td>Opens the keyboard shortcut dialog.</td>
+</tr>
+<tr>
+<td>Loop button</td>
+<td><strong>Loop playback (on)</strong> / <strong>Loop playback (off)</strong></td>
+<td>Toggles looping playback.</td>
+</tr>
+<tr>
+<td>Master volume button</td>
+<td><strong>Mute</strong> / <strong>Unmute</strong></td>
+<td>Mutes or unmutes all timeline audio without changing individual clip volumes.</td>
+</tr>
+<tr>
+<td>Master volume slider</td>
+<td>Percentage display, such as <strong>100%</strong></td>
+<td>Sets overall timeline playback volume from 0% to 100%.</td>
+</tr>
+<tr>
+<td>Current-time field</td>
+<td>Current timecode, such as <code>00:12.345</code></td>
+<td>Click to type a precise playhead time. Press Enter to apply or Escape to cancel.</td>
+</tr>
+<tr>
+<td>Duration display</td>
+<td>Full project duration beside the <code>|</code> divider</td>
+<td>Shows the total timeline duration.</td>
+</tr>
+<tr>
+<td>Jump-to-playhead button</td>
+<td><strong>Jump to playhead</strong></td>
+<td>Appears after you manually scroll away from the playhead; re-centers the playhead and resumes follow.</td>
+</tr>
+<tr>
+<td>Zoom controls</td>
+<td>Zoom-out icon, zoom slider, zoom-in icon, and fit icon</td>
+<td>Changes timeline scale. The matching shortcut labels are <strong>Zoom timeline out</strong>, <strong>Zoom timeline in</strong>, and <strong>Zoom to fit all content</strong>.</td>
+</tr>
+</tbody>
+</table>
+<p>The toolbar does not show separate undo/redo buttons. Use the keyboard shortcuts <strong>Undo</strong> and <strong>Redo</strong> from <strong>Keyboard shortcuts</strong>.</p>
+<h2 id="how-to-read-the-timeline">How to read the timeline<a class="headerlink" href="#how-to-read-the-timeline" title="Permanent link">&para;</a></h2>
+<p><img alt="The timeline: the time ruler with the playhead on top, a caption track, and a video track with clip thumbnails below." src="images/timeline.png" /></p>
+<ol>
+<li>
+<p>Look at the ruler at the top of the timeline.
+   - The tick labels show timeline time at the current zoom level.
+   - Click the ruler to seek the playhead to that time.
+   - Drag the ruler left or right to scroll through the edit.
+   - Double-click the ruler to add a marker at that time.</p>
+</li>
+<li>
+<p>Use the pink playhead to see the current frame.
+   - Drag the playhead line or knob to scrub.
+   - Click the current timecode in the toolbar to type a precise time, then press Enter. Press Escape to cancel.</p>
+</li>
+<li>
+<p>Read the duration display beside the current time.
+   - It shows current time, a divider, and the full project duration.</p>
+</li>
+<li>
+<p>Read tracks from top to bottom.
+   - Higher tracks visually sit above lower tracks in the final video.
+   - Track rows can show clips, audio waveforms, disabled/muted clip badges, transition handles, keyframe diamonds, and overlays.</p>
+</li>
+<li>
+<p>Use markers and overlays.
+   - <strong>Add marker at playhead (Shift+M)</strong> adds a marker on the ruler.
+   - Double-click the ruler to add a marker at that time.
+   - Click a marker to seek to it.
+   - Right-click a marker to open <strong>Edit marker label (leave blank to delete):</strong>.
+   - Keyframe diamonds show <strong>Keyframe at frame [number] - Click to seek</strong>.
+   - Deleted transcript ranges can appear as <strong>Applied deletion (removed from editor)</strong> or <strong>Pending deletion (not yet applied)</strong>.</p>
+</li>
+</ol>
+<h2 id="how-to-zoom-and-scroll">How to zoom and scroll<a class="headerlink" href="#how-to-zoom-and-scroll" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>Use the zoom controls at the right side of the toolbar.
+   - <strong>Zoom timeline out</strong> reduces detail so more time fits on screen.
+   - <strong>Zoom timeline in</strong> increases detail so short edits are easier to place.
+   - <strong>Zoom to fit all content</strong> fits the whole edit into view.
+   - Drag the zoom slider for continuous zoom changes.</p>
+</li>
+<li>
+<p>Use shortcuts from <strong>Keyboard shortcuts</strong>.</p>
+</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Action label</th>
+<th style="text-align: right;">Default shortcut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Zoom timeline in</strong></td>
+<td style="text-align: right;">Mod+=</td>
+</tr>
+<tr>
+<td><strong>Zoom timeline out</strong></td>
+<td style="text-align: right;">Mod+-</td>
+</tr>
+<tr>
+<td><strong>Zoom to fit all content</strong></td>
+<td style="text-align: right;">Shift+Z</td>
+</tr>
+</tbody>
+</table>
+<ol start="3">
+<li>
+<p>Use the mouse or trackpad on the timeline.
+   - Plain scroll moves through tracks vertically. If there is no vertical overflow, it scrolls through time.
+   - Shift+scroll moves horizontally through time.
+   - Ctrl/Command+scroll zooms around the cursor position.
+   - Drag the top or bottom horizontal scrollbar to move through time.
+   - Drag the left or right vertical scrollbar to move through tall track stacks.</p>
+</li>
+<li>
+<p>If you manually scroll away during playback, click <strong>Jump to playhead</strong> to re-center and resume playhead follow.</p>
+</li>
+</ol>
+<h2 id="how-to-use-playback-and-time-controls">How to use playback and time controls<a class="headerlink" href="#how-to-use-playback-and-time-controls" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Use the center playback buttons to play, pause, loop, and move around the timeline.</li>
+<li>Click the loop button to switch between <strong>Loop playback (on)</strong> and <strong>Loop playback (off)</strong>.</li>
+<li>Click the current timecode to edit it.
+   - Use <code>MM:SS.mmm</code> for shorter edits.
+   - Use <code>H:MM:SS.mmm</code> for longer edits.
+   - Press Enter to seek, or Escape to cancel.</li>
+<li>Read the duration to the right of the divider to see the full project length.</li>
+<li>Use the master volume control on the right.
+   - Click <strong>Mute</strong> to mute all playback.
+   - Click <strong>Unmute</strong> to restore playback.
+   - Drag the slider to set the master volume percentage.</li>
+</ol>
+<p>Playback shortcuts:</p>
+<table>
+<thead>
+<tr>
+<th>Action label</th>
+<th style="text-align: right;">Default shortcut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Play / Pause</strong></td>
+<td style="text-align: right;">Space</td>
+</tr>
+<tr>
+<td><strong>Play backward (J)</strong></td>
+<td style="text-align: right;">J</td>
+</tr>
+<tr>
+<td><strong>Pause (K)</strong></td>
+<td style="text-align: right;">K</td>
+</tr>
+<tr>
+<td><strong>Play forward (L)</strong></td>
+<td style="text-align: right;">L</td>
+</tr>
+<tr>
+<td><strong>Step 1 frame back</strong></td>
+<td style="text-align: right;">ArrowLeft</td>
+</tr>
+<tr>
+<td><strong>Step 1 frame forward</strong></td>
+<td style="text-align: right;">ArrowRight</td>
+</tr>
+<tr>
+<td><strong>Step 10 frames back</strong></td>
+<td style="text-align: right;">Shift+ArrowLeft</td>
+</tr>
+<tr>
+<td><strong>Step 10 frames forward</strong></td>
+<td style="text-align: right;">Shift+ArrowRight</td>
+</tr>
+<tr>
+<td><strong>Jump to start</strong></td>
+<td style="text-align: right;">Home</td>
+</tr>
+<tr>
+<td><strong>Jump to end</strong></td>
+<td style="text-align: right;">End</td>
+</tr>
+<tr>
+<td><strong>Toggle loop playback</strong></td>
+<td style="text-align: right;">Shift+L</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-select-one-item">How to select one item<a class="headerlink" href="#how-to-select-one-item" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Click a clip in the timeline.</li>
+<li>The selected clip receives a highlighted outline and trim handles appear when the item can be resized.</li>
+<li>The properties panel updates for that clip.</li>
+<li>Click empty timeline space to clear the selection, or press Escape for <strong>Deselect all</strong>.</li>
+</ol>
+<p>If the clip is on a locked or hidden track, it cannot be selected or moved until the track is unlocked or shown.</p>
+<h2 id="how-to-select-multiple-items">How to select multiple items<a class="headerlink" href="#how-to-select-multiple-items" title="Permanent link">&para;</a></h2>
+<p><img alt="Several caption clips selected together on the timeline." src="images/multi-select-timeline.png" /></p>
+<ol>
+<li>Ctrl-click or Command-click clips to add or remove individual clips from the selection.</li>
+<li>Shift-click another clip to select the range between the last selected clip and the clicked clip.</li>
+<li>Ctrl+Shift-click or Command+Shift-click to add a range to the current selection.</li>
+<li>Drag a box/marquee over timeline clips to select multiple clips at once.</li>
+<li>Use <strong>Select all timeline items</strong> to select every selectable timeline item.</li>
+<li>Shift+Alt/Option-click in a track to select items on that track from that time to the right.</li>
+</ol>
+<p>Useful selection shortcuts:</p>
+<table>
+<thead>
+<tr>
+<th>Action label</th>
+<th style="text-align: right;">Default shortcut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Select all timeline items</strong></td>
+<td style="text-align: right;">Mod+A</td>
+</tr>
+<tr>
+<td><strong>Deselect all</strong></td>
+<td style="text-align: right;">Escape</td>
+</tr>
+<tr>
+<td><strong>Select previous item on track</strong></td>
+<td style="text-align: right;">Alt+ArrowLeft</td>
+</tr>
+<tr>
+<td><strong>Select next item on track</strong></td>
+<td style="text-align: right;">Alt+ArrowRight</td>
+</tr>
+</tbody>
+</table>
+<p>You can also use a track’s select button. Its tooltip changes between <strong>Select all 1 item</strong> or <strong>Select all N items</strong> and <strong>Deselect all items</strong>, and notes <strong>(Ctrl+click to add)</strong>.</p>
+<h2 id="how-to-move-items">How to move items<a class="headerlink" href="#how-to-move-items" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select one clip, then drag it left or right to change its time.</li>
+<li>Drag it up or down to move it to another compatible track.</li>
+<li>If the target time is open, the clip lands there.</li>
+<li>If the target track would overlap another clip, the editor creates or uses a nearby compatible track instead of overwriting existing clips.</li>
+<li>If a green drop preview appears in a valid gap, release to place the clip there. If the preview is red, that lane cannot accept the clip at that time.</li>
+</ol>
+<p>To move multiple clips together:</p>
+<ol>
+<li>Select all clips you want to move.</li>
+<li>Drag any selected clip.</li>
+<li>The whole selection moves together, keeping the spacing between selected clips.</li>
+<li>If the group overlaps existing clips on the destination track, the moved group is kept together and placed on a new compatible track.</li>
+</ol>
+<p>To duplicate by dragging, hold Alt/Option while dragging a selected clip or multi-selection. The original stays in place and the dragged copy lands where you release.</p>
+<h2 id="how-to-use-drag-previews-gaps-and-snapping">How to use drag previews, gaps, and snapping<a class="headerlink" href="#how-to-use-drag-previews-gaps-and-snapping" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Watch the dashed drop preview while dragging a clip.
+   - A green dashed rectangle means the clip can land there.
+   - A red/orange dashed rectangle means the target track rejects that item type or the drop would overlap existing content.</li>
+<li>If the editor finds a nearby open gap that fits the clip, the green preview may snap to that gap instead of staying exactly under the cursor.</li>
+<li>If no usable gap exists on the target track, releasing the clip may place it on a new compatible track instead of overwriting existing clips.</li>
+<li>When dragging a clip into the space above the first track, between tracks, or below the last track, a green horizontal insertion line means releasing there will create a new track at that boundary.</li>
+<li>When a dragged edge aligns exactly with another clip edge, a vertical snap guide can appear to show the aligned edge.</li>
+</ol>
+<p>Magnetic snapping controls whether clip edges snap to nearby clip edges and valid gaps:</p>
+<ol>
+<li>Click the magnet button in the timeline toolbar.</li>
+<li>The tooltip shows either <strong>Magnetic snapping: ON — click to disable</strong> or <strong>Magnetic snapping: OFF — click to enable</strong>.</li>
+<li>Use <strong>Toggle magnetic snapping</strong> from <strong>Keyboard shortcuts</strong> when you prefer the keyboard.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Action label</th>
+<th style="text-align: right;">Default shortcut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Toggle magnetic snapping</strong></td>
+<td style="text-align: right;">S</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-trim-and-resize-clips">How to trim and resize clips<a class="headerlink" href="#how-to-trim-and-resize-clips" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select a clip once.</li>
+<li>After it is selected, drag its left or right edge handle.</li>
+<li>Drag the left edge to change the start.</li>
+<li>Drag the right edge to change the end.</li>
+<li>Release to commit the trim.</li>
+</ol>
+<p>For video and audio clips, trimming changes which part of the source media is used. For visual/timeline-only items, resizing changes how long the item stays on the timeline. The trim is clamped so you cannot trim through neighboring clips on the same track.</p>
+<p>Keyboard trim shortcuts:</p>
+<table>
+<thead>
+<tr>
+<th>Action label</th>
+<th style="text-align: right;">Default shortcut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Trim start of selected item(s) to playhead</strong></td>
+<td style="text-align: right;">[</td>
+</tr>
+<tr>
+<td><strong>Trim end of selected item(s) to playhead</strong></td>
+<td style="text-align: right;">]</td>
+</tr>
+<tr>
+<td><strong>Nudge selected items left by 1 frame</strong></td>
+<td style="text-align: right;">,</td>
+</tr>
+<tr>
+<td><strong>Nudge selected items right by 1 frame</strong></td>
+<td style="text-align: right;">.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-split-split-cut-and-merge">How to split, split-cut, and merge<a class="headerlink" href="#how-to-split-split-cut-and-merge" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select the clip or clips you want to cut.</li>
+<li>Move the playhead inside the selected clip range.</li>
+<li>Click <strong>Split</strong> to cut at the playhead.</li>
+<li>Use <strong>Choose split selection mode</strong> to open <strong>Split Selection Mode</strong>.</li>
+<li>Pick one of the split selection results:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Select Both</strong></td>
+<td>Keep both new segments selected.</td>
+</tr>
+<tr>
+<td><strong>Select Right</strong></td>
+<td>Select only the new right segment.</td>
+</tr>
+<tr>
+<td><strong>Select Left</strong></td>
+<td>Keep only the left segment selected.</td>
+</tr>
+</tbody>
+</table>
+<ol start="6">
+<li>Read the <strong>Split</strong> tooltip for the current mode. It includes <strong>Hold Alt to split clicked track only</strong>; while Alt is held, it changes to <strong>Alt held: split clicked track only (skip linked tracks)</strong>.</li>
+<li>Click <strong>Split+Cut</strong> when you want to split and immediately delete one side.</li>
+<li>Use <strong>Choose split + cut mode</strong> to open <strong>Split + Cut Mode</strong>.</li>
+<li>Pick <strong>Keep Left</strong> or <strong>Keep Right</strong>.</li>
+</ol>
+<p>Related shortcut labels:</p>
+<table>
+<thead>
+<tr>
+<th>Action label</th>
+<th style="text-align: right;">Default shortcut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Split at playhead (current mode)</strong></td>
+<td style="text-align: right;">Q</td>
+</tr>
+<tr>
+<td><strong>Split — keep Left segment selected</strong></td>
+<td style="text-align: right;">A</td>
+</tr>
+<tr>
+<td><strong>Split — keep Right segment selected</strong></td>
+<td style="text-align: right;">R</td>
+</tr>
+<tr>
+<td><strong>Split — keep Both segments selected</strong></td>
+<td style="text-align: right;">B</td>
+</tr>
+<tr>
+<td><strong>Split + cut at playhead (current cut mode)</strong></td>
+<td style="text-align: right;">W</td>
+</tr>
+<tr>
+<td><strong>Split + keep LEFT — delete right segment after split</strong></td>
+<td style="text-align: right;">Shift+A</td>
+</tr>
+<tr>
+<td><strong>Split + keep RIGHT — delete left segment after split</strong></td>
+<td style="text-align: right;">Shift+R</td>
+</tr>
+<tr>
+<td><strong>Blade — split ALL items at playhead</strong></td>
+<td style="text-align: right;">Shift+B</td>
+</tr>
+<tr>
+<td><strong>Merge adjacent split clips (rejoin)</strong></td>
+<td style="text-align: right;">G</td>
+</tr>
+</tbody>
+</table>
+<p>If splitting fails, the editor explains whether the playhead is outside the clip or exactly on a clip edge. Move the playhead at least one frame inside the clip and try again.</p>
+<h2 id="how-to-add-and-edit-transitions">How to add and edit transitions<a class="headerlink" href="#how-to-add-and-edit-transitions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Put two compatible visual clips next to each other on the same track.</li>
+<li>Click the transition handle between them to open the <strong>Transition</strong> picker.</li>
+<li>Choose a transition preset.</li>
+<li>Adjust <strong>Duration</strong> with the slider or one of the duration chips.</li>
+<li>Click <strong>Apply</strong> to save the change.</li>
+<li>Click <strong>Remove</strong> to remove the current transition, or choose <strong>None</strong> to remove it immediately.</li>
+<li>Click <strong>Close</strong> or press Escape to close the picker.</li>
+</ol>
+<p>Transition options:</p>
+<table>
+<thead>
+<tr>
+<th>Option shown in the picker</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>None</strong></td>
+<td>Removes the transition.</td>
+</tr>
+<tr>
+<td><strong>Fade</strong></td>
+<td>Cross-fades between adjacent clips.</td>
+</tr>
+<tr>
+<td><strong>Slide Up</strong></td>
+<td>Slide transition with upward motion.</td>
+</tr>
+<tr>
+<td><strong>Slide Down</strong></td>
+<td>Slide transition with downward motion.</td>
+</tr>
+<tr>
+<td><strong>Slide Left</strong></td>
+<td>Slide transition with leftward motion.</td>
+</tr>
+<tr>
+<td><strong>Slide Right</strong></td>
+<td>Slide transition with rightward motion.</td>
+</tr>
+<tr>
+<td><strong>Wipe Up</strong></td>
+<td>Wipe transition with upward direction.</td>
+</tr>
+<tr>
+<td><strong>Wipe Down</strong></td>
+<td>Wipe transition with downward direction.</td>
+</tr>
+<tr>
+<td><strong>Wipe Left</strong></td>
+<td>Wipe transition with leftward direction.</td>
+</tr>
+<tr>
+<td><strong>Wipe Right</strong></td>
+<td>Wipe transition with rightward direction.</td>
+</tr>
+<tr>
+<td><strong>Flip</strong></td>
+<td>Flip-style transition.</td>
+</tr>
+<tr>
+<td><strong>Clock Wipe</strong></td>
+<td>Circular clock-like wipe.</td>
+</tr>
+<tr>
+<td><strong>Star</strong></td>
+<td>Star-shaped reveal.</td>
+</tr>
+<tr>
+<td><strong>Circle</strong></td>
+<td>Circular reveal.</td>
+</tr>
+<tr>
+<td><strong>Rectangle</strong></td>
+<td>Rectangular reveal.</td>
+</tr>
+</tbody>
+</table>
+<p>Duration controls:</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th style="text-align: right;">Range or value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Duration</strong> slider</td>
+<td style="text-align: right;">0.2s to 2.0s</td>
+</tr>
+<tr>
+<td>Duration chip</td>
+<td style="text-align: right;">0.3s</td>
+</tr>
+<tr>
+<td>Duration chip</td>
+<td style="text-align: right;">0.5s</td>
+</tr>
+<tr>
+<td>Duration chip</td>
+<td style="text-align: right;">1.0s</td>
+</tr>
+<tr>
+<td>Duration chip</td>
+<td style="text-align: right;">1.5s</td>
+</tr>
+</tbody>
+</table>
+<p>Transitions only work where the timeline has a valid transition handle between adjacent compatible clips.</p>
+<h2 id="how-to-delete-and-ripple-delete">How to delete and ripple delete<a class="headerlink" href="#how-to-delete-and-ripple-delete" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select one or more clips.</li>
+<li>Click the delete button; its tooltip is <strong>Delete selected clip(s) (Del / Backspace)</strong>.</li>
+<li>Or press the shortcut for <strong>Delete selected items</strong>.</li>
+</ol>
+<p>Use <strong>Ripple delete (close the gap)</strong> when you want to remove selected clips and pull later clips on the same track left to close the empty space.</p>
+<table>
+<thead>
+<tr>
+<th>Action label</th>
+<th style="text-align: right;">Default shortcut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Delete selected items</strong></td>
+<td style="text-align: right;">Delete / Backspace</td>
+</tr>
+<tr>
+<td><strong>Ripple delete (close the gap)</strong></td>
+<td style="text-align: right;">Shift+Delete / Shift+Backspace</td>
+</tr>
+</tbody>
+</table>
+<p>Locked tracks are skipped, so locked items are protected from delete and ripple delete.</p>
+<h2 id="how-to-duplicate-copy-cut-and-paste">How to duplicate, copy, cut, and paste<a class="headerlink" href="#how-to-duplicate-copy-cut-and-paste" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select the timeline items you want.</li>
+<li>Use these shortcuts from <strong>Keyboard shortcuts</strong>:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Action label</th>
+<th style="text-align: right;">Default shortcut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Duplicate selected items</strong></td>
+<td style="text-align: right;">Mod+D</td>
+</tr>
+<tr>
+<td><strong>Copy selected items</strong></td>
+<td style="text-align: right;">Mod+C</td>
+</tr>
+<tr>
+<td><strong>Cut selected items</strong></td>
+<td style="text-align: right;">Mod+X</td>
+</tr>
+<tr>
+<td><strong>Paste (items or clipboard image/video)</strong></td>
+<td style="text-align: right;">Mod+V</td>
+</tr>
+</tbody>
+</table>
+<ol start="3">
+<li>Or click the toolbar clone button. Its tooltip is <strong>Clone selected clip(s)</strong> when clips are selected, and <strong>Select a clip to clone</strong> when nothing is selected.</li>
+<li>Pasted timeline items keep their relative timing from the copied items and are selected after paste.</li>
+<li>If the original track can accept the pasted items without conflict, they are placed there. Otherwise, the editor creates or uses a compatible track.</li>
+</ol>
+<p>You can also paste image/video media from your system clipboard into the editor, unless your cursor is inside a text field.</p>
+<h2 id="how-to-use-track-controls">How to use track controls<a class="headerlink" href="#how-to-use-track-controls" title="Permanent link">&para;</a></h2>
+<p>Track controls sit to the left of each track lane. They affect the entire lane, not just one clip.</p>
+<table>
+<thead>
+<tr>
+<th>Track control</th>
+<th>Exact label or tooltip</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Color dot</td>
+<td><strong>Pick track color</strong> / <strong>Track color</strong></td>
+<td>Opens color choices for the track. Color options include red, orange, yellow, green, cyan, blue, purple, and pink.</td>
+</tr>
+<tr>
+<td>Broken media warning</td>
+<td><strong>Media unavailable in this track</strong></td>
+<td>Shows when a track contains media that cannot be loaded; use the popover to retry or relink media.</td>
+</tr>
+<tr>
+<td>Visibility button</td>
+<td><strong>Hide track</strong> / <strong>Show track</strong></td>
+<td>Hides or shows all items on the track. Hidden tracks are not directly editable.</td>
+</tr>
+<tr>
+<td>Mute button</td>
+<td><strong>Mute track</strong> / <strong>Unmute track</strong></td>
+<td>Mutes or unmutes audio-capable tracks.</td>
+</tr>
+<tr>
+<td>Solo button</td>
+<td><strong>Solo track (mute others)</strong> / <strong>Unsolo track</strong></td>
+<td>Temporarily focuses one audio-capable track by muting the others. The inline solo button appears when solo is active.</td>
+</tr>
+<tr>
+<td>Lock button</td>
+<td><strong>Lock track (prevent edits)</strong> / <strong>Unlock track</strong></td>
+<td>Prevents selection, movement, trim, resize, and delete edits on the track.</td>
+</tr>
+<tr>
+<td>Select button</td>
+<td><strong>Select all 1 item</strong> / <strong>Select all N items</strong> / <strong>Deselect all items</strong> and <strong>(Ctrl+click to add)</strong></td>
+<td>Selects all items on the track, deselects them, or adds/removes them from the current selection.</td>
+</tr>
+<tr>
+<td>Three-dot menu</td>
+<td>Menu items listed below</td>
+<td>Opens track management commands.</td>
+</tr>
+<tr>
+<td>Reorder grip</td>
+<td><strong>Drag to reorder track</strong></td>
+<td>Drag vertically to move the track to a new position.</td>
+</tr>
+<tr>
+<td>Row resize line</td>
+<td><strong>Drag to resize the track above · double-click to reset</strong> / <strong>Drag to resize this track · double-click to reset</strong></td>
+<td>Changes individual track-row height. Double-click resets the row height.</td>
+</tr>
+<tr>
+<td>Panel resize handle</td>
+<td><strong>Resize track controls panel</strong> / <strong>Drag to resize · double-click to auto-fit</strong></td>
+<td>Changes the width of the left track-controls panel. Double-click auto-fits it.</td>
+</tr>
+<tr>
+<td>Panel collapse button</td>
+<td><strong>Collapse track controls</strong> / <strong>Expand track controls</strong></td>
+<td>Collapses the track controls to a thin rail, or expands them again.</td>
+</tr>
+</tbody>
+</table>
+<p>The three-dot track menu can include:</p>
+<table>
+<thead>
+<tr>
+<th>Menu item</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Rename track</strong></td>
+<td>Turns the track name into an editable field labeled <strong>Rename track</strong>. Press Enter to commit or Escape to cancel.</td>
+</tr>
+<tr>
+<td><strong>Solo track</strong> / <strong>Unsolo track</strong></td>
+<td>Toggles solo for audio-capable tracks.</td>
+</tr>
+<tr>
+<td><strong>Select all items (N)</strong> / <strong>Deselect all items</strong></td>
+<td>Selects or deselects that track’s items.</td>
+</tr>
+<tr>
+<td><strong>Track role: Default</strong></td>
+<td>Sets the audio role to default.</td>
+</tr>
+<tr>
+<td><strong>Track role: 🎤 Voice</strong></td>
+<td>Marks the track as voice audio.</td>
+</tr>
+<tr>
+<td><strong>Track role: 🎵 Music</strong></td>
+<td>Marks the track as music audio.</td>
+</tr>
+<tr>
+<td><strong>Move track up</strong></td>
+<td>Moves the track one position up when possible.</td>
+</tr>
+<tr>
+<td><strong>Move track down</strong></td>
+<td>Moves the track one position down when possible.</td>
+</tr>
+<tr>
+<td><strong>Link with...</strong></td>
+<td>Opens available tracks to link with this track.</td>
+</tr>
+<tr>
+<td><strong>No other tracks available</strong></td>
+<td>Appears when there is nothing else to link.</td>
+</tr>
+<tr>
+<td><strong>Unlink track</strong></td>
+<td>Removes this track from its link.</td>
+</tr>
+<tr>
+<td><strong>Unlink all</strong></td>
+<td>Removes all tracks in the linked group from that group.</td>
+</tr>
+<tr>
+<td><strong>Select for transcription</strong></td>
+<td>Marks the track as the source for transcription.</td>
+</tr>
+<tr>
+<td><strong>Show audio waveform</strong> / <strong>Hide audio waveform</strong></td>
+<td>Shows or hides the waveform for that track when waveforms are globally enabled.</td>
+</tr>
+<tr>
+<td><strong>Delete track</strong></td>
+<td>Deletes the track and its items.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-reorder-and-resize-tracks">How to reorder and resize tracks<a class="headerlink" href="#how-to-reorder-and-resize-tracks" title="Permanent link">&para;</a></h2>
+<ol>
+<li>To reorder by drag, grab <strong>Drag to reorder track</strong> on the right edge of the track controls.</li>
+<li>Drag the row up or down.</li>
+<li>Watch the dashed highlight on the source lane and the bright horizontal line at the target boundary.</li>
+<li>Release when the line is where you want the track to land.</li>
+</ol>
+<p>You can also use <strong>Move track up</strong> and <strong>Move track down</strong> in the three-dot menu.</p>
+<p>To resize track rows:</p>
+<ol>
+<li>Hover near a track boundary.</li>
+<li>Drag <strong>Drag to resize the track above · double-click to reset</strong> to resize the row above that boundary.</li>
+<li>On the last row, drag <strong>Drag to resize this track · double-click to reset</strong> to resize that row.</li>
+<li>Double-click the resize line to reset that track height.</li>
+</ol>
+<p>To resize or collapse the track-controls panel:</p>
+<ol>
+<li>Drag <strong>Resize track controls panel</strong> left or right.</li>
+<li>Double-click <strong>Drag to resize · double-click to auto-fit</strong> to auto-fit the panel width.</li>
+<li>Click <strong>Collapse track controls</strong> to hide most controls.</li>
+<li>Click <strong>Expand track controls</strong> to show the controls again.</li>
+</ol>
+<p>To add a new track, drag a clip between tracks, above the first track, or below the last track until the green horizontal line appears, then release. The editor creates a new compatible track at that position and moves the clip into it.</p>
+<h2 id="how-to-use-markers-keyframes-and-deleted-range-overlays">How to use markers, keyframes, and deleted-range overlays<a class="headerlink" href="#how-to-use-markers-keyframes-and-deleted-range-overlays" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Add markers with <strong>Add marker at playhead (Shift+M)</strong> or by double-clicking the ruler.</li>
+<li>Click a marker to seek to it.</li>
+<li>Right-click a marker to edit its label in <strong>Edit marker label (leave blank to delete):</strong>.</li>
+<li>Leave the marker label blank and confirm to delete that marker.</li>
+<li>Click a keyframe diamond labeled <strong>Keyframe at frame [number] - Click to seek</strong> to seek to that keyframe, select the item, and open its properties.</li>
+<li>Read deletion overlays when transcript edits are being previewed:
+   - <strong>Applied deletion (removed from editor)</strong> is a grey overlay for a range already removed from the edit.
+   - <strong>Pending deletion (not yet applied)</strong> is a red striped overlay for a range marked for deletion but not yet applied.</li>
+</ol>
+<h2 id="how-to-change-track-display-and-playback-feel">How to change track display and playback feel<a class="headerlink" href="#how-to-change-track-display-and-playback-feel" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Click <strong>Track size: [size]</strong> to open <strong>Track Size</strong>.</li>
+<li>Choose <strong>Small</strong>, <strong>Normal</strong>, <strong>Large</strong>, or <strong>X-Large</strong>.</li>
+<li>Click <strong>Waveforms on video clips: ON — click to hide</strong> or <strong>Waveforms on video clips: OFF — click to show</strong> to show or hide video clip waveforms globally.</li>
+<li>For an individual track, use <strong>Show audio waveform</strong> or <strong>Hide audio waveform</strong> in the track menu.</li>
+<li>Click <strong>Playback feel</strong> to tune arrow-key scrubbing.</li>
+<li>In <strong>Playback feel</strong>, use <strong>Ramp speed</strong>, <strong>Max step (Arrow)</strong>, and <strong>Max step (Shift+Arrow)</strong>.</li>
+<li>The helper text says <strong>Tap = 1 fr · hold = accelerate</strong>.</li>
+<li>Click <strong>Reset</strong> to restore the default playback feel.</li>
+</ol>
+<h2 id="how-to-use-keyboard-shortcuts">How to use keyboard shortcuts<a class="headerlink" href="#how-to-use-keyboard-shortcuts" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Click <strong>Keyboard shortcuts (?)</strong> or press <strong>?</strong>.</li>
+<li>The <strong>Keyboard shortcuts</strong> dialog opens.</li>
+<li>Use <strong>Search shortcuts…</strong> to filter actions.</li>
+<li>Click <strong>Change shortcut</strong> beside an action.</li>
+<li>When it says <strong>Press shortcut…</strong>, press the new key combination.</li>
+<li>Click <strong>Save</strong> to keep it.</li>
+<li>If the shortcut conflicts, use <strong>Replace</strong> to confirm.</li>
+<li>Click <strong>Reset to default</strong> to restore a single action’s default.</li>
+</ol>
+<p>Complete timeline shortcut reference:</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Action label</th>
+<th style="text-align: right;">Default shortcut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>History &amp; Selection</td>
+<td><strong>Undo</strong></td>
+<td style="text-align: right;">Mod+Z</td>
+</tr>
+<tr>
+<td>History &amp; Selection</td>
+<td><strong>Redo</strong></td>
+<td style="text-align: right;">Mod+Shift+Z</td>
+</tr>
+<tr>
+<td>History &amp; Selection</td>
+<td><strong>Select all timeline items</strong></td>
+<td style="text-align: right;">Mod+A</td>
+</tr>
+<tr>
+<td>History &amp; Selection</td>
+<td><strong>Deselect all</strong></td>
+<td style="text-align: right;">Escape</td>
+</tr>
+<tr>
+<td>History &amp; Selection</td>
+<td><strong>Select previous item on track</strong></td>
+<td style="text-align: right;">Alt+ArrowLeft</td>
+</tr>
+<tr>
+<td>History &amp; Selection</td>
+<td><strong>Select next item on track</strong></td>
+<td style="text-align: right;">Alt+ArrowRight</td>
+</tr>
+<tr>
+<td>History &amp; Selection</td>
+<td><strong>Duplicate selected items</strong></td>
+<td style="text-align: right;">Mod+D</td>
+</tr>
+<tr>
+<td>History &amp; Selection</td>
+<td><strong>Copy selected items</strong></td>
+<td style="text-align: right;">Mod+C</td>
+</tr>
+<tr>
+<td>History &amp; Selection</td>
+<td><strong>Cut selected items</strong></td>
+<td style="text-align: right;">Mod+X</td>
+</tr>
+<tr>
+<td>History &amp; Selection</td>
+<td><strong>Paste (items or clipboard image/video)</strong></td>
+<td style="text-align: right;">Mod+V</td>
+</tr>
+<tr>
+<td>History &amp; Selection</td>
+<td><strong>Delete selected items</strong></td>
+<td style="text-align: right;">Delete</td>
+</tr>
+<tr>
+<td>History &amp; Selection</td>
+<td><strong>Ripple delete (close the gap)</strong></td>
+<td style="text-align: right;">Shift+Delete</td>
+</tr>
+<tr>
+<td>Playback</td>
+<td><strong>Play / Pause</strong></td>
+<td style="text-align: right;">Space</td>
+</tr>
+<tr>
+<td>Playback</td>
+<td><strong>Play backward (J)</strong></td>
+<td style="text-align: right;">J</td>
+</tr>
+<tr>
+<td>Playback</td>
+<td><strong>Pause (K)</strong></td>
+<td style="text-align: right;">K</td>
+</tr>
+<tr>
+<td>Playback</td>
+<td><strong>Play forward (L)</strong></td>
+<td style="text-align: right;">L</td>
+</tr>
+<tr>
+<td>Playback</td>
+<td><strong>Step 1 frame back</strong></td>
+<td style="text-align: right;">ArrowLeft</td>
+</tr>
+<tr>
+<td>Playback</td>
+<td><strong>Step 1 frame forward</strong></td>
+<td style="text-align: right;">ArrowRight</td>
+</tr>
+<tr>
+<td>Playback</td>
+<td><strong>Step 10 frames back</strong></td>
+<td style="text-align: right;">Shift+ArrowLeft</td>
+</tr>
+<tr>
+<td>Playback</td>
+<td><strong>Step 10 frames forward</strong></td>
+<td style="text-align: right;">Shift+ArrowRight</td>
+</tr>
+<tr>
+<td>Playback</td>
+<td><strong>Jump to start</strong></td>
+<td style="text-align: right;">Home</td>
+</tr>
+<tr>
+<td>Playback</td>
+<td><strong>Jump to end</strong></td>
+<td style="text-align: right;">End</td>
+</tr>
+<tr>
+<td>Playback</td>
+<td><strong>Toggle loop playback</strong></td>
+<td style="text-align: right;">Shift+L</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Split at playhead (current mode)</strong></td>
+<td style="text-align: right;">Q</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Split — keep Left segment selected</strong></td>
+<td style="text-align: right;">A</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Split — keep Right segment selected</strong></td>
+<td style="text-align: right;">R</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Split — keep Both segments selected</strong></td>
+<td style="text-align: right;">B</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Merge adjacent split clips (rejoin)</strong></td>
+<td style="text-align: right;">G</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Split + cut at playhead (current cut mode)</strong></td>
+<td style="text-align: right;">W</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Split + keep LEFT — delete right segment after split</strong></td>
+<td style="text-align: right;">Shift+A</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Split + keep RIGHT — delete left segment after split</strong></td>
+<td style="text-align: right;">Shift+R</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Blade — split ALL items at playhead</strong></td>
+<td style="text-align: right;">Shift+B</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Trim start of selected item(s) to playhead</strong></td>
+<td style="text-align: right;">[</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Trim end of selected item(s) to playhead</strong></td>
+<td style="text-align: right;">]</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Nudge selected items left by 1 frame</strong></td>
+<td style="text-align: right;">,</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Nudge selected items right by 1 frame</strong></td>
+<td style="text-align: right;">.</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Toggle magnetic snapping</strong></td>
+<td style="text-align: right;">S</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Mute / unmute track of selected item</strong></td>
+<td style="text-align: right;">M</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Add marker at playhead</strong></td>
+<td style="text-align: right;">Shift+M</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td><strong>Freeze frame — insert still image at playhead</strong></td>
+<td style="text-align: right;">Shift+F</td>
+</tr>
+<tr>
+<td>Timeline &amp; View</td>
+<td><strong>Zoom timeline in</strong></td>
+<td style="text-align: right;">Mod+=</td>
+</tr>
+<tr>
+<td>Timeline &amp; View</td>
+<td><strong>Zoom timeline out</strong></td>
+<td style="text-align: right;">Mod+-</td>
+</tr>
+<tr>
+<td>Timeline &amp; View</td>
+<td><strong>Zoom to fit all content</strong></td>
+<td style="text-align: right;">Shift+Z</td>
+</tr>
+<tr>
+<td>Timeline &amp; View</td>
+<td><strong>Save project</strong></td>
+<td style="text-align: right;">Mod+S</td>
+</tr>
+<tr>
+<td>Help</td>
+<td><strong>Open keyboard shortcuts dialog</strong></td>
+<td style="text-align: right;">?</td>
+</tr>
+</tbody>
+</table>
+<p>The footer says: <strong>Tip: bindings are saved to this browser. Press ? anywhere to reopen.</strong></p>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The top track is visually in front. Put text and captions above background video/image/scene tracks when you need them visible.</li>
+<li>The toolbar shows <strong>Select a clip to delete</strong> and <strong>Select a clip to clone</strong> when no clip is selected.</li>
+<li><strong>Split</strong> and <strong>Split+Cut</strong> require the playhead to be inside the selected clip, not exactly on its start or end.</li>
+<li>Use Alt/Option while dragging to duplicate by drag. Use Shift+Alt/Option-click on a track area to select clips to the right on that track.</li>
+<li>Locked tracks protect items from timeline edits. Hidden tracks are also not directly editable.</li>
+<li>Empty tracks may disappear automatically after their last item is moved or deleted.</li>
+<li>Paste preserves copied item timing; use duplicate or drag after paste if you need a different position.</li>
+<li>If <strong>Waveforms are disabled globally</strong>, an individual track’s waveform menu item cannot turn them on by itself; turn global waveforms on first.</li>
+<li>If you scroll away from the playhead, <strong>Jump to playhead</strong> appears so you can re-center quickly.</li>
+<li>Track-row height and track-controls width are remembered for the project/browser until you reset or auto-fit them.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="01-overview-and-navigation.html">Overview &amp; Navigation</a></li>
+<li><a href="02-media-library.html">Media Library</a></li>
+<li><a href="05-text-and-captions.html">Text &amp; Captions</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#where-to-find-it">Where to find it</a></li>
+<li><a href="#what-you-can-do">What you can do</a></li>
+<li><a href="#how-to-use-the-timeline-toolbar">How to use the timeline toolbar</a></li>
+<li><a href="#how-to-read-the-timeline">How to read the timeline</a></li>
+<li><a href="#how-to-zoom-and-scroll">How to zoom and scroll</a></li>
+<li><a href="#how-to-use-playback-and-time-controls">How to use playback and time controls</a></li>
+<li><a href="#how-to-select-one-item">How to select one item</a></li>
+<li><a href="#how-to-select-multiple-items">How to select multiple items</a></li>
+<li><a href="#how-to-move-items">How to move items</a></li>
+<li><a href="#how-to-use-drag-previews-gaps-and-snapping">How to use drag previews, gaps, and snapping</a></li>
+<li><a href="#how-to-trim-and-resize-clips">How to trim and resize clips</a></li>
+<li><a href="#how-to-split-split-cut-and-merge">How to split, split-cut, and merge</a></li>
+<li><a href="#how-to-add-and-edit-transitions">How to add and edit transitions</a></li>
+<li><a href="#how-to-delete-and-ripple-delete">How to delete and ripple delete</a></li>
+<li><a href="#how-to-duplicate-copy-cut-and-paste">How to duplicate, copy, cut, and paste</a></li>
+<li><a href="#how-to-use-track-controls">How to use track controls</a></li>
+<li><a href="#how-to-reorder-and-resize-tracks">How to reorder and resize tracks</a></li>
+<li><a href="#how-to-use-markers-keyframes-and-deleted-range-overlays">How to use markers, keyframes, and deleted-range overlays</a></li>
+<li><a href="#how-to-change-track-display-and-playback-feel">How to change track display and playback feel</a></li>
+<li><a href="#how-to-use-keyboard-shortcuts">How to use keyboard shortcuts</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

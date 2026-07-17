@@ -33,6 +33,8 @@ Caption items can show an **Animations** section with an **Animation** button, a
 
 ## How to apply quick item animations
 
+![The Effects tab showing keyframeable Transform (Position, Scale, Width, Height, Rotation) and Appearance (Opacity, Blur, Brightness) controls.](images/explore-caption-effects.png)
+
 1. Select the item you want to animate.
 2. In **Properties**, expand **Animations**.
 3. Click the **Animation** dropdown. A floating **Animations** picker opens.

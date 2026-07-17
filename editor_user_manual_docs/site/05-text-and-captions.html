@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Text &amp; Captions — SkillTown Editor Manual</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menu-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<div class="layout">
+  <nav class="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">▸</span>
+      <span class="brand-text">SkillTown<small>Editor Manual</small></span>
+    </a>
+    <div class="search">
+      <input id="search-input" type="search" placeholder="Search the manual…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+<a class="nav-link" href="01-overview-and-navigation.html">Overview & Navigation</a>
+<a class="nav-link" href="02-media-library.html">Media Library</a>
+<a class="nav-link" href="03-scenes-templates-styles.html">Scenes, Templates & Styles</a>
+<a class="nav-link" href="04-custom-scenes-and-ai.html">Custom Scenes & AI</a>
+<a class="nav-link active" href="05-text-and-captions.html">Text & Captions</a>
+<a class="nav-link" href="06-timeline-and-selection.html">Timeline & Selection</a>
+<a class="nav-link" href="07-item-properties.html">Item Properties</a>
+<a class="nav-link" href="08-animations-and-keyframes.html">Animations & Keyframes</a>
+<a class="nav-link" href="09-effects-filters-color.html">Effects, Filters & Color</a>
+<a class="nav-link" href="10-camera-effects.html">Camera Effects</a>
+<a class="nav-link" href="11-audio-mixing-and-enhance.html">Audio & Mixing</a>
+<a class="nav-link" href="12-transitions.html">Transitions</a>
+<a class="nav-link" href="13-export-and-versions.html">Export & Versions</a>
+<a class="nav-link" href="14-keyboard-shortcuts.html">Keyboard Shortcuts</a>
+<a class="nav-link" href="15-right-click-menus.html">Right-click Menus</a>
+<a class="nav-link" href="16-canvas-editing.html">Canvas Editing</a>
+    </div>
+    <div class="sidebar-foot">For humans — and for AI helping humans.</div>
+  </nav>
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-head">
+        <div class="eyebrow">SkillTown Video Editor</div>
+        <h1>Text &amp; Captions</h1>
+      </div>
+      <article class="prose">
+        
+<blockquote>
+<p><strong>For humans — and for AI helping humans.</strong> This document describes how a person edits video by
+hand using the on-screen controls of the SkillTown video editor. It is <strong>not</strong> an AI skill or an
+automation API, so if you are an AI agent, do <strong>not</strong> treat these steps as callable commands — for
+programmatic/automated editing use the agent skills and commands documented elsewhere (see
+<code>_Agent/AGENTS.md</code>). <strong>You may, however, read this doc to answer a user's "how do I…" questions
+and walk them, step by step, through performing these actions themselves in the editor UI.</strong></p>
+<p>Add editable text overlays and generate, edit, style, and export captions for speech in your video.</p>
+</blockquote>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<p>Open the menu panel and choose <strong>Text</strong> to add a text overlay. Choose <strong>Captions</strong> to create captions from video/audio or from an existing editor transcript.</p>
+<p>When you select a text item, the properties panel shows <strong>Design</strong>, <strong>Animate</strong>, and <strong>Effects</strong>. When you select a caption item, the properties panel shows <strong>Transcript</strong>, <strong>Content</strong>, <strong>Design</strong>, <strong>Animate</strong>, and <strong>Effects</strong>. When you select a video or audio clip that can be transcribed, use its <strong>Auto-Captions</strong> tab.</p>
+<h2 id="what-you-can-do">What you can do<a class="headerlink" href="#what-you-can-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Add a text layer at the playhead with <strong>Add text</strong>, or drag it onto the timeline.</li>
+<li>Apply text <strong>Preset</strong> cards, choose fonts, set <strong>Weight</strong>, <strong>Size</strong>, <strong>Color</strong>, <strong>Fill</strong>, <strong>Gradient</strong>, <strong>Align</strong>, <strong>Case</strong>, <strong>Decoration</strong>, <strong>Opacity</strong>, typography, padding, stroke, shadow, word colors, animations, keyframes, and effects.</li>
+<li>Generate captions in the <strong>Captions</strong> menu with <strong>Quick Generate</strong> from a selected video/audio item.</li>
+<li>Create captions in the <strong>Captions</strong> menu with <strong>From Transcript</strong> when the editor transcript is ready.</li>
+<li>Transcribe an individual video or audio clip from <strong>Auto-Captions</strong>, watch progress, then use <strong>Add to timeline</strong>.</li>
+<li>Edit caption rows in <strong>Transcript</strong>, including <strong>Find captions</strong>, <strong>Replace with</strong>, <strong>Replace</strong>, <strong>Replace All</strong>, <strong>Split at cursor</strong>, <strong>Merge with next</strong>, <strong>Add caption after</strong>, <strong>Delete caption</strong>, and caption export.</li>
+<li>Style captions with <strong>Words</strong> and <strong>Lines</strong> preset cards, <strong>Caption Words</strong>, <strong>Caption Colors</strong>, manual text styling, <strong>Stroke &amp; Shadow</strong>, <strong>Animations</strong>, <strong>Keyframes</strong>, and <strong>Effects</strong>.</li>
+</ul>
+<h2 id="how-to-add-a-text-element">How to add a text element<a class="headerlink" href="#how-to-add-a-text-element" title="Permanent link">&para;</a></h2>
+<p><img alt="Text Settings — Design tab: Preset, Font, Weight, Size, Color, Fill, Gradient, Align, Case, Decoration, Opacity, and Typography." src="images/explore-text-design.png" /></p>
+<ol>
+<li>Open the <strong>Text</strong> menu panel.</li>
+<li>Click <strong>Add text</strong> to place a new text item at the current playhead position.</li>
+<li>Or drag <strong>Add text</strong> from the menu panel onto the timeline.</li>
+<li>Select the text item on the canvas or timeline.</li>
+<li>Use the properties panel to edit it. New text remembers the last text style you used until you click <strong>Reset Style</strong>.</li>
+</ol>
+<h2 id="how-to-style-text">How to style text<a class="headerlink" href="#how-to-style-text" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select a text item.</li>
+<li>Use <strong>Design</strong> for appearance, <strong>Animate</strong> for motion, and <strong>Effects</strong> for keyframes and effects.</li>
+<li>Use <strong>Search text settings...</strong> to find a section quickly.</li>
+<li>Expand the sections you need.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Section or control</th>
+<th>Exact labels and options</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Text preset area</td>
+<td><strong>Text</strong>, <strong>Preset</strong>, <strong>None</strong>, <strong>Presets</strong></td>
+<td>Opens text preset cards. The visible preset cards preview the word <strong>Text</strong>.</td>
+</tr>
+<tr>
+<td>Style reset</td>
+<td><strong>Reset Style</strong></td>
+<td>Restores the selected text to the default add-text styling and clears remembered text styling.</td>
+</tr>
+<tr>
+<td>Main style group</td>
+<td><strong>Text Style</strong>, <strong>Styles</strong></td>
+<td>Holds the main typography, fill, alignment, opacity, and typography controls.</td>
+</tr>
+<tr>
+<td>Font family</td>
+<td><strong>Font</strong>, <strong>Search fonts...</strong>, <strong>Recent</strong>, <strong>display</strong>, <strong>sans-serif</strong>, <strong>serif</strong>, <strong>handwriting</strong>, <strong>monospace</strong>, <strong>No fonts found</strong></td>
+<td>Chooses the typeface. Some pickers also show <strong>Fonts</strong>, <strong>Search font...</strong>, and <strong>No font found</strong>.</td>
+</tr>
+<tr>
+<td>Weight</td>
+<td><strong>Weight</strong></td>
+<td>Chooses the selected font style, such as <strong>Regular</strong>, bold, italic, or other available variants.</td>
+</tr>
+<tr>
+<td>Size</td>
+<td><strong>Size</strong></td>
+<td>Changes text size. Text items support a larger size range than captions.</td>
+</tr>
+<tr>
+<td>Text color</td>
+<td><strong>Color</strong></td>
+<td>Sets solid text color. It is dimmed while <strong>Gradient</strong> is enabled.</td>
+</tr>
+<tr>
+<td>Fill/background</td>
+<td><strong>Fill</strong></td>
+<td>Sets the text background/fill color behind the text. On small screens, the color drawer label can read <strong>Background Color</strong>.</td>
+</tr>
+<tr>
+<td>Gradient</td>
+<td><strong>Gradient</strong>, <strong>Use a text gradient instead of a solid color</strong>, <strong>Color 1</strong>, <strong>Color 2</strong>, <strong>Direction</strong></td>
+<td>Replaces solid <strong>Color</strong> with a two-color gradient and direction angle.</td>
+</tr>
+<tr>
+<td>Alignment</td>
+<td><strong>Align</strong>, <strong>Left</strong>, <strong>Center</strong>, <strong>Right</strong></td>
+<td>Sets horizontal text alignment.</td>
+</tr>
+<tr>
+<td>Case</td>
+<td><strong>Case</strong>, <strong>As typed</strong>, <strong>Uppercase</strong>, <strong>Lowercase</strong></td>
+<td>Keeps your typed casing or forces all-uppercase/all-lowercase display.</td>
+</tr>
+<tr>
+<td>Decoration</td>
+<td><strong>Decoration</strong></td>
+<td>Toggles underline, strikethrough, and overline decoration buttons.</td>
+</tr>
+<tr>
+<td>Opacity</td>
+<td><strong>Opacity</strong></td>
+<td>Controls text transparency.</td>
+</tr>
+<tr>
+<td>Typography group</td>
+<td><strong>Typography</strong></td>
+<td>Groups spacing, rounding, rotation, blending, and padding controls.</td>
+</tr>
+<tr>
+<td>Line spacing</td>
+<td><strong>Line Height</strong></td>
+<td>Changes vertical spacing between lines.</td>
+</tr>
+<tr>
+<td>Letter spacing</td>
+<td><strong>Letter Spacing</strong></td>
+<td>Changes spacing between letters.</td>
+</tr>
+<tr>
+<td>Corner rounding</td>
+<td><strong>Border Radius</strong></td>
+<td>Rounds the fill/background corners.</td>
+</tr>
+<tr>
+<td>Rotation</td>
+<td><strong>Rotation</strong></td>
+<td>Rotates the text item.</td>
+</tr>
+<tr>
+<td>Word spacing</td>
+<td><strong>Word Spacing</strong></td>
+<td>Changes spacing between words.</td>
+</tr>
+<tr>
+<td>Blend mode</td>
+<td><strong>Blend Mode</strong>: <strong>Normal</strong>, <strong>Multiply</strong>, <strong>Screen</strong>, <strong>Overlay</strong>, <strong>Darken</strong>, <strong>Lighten</strong>, <strong>Color Dodge</strong>, <strong>Color Burn</strong>, <strong>Hard Light</strong>, <strong>Soft Light</strong>, <strong>Difference</strong>, <strong>Exclusion</strong>, <strong>Hue</strong>, <strong>Saturation</strong>, <strong>Luminosity</strong></td>
+<td>Changes how the text visually blends with layers underneath.</td>
+</tr>
+<tr>
+<td>Padding</td>
+<td><strong>Padding</strong>, link/unlink button, <strong>Top</strong>, <strong>Right</strong>, <strong>Bottom</strong>, <strong>Left</strong></td>
+<td>Adds space inside the fill/background. Keep linked to edit all sides together, or unlink to edit sides separately.</td>
+</tr>
+<tr>
+<td>Stroke</td>
+<td><strong>Stroke</strong>, <strong>Color</strong>, <strong>Size</strong>, <strong>Width</strong></td>
+<td>Adds and sizes the text outline. The base stroke uses <strong>Size</strong>; extra stroke layers use <strong>Width</strong>.</td>
+</tr>
+<tr>
+<td>Extra stroke layers</td>
+<td><strong>Extra Strokes</strong>, <strong>Add Stroke</strong>, <strong>Stroke 1</strong>, <strong>Stroke 2</strong></td>
+<td>Adds more outline layers with separate <strong>Color</strong> and <strong>Width</strong> controls.</td>
+</tr>
+<tr>
+<td>Shadow</td>
+<td><strong>Shadow</strong>, <strong>Color</strong>, <strong>X</strong>, <strong>Y</strong>, <strong>Blur</strong></td>
+<td>Adds a shadow and controls its color, offset, and blur.</td>
+</tr>
+<tr>
+<td>Extra shadow layers</td>
+<td><strong>Extra Shadows</strong>, <strong>Add Shadow</strong>, <strong>Shadow 1</strong>, <strong>Shadow 2</strong></td>
+<td>Adds more shadows with separate <strong>Color</strong>, <strong>X</strong>, <strong>Y</strong>, and <strong>Blur</strong> controls.</td>
+</tr>
+<tr>
+<td>Word colors</td>
+<td><strong>Word Colors</strong>, <strong>Pick colors for individual words.</strong>, <strong>Reset All</strong></td>
+<td>Opens a color picker for each word in plain text. If the item has inline formatting, the panel says <strong>Word colors apply to plain text only. Remove inline HTML formatting to use this control.</strong> If the item is empty, it says <strong>Add some text to style words.</strong></td>
+</tr>
+<tr>
+<td>Animate tab</td>
+<td><strong>Animations</strong></td>
+<td>Opens text animation controls. See <a href="06-animations-and-effects.html">Animations &amp; effects</a> for the broader animation system.</td>
+</tr>
+<tr>
+<td>Effects tab</td>
+<td><strong>Keyframes</strong>, <strong>Effects</strong></td>
+<td>Animates properties over time and applies visual effects.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-use-text-presets">How to use text presets<a class="headerlink" href="#how-to-use-text-presets" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select a text item.</li>
+<li>In <strong>Design</strong>, open the <strong>Text</strong> preset area.</li>
+<li>Click the <strong>Preset</strong> picker. The floating picker is titled <strong>Presets</strong>.</li>
+<li>Click <strong>None</strong> to clear preset styling, or click a card that previews <strong>Text</strong> to apply that look.</li>
+<li>Continue editing in <strong>Text Style</strong> if you want to customize the preset.</li>
+</ol>
+<p>Text preset cards are visual style cards, not named style roles. The exact visible labels are <strong>None</strong> and the preview word <strong>Text</strong> on each style card.</p>
+<p>The numbers below are manual references for the unnamed style cards; the UI itself shows <strong>None</strong> and preview cards labeled <strong>Text</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Manual reference</th>
+<th>On-screen preview</th>
+<th>What the card applies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Clear</td>
+<td><strong>None</strong></td>
+<td>Removes preset styling: transparent fill, white text, no stroke.</td>
+</tr>
+<tr>
+<td>Card 1</td>
+<td><strong>Text</strong></td>
+<td>fill #000; text #fff; corner radius 20; stroke 0 transparent.</td>
+</tr>
+<tr>
+<td>Card 2</td>
+<td><strong>Text</strong></td>
+<td>fill #fff; text #000; corner radius 20; stroke 0 transparent.</td>
+</tr>
+<tr>
+<td>Card 3</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #fff; corner radius 0; stroke 12 #000.</td>
+</tr>
+<tr>
+<td>Card 4</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #000; corner radius 0; stroke 12 #fff.</td>
+</tr>
+<tr>
+<td>Card 5</td>
+<td><strong>Text</strong></td>
+<td>fill #8120fd; text #fff; corner radius 20; stroke 0 transparent.</td>
+</tr>
+<tr>
+<td>Card 6</td>
+<td><strong>Text</strong></td>
+<td>fill #ffde00; text #000; corner radius 20; stroke 0 transparent.</td>
+</tr>
+<tr>
+<td>Card 7</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #6eb5d6; corner radius 10; stroke 12 #0f1fac; shadow #0f1fac X -12 Y 12 Blur 0.</td>
+</tr>
+<tr>
+<td>Card 8</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #fff; corner radius 10; stroke 12 #000; shadow #000 X -12 Y 12 Blur 0.</td>
+</tr>
+<tr>
+<td>Card 9</td>
+<td><strong>Text</strong></td>
+<td>fill #000; text #6af1af; corner radius 20; stroke 0 transparent.</td>
+</tr>
+<tr>
+<td>Card 10</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #fff; corner radius 10; stroke 12 #dd4882; shadow #dd4882 X 0 Y 0 Blur 100.</td>
+</tr>
+<tr>
+<td>Card 11</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #000000; corner radius 10; stroke 0 transparent; shadow #5ed869 X 8 Y 8 Blur 0.</td>
+</tr>
+<tr>
+<td>Card 12</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #f5be36; corner radius 10; stroke 0 transparent; shadow #b12019 X 8 Y 8 Blur 0.</td>
+</tr>
+<tr>
+<td>Card 13</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #eed955; corner radius 10; stroke 12 #000000.</td>
+</tr>
+<tr>
+<td>Card 14</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #5ba2eb; corner radius 10; stroke 12 #ffffff.</td>
+</tr>
+<tr>
+<td>Card 15</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #ffffff; corner radius 0; stroke 0 transparent.</td>
+</tr>
+<tr>
+<td>Card 16</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #ffffff; corner radius 0; stroke 2 #000000.</td>
+</tr>
+<tr>
+<td>Card 17</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #111111; corner radius 0; stroke 2 #ffffff.</td>
+</tr>
+<tr>
+<td>Card 18</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #ffffff; corner radius 0; stroke 0 transparent; shadow rgba(0, 0, 0, 0.85) X 10 Y 10 Blur 20.</td>
+</tr>
+<tr>
+<td>Card 19</td>
+<td><strong>Text</strong></td>
+<td>fill #2c3140; text #d8dde7; corner radius 16; stroke 0 transparent.</td>
+</tr>
+<tr>
+<td>Card 20</td>
+<td><strong>Text</strong></td>
+<td>fill rgba(245, 247, 250, 0.82); text #1c2434; corner radius 18; stroke 1 rgba(255, 255, 255, 0.95); shadow rgba(15, 23, 42, 0.18) X 0 Y 8 Blur 24.</td>
+</tr>
+<tr>
+<td>Card 21</td>
+<td><strong>Text</strong></td>
+<td>fill #ef233c; text #ffe45c; corner radius 8; stroke 0 transparent.</td>
+</tr>
+<tr>
+<td>Card 22</td>
+<td><strong>Text</strong></td>
+<td>fill #2563eb; text #ffffff; corner radius 18; stroke 0 transparent.</td>
+</tr>
+<tr>
+<td>Card 23</td>
+<td><strong>Text</strong></td>
+<td>fill #8dff2f; text #101010; corner radius 10; stroke 0 transparent.</td>
+</tr>
+<tr>
+<td>Card 24</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #ff4343; corner radius 0; stroke 6 #000000.</td>
+</tr>
+<tr>
+<td>Card 25</td>
+<td><strong>Text</strong></td>
+<td>fill #6d28d9; text #ffffff; corner radius 14; stroke 0 transparent; shadow rgba(124, 58, 237, 0.45) X 0 Y 8 Blur 18.</td>
+</tr>
+<tr>
+<td>Card 26</td>
+<td><strong>Text</strong></td>
+<td>fill #20242f; text #ff8a1f; corner radius 12; stroke 0 transparent.</td>
+</tr>
+<tr>
+<td>Card 27</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #6ef2ff; corner radius 0; stroke 2 #6ef2ff; shadow #00eaff X 0 Y 0 Blur 52.</td>
+</tr>
+<tr>
+<td>Card 28</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #ff62d5; corner radius 0; stroke 2 #ff62d5; shadow #ff3fc7 X 0 Y 0 Blur 56.</td>
+</tr>
+<tr>
+<td>Card 29</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #72ff8f; corner radius 0; stroke 2 #72ff8f; shadow #31ff5f X 0 Y 0 Blur 54.</td>
+</tr>
+<tr>
+<td>Card 30</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #63b3ff; corner radius 0; stroke 2 #63b3ff; shadow #2563ff X 0 Y 0 Blur 50.</td>
+</tr>
+<tr>
+<td>Card 31</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #fff26a; corner radius 0; stroke 2 #fff26a; shadow #ffbf47 X 0 Y 0 Blur 48.</td>
+</tr>
+<tr>
+<td>Card 32</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #ffffff; corner radius 0; stroke 2 #ffffff; shadow rgba(255, 78, 205, 0.95) X 0 Y 0 Blur 64.</td>
+</tr>
+<tr>
+<td>Card 33</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #f7e4bd; corner radius 0; stroke 0 transparent; shadow #6f4e37 X 12 Y 12 Blur 0.</td>
+</tr>
+<tr>
+<td>Card 34</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #ff9f1c; corner radius 0; stroke 0 transparent; shadow #8c1c13 X 14 Y 14 Blur 0.</td>
+</tr>
+<tr>
+<td>Card 35</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #ff89c9; corner radius 0; stroke 0 transparent; shadow #9d174d X 12 Y 12 Blur 0.</td>
+</tr>
+<tr>
+<td>Card 36</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #8df0c8; corner radius 0; stroke 0 transparent; shadow #14532d X 10 Y 10 Blur 0.</td>
+</tr>
+<tr>
+<td>Card 37</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #ff7f6a; corner radius 0; stroke 5 #19335a.</td>
+</tr>
+<tr>
+<td>Card 38</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #ffffff; corner radius 0; stroke 10 #000000.</td>
+</tr>
+<tr>
+<td>Card 39</td>
+<td><strong>Text</strong></td>
+<td>fill rgba(0, 0, 0, 0.68); text #ffffff; corner radius 18; stroke 0 transparent.</td>
+</tr>
+<tr>
+<td>Card 40</td>
+<td><strong>Text</strong></td>
+<td>fill #ffffff; text #111111; corner radius 18; stroke 0 transparent.</td>
+</tr>
+<tr>
+<td>Card 41</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #8b5cf6; corner radius 0; stroke 2 #8b5cf6; shadow #ff4fd8 X 0 Y 0 Blur 44.</td>
+</tr>
+<tr>
+<td>Card 42</td>
+<td><strong>Text</strong></td>
+<td>fill #ff3cac; text #ffffff; corner radius 20; stroke 0 transparent; shadow rgba(255, 60, 172, 0.55) X 0 Y 10 Blur 24.</td>
+</tr>
+<tr>
+<td>Card 43</td>
+<td><strong>Text</strong></td>
+<td>fill #d7c8ff; text #6f52d9; corner radius 16; stroke 0 transparent.</td>
+</tr>
+<tr>
+<td>Card 44</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text transparent; corner radius 0; stroke 8 #ffffff.</td>
+</tr>
+<tr>
+<td>Card 45</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text transparent; corner radius 0; stroke 8 #ff3b30.</td>
+</tr>
+<tr>
+<td>Card 46</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text transparent; corner radius 0; stroke 8 #2563eb.</td>
+</tr>
+<tr>
+<td>Card 47</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text transparent; corner radius 0; stroke 8 #22c55e.</td>
+</tr>
+<tr>
+<td>Card 48</td>
+<td><strong>Text</strong></td>
+<td>fill transparent; text #fff7ed; corner radius 0; stroke 6 #fb7185; shadow #312e81 X 8 Y 8 Blur 0.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-generate-captions-from-video-or-audio">How to generate captions from video or audio<a class="headerlink" href="#how-to-generate-captions-from-video-or-audio" title="Permanent link">&para;</a></h2>
+<p>There are two caption-generation entry points. Use the <strong>Captions</strong> menu when you want a quick caption track from an item already on the timeline. Use <strong>Auto-Captions</strong> on a selected video/audio clip when you want per-source transcription progress, settings, and transcript review before adding captions.</p>
+<h3 id="generate-from-the-captions-menu">Generate from the Captions menu<a class="headerlink" href="#generate-from-the-captions-menu" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Add a video or audio item to the timeline.</li>
+<li>Open the <strong>Captions</strong> menu panel.</li>
+<li>Choose <strong>Quick Generate</strong>.</li>
+<li>Open <strong>Select media</strong> and choose the video or audio item.</li>
+<li>If no media is selected, the panel says <strong>Select video or audio and generate captions automatically.</strong> If no video or audio exists, it says <strong>Add video or audio and generate captions automatically.</strong></li>
+<li>When a selected item has no captions yet, the panel says <strong>Recognize speech in the selected video/audio and generate captions automatically.</strong></li>
+<li>Click <strong>Generate</strong>. During transcription, the button changes to <strong>Generating...</strong>.</li>
+<li>When captions are created, they appear on a new <strong>Captions</strong> track. The menu list shows each caption’s time range and text; click a row to seek the player to that caption.</li>
+</ol>
+<h3 id="generate-from-a-selected-clip-with-auto-captions">Generate from a selected clip with Auto-Captions<a class="headerlink" href="#generate-from-a-selected-clip-with-auto-captions" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Select a video or audio clip.</li>
+<li>Open the clip’s <strong>Auto-Captions</strong> tab.</li>
+<li>If the clip has no transcript yet, the panel says <strong>No transcription for this recording yet.</strong> Click <strong>Transcribe this clip</strong>.</li>
+<li>While transcription runs, the progress UI appears. If it stalls, you may see <strong>This is taking longer than expected. You can keep waiting or cancel.</strong> Click <strong>Cancel</strong> to stop it.</li>
+<li>If transcription fails, the panel shows the error and a <strong>Retry</strong> button.</li>
+<li>If no speech is detected, the panel says <strong>No speech detected in this clip's audio.</strong></li>
+<li>When transcription succeeds, the header shows <strong>Transcription ready</strong>, the word count, and <strong>Per-source transcript</strong>.</li>
+<li>Click <strong>Add to timeline</strong> to create captions. After captions are added, the header can show <strong>Captions added</strong> and the button changes to <strong>Add again (duplicate track)</strong>.</li>
+<li>Use <strong>Re-transcribe</strong> to run transcription again, or <strong>Config</strong> to open <strong>Transcription settings — adjust before the next transcript or re-transcribe</strong>.</li>
+<li>Use <strong>Table</strong> to review transcript words, or <strong>Trim Silence</strong> to edit the recording around transcript gaps before creating or updating captions.</li>
+</ol>
+<p>The <strong>Auto-Captions</strong> transcript is per source recording. If you split the same recording into multiple clips, the same source transcript can be reused.</p>
+<h2 id="how-to-generate-captions-from-an-existing-transcript">How to generate captions from an existing transcript<a class="headerlink" href="#how-to-generate-captions-from-an-existing-transcript" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open the <strong>Captions</strong> menu panel.</li>
+<li>Choose <strong>From Transcript</strong>.</li>
+<li>If no transcript exists, the panel shows <strong>No Editor Transcript</strong>, <strong>Generate a transcript from your timeline audio first to create captions from it.</strong>, and <strong>Use the Transcript panel in your content view to transcribe the editor audio, then return here to add captions.</strong></li>
+<li>If an editor transcript exists, the panel shows <strong>Editor Transcript Ready</strong> and the number of available words.</li>
+<li>Click <strong>Generate Captions from Transcript</strong>.</li>
+<li>Captions are added to a new track with word-level timing. The panel confirms with <strong>Captions added to timeline successfully!</strong> or reports <strong>Failed to add captions to timeline</strong>.</li>
+</ol>
+<h2 id="how-to-read-transcription-progress-and-transcript-tools">How to read transcription progress and transcript tools<a class="headerlink" href="#how-to-read-transcription-progress-and-transcript-tools" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>State or control</th>
+<th>What you see</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No transcript</td>
+<td><strong>No transcription for this recording yet.</strong>, <strong>Transcribe this clip</strong></td>
+<td>Start transcription for the selected source recording.</td>
+</tr>
+<tr>
+<td>Processing</td>
+<td>Progress display, <strong>Cancel</strong></td>
+<td>Wait, or cancel if needed.</td>
+</tr>
+<tr>
+<td>Slow processing</td>
+<td><strong>This is taking longer than expected. You can keep waiting or cancel.</strong></td>
+<td>Keep waiting or click <strong>Cancel</strong>.</td>
+</tr>
+<tr>
+<td>Cancelled</td>
+<td><strong>Transcription cancelled.</strong></td>
+<td>Start again with <strong>Transcribe this clip</strong> or <strong>Re-transcribe</strong>.</td>
+</tr>
+<tr>
+<td>Failed</td>
+<td>Error text, <strong>Retry</strong></td>
+<td>Try the transcription again.</td>
+</tr>
+<tr>
+<td>No words</td>
+<td><strong>No speech detected in this clip's audio.</strong></td>
+<td>Choose a different clip or audio source.</td>
+</tr>
+<tr>
+<td>Ready</td>
+<td><strong>Transcription ready</strong>, word count, <strong>Per-source transcript</strong></td>
+<td>Review words, then click <strong>Add to timeline</strong>.</td>
+</tr>
+<tr>
+<td>Already added</td>
+<td><strong>Captions added</strong>, <strong>Add again (duplicate track)</strong></td>
+<td>Add a duplicate caption track only if you intentionally want another styled copy.</td>
+</tr>
+<tr>
+<td>Transcript table</td>
+<td><strong>Table</strong></td>
+<td>Review and edit transcript words in the table view.</td>
+</tr>
+<tr>
+<td>Silence trimming</td>
+<td><strong>Trim Silence</strong>, <strong>Settings</strong>, <strong>Gap threshold</strong>, <strong>Shorten to</strong>, <strong>Jump to playhead</strong>, <strong>Remove all</strong>, <strong>Shorten all</strong>, <strong>Split all</strong></td>
+<td>Inspect pauses and optionally remove, shorten, or split source silence before using captions.</td>
+</tr>
+<tr>
+<td>Gap pill actions</td>
+<td><strong>Remove — delete this silence and close the gap</strong>, the tooltip beginning <strong>Shorten — trim this silence to</strong>, <strong>Split — cut the media at this gap (keeps all segments)</strong></td>
+<td>Use the icons on a gap pill to edit silence one gap at a time. Disabled gaps explain why, such as <strong>Timeline spacing only</strong>, <strong>Pause already outside visible clip</strong>, or <strong>This display gap cannot be cut safely</strong>.</td>
+</tr>
+<tr>
+<td>Word actions</td>
+<td><strong>Seek to</strong> a word, <strong>Delete word from recording</strong>, <strong>Restore word</strong></td>
+<td>Click a word to seek, delete a word from the recording edit, or restore a deleted word.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-edit-caption-text-and-timing">How to edit caption text and timing<a class="headerlink" href="#how-to-edit-caption-text-and-timing" title="Permanent link">&para;</a></h2>
+<p><img alt="Caption Settings panel with the Transcript, Content, and Design tabs and the per-caption list with timecodes." src="images/properties-caption.png" /></p>
+<ol>
+<li>Select a caption item.</li>
+<li>Open the <strong>Transcript</strong> tab in the properties panel.</li>
+<li>Click a caption row to select it and seek to its start. The active row follows the playhead.</li>
+<li>Click the field labeled <strong>Edit caption text</strong> and type your correction. Edits save shortly after you stop typing or when you leave the field.</li>
+<li>Use <strong>Find captions</strong> to search. Press Enter for the next match or Shift+Enter for the previous match. The counter shows <strong>Find</strong> before searching and then shows counts like <strong>1 of 3 matches</strong>.</li>
+<li>Click the replace toggle to show <strong>Replace with</strong>. Use <strong>Replace</strong> for the current match or <strong>Replace All</strong> for every match.</li>
+<li>If multiple caption tracks exist, use <strong>All tracks</strong> or choose a specific track.</li>
+<li>Hover a caption row to reveal edit buttons:
+   - <strong>Play from here</strong> starts playback at that caption.
+   - <strong>Split at cursor</strong> splits the caption at the text cursor and redistributes timing across the two captions.
+   - <strong>Merge with next</strong> combines the current caption with the next caption and extends timing to cover both.
+   - <strong>Add caption after</strong> inserts a blank caption after the current caption.
+   - <strong>Delete caption</strong> removes that caption.</li>
+<li>Use <strong>Select All</strong> to select all visible caption rows.</li>
+<li>Use <strong>Export captions</strong> and choose <strong>Export as SRT</strong> or <strong>Export as VTT</strong>.</li>
+<li>For exact placement, drag or trim caption items directly on the timeline.</li>
+</ol>
+<p>Keyboard shortcuts in caption text fields:</p>
+<table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enter</td>
+<td>Move to the next caption.</td>
+</tr>
+<tr>
+<td>Shift+Enter</td>
+<td>Move to the previous caption.</td>
+</tr>
+<tr>
+<td>Alt+Enter</td>
+<td>Split at the cursor, or add a caption after if the cursor is at the end.</td>
+</tr>
+<tr>
+<td>Alt+Backspace</td>
+<td>Merge with the previous caption when the cursor is at the start.</td>
+</tr>
+<tr>
+<td>Arrow Up</td>
+<td>Move to the previous caption when the cursor is at the start.</td>
+</tr>
+<tr>
+<td>Arrow Down</td>
+<td>Move to the next caption when the cursor is at the end.</td>
+</tr>
+<tr>
+<td>Escape</td>
+<td>Leave the caption text field.</td>
+</tr>
+<tr>
+<td>Cmd/Ctrl+H</td>
+<td>Show or hide replace controls while searching.</td>
+</tr>
+</tbody>
+</table>
+<p>You can also double-click a selected caption on the canvas. The hint says <strong>Double-click to edit</strong>.</p>
+<h2 id="how-to-choose-caption-style-presets">How to choose caption style presets<a class="headerlink" href="#how-to-choose-caption-style-presets" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select a caption item.</li>
+<li>Open <strong>Content</strong>.</li>
+<li>Expand <strong>Preset</strong>.</li>
+<li>Choose <strong>Words</strong> for word-level styles or <strong>Lines</strong> for line-based styles.</li>
+<li>Use <strong>Search presets...</strong> to filter preset names. If none match, the grid says <strong>No presets found</strong>.</li>
+<li>Use <strong>Change preview background — preview how captions look on your video</strong> to test contrast. The preview row is labeled <strong>Preview background — see how captions look on your video color</strong>.</li>
+<li>Built-in preview colors are <strong>Dark</strong>, <strong>White</strong>, <strong>Gray</strong>, <strong>Green</strong>, <strong>Blue</strong>, and <strong>Red</strong>. Use <strong>Pick custom color</strong> for another color, or <strong>Reset</strong> to clear the preview background.</li>
+<li>Use <strong>Preview with your own text...</strong> to test a style with your wording. Use <strong>Clear custom text</strong> to clear it.</li>
+<li>Click <strong>None</strong> to remove preset styling, or click a preset card to apply it.</li>
+<li>If you edit a preset-styled caption afterward, the preset badge can show <strong>Modified</strong>. Click <strong>Modified</strong> to <strong>Reset to original preset</strong>.</li>
+</ol>
+<p>Caption preset names:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">#</th>
+<th>Preset</th>
+<th style="text-align: right;">#</th>
+<th>Preset</th>
+<th style="text-align: right;">#</th>
+<th>Preset</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td><strong>None</strong></td>
+<td style="text-align: right;">2</td>
+<td><strong>Dynamic 1</strong></td>
+<td style="text-align: right;">3</td>
+<td><strong>Dynamic 2</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td><strong>Dynamic 3</strong></td>
+<td style="text-align: right;">5</td>
+<td><strong>Typewriter Classic</strong></td>
+<td style="text-align: right;">6</td>
+<td><strong>Transparent Border</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td><strong>Fire Bold</strong></td>
+<td style="text-align: right;">8</td>
+<td><strong>Golden Glow</strong></td>
+<td style="text-align: right;">9</td>
+<td><strong>Neon Yellow</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">10</td>
+<td><strong>Modern Shadow</strong></td>
+<td style="text-align: right;">11</td>
+<td><strong>Hormozi Style</strong></td>
+<td style="text-align: right;">12</td>
+<td><strong>Green Scale</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">13</td>
+<td><strong>Beasty Bold</strong></td>
+<td style="text-align: right;">14</td>
+<td><strong>Gray Highlight</strong></td>
+<td style="text-align: right;">15</td>
+<td><strong>Cyan Highlight</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">16</td>
+<td><strong>Purple Bold</strong></td>
+<td style="text-align: right;">17</td>
+<td><strong>Modern Pop</strong></td>
+<td style="text-align: right;">18</td>
+<td><strong>Blue Karaoke</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">19</td>
+<td><strong>Word Animation</strong></td>
+<td style="text-align: right;">20</td>
+<td><strong>Olive Green</strong></td>
+<td style="text-align: right;">21</td>
+<td><strong>White Shadow</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">22</td>
+<td><strong>Green Highlight</strong></td>
+<td style="text-align: right;">23</td>
+<td><strong>Yellow Bold</strong></td>
+<td style="text-align: right;">24</td>
+<td><strong>Colorful Pop</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">25</td>
+<td><strong>Green Word Effect</strong></td>
+<td style="text-align: right;">26</td>
+<td><strong>Classic Black</strong></td>
+<td style="text-align: right;">27</td>
+<td><strong>Green Accent</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">28</td>
+<td><strong>Purple Fill</strong></td>
+<td style="text-align: right;">29</td>
+<td><strong>Blue Motion</strong></td>
+<td style="text-align: right;">30</td>
+<td><strong>Cyan Pop</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">31</td>
+<td><strong>Motion White</strong></td>
+<td style="text-align: right;">32</td>
+<td><strong>Green Bebas Motion</strong></td>
+<td style="text-align: right;">33</td>
+<td><strong>Purple Scale</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">34</td>
+<td><strong>Purple Encode Motion</strong></td>
+<td style="text-align: right;">35</td>
+<td><strong>Red Outline</strong></td>
+<td style="text-align: right;">36</td>
+<td><strong>Lime Mono Block</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">37</td>
+<td><strong>Purple Motion</strong></td>
+<td style="text-align: right;">38</td>
+<td><strong>Lime Alfa Outline</strong></td>
+<td style="text-align: right;">39</td>
+<td><strong>Lime Mono Motion</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">40</td>
+<td><strong>Shadow Word</strong></td>
+<td style="text-align: right;">41</td>
+<td><strong>White Motion</strong></td>
+<td style="text-align: right;">42</td>
+<td><strong>Yellow Alfa Motion</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">43</td>
+<td><strong>Green Alfa Motion</strong></td>
+<td style="text-align: right;">44</td>
+<td><strong>Pink Alfa Fill</strong></td>
+<td style="text-align: right;">45</td>
+<td><strong>Cyan Alfa Motion</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">46</td>
+<td><strong>Mint Alfa Motion</strong></td>
+<td style="text-align: right;">47</td>
+<td><strong>Green Knewave Motion</strong></td>
+<td style="text-align: right;">48</td>
+<td><strong>Cyan Knewave Scale</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">49</td>
+<td><strong>Knewave Word</strong></td>
+<td style="text-align: right;">50</td>
+<td><strong>Lime Mono Outline</strong></td>
+<td style="text-align: right;">51</td>
+<td><strong>Green Outline</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">52</td>
+<td><strong>Green Fjalla Scale</strong></td>
+<td style="text-align: right;">53</td>
+<td><strong>White Fjalla Scale</strong></td>
+<td style="text-align: right;">54</td>
+<td><strong>White Word Flash</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">55</td>
+<td><strong>Red Word Fill</strong></td>
+<td style="text-align: right;">56</td>
+<td><strong>White Word Border</strong></td>
+<td style="text-align: right;">57</td>
+<td><strong>Green Word Sigma</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">58</td>
+<td><strong>Anonymous Word</strong></td>
+<td style="text-align: right;">59</td>
+<td><strong>Marker Word</strong></td>
+<td style="text-align: right;">60</td>
+<td><strong>Purple Alfa Fill</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">61</td>
+<td><strong>White Atma Outline</strong></td>
+<td style="text-align: right;">62</td>
+<td><strong>Cyan Alfa Caps</strong></td>
+<td style="text-align: right;">63</td>
+<td><strong>Shadow Word Bold</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">64</td>
+<td><strong>Lime Motion</strong></td>
+<td style="text-align: right;">65</td>
+<td><strong>Anonymous Border Word</strong></td>
+<td style="text-align: right;">66</td>
+<td><strong>Alfa Word Bold</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">67</td>
+<td><strong>Green Alfa Outline</strong></td>
+<td style="text-align: right;">68</td>
+<td><strong>White Mono Block</strong></td>
+<td style="text-align: right;">69</td>
+<td><strong>Impact Word</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">70</td>
+<td><strong>Cyan Alfa Fill</strong></td>
+<td style="text-align: right;">71</td>
+<td><strong>White Alfa Motion</strong></td>
+<td style="text-align: right;">72</td>
+<td><strong>White Mono Motion</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">73</td>
+<td><strong>Sigma Word Shadow</strong></td>
+<td style="text-align: right;">74</td>
+<td><strong>Sigma Word Glow</strong></td>
+<td style="text-align: right;">75</td>
+<td><strong>Orange Sigma Outline</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">76</td>
+<td><strong>Sigma Word Motion</strong></td>
+<td style="text-align: right;">77</td>
+<td><strong>Golden Sigma Word</strong></td>
+<td style="text-align: right;">78</td>
+<td><strong>Indigo Sigma Fill</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">79</td>
+<td><strong>Lime Imbue Motion</strong></td>
+<td style="text-align: right;">80</td>
+<td><strong>White Imbue Motion</strong></td>
+<td style="text-align: right;">81</td>
+<td><strong>Lime Modern Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">82</td>
+<td><strong>Yellow Sigma Block</strong></td>
+<td style="text-align: right;">83</td>
+<td><strong>Green Andada Keyword</strong></td>
+<td style="text-align: right;">84</td>
+<td><strong>White Andada Shadow</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">85</td>
+<td><strong>White Poppins Block</strong></td>
+<td style="text-align: right;">86</td>
+<td><strong>Pink Alfa Motion</strong></td>
+<td style="text-align: right;">87</td>
+<td><strong>Red Bebas Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">88</td>
+<td><strong>Green Rubik Keyword</strong></td>
+<td style="text-align: right;">89</td>
+<td><strong>Yellow Poppins Keyword</strong></td>
+<td style="text-align: right;">90</td>
+<td><strong>White Poppins Caps</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">91</td>
+<td><strong>White Sigma Motion</strong></td>
+<td style="text-align: right;">92</td>
+<td><strong>Pink Sigma Motion</strong></td>
+<td style="text-align: right;">93</td>
+<td><strong>Red Sigma Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">94</td>
+<td><strong>Cyan Sigma Motion</strong></td>
+<td style="text-align: right;">95</td>
+<td><strong>White Cabin Motion</strong></td>
+<td style="text-align: right;">96</td>
+<td><strong>Yellow Cabin Outline</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">97</td>
+<td><strong>Red DMSans Style</strong></td>
+<td style="text-align: right;">98</td>
+<td><strong>White Cabin Style</strong></td>
+<td style="text-align: right;">99</td>
+<td><strong>Lime Bebas Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">100</td>
+<td><strong>White Cabin Accent</strong></td>
+<td style="text-align: right;">101</td>
+<td><strong>White Sigma Accent</strong></td>
+<td style="text-align: right;">102</td>
+<td><strong>White Modern Motion</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">103</td>
+<td><strong>Lime Modern Accent</strong></td>
+<td style="text-align: right;">104</td>
+<td><strong>White Inter Keyword</strong></td>
+<td style="text-align: right;">105</td>
+<td><strong>Yellow Fredoka Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">106</td>
+<td><strong>Cyan Lemonada Keyword</strong></td>
+<td style="text-align: right;">107</td>
+<td><strong>Yellow Bold Keyword</strong></td>
+<td style="text-align: right;">108</td>
+<td><strong>White Chelsea Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">109</td>
+<td><strong>Leo Word</strong></td>
+<td style="text-align: right;">110</td>
+<td><strong>Yellow Basker Keyword</strong></td>
+<td style="text-align: right;">111</td>
+<td><strong>White Modern Shadow</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">112</td>
+<td><strong>Rose Fredoka Keyword</strong></td>
+<td style="text-align: right;">113</td>
+<td><strong>Lime Neuton Style</strong></td>
+<td style="text-align: right;">114</td>
+<td><strong>Lime Modern Caps</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">115</td>
+<td><strong>Rose Bold Keyword</strong></td>
+<td style="text-align: right;">116</td>
+<td><strong>Yellow DMSans Keyword</strong></td>
+<td style="text-align: right;">117</td>
+<td><strong>Yellow Inter Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">118</td>
+<td><strong>Lime Lemonada Keyword</strong></td>
+<td style="text-align: right;">119</td>
+<td><strong>Yellow LilitaOne Keyword</strong></td>
+<td style="text-align: right;">120</td>
+<td><strong>Yellow Inter Scale</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">121</td>
+<td><strong>Lime PublicSans Keyword</strong></td>
+<td style="text-align: right;">122</td>
+<td><strong>Lime Bebas Accent</strong></td>
+<td style="text-align: right;">123</td>
+<td><strong>White Modern Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">124</td>
+<td><strong>Lime Bold Keyword</strong></td>
+<td style="text-align: right;">125</td>
+<td><strong>Rose Inter Keyword</strong></td>
+<td style="text-align: right;">126</td>
+<td><strong>Yellow Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">127</td>
+<td><strong>White Inter Shadow</strong></td>
+<td style="text-align: right;">128</td>
+<td><strong>Purple Inter Keyword</strong></td>
+<td style="text-align: right;">129</td>
+<td><strong>Cyan Roboto Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">130</td>
+<td><strong>Cyan Rubik Keyword</strong></td>
+<td style="text-align: right;">131</td>
+<td><strong>Purple Bold Keyword</strong></td>
+<td style="text-align: right;">132</td>
+<td><strong>Blue Sigma Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">133</td>
+<td><strong>Lime RobotoSlab Keyword</strong></td>
+<td style="text-align: right;">134</td>
+<td><strong>Indigo Fredoka Keyword</strong></td>
+<td style="text-align: right;">135</td>
+<td><strong>Black CaveatBrush Shadow</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">136</td>
+<td><strong>White AguafinaScript Keyword</strong></td>
+<td style="text-align: right;">137</td>
+<td><strong>White Cabin Block</strong></td>
+<td style="text-align: right;">138</td>
+<td><strong>Yellow Serif Glow</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">139</td>
+<td><strong>Red Rubik Keyword</strong></td>
+<td style="text-align: right;">140</td>
+<td><strong>White Serif Keyword</strong></td>
+<td style="text-align: right;">141</td>
+<td><strong>Red Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">142</td>
+<td><strong>Yellow Serif Keyword</strong></td>
+<td style="text-align: right;">143</td>
+<td><strong>Blue Serif Block</strong></td>
+<td style="text-align: right;">144</td>
+<td><strong>Indigo Inter Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">145</td>
+<td><strong>Lime Chivo Keyword</strong></td>
+<td style="text-align: right;">146</td>
+<td><strong>Red Inter Keyword</strong></td>
+<td style="text-align: right;">147</td>
+<td><strong>Green Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">148</td>
+<td><strong>Green Staat Keyword</strong></td>
+<td style="text-align: right;">149</td>
+<td><strong>Red Staat Keyword</strong></td>
+<td style="text-align: right;">150</td>
+<td><strong>Green Shadow</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">151</td>
+<td><strong>Green Fill</strong></td>
+<td style="text-align: right;">152</td>
+<td><strong>Green Style</strong></td>
+<td style="text-align: right;">153</td>
+<td><strong>Green Fredoka Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">154</td>
+<td><strong>White Keyword</strong></td>
+<td style="text-align: right;">155</td>
+<td><strong>Red Fill</strong></td>
+<td style="text-align: right;">156</td>
+<td><strong>Purple Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">157</td>
+<td><strong>Green Fredoka Accent</strong></td>
+<td style="text-align: right;">158</td>
+<td><strong>White Secular Block</strong></td>
+<td style="text-align: right;">159</td>
+<td><strong>Red Julius Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">160</td>
+<td><strong>Green Modern Keyword</strong></td>
+<td style="text-align: right;">161</td>
+<td><strong>White Modern Block</strong></td>
+<td style="text-align: right;">162</td>
+<td><strong>Gray Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">163</td>
+<td><strong>Lime Keyword</strong></td>
+<td style="text-align: right;">164</td>
+<td><strong>Lime Accent</strong></td>
+<td style="text-align: right;">165</td>
+<td><strong>Green Julius Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">166</td>
+<td><strong>Black Julius Caps</strong></td>
+<td style="text-align: right;">167</td>
+<td><strong>Purple Accent</strong></td>
+<td style="text-align: right;">168</td>
+<td><strong>White Sigma Block</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">169</td>
+<td><strong>Gray Cabin Keyword</strong></td>
+<td style="text-align: right;">170</td>
+<td><strong>Green Secular Keyword</strong></td>
+<td style="text-align: right;">171</td>
+<td><strong>White Inter Block</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">172</td>
+<td><strong>Green Left</strong></td>
+<td style="text-align: right;">173</td>
+<td><strong>Lime Outline</strong></td>
+<td style="text-align: right;">174</td>
+<td><strong>Lime Shadow</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">175</td>
+<td><strong>Lime Style</strong></td>
+<td style="text-align: right;">176</td>
+<td><strong>Green Changa Keyword</strong></td>
+<td style="text-align: right;">177</td>
+<td><strong>Green Sigma Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">178</td>
+<td><strong>Green Modern Accent</strong></td>
+<td style="text-align: right;">179</td>
+<td><strong>White Accent</strong></td>
+<td style="text-align: right;">180</td>
+<td><strong>Green Bungee Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">181</td>
+<td><strong>Green Changa Accent</strong></td>
+<td style="text-align: right;">182</td>
+<td><strong>Purple Outline</strong></td>
+<td style="text-align: right;">183</td>
+<td><strong>Cyan Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">184</td>
+<td><strong>Purple Shadow</strong></td>
+<td style="text-align: right;">185</td>
+<td><strong>Green Inter Keyword</strong></td>
+<td style="text-align: right;">186</td>
+<td><strong>White Outline</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">187</td>
+<td><strong>Lime Block</strong></td>
+<td style="text-align: right;">188</td>
+<td><strong>Black Keyword</strong></td>
+<td style="text-align: right;">189</td>
+<td><strong>Black Accent</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">190</td>
+<td><strong>Yellow Inter Accent</strong></td>
+<td style="text-align: right;">191</td>
+<td><strong>Yellow Lobster Keyword</strong></td>
+<td style="text-align: right;">192</td>
+<td><strong>Green Inter Accent</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">193</td>
+<td><strong>Green Roboto Keyword</strong></td>
+<td style="text-align: right;">194</td>
+<td><strong>Purple Style</strong></td>
+<td style="text-align: right;">195</td>
+<td><strong>Green Pacifico Keyword</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">196</td>
+<td><strong>Purple Secular Keyword</strong></td>
+<td style="text-align: right;">197</td>
+<td><strong>Green Inter Block</strong></td>
+<td style="text-align: right;">198</td>
+<td><strong>Green Block</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">199</td>
+<td><strong>Purple Glow</strong></td>
+<td style="text-align: right;">200</td>
+<td><strong>White Left</strong></td>
+<td style="text-align: right;">201</td>
+<td><strong>Purple Left</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">202</td>
+<td><strong>Yellow Sigma Keyword</strong></td>
+<td style="text-align: right;">203</td>
+<td><strong>Green Staat Accent</strong></td>
+<td style="text-align: right;">204</td>
+<td><strong>Green Caps</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">205</td>
+<td><strong>Purple Modern Keyword</strong></td>
+<td style="text-align: right;">206</td>
+<td><strong>White PlayfairDisplay Keyword</strong></td>
+<td style="text-align: right;">207</td>
+<td><strong>Green Roboto Fill</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">208</td>
+<td><strong>Red Rubik Accent</strong></td>
+<td style="text-align: right;">209</td>
+<td><strong>Indigo Inter Shadow</strong></td>
+<td style="text-align: right;">210</td>
+<td><strong>White Style</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">211</td>
+<td><strong>Black Poppins Keyword</strong></td>
+<td style="text-align: right;">212</td>
+<td><strong>Lime Modern Outline</strong></td>
+<td style="text-align: right;">213</td>
+<td><strong>Yellow Sigma Fill</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">214</td>
+<td><strong>White Modern Accent</strong></td>
+<td style="text-align: right;">215</td>
+<td><strong>Black Outline</strong></td>
+<td style="text-align: right;">216</td>
+<td><strong>Cyan Francois Motion</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">217</td>
+<td><strong>Lime Francois Motion</strong></td>
+<td style="text-align: right;"></td>
+<td></td>
+<td style="text-align: right;"></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-tune-caption-words-highlighting-and-timing">How to tune caption words, highlighting, and timing<a class="headerlink" href="#how-to-tune-caption-words-highlighting-and-timing" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select a caption item.</li>
+<li>Open <strong>Content</strong> and expand <strong>Caption Words</strong>.</li>
+<li>Use the word grouping controls to decide how generated word timings are displayed.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Exact options</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Lines per Page</strong></td>
+<td><strong>One</strong>, <strong>Two</strong>, <strong>Three</strong>, <strong>Four</strong>, <strong>Five</strong></td>
+<td>Regroups transcript words into caption blocks with more or fewer lines.</td>
+</tr>
+<tr>
+<td><strong>Words per line</strong></td>
+<td><strong>Punctuation</strong>, <strong>Time</strong>, <strong>Single Word</strong></td>
+<td><strong>Punctuation</strong> splits on punctuation or pauses; <strong>Time</strong> makes short timed chunks; <strong>Single Word</strong> creates one caption per word.</td>
+</tr>
+<tr>
+<td><strong>Words in line</strong></td>
+<td><strong>Page</strong>, <strong>Line</strong>, <strong>Word</strong></td>
+<td>Controls whether caption text appears as a full page, line by line, or word by word.</td>
+</tr>
+<tr>
+<td><strong>Position</strong></td>
+<td><strong>Auto</strong>, <strong>Top</strong>, <strong>Center</strong>, <strong>Bottom</strong></td>
+<td>Moves captions vertically on the canvas. <strong>Auto</strong> centers vertically.</td>
+</tr>
+<tr>
+<td><strong>Transition</strong></td>
+<td><strong>None</strong>, <strong>Fade</strong>, <strong>Scale</strong>, <strong>Slide</strong>, <strong>Zoom</strong>, <strong>Pop</strong>, <strong>Jump</strong>, <strong>Pulse</strong></td>
+<td>Sets the word/page transition used as caption text appears.</td>
+</tr>
+</tbody>
+</table>
+<p>Per-word timing comes from transcription. The editor preserves each word’s start and end time, then uses <strong>Words per line</strong>, <strong>Words in line</strong>, and <strong>Transition</strong> to decide how those timed words are grouped and revealed. When you edit caption text in <strong>Transcript</strong>, the editor rebuilds word tokens and redistributes timing across the caption’s existing time span.</p>
+<h2 id="how-to-adjust-caption-colors-and-fonts">How to adjust caption colors and fonts<a class="headerlink" href="#how-to-adjust-caption-colors-and-fonts" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select a caption item.</li>
+<li>Open <strong>Content</strong> and expand <strong>Caption Colors</strong> for word-state colors.</li>
+<li>Open <strong>Design</strong> and expand <strong>Text Style</strong> for the caption font, size, fill, gradient, opacity, spacing, and padding.</li>
+<li>Open <strong>Design</strong> and expand <strong>Stroke &amp; Shadow</strong> for outline and shadow readability.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Caption color control</th>
+<th>What it affects</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Colors</strong></td>
+<td>The color-control group.</td>
+</tr>
+<tr>
+<td><strong>Appeared</strong></td>
+<td>Words that have already appeared.</td>
+</tr>
+<tr>
+<td><strong>Active</strong></td>
+<td>The currently spoken word.</td>
+</tr>
+<tr>
+<td><strong>Active Fill</strong></td>
+<td>The highlight fill behind the active word.</td>
+</tr>
+<tr>
+<td><strong>Emphasize</strong></td>
+<td>Keyword/emphasized word color.</td>
+</tr>
+<tr>
+<td><strong>Preserved Color</strong></td>
+<td>Keeps emphasized keyword color after the word has appeared.</td>
+</tr>
+</tbody>
+</table>
+<p>Caption font picker labels include <strong>Font</strong>, <strong>Search fonts...</strong>, <strong>Recent</strong>, <strong>display</strong>, <strong>sans-serif</strong>, <strong>serif</strong>, <strong>handwriting</strong>, <strong>monospace</strong>, and <strong>No fonts found</strong>. Available caption font names include <strong>Bangers</strong>, <strong>Bebas Neue</strong>, <strong>Anton</strong>, <strong>Oswald</strong>, <strong>Righteous</strong>, <strong>Bungee</strong>, <strong>Lilita One</strong>, <strong>Passion One</strong>, <strong>Black Ops One</strong>, <strong>Fredoka One</strong>, <strong>Inter</strong>, <strong>Roboto</strong>, <strong>Poppins</strong>, <strong>Montserrat</strong>, <strong>Open Sans</strong>, <strong>Lato</strong>, <strong>Nunito</strong>, <strong>Raleway</strong>, <strong>Playfair Display</strong>, <strong>Merriweather</strong>, <strong>Lora</strong>, <strong>Kalam</strong>, <strong>Caveat</strong>, <strong>Dancing Script</strong>, <strong>Permanent Marker</strong>, <strong>Patrick Hand</strong>, <strong>Fira Code</strong>, and <strong>JetBrains Mono</strong>.</p>
+<p>Caption manual styling uses the same <strong>Text Style</strong> controls as text, with caption-specific defaults and a smaller <strong>Size</strong> range. Caption <strong>Stroke &amp; Shadow</strong> includes <strong>Stroke</strong>, <strong>Color</strong>, <strong>Size</strong>, <strong>Shadow</strong>, <strong>X</strong>, <strong>Y</strong>, and <strong>Blur</strong>.</p>
+<h2 id="how-to-animate-captions">How to animate captions<a class="headerlink" href="#how-to-animate-captions" title="Permanent link">&para;</a></h2>
+<p>Caption animation controls appear in two places:</p>
+<table>
+<thead>
+<tr>
+<th>Where</th>
+<th>Exact labels</th>
+<th>What it controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Content</strong> → <strong>Caption Words</strong></td>
+<td><strong>Transition</strong>: <strong>None</strong>, <strong>Fade</strong>, <strong>Scale</strong>, <strong>Slide</strong>, <strong>Zoom</strong>, <strong>Pop</strong>, <strong>Jump</strong>, <strong>Pulse</strong></td>
+<td>The caption word/page reveal transition.</td>
+</tr>
+<tr>
+<td><strong>Animate</strong> → <strong>Animations</strong></td>
+<td><strong>Animation</strong>, <strong>None</strong>, <strong>Custom</strong>, <strong>Animations</strong>, and a dynamic <strong>Bulk</strong> badge when multiple captions are selected</td>
+<td>Caption item entrance animation picker.</td>
+</tr>
+<tr>
+<td>Floating <strong>Animations</strong> picker</td>
+<td><strong>Rotate</strong>, <strong>Flip</strong>, <strong>Fade</strong>, <strong>Scale</strong>, <strong>Slide Right</strong>, <strong>Slide Left</strong>, <strong>Slide Top</strong>, <strong>Slide Bottom</strong></td>
+<td>Applies an entrance animation to the selected caption item or selected captions.</td>
+</tr>
+<tr>
+<td><strong>Effects</strong> tab</td>
+<td><strong>Keyframes</strong>, <strong>Effects</strong></td>
+<td>Animates caption properties over time and applies visual effects.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-style-captions-manually">How to style captions manually<a class="headerlink" href="#how-to-style-captions-manually" title="Permanent link">&para;</a></h2>
+<p>Caption styling shares text controls but is organized across caption-specific tabs.</p>
+<table>
+<thead>
+<tr>
+<th>Tab</th>
+<th>Sections and controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Transcript</strong></td>
+<td><strong>Find captions</strong>, <strong>Replace with</strong>, <strong>Replace</strong>, <strong>Replace All</strong>, <strong>All tracks</strong>, <strong>Export captions</strong>, <strong>Export as SRT</strong>, <strong>Export as VTT</strong>, <strong>Select All</strong>, row tools, and <strong>Edit caption text</strong>.</td>
+</tr>
+<tr>
+<td><strong>Content</strong></td>
+<td><strong>Preset</strong>, <strong>Caption Words</strong>, <strong>Animations</strong>, and <strong>Caption Colors</strong>.</td>
+</tr>
+<tr>
+<td><strong>Design</strong></td>
+<td><strong>Text Style</strong> and <strong>Stroke &amp; Shadow</strong>. <strong>Text Style</strong> includes <strong>Font</strong>, <strong>Size</strong>, <strong>Color</strong>, <strong>Fill</strong>, <strong>Gradient</strong>, <strong>Align</strong>, <strong>Case</strong>, <strong>Decoration</strong>, <strong>Opacity</strong>, <strong>Typography</strong>, <strong>Line Height</strong>, <strong>Letter Spacing</strong>, <strong>Border Radius</strong>, <strong>Rotation</strong>, <strong>Word Spacing</strong>, <strong>Blend Mode</strong>, and <strong>Padding</strong>.</td>
+</tr>
+<tr>
+<td><strong>Animate</strong></td>
+<td><strong>Animations</strong> for caption item motion.</td>
+</tr>
+<tr>
+<td><strong>Effects</strong></td>
+<td><strong>Keyframes</strong> and <strong>Effects</strong>.</td>
+</tr>
+</tbody>
+</table>
+<p>Use <strong>Search caption settings...</strong> to find any caption section quickly. If nothing matches, the panel says <strong>No settings match “your search”</strong> with your search text in the quotation marks.</p>
+<h2 id="tips-good-to-know">Tips &amp; good to know<a class="headerlink" href="#tips-good-to-know" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Text and captions are added on top tracks so they stay visible above video, image, and scene layers.</li>
+<li>Captions need word timing to render. If a selected caption has no words, the panel shows <strong>No caption text yet</strong> and <strong>This caption has no words. Add captions to get started.</strong></li>
+<li><strong>Quick Generate</strong> needs video or audio on the timeline and a selected item in <strong>Select media</strong>.</li>
+<li><strong>From Transcript</strong> works only after an editor transcript exists.</li>
+<li><strong>Auto-Captions</strong> is best when you want progress, <strong>Config</strong>, <strong>Table</strong>, <strong>Trim Silence</strong>, and <strong>Add to timeline</strong> control for one source recording.</li>
+<li>Generated captions use word-level timing, so <strong>Active</strong> and <strong>Active Fill</strong> can highlight the currently spoken word.</li>
+<li>If captions are hard to read, start with stronger <strong>Stroke</strong>, <strong>Shadow</strong>, or <strong>Active Fill</strong> before increasing <strong>Size</strong>.</li>
+<li>Use <strong>Preview background — see how captions look on your video color</strong> before applying a caption preset to check contrast.</li>
+<li>Use <strong>Export as SRT</strong> or <strong>Export as VTT</strong> when you need a standard subtitle file outside the editor.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="04-timeline-editing.html">Timeline editing</a></li>
+<li><a href="03-media-and-audio.html">Media &amp; audio</a></li>
+<li><a href="06-animations-and-effects.html">Animations &amp; effects</a></li>
+</ul>
+      </article>
+    </div>
+    <aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#where-to-find-it">Where to find it</a></li>
+<li><a href="#what-you-can-do">What you can do</a></li>
+<li><a href="#how-to-add-a-text-element">How to add a text element</a></li>
+<li><a href="#how-to-style-text">How to style text</a></li>
+<li><a href="#how-to-use-text-presets">How to use text presets</a></li>
+<li><a href="#how-to-generate-captions-from-video-or-audio">How to generate captions from video or audio</a><ul>
+<li><a href="#generate-from-the-captions-menu">Generate from the Captions menu</a></li>
+<li><a href="#generate-from-a-selected-clip-with-auto-captions">Generate from a selected clip with Auto-Captions</a></li>
+</ul>
+</li>
+<li><a href="#how-to-generate-captions-from-an-existing-transcript">How to generate captions from an existing transcript</a></li>
+<li><a href="#how-to-read-transcription-progress-and-transcript-tools">How to read transcription progress and transcript tools</a></li>
+<li><a href="#how-to-edit-caption-text-and-timing">How to edit caption text and timing</a></li>
+<li><a href="#how-to-choose-caption-style-presets">How to choose caption style presets</a></li>
+<li><a href="#how-to-tune-caption-words-highlighting-and-timing">How to tune caption words, highlighting, and timing</a></li>
+<li><a href="#how-to-adjust-caption-colors-and-fonts">How to adjust caption colors and fonts</a></li>
+<li><a href="#how-to-animate-captions">How to animate captions</a></li>
+<li><a href="#how-to-style-captions-manually">How to style captions manually</a></li>
+<li><a href="#tips-good-to-know">Tips &amp; good to know</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
