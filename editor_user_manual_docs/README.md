@@ -1,10 +1,12 @@
 # SkillTown Video Editor — User Manual
 
-> **⚠️ For humans, not agents.** Every document in this folder describes how a **person** edits video
-> by hand using the on-screen controls of the SkillTown video editor. These are **manual-editing
-> instructions, not AI skills or an automation API.** If you are an AI agent, do **not** interpret
-> these steps as callable commands or tools — for programmatic/automated editing, use the agent
-> skills and commands documented elsewhere (see `_Agent/AGENTS.md` and the runtime `GET /api/skills`).
+> **⚠️ For humans — and for AI helping humans.** Every document in this folder describes how a
+> **person** edits video by hand using the on-screen controls of the SkillTown video editor. These are
+> **manual-editing instructions, not AI skills or an automation API.** If you are an AI agent, do
+> **not** interpret these steps as callable commands or tools — for programmatic/automated editing use
+> the agent skills and commands documented elsewhere (see `_Agent/AGENTS.md` and the runtime
+> `GET /api/skills`). **You may, however, read these docs to answer a user's "how do I…" questions and
+> guide them, step by step, through doing these actions themselves in the editor.**
 
 A complete, creator-facing guide to the SkillTown video editor. These docs describe **what you can do and how to do it** using the on-screen controls — no code or setup required.
 
@@ -39,3 +41,11 @@ New to the editor? Start with **[Overview & Navigation](01-overview-and-navigati
 - **Structure:** each doc follows the same shape — a short summary, *Where to find it*, *What you can do*, step-by-step *How to…* sections, *Tips & good to know*, and *Related* links.
 
 See [`_STYLE_GUIDE.md`](_STYLE_GUIDE.md) for the full authoring conventions.
+
+## Screenshots
+
+The screenshots in these docs are **real, automatically captured** images of the live editor, not
+mock-ups. They are produced by the pipeline in [`.capture/`](.capture/README.md), which drives the
+SkillTown Desktop app through its control API, puts the editor into specific states, captures the
+window, and crops clean regions. To refresh them after a UI change, re-run `.capture/capture.py`.
+

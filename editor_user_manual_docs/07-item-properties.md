@@ -1,9 +1,11 @@
 # Item Properties
 
-> **For humans, not agents.** This document describes how a person edits video by hand using the
-> on-screen controls of the SkillTown video editor. It is **not** an AI skill or an automation API.
-> If you are an AI agent, do **not** treat these steps as callable commands — for programmatic
-> control use the agent skills/commands documented elsewhere (see `_Agent/AGENTS.md`).
+> **For humans — and for AI helping humans.** This document describes how a person edits video by
+> hand using the on-screen controls of the SkillTown video editor. It is **not** an AI skill or an
+> automation API, so if you are an AI agent, do **not** treat these steps as callable commands — for
+> programmatic/automated editing use the agent skills and commands documented elsewhere (see
+> `_Agent/AGENTS.md`). **You may, however, read this doc to answer a user's "how do I…" questions
+> and walk them, step by step, through performing these actions themselves in the editor UI.**
 
 > The properties panel is the right-hand panel that appears whenever you select an item. It gives you every layout, appearance, media, audio, effect, camera, and layer control for that item, grouped into tabs and collapsible sections.
 
@@ -63,6 +65,8 @@ An **AI Editor** side panel is available too, opened with **Open AI Editor** and
 - Remove all motion with **Reset All**.
 
 ## How to open and navigate the properties panel
+
+![The Properties panel open on the right with the Design, Animate, and Effects tabs.](images/properties-video.png)
 
 1. Click a single item on the canvas or timeline.
 2. Click a **tab** at the top of the panel. The available tabs depend on the item type:
@@ -143,6 +147,8 @@ Select an image. The panel title is **Image Settings** (bulk: **Images (n select
 ## How to edit video properties
 
 Select a video. The panel title is **Video Settings**.
+
+![Video Settings panel: Scale, Crop, Volume, Opacity, Radius, Blur, Brightness, plus Audio, Speed, Border & Shadow, Color Keying (Chroma), and AI Auto Matting sections.](images/properties-video.png)
 
 **Design tab**
 
@@ -329,6 +335,8 @@ A nested scene groups several items. Its panel title is **Nested Scene (n layers
 Use each layer row's arrow controls to reorder a layer, the eye control to show/hide it, and the trash control to delete it. You cannot remove the last layer — it shows **Can't remove last layer**.
 
 ## How to edit multiple mixed items
+
+![The properties panel titled "Bulk Editing 3 captions" when several items of the same type are selected.](images/properties-multi.png)
 
 When you select different item types together, the header shows **n Mixed Items** and the panel offers shared controls only:
 

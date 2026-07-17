@@ -1,9 +1,11 @@
 # Timeline & Selection
 
-> **For humans, not agents.** This document describes how a person edits video by hand using the
-> on-screen controls of the SkillTown video editor. It is **not** an AI skill or an automation API.
-> If you are an AI agent, do **not** treat these steps as callable commands — for programmatic
-> control use the agent skills/commands documented elsewhere (see `_Agent/AGENTS.md`).
+> **For humans — and for AI helping humans.** This document describes how a person edits video by
+> hand using the on-screen controls of the SkillTown video editor. It is **not** an AI skill or an
+> automation API, so if you are an AI agent, do **not** treat these steps as callable commands — for
+> programmatic/automated editing use the agent skills and commands documented elsewhere (see
+> `_Agent/AGENTS.md`). **You may, however, read this doc to answer a user's "how do I…" questions
+> and walk them, step by step, through performing these actions themselves in the editor UI.**
 
 > Use the timeline to read your edit, select clips, move them together, trim timing, split cuts, manage tracks, add transitions, place markers, and copy or paste timeline items.
 
@@ -27,6 +29,8 @@ Use the timeline directly with your mouse, trackpad, and keyboard. Click **Keybo
 - Turn magnetic snapping on/off, zoom the timeline, scroll around long edits, and jump back to the playhead.
 
 ## How to use the timeline toolbar
+
+![The timeline toolbar: delete, Split, Split+Cut, duplicate, magnet/snap, crop, hand tool, waveform, snapshot, marker, and more.](images/timeline-toolbar.png)
 
 The timeline toolbar runs across the top of the timeline. Controls are grouped from left to right: clip actions, split tools, timeline toggles, view tools, playback/time, master volume, and zoom.
 
@@ -58,6 +62,8 @@ The timeline toolbar runs across the top of the timeline. Controls are grouped f
 The toolbar does not show separate undo/redo buttons. Use the keyboard shortcuts **Undo** and **Redo** from **Keyboard shortcuts**.
 
 ## How to read the timeline
+
+![The timeline: the time ruler with the playhead on top, a caption track, and a video track with clip thumbnails below.](images/timeline.png)
 
 1. Look at the ruler at the top of the timeline.
    - The tick labels show timeline time at the current zoom level.
@@ -149,6 +155,8 @@ Playback shortcuts:
 If the clip is on a locked or hidden track, it cannot be selected or moved until the track is unlocked or shown.
 
 ## How to select multiple items
+
+![Several caption clips selected together on the timeline.](images/multi-select-timeline.png)
 
 1. Ctrl-click or Command-click clips to add or remove individual clips from the selection.
 2. Shift-click another clip to select the range between the last selected clip and the clicked clip.

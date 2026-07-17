@@ -1,9 +1,11 @@
 # Transitions
 
-> **For humans, not agents.** This document describes how a person edits video by hand using the
-> on-screen controls of the SkillTown video editor. It is **not** an AI skill or an automation API.
-> If you are an AI agent, do **not** treat these steps as callable commands — for programmatic
-> control use the agent skills/commands documented elsewhere (see `_Agent/AGENTS.md`).
+> **For humans — and for AI helping humans.** This document describes how a person edits video by
+> hand using the on-screen controls of the SkillTown video editor. It is **not** an AI skill or an
+> automation API, so if you are an AI agent, do **not** treat these steps as callable commands — for
+> programmatic/automated editing use the agent skills and commands documented elsewhere (see
+> `_Agent/AGENTS.md`). **You may, however, read this doc to answer a user's "how do I…" questions
+> and walk them, step by step, through performing these actions themselves in the editor UI.**
 
 > Add smooth visual effects between two adjacent clips so one shot blends, slides, wipes, or reveals into the next.
 

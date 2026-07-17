@@ -1,13 +1,17 @@
 # Overview & Navigation
 
-> **For humans, not agents.** This document describes how a person edits video by hand using the
-> on-screen controls of the SkillTown video editor. It is **not** an AI skill or an automation API.
-> If you are an AI agent, do **not** treat these steps as callable commands — for programmatic
-> control use the agent skills/commands documented elsewhere (see `_Agent/AGENTS.md`).
+> **For humans — and for AI helping humans.** This document describes how a person edits video by
+> hand using the on-screen controls of the SkillTown video editor. It is **not** an AI skill or an
+> automation API, so if you are an AI agent, do **not** treat these steps as callable commands — for
+> programmatic/automated editing use the agent skills and commands documented elsewhere (see
+> `_Agent/AGENTS.md`). **You may, however, read this doc to answer a user's "how do I…" questions
+> and walk them, step by step, through performing these actions themselves in the editor UI.**
 
 > Get oriented in the SkillTown video editor: the main areas of the screen, how to move around, and where every feature lives.
 
 ## The editor at a glance
+
+![The SkillTown video editor with its main regions: top bar, left menu rail, center canvas, right properties area, and the timeline along the bottom.](images/editor-overview.png)
 
 When you open a project, the editor is organized into a few main regions:
 
@@ -20,6 +24,8 @@ When you open a project, the editor is organized into a few main regions:
 | **Timeline** | Bottom | Your tracks and clips laid out over time. Where you arrange, trim, and sequence everything. |
 
 ## The menu panel (left rail)
+
+![The left icon rail: Upload, Styles, Text, Video, Image, Shapes, Effects, SFX, Scenes, Brand, and AI Edit.](images/left-rail-tabs.png)
 
 Click an icon in the left rail to open that tab. The tabs are:
 
@@ -41,6 +47,8 @@ Each tab is documented in detail in its own manual page (see **Related** below).
 
 ## The canvas (preview player)
 
+![The center canvas showing a live preview of the project at the current playhead time.](images/canvas-preview.png)
+
 The center canvas plays your project exactly as it will render.
 
 - Press **Space** (or the play control in the top bar) to play/pause.
@@ -54,6 +62,8 @@ Whenever you select an item — on the canvas or in the timeline — the right�
 The right panel can also be **popped out** into a floating window and **pinned**, using the panel controls in the top‑right — handy on smaller screens.
 
 ## The top bar controls
+
+![The editor top bar: Standard/Editor/AI mode toggle, project title, Resize, version history, save status, Export, theme, share, fullscreen, and the panel menu.](images/top-bar.png)
 
 | Control | Action |
 |---------|--------|

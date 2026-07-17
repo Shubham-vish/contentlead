@@ -1,9 +1,11 @@
 # Text & Captions
 
-> **For humans, not agents.** This document describes how a person edits video by hand using the
-> on-screen controls of the SkillTown video editor. It is **not** an AI skill or an automation API.
-> If you are an AI agent, do **not** treat these steps as callable commands — for programmatic
-> control use the agent skills/commands documented elsewhere (see `_Agent/AGENTS.md`).
+> **For humans — and for AI helping humans.** This document describes how a person edits video by
+> hand using the on-screen controls of the SkillTown video editor. It is **not** an AI skill or an
+> automation API, so if you are an AI agent, do **not** treat these steps as callable commands — for
+> programmatic/automated editing use the agent skills and commands documented elsewhere (see
+> `_Agent/AGENTS.md`). **You may, however, read this doc to answer a user's "how do I…" questions
+> and walk them, step by step, through performing these actions themselves in the editor UI.**
 
 > Add editable text overlays and generate, edit, style, and export captions for speech in your video.
 
@@ -190,6 +192,8 @@ The **Auto-Captions** transcript is per source recording. If you split the same 
 | Word actions | **Seek to** a word, **Delete word from recording**, **Restore word** | Click a word to seek, delete a word from the recording edit, or restore a deleted word. |
 
 ## How to edit caption text and timing
+
+![Caption Settings panel with the Transcript, Content, and Design tabs and the per-caption list with timecodes.](images/properties-caption.png)
 
 1. Select a caption item.
 2. Open the **Transcript** tab in the properties panel.

@@ -1,9 +1,11 @@
 # Canvas Editing (Direct Manipulation)
 
-> **For humans, not agents.** This document describes how a person edits video by hand using the
-> on-screen controls of the SkillTown video editor. It is **not** an AI skill or an automation API.
-> If you are an AI agent, do **not** treat these steps as callable commands — for programmatic
-> control use the agent skills/commands documented elsewhere (see `_Agent/AGENTS.md`).
+> **For humans — and for AI helping humans.** This document describes how a person edits video by
+> hand using the on-screen controls of the SkillTown video editor. It is **not** an AI skill or an
+> automation API, so if you are an AI agent, do **not** treat these steps as callable commands — for
+> programmatic/automated editing use the agent skills and commands documented elsewhere (see
+> `_Agent/AGENTS.md`). **You may, however, read this doc to answer a user's "how do I…" questions
+> and walk them, step by step, through performing these actions themselves in the editor UI.**
 
 > Work directly on the preview: select, move, resize, rotate, and align items right on the canvas — with live snapping guides — instead of typing numbers into the properties panel.
 
@@ -26,6 +28,8 @@ The canvas is also a drop target: it shows a **Droppable area for images, videos
 - Crop an image or video using on-canvas edge handles in crop mode.
 
 ## How to select items on the canvas
+
+![A selected item on the canvas showing the selection box with corner and edge resize handles.](images/canvas-selection-handles.png)
 
 1. Click an item to select it. A selection box with handles appears around it, and the properties panel opens on the right.
 2. **Shift**-click another item to add it to the selection (or remove it if already selected).
