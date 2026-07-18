@@ -121,6 +121,27 @@ Source: `player/caption-inline-editor/` — `CaptionInlineEditor.tsx` (root `onK
 handles Enter=commit + Esc=cancel), `CaptionWordToken.tsx` (Tab/arrow word navigation),
 `CaptionEditToolbar.tsx` (Done ↵ / Cancel buttons).
 
+### ⚠️ Caption width is AUTHORED — never auto-grow it
+
+Caption **width is a fixed, authored value** (`details.width`, e.g. 920). The inline editor
+and the on-commit measurement must wrap text within that width exactly like the normal render.
+**Never grow the width to fit content.**
+
+- Root cause of past "caption box explodes on double-click / after edit" bugs (widths like 4095,
+  18234): the edit UI content (`w-full` / `width:100%`) had **no definite wrap basis** inside the
+  `BoxAnim { width:"auto" }` container, so every word laid out on one line and the box ballooned;
+  the moveable + on-commit `measureCaptionDimensions` then persisted that runaway width, which also
+  shifted the top-left-anchored box's visual center (apparent X/Y drift).
+- Fix invariant: pin the editor root **and** content div to `detailsWidth`; on commit, keep width =
+  authored `detailsWidth` and only re-measure the **wrapped height** at that fixed width.
+- If a caption's `details.width` is already corrupted (query `getTimelineItems`, look for width
+  ≫ 1000 on a caption), repair it: `editor.editItem {itemId, updates:{details:{width:920,height:180}}}`
+  then `editor.save`.
+
+Source: `player/caption-inline-editor/CaptionInlineEditor.tsx` (`measureCaptionDimensions` keeps
+width, measures height only; root + `contentRef` pinned to `detailsWidth`), `player/items/caption.tsx`
+(`BoxAnim { width:"auto" }`), `player/styles.ts` `calculateTextStyles` (emits no width/whiteSpace).
+
 ## Scene-backed text templates (high-fidelity styling)
 
 Text items stay editable (`type:"text"` — inline edit, toolbar, timeline, `setAnimation` all

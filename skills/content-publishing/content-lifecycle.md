@@ -100,16 +100,39 @@ content_update(
     display_title="5 AI Tools You Need in 2025",
     content_title="5 AI Tools You Need in 2025",
     description="A deep dive into the best AI tools for content creators",
-    thumbnail="https://storage.blob.core.windows.net/.../thumb.jpg",
+    thumbnail=uploaded_thumb["videoUrl"],  # `videoUrl` field is the canonical (no-SAS) blob URL — see `content_get_upload_url` below
     status="ready"
 )
 
-# After uploading a video, set all video URLs
+# After uploading a video, pass the canonical URL that the upload flow
+# returns back to `content_update`.
+# ⚠️ Never hand-craft Blob URLs or SAS query strings yourself — the SAS is a
+# bearer capability and the Desktop-mediated flow mints/rotates it for you.
+#
+# Recommended path (verified live 2026-07-19):
+#   POST http://127.0.0.1:$PORT/api/bridge/content/upload-url
+#   body: {"contentId": "...", "fileName": "video.mp4", "contentType": "video/mp4"}
+# This proxies through the Desktop to the Next.js /api/content/upload-url route
+# using the signed-in user's cookies — no manual auth needed.
+#
+# Response fields (verified live from /api/bridge/content/upload-url):
+#   uploadUrl            — SAS URL with 'rcw' perms; PUT bytes here
+#   videoUrl             — same URL WITHOUT the SAS query string (canonical, no-SAS)
+#   downloadableSasUrl   — SAS read URL, expires per sasExpiresAt (ISO string)
+#   sasExpiresAt         — ISO timestamp when downloadableSasUrl expires
+#   headers              — required PUT headers (x-ms-blob-type, Content-Type, ...)
+#   metadata             — {blobName, containerName, accountName, ...}
+#
+# ⚠️ The MCP tool `content_get_upload_url` (defined in MCP_Server/mcp/domains/
+# content/content_publish.py) is currently NOT exposed by the running MCP proxy —
+# use the bridge route above instead.
+#
+# Then update the Content doc:
 content_update(
     content_id="content_xxx",
-    video_url="https://storageaccount.blob.core.windows.net/videos/video.mp4",
-    downloadable_sas_url="https://storageaccount.blob.core.windows.net/videos/video.mp4?sv=2022&sig=abc...",
-    sas_expires_at="2025-06-15T12:00:00Z"
+    video_url=uploaded["videoUrl"],
+    downloadable_sas_url=uploaded["downloadableSasUrl"],
+    sas_expires_at=uploaded["sasExpiresAt"],
 )
 ```
 

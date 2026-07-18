@@ -99,7 +99,6 @@ The same 4-rule strict validation applies to **every HTTP endpoint that dispatch
 | `POST /api/project/import` | body `{tabId}` | Imports into specific tab |
 | `POST /api/project/open` | body `{tabId}` | Opens file in specific tab |
 | `POST /api/project/restore` | body `{tabId}` or `{contentId}` | Restores specific project |
-| `POST /api/project/duplicate` | body `{tabId}` | Duplicates specific project |
 | `GET  /api/state` | query `?tabId=` | Reads specific tab's state |
 | `GET  /api/diagnostics` | query `?tabId=` | Diagnoses specific tab |
 | `GET  /api/screenshot?mode=preview` | query `?tabId=` | Captures specific tab |

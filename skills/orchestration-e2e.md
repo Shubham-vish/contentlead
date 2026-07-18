@@ -50,7 +50,7 @@ TOKEN=$(echo $API_JSON | jq -r '.token')
 curl http://127.0.0.1:$PORT/api/health -H "Authorization: Bearer $TOKEN"
 ```
 
-Verify: `editor.ready = true`, `editor.hasDesign = true`.
+Verify: `editor.ready = true` and `editor.contentId` matches the loaded content. (`hasDesign` is not a health field — use `POST /api/execute {type:"query.getEditorState"}` or `GET /api/state` to inspect the actual design.)
 
 ### 0.2 Navigate to Content (if needed)
 

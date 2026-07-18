@@ -101,8 +101,6 @@ curl -X POST http://127.0.0.1:$PORT/api/execute \
 | POST | `/api/project/open` | Load .skilltown file into editor |
 | GET | `/api/project/autosaves` | List autosave files |
 | GET | `/api/project/recent` | Recent projects list |
-| POST | `/api/project/create` | Create a new empty project |
-| POST | `/api/project/duplicate` | Duplicate the current project |
 | POST | `/api/project/restore` | Restore autosave project into editor |
 | POST | `/api/navigate` | Navigate to URL or content path |
 | GET | `/api/navigation` | Current URL and navigation state |
@@ -117,11 +115,14 @@ curl -X POST http://127.0.0.1:$PORT/api/execute \
 | GET | `/api/app/origin` | Get the current frontend origin |
 | POST | `/api/app/set-origin` | Switch cloud/local origin |
 | GET | `/api/bridge/accounts` | List connected IG/LI/YT accounts |
-| POST | `/api/bridge/publish/instagram` | Start Instagram Reel publish |
-| GET | `/api/bridge/publish/instagram/status` | Poll Instagram publish progress |
-| POST | `/api/bridge/publish/linkedin` | Create LinkedIn post |
-| POST | `/api/bridge/publish/youtube` | Upload video to YouTube |
-| GET | `/api/bridge/publish/youtube/status` | Check YouTube upload status |
+| POST | `/api/bridge/instagram/publish` | Instagram Reel publish (content-aware, CTA sync) — **preferred** |
+| GET | `/api/bridge/instagram/publish/status` | Poll Instagram publish progress (content-aware) — **preferred** |
+| POST | `/api/bridge/youtube/publish` | YouTube upload (content-aware) — **preferred** |
+| POST | `/api/bridge/publish/instagram` | *Legacy* Instagram publish (not content-aware) |
+| GET | `/api/bridge/publish/instagram/status` | *Legacy* Instagram publish status |
+| POST | `/api/bridge/publish/linkedin` | LinkedIn post |
+| POST | `/api/bridge/publish/youtube` | *Legacy* YouTube upload (not content-aware) |
+| GET | `/api/bridge/publish/youtube/status` | *Legacy* YouTube upload status |
 | GET | `/api/bridge/inspiration/feed` | Browse creator content feed |
 | POST | `/api/bridge/inspiration/search` | Search for content inspiration |
 | POST | `/api/bridge/inspiration/transcribe` | Transcribe a video by shortcode |

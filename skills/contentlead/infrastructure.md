@@ -281,14 +281,21 @@ curl http://127.0.0.1:$PORT/api/metrics -H "Authorization: Bearer $TOKEN"
 
 ### Create a new project from scratch
 ```bash
-# 1. Create project
-curl -X POST http://127.0.0.1:$PORT/api/project/create \
+# 1. Create content in CosmosDB + auto-navigate to editor (waits for editor ready)
+curl -X POST http://127.0.0.1:$PORT/api/content/create \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"title": "My Video", "width": 1080, "height": 1920}'
-# 2. Wait for editor
-curl -X POST http://127.0.0.1:$PORT/api/editor/wait-ready \
+  -d '{"title": "My Video", "description": "", "waitForReady": true, "timeoutMs": 60000}'
+# → {status, contentId, tabId, editorReady: true, navigated}
+
+# 2. Verify/set canvas dimensions BEFORE adding items
+curl -X POST http://127.0.0.1:$PORT/api/execute \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"timeoutMs": 30000}'
+  -d '{"type":"query.getCanvasSize","params":{}}'
+# Resize if needed:
+curl -X POST http://127.0.0.1:$PORT/api/execute \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"type":"editor.resize","params":{"width":1080,"height":1920}}'
+
 # 3. Start editing...
 ```
 

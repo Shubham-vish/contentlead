@@ -78,8 +78,8 @@ Invoke an MCP tool. Body:
 ```json
 {
   "domain": "prepwithai",
-  "tool":   "transcribe_video",
-  "args":   { "videoUrl": "https://…/clip.mp4" },
+  "tool":   "prepwithai_transcribe_short",
+  "args":   { "video_url": "https://…/clip.mp4", "language": null, "translate_to_english": false },
   "timeoutMs": 120000   // optional, 1s..15min, default 5min
 }
 ```
@@ -89,7 +89,7 @@ Response wraps the MCP result:
 {
   "ok": true,
   "domain": "prepwithai",
-  "tool":   "transcribe_video",
+  "tool":   "prepwithai_transcribe_short",
   "content": { … parsed tool output … },
   "rawParts": [ … raw MCP content parts … ],
   "elapsedMs": 8421
@@ -151,11 +151,18 @@ Aliases: `content` → `editor + storystudio`; `search` → `web`.
 
 ## Common calls
 
-**Transcribe a video** (uploaded/URL):
+**Transcribe a video/audio clip:**
 ```json
 POST /api/mcp/call
-{ "domain":"prepwithai", "tool":"transcribe_video", "args": { "videoUrl":"…" } }
+{ "domain":"prepwithai", "tool":"prepwithai_transcribe_short", "args": { "video_url":"https://…/clip.mp4", "language":null } }
 ```
+> ⚠️ There is no unprefixed `transcribe_video` tool. The `prepwithai` transcription family:
+> - **`prepwithai_transcribe_short`** — synchronous, stateless. Args: `video_url`, `language?`, `translate_to_english?`. Use for clips ≤ ~90s / ≤ 25 MB.
+> - **`prepwithai_transcribe_long`** — async, chunked, Firebase-tracked. Args: `audio_url`, `content_id?`, `granularity?`. Returns `{process_id, firebase_path}` — poll via job tracker.
+> - **`prepwithai_transcribe_retry`** — retry failed chunks OR re-transcribe a segment. Args: `audio_url`, `process_id`, `retry_mode`.
+> - **`prepwithai_transcribe_with_speakers`** — hybrid Whisper + GPT-4o diarize. Args: `video_url`, `language?`, `quality?`.
+>
+> ⚠️ Param names differ: `_short` and `_with_speakers` take `video_url`; `_long` and `_retry` take `audio_url` (extract with `ffmpeg -i video.mp4 -vn audio.mp3` and upload via the Desktop's blob upload flow first).
 
 **Search / fetch web content**:
 ```json

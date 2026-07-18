@@ -27,9 +27,12 @@ Avoid full-template application when the timeline already has important edits. P
 - Local catalog: `_EditingStyleDetails/_Style/index.json`
 - Local template: `_EditingStyleDetails/_Style/{styleId}/template-main.json`
 - Local notes: `_EditingStyleDetails/_Style/{styleId}/look.md`
-- Blob catalog: `https://prepwithai.blob.core.windows.net/style-catalog/index.json`
-- Blob template: `https://prepwithai.blob.core.windows.net/style-catalog/{styleId}/template-main.json`
 - Preview page: `/styles/{styleId}`
+- **Editor commands (recommended runtime source):** `scene.listStyles`, `scene.getStyle`, `scene.getStyleTemplate` — these route through the Desktop, follow the `index.json` version pointer (`baseUrl` + `currentVersion`), and run zod validation before returning JSON.
+- Blob catalog (read-only reference, **do not fetch directly from a skill/agent**):
+  `https://prepwithai.blob.core.windows.net/style-catalog/index.json` and
+  `https://prepwithai.blob.core.windows.net/style-catalog/{styleId}/template-main.json`.
+  ⚠️ The base URL is overridable via `NEXT_PUBLIC_STYLES_URL`, and templates live under a version pointer in `index.json`. Direct fetches skip that pointer and can return a stale/incompatible schema — always prefer the editor commands.
 
 ## Commands
 

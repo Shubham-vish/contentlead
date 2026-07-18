@@ -173,7 +173,12 @@ These endpoints are available on the Electron API server (in addition to `POST /
 | `/api/bridge/instagram/*` | GET/POST | MCP mirror bridge for Instagram accounts, publish/status, token validation, posts, and CTA automation (`update_cta` supports `messageBody` + `buttons[]`; publish status auto-syncs CTA draft → production) |
 | `/api/bridge/publish/youtube` | POST | Legacy YouTube publishing endpoint |
 | `/api/bridge/content/configure-publish` | POST | Content publish configuration (channel, privacy, schedule) |
-| `/api/bridge/context/list`, `search`, `get`, `edit` | GET/POST | Context store operations (list/search/get/edit/manage) |
+| `/api/bridge/context` | GET | List context items (query: `?view=&type=&fields=`) |
+| `/api/bridge/context/:id` | GET | Get context item by id or slug (query: `?as=markdown`) |
+| `/api/bridge/context/folder/:id` | GET | List folder contents (query: `?recursive=`) |
+| `/api/bridge/context/search` | GET | Search context items (query: `?q=&type=&tags=&limit=`) |
+| `/api/bridge/context/edit` | POST | Edit a context item — body `{id, text, ...}` |
+| `/api/bridge/context/manage` | POST | Create/move/delete items or folders — body `{action|operations}` |
 | `/api/bridge/hub/:handle/*` | GET/POST | **Creator Hub** — manage articles, folders, publish/edit in a user's hub. Load `hub` skill for full docs. |
 | ~~`/api/project/create`~~ | ~~POST~~ | **REMOVED** — was local-only, caused "Content Not Found" confusion. Use `/api/content/create` instead |
 | `/api/project/save` | POST | Save current project to a specific file path (advanced). **Prefer `editor.save` for normal saves** |
@@ -733,8 +738,8 @@ If errors are found, **STOP and fix them** before continuing. Do not accumulate 
 | **Embed base64 data URIs in bundled scene code** | Query response truncates long strings → broken images → white screen | Save images to ~/Downloads, serve via media server URL |
 | **Delete many items at once** | Editor goes into `not_ready` state, rollback | Delete one at a time with 1s pause between |
 | **Ignore `editorHealth` in responses** | Errors accumulate, user sees crashes | Check `editorHealth.status` after EVERY command |
-| **Assume query.getState returns full data** | It may return empty/partial during transient states | Use `query.getTimelineItems` (more reliable) |
-| **Use `query.getState` to get image URLs** | Long base64 strings get truncated | Images served via media server don't need base64 |
+| **Assume `GET /api/state` returns full data** | It may return empty/partial during transient states | Use `query.getTimelineItems` (more reliable) |
+| **Use `GET /api/state` to get image URLs** | Long base64 strings get truncated | Images served via media server don't need base64 |
 | **Skip seek-test after adding scenes** | Scene render errors only appear when scene is visible | Always seek to new scene's time and check health |
 | **Use `animations!` non-null assertion** | Crashes when item has no animations (transient states, new items) | Always check `animations ?` before calling `getAnimations()`, sanitize results with `.filter(Boolean)` |
 
@@ -2228,7 +2233,7 @@ When editing scene/template rendering code: `TemplateInner` component does NOT h
 ## Media Path Rules
 
 ### Allowed directories for media server
-`~/Movies`, `~/Downloads`, `~/Desktop`, `~/Documents`, `~/Pictures`, `~/Music`, `~/Codes`
+`~/Movies`, `~/Downloads`, `~/Desktop`, `~/Documents`, `~/Pictures`, `~/Music`, `~/Codes`, plus the OS temp dir (`os.tmpdir()` and `/tmp` on POSIX) and `~/.skilltown-desktop/media-imports` / `proxy-cache`.
 
 ### What happens with paths outside allowed directories
 The media server returns a 403 error. **Workaround**: Copy/move the file into an allowed directory (e.g., `~/Downloads/`) before referencing it.
