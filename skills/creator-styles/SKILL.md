@@ -1,6 +1,6 @@
 ---
 name: creator-styles
-description: Browse, inspect, subset, and compose SkillTown creator style templates. Use honest style-template operations: these insert template scenes; they do not automatically adapt user footage or transcripts.
+description: "Browse, inspect, subset, and compose SkillTown creator style templates. Use honest style-template operations: these insert template scenes; they do not automatically adapt user footage or transcripts."
 tags: styles, creator-styles, templates, kallaway, storytelling, cinematic, editing, scenes, compose-styles
 ---
 
