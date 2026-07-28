@@ -42,6 +42,7 @@ Read individual rule files for detailed explanations and code examples:
 - [rules/sequencing.md](rules/sequencing.md) — Sequence, timing, stagger patterns
 - [rules/images.md](rules/images.md) — Img component, staticFile, remote URLs
 - [rules/image-annotation.md](rules/image-annotation.md) — Annotating screenshots: marker pen, highlight/underline/circle, dim styles, travelling spotlight
+- [rules/news-article-scene.md](rules/news-article-scene.md) — 3D newspaper/article scene: layouts, paper stock, inline marker annotations, annotation-following camera
 - [rules/text-animations.md](rules/text-animations.md) — Typography, typewriter, kinetic text
 - [rules/charts.md](rules/charts.md) — Bar charts, pie charts, counters, data visualization
 - [rules/camera-engine.md](rules/camera-engine.md) — Perspective zoom, shake, POI, 5 camera presets, BREATHE mechanism
