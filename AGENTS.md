@@ -1192,11 +1192,11 @@ Load the `remotion/rules/creative-approach` skill for the full planning workflow
 
 ## 📦 Scene & Template Sources
 
-The editor has access to **159 pre-built scenes** from the `@shubham-vish/remotion-templates` package, plus the full orchestration patterns in `_Pipelines/`.
+The editor has access to **160 pre-built scenes** from the `@shubham-vish/remotion-templates` package, plus the full orchestration patterns in `_Pipelines/`.
 
 | Capability | Location |
 |-----------|----------|
-| 159 scene catalog with AI selection | `_Agent/scene-catalog.json` |
+| 160 scene catalog with AI selection | `_Agent/scene-catalog.json` |
 | Scene prop schemas | `_Agent/scene-props.json` |
 | SFX library (500+ files) | `_Assets/sfx/` |
 | Auto-edit pipeline patterns | `_Pipelines/pipeline/` |
@@ -1223,7 +1223,7 @@ When using `scene.addCustomScene`, the code runs in a **browser sandbox**:
 
 ## 🚀 Bundled Scenes (Advanced — Full Import Support)
 
-When sandbox scenes aren't enough (need `@remotion/noise`, `@remotion/shapes`, video effects, etc.), use **bundled scenes**. This is the most powerful scene creation method — it bridges the gap between remotion-projects' 159 components and the video editor.
+When sandbox scenes aren't enough (need `@remotion/noise`, `@remotion/shapes`, video effects, etc.), use **bundled scenes**. This is the most powerful scene creation method — it bridges the gap between remotion-projects' 160 components and the video editor.
 
 ### Quick start
 
@@ -1262,7 +1262,7 @@ curl http://127.0.0.1:$PORT/api/scene-bundles/supported-imports \
 `@shubham-vish/remotion-templates`, `@skilltown/remotion-templates`
 
 ### Using catalog scenes in bundled scenes
-Bundled scenes can import ANY of the 159 catalog scenes directly:
+Bundled scenes can import ANY of the 160 catalog scenes directly:
 ```tsx
 import { PieChartScene } from '@shubham-vish/remotion-templates';
 
@@ -1370,9 +1370,9 @@ curl -X POST http://127.0.0.1:$PORT/api/execute \
 
 The command captures the full project state (including bundled code) and writes the autosave file via Electron IPC. The autosave file survives page reloads and app restarts. **Note:** this saves LOCALLY only — it does NOT clear the editor's unsaved indicator (which tracks cloud-save state). To also sync to cloud, call `editor.save` when it's healthy.
 
-## Scene Catalog (159 Scenes)
+## Scene Catalog (160 Scenes)
 
-The editor includes the full `@shubham-vish/remotion-templates` scene library with **159 pre-built scenes** across 11 categories.
+The editor includes the full `@shubham-vish/remotion-templates` scene library with **160 pre-built scenes** across 11 categories.
 
 ### Browsing the catalog
 ```json
@@ -1428,7 +1428,7 @@ The editor includes the full `@shubham-vish/remotion-templates` scene library wi
 | effect | 5 | LightLeaks, FilmGrain, ShatterGlass |
 
 ### Reference files
-- `_Agent/scene-catalog.json` — Full catalog with IDs, descriptions, tags, props schemas (159 scenes)
+- `_Agent/scene-catalog.json` — Full catalog with IDs, descriptions, tags, props schemas (160 scenes)
 - `_Agent/scene-props.json` — Machine-readable field definitions for each scene
 
 ## Captions & Subtitles
@@ -1792,7 +1792,7 @@ Place each 1s leak centered on each scene boundary (0.5s before + 0.5s after).
 
 ### Scene type selection
 Choose the right scene type for each need (see `scenes-and-templates.md` for full guide):
-- **Library scene** (`scene.addLibraryScene`) — **Default choice.** 159 pre-built templates. Configurable via sceneProps.
+- **Library scene** (`scene.addLibraryScene`) — **Default choice.** 160 pre-built templates. Configurable via sceneProps.
 - **Custom scene** (`scene.addCustomScene`) — Simple one-off visuals. Inline JSX with globals, no imports. Users can edit code live in UI.
 - **Bundled scene** (`scene.addBundledScene`) — Complex scenes needing real imports (`@remotion/noise`, video, shapes). Full `.tsx` compiled via esbuild. Users can view/edit source and rebuild in UI.
 

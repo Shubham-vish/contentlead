@@ -20,13 +20,13 @@ These skills teach you how to create animated scenes using Remotion — React co
 
 ### 2. Bundled Scenes (most powerful) — `scene.addBundledScene`
 - Full `.tsx` with real `import` statements compiled via esbuild (~3ms)
-- Supports 19 packages: `@remotion/noise`, `@remotion/shapes`, `@remotion/captions`, `@shubham-vish/remotion-templates` (159 scenes), etc.
+- Supports 19 packages: `@remotion/noise`, `@remotion/shapes`, `@remotion/captions`, `@shubham-vish/remotion-templates` (160 scenes), etc.
 - Can embed `<OffthreadVideo>` with Ken Burns, 3D camera, color grading effects
 - Can import and customize any catalog scene
 - Use `export default function Scene() { ... }`
 
 ### 3. Library Scenes (fastest) — `scene.addLibraryScene`
-- Use any of 159 pre-built scenes from the catalog by name
+- Use any of 160 pre-built scenes from the catalog by name
 - Pass props like `title`, `metrics`, `segments`, etc.
 - No code writing needed — just scene ID + props
 - Browse with `scene.listScenes`, inspect with `scene.getSceneProps`
@@ -41,6 +41,7 @@ Read individual rule files for detailed explanations and code examples:
 - [rules/theme.md](rules/theme.md) — Fonts, COLORS, SHADOWS, LAYOUT, mergeColors, s()
 - [rules/sequencing.md](rules/sequencing.md) — Sequence, timing, stagger patterns
 - [rules/images.md](rules/images.md) — Img component, staticFile, remote URLs
+- [rules/image-annotation.md](rules/image-annotation.md) — Annotating screenshots: marker pen, highlight/underline/circle, dim styles, travelling spotlight
 - [rules/text-animations.md](rules/text-animations.md) — Typography, typewriter, kinetic text
 - [rules/charts.md](rules/charts.md) — Bar charts, pie charts, counters, data visualization
 - [rules/camera-engine.md](rules/camera-engine.md) — Perspective zoom, shake, POI, 5 camera presets, BREATHE mechanism

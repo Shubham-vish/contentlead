@@ -1,6 +1,6 @@
 ---
 name: scenes-and-templates
-description: Scene library with 159 templates, custom Remotion JSX scenes, and scene management
+description: Scene library with 160 templates, custom Remotion JSX scenes, and scene management
 tags: scene, template, remotion, intro, outro, chart, motion, custom, library
 ---
 
@@ -33,7 +33,7 @@ Before creating a new custom or bundled scene, check if a similar one already ex
 
 ## Categories Overview
 
-Available scene categories (159 scenes total across 11 categories):
+Available scene categories (160 scenes total across 11 categories):
 
 - `chart` — 24 scenes (LineChart, PieChart, DonutChart, BarRace, etc.)
 - `data-viz` — 15 scenes (NumberTicker, StatsGrid, GaugeDial, etc.)
@@ -49,7 +49,7 @@ Available scene categories (159 scenes total across 11 categories):
 
 ## `scene.listScenes`
 
-Search the library of 159 templates.
+Search the library of 160 templates.
 
 | Param | Type | Default | Description |
 |---|---|---|---|

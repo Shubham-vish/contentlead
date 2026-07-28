@@ -87,7 +87,7 @@ Returns required and optional props. Always customize `title`, `subtitle`, `acce
 | Quick prototyping | ✅ Fastest | ✅ Fast | Slightly slower (esbuild) |
 
 ### Importing catalog scenes in bundled scenes
-Any of the 159 catalog scenes can be imported and customized:
+Any of the 160 catalog scenes can be imported and customized:
 ```tsx
 import { AnimatedBarScene, PieChartScene } from '@shubham-vish/remotion-templates';
 
@@ -120,4 +120,4 @@ export default function CustomDashboard() {
 4. **Add**: `scene.addLibraryScene` (as-is) or `scene.addBundledScene` (customized) or `scene.addCustomScene` (sandbox)
 5. **Reorder**: `editor.reorderTracks` → fix z-order after all scenes added
 
-> **Reference files**: `_Agent/scene-catalog.json` (159 scenes with full metadata) and `_Agent/scene-props.json` (machine-readable field schemas) are available for browsing offline.
+> **Reference files**: `_Agent/scene-catalog.json` (160 scenes with full metadata) and `_Agent/scene-props.json` (machine-readable field schemas) are available for browsing offline.

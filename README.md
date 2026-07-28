@@ -7,7 +7,7 @@ This folder contains everything an AI agent needs to control the SkillTown Deskt
 ```
 _Agent/
 ├── AGENTS.md              # Master guide: API endpoints, commands, workflows
-├── scene-catalog.json     # 159 pre-built scene components (metadata)
+├── scene-catalog.json     # 160 pre-built scene components (metadata)
 ├── scene-props.json       # Machine-readable prop schemas for all scenes
 ├── skills/                # Modular skill docs (loaded on demand via API)
 │   ├── overview.md
@@ -30,7 +30,7 @@ _Agent/
 
 1. **AGENTS.md** — Read first. Contains API connection, all commands, architecture.
 2. **skills/** — Load specific skills based on the task (via `/api/skills/:name` endpoint).
-3. **scene-catalog.json** — Browse 159 scenes by category, tags, description.
+3. **scene-catalog.json** — Browse 160 scenes by category, tags, description.
 4. **skills/remotion/** — Deep Remotion knowledge (SKILL.md index + rules/ folder with 19 topic files).
 
 ## Relationship to Other Repos

@@ -252,7 +252,7 @@ To add local files (audio/video/images) to the editor, use the **media server** 
 - `content.applyCaptions` / `content.removeCaptions`
 
 ### Scenes (Remotion templates)
-- `scene.listScenes` — browse 159 templates
+- `scene.listScenes` — browse 160 templates
 - `scene.getSceneProps` — get customizable props
 - `scene.addLibraryScene` — add scene to timeline
 - `scene.addCustomScene` — add custom JSX scene

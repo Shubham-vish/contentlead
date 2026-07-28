@@ -96,7 +96,7 @@ Full `.tsx` source compiled via esbuild with real `import` statements. Use when 
 
 ### 3. Library Scenes (`scene.addLibraryScene`) — Fastest
 
-Use any of 159 pre-built scenes by name with props. No code writing needed.
+Use any of 160 pre-built scenes by name with props. No code writing needed.
 
 📚 **For deep knowledge**, load the granular Remotion rules:
 - `remotion/rules/sandbox-rules` — critical do's and don'ts

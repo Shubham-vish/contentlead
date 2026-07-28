@@ -1,7 +1,7 @@
 {
   "package": "@shubham-vish/remotion-templates",
-  "generatedAt": "2026-05-30T11:12:41.797Z",
-  "totalScenes": 79,
+  "generatedAt": "2026-07-28T21:30:55.524Z",
+  "totalScenes": 80,
   "scenes": [
     {
       "sceneId": "LineChartScene",
@@ -4724,6 +4724,45 @@
               "description": "Group ID — regions in same group appear as continuous stroke.",
               "type": "text",
               "required": false
+            },
+            {
+              "key": "kind",
+              "label": "Marker Kind Override",
+              "description": "Shape of the mark for this region, when Marker Style is hand-drawn. Lets one region be circled while the rest are highlighted.",
+              "type": "enum",
+              "required": false,
+              "options": [
+                {
+                  "value": "highlight",
+                  "label": "Highlight (filled marker bar)"
+                },
+                {
+                  "value": "underline",
+                  "label": "Underline"
+                },
+                {
+                  "value": "strike",
+                  "label": "Strikethrough"
+                },
+                {
+                  "value": "box",
+                  "label": "Box (hand-drawn rectangle)"
+                },
+                {
+                  "value": "circle",
+                  "label": "Circle (hand-drawn ellipse)"
+                }
+              ]
+            },
+            {
+              "key": "roughness",
+              "label": "Roughness Override",
+              "description": "Hand-drawn edge roughness for this region, 0-1.",
+              "type": "number",
+              "required": false,
+              "min": 0,
+              "max": 1,
+              "step": 0.05
             }
           ]
         },
@@ -4881,10 +4920,9 @@
         {
           "key": "dimOutsideRegions",
           "label": "Dim Outside Regions",
-          "description": "Dim areas outside the highlighted/underlined regions to focus attention. Works in both modes.",
+          "description": "Dim areas outside the marked regions to focus attention. LEAVE UNSET for the sensible default: underline and focus modes dim, highlight mode does not. Setting it explicitly overrides that — and setting it to false in focus mode renders an empty scene, because focus mode draws no marks and the dim IS the visual.",
           "type": "boolean",
           "required": false,
-          "default": false,
           "group": "appearance"
         },
         {
@@ -4902,7 +4940,7 @@
         {
           "key": "dimStyle",
           "label": "Dim Style",
-          "description": "Visual style of the dim effect — 'dark' = black overlay, 'light' = white overlay, 'blur' = gaussian blur outside regions, 'grayscale' = desaturate outside, 'frost' = frosted glass (blur+white).",
+          "description": "Visual style of the dim effect — 'dark' = black overlay, 'light' = white overlay, 'blur' = gaussian blur outside regions, 'grayscale' = desaturate outside, 'frost' = frosted glass (blur+white), 'spotlight' = a soft elliptical pool of light that travels to each region in turn, crossfading between them (the news-article reading light).",
           "type": "enum",
           "required": false,
           "default": "dark",
@@ -4926,6 +4964,10 @@
             {
               "value": "frost",
               "label": "Frost (frosted glass)"
+            },
+            {
+              "value": "spotlight",
+              "label": "Spotlight (travelling pool of light)"
             }
           ],
           "group": "appearance"
@@ -4960,6 +5002,102 @@
           "min": 0,
           "max": 5,
           "step": 0.25,
+          "group": "appearance"
+        },
+        {
+          "key": "markerStyle",
+          "label": "Marker Style",
+          "description": "How the marks are drawn. 'flat' is clean CSS rectangles (the original look, and the default so existing scenes are unchanged). 'hand-drawn' uses the news-article marker pen: each mark is pushed through its own turbulence/displacement filter for a wobbly drawn edge, and the circle/box/strike shapes become available. Ignored in focus mode, which draws no marks.",
+          "type": "enum",
+          "required": false,
+          "default": "flat",
+          "group": "appearance",
+          "options": [
+            {
+              "value": "flat",
+              "label": "Flat (clean rectangles)"
+            },
+            {
+              "value": "hand-drawn",
+              "label": "Hand-drawn (marker pen)"
+            }
+          ]
+        },
+        {
+          "key": "markerKind",
+          "label": "Marker Kind",
+          "description": "Default shape for hand-drawn marks. Individual regions can override it, so one region can be circled while the rest are highlighted. Defaults to Underline in underline mode, otherwise Highlight.",
+          "type": "enum",
+          "required": false,
+          "group": "appearance",
+          "options": [
+            {
+              "value": "highlight",
+              "label": "Highlight (filled marker bar)"
+            },
+            {
+              "value": "underline",
+              "label": "Underline"
+            },
+            {
+              "value": "strike",
+              "label": "Strikethrough"
+            },
+            {
+              "value": "box",
+              "label": "Box (hand-drawn rectangle)"
+            },
+            {
+              "value": "circle",
+              "label": "Circle (hand-drawn ellipse)"
+            }
+          ]
+        },
+        {
+          "key": "roughness",
+          "label": "Roughness",
+          "description": "Hand-drawn edge roughness, 0-1. 0 = clean (no filter at all), 1 = heavily roughened. Only used when Marker Style is hand-drawn.",
+          "type": "number",
+          "required": false,
+          "default": 0.55,
+          "min": 0,
+          "max": 1,
+          "step": 0.05,
+          "group": "appearance"
+        },
+        {
+          "key": "markerDrawFrames",
+          "label": "Marker Draw Frames",
+          "description": "Frames a hand-drawn mark takes to draw on. Below ~8 the stroke reads as a pop rather than a drawn line.",
+          "type": "number",
+          "required": false,
+          "default": 12,
+          "min": 1,
+          "max": 60,
+          "group": "appearance"
+        },
+        {
+          "key": "markerThickness",
+          "label": "Marker Weight",
+          "description": "Stroke weight of hand-drawn marks, as a multiplier on the pen's natural weight. Independent of region size, so shape and stroke tune separately — raise this instead of enlarging a region when a mark reads too thin. Only used when Marker Style is hand-drawn.",
+          "type": "number",
+          "required": false,
+          "default": 1,
+          "min": 0.5,
+          "max": 4,
+          "step": 0.1,
+          "group": "appearance"
+        },
+        {
+          "key": "spotSpread",
+          "label": "Spotlight Spread",
+          "description": "Size of the spotlight pool as a multiplier — 1 matches the news-article reading light, below 1 hugs the mark tighter, above 1 washes wider. Clamped to 0.3-3. Only used when Dim Style is 'spotlight'.",
+          "type": "number",
+          "required": false,
+          "default": 1,
+          "min": 0.4,
+          "max": 2.5,
+          "step": 0.1,
           "group": "appearance"
         }
       ]
@@ -7017,31 +7155,36 @@
           "description": "Easing for range-mode interpolation.",
           "type": "enum",
           "required": false,
+          "default": "cubic",
           "group": "camera",
           "options": [
             {
-              "value": "cubic",
-              "label": "Cubic"
+              "value": "linear",
+              "label": "Linear"
             },
             {
-              "value": "sine",
-              "label": "Sine"
+              "value": "ease-in",
+              "label": "Ease In"
             },
             {
-              "value": "quad",
-              "label": "Quad"
+              "value": "ease-out",
+              "label": "Ease Out"
             },
             {
-              "value": "expo",
-              "label": "Expo"
+              "value": "ease-in-out",
+              "label": "Ease In-Out"
             },
             {
               "value": "spring",
               "label": "Spring"
             },
             {
-              "value": "linear",
-              "label": "Linear"
+              "value": "snap",
+              "label": "Snap"
+            },
+            {
+              "value": "cubic",
+              "label": "Cubic"
             }
           ]
         },
@@ -8168,6 +8311,2308 @@
           "required": false,
           "default": "#000000",
           "group": "appearance"
+        }
+      ]
+    },
+    {
+      "sceneId": "NewsArticleScene",
+      "name": "News Article",
+      "category": "special",
+      "suggestedDuration": 300,
+      "description": "3D newspaper / news-article scene in the Vox / Johnny Harris documentary style. A real-DOM article on aged paper, tilted on a 3D plane, with a slow cinematic camera drift and hand-drawn marker highlights that sweep over specific lines or phrases.",
+      "tags": [
+        "newspaper",
+        "article",
+        "news",
+        "paper",
+        "editorial",
+        "headline",
+        "documentary",
+        "vox",
+        "johnny-harris",
+        "marker",
+        "highlight",
+        "annotate",
+        "3d",
+        "perspective",
+        "clipping",
+        "broadsheet",
+        "journalism",
+        "source",
+        "investigation"
+      ],
+      "fields": [
+        {
+          "key": "headline",
+          "label": "Headline",
+          "description": "The main headline — the anchor of the scene. Optional because `blocks` (a 'heading' block) can supply it instead.",
+          "type": "text",
+          "required": false,
+          "default": "The story nobody wanted printed",
+          "group": "content"
+        },
+        {
+          "key": "kicker",
+          "label": "Kicker",
+          "description": "Small eyebrow label above the headline (e.g. 'INVESTIGATION').",
+          "type": "text",
+          "required": false,
+          "default": "INVESTIGATION",
+          "group": "content"
+        },
+        {
+          "key": "subheadline",
+          "label": "Subheadline / Deck",
+          "description": "Deck / standfirst under the headline.",
+          "type": "textarea",
+          "required": false,
+          "default": "Internal documents reveal what was known, and when",
+          "group": "content"
+        },
+        {
+          "key": "byline",
+          "label": "Byline",
+          "description": "Author line, e.g. 'By Jane Doe'.",
+          "type": "text",
+          "required": false,
+          "default": "By A. Reporter",
+          "group": "content"
+        },
+        {
+          "key": "body",
+          "label": "Body Copy",
+          "description": "Body text shorthand. A single string is split on blank lines into paragraphs; provide one paragraph per line. Ignored when `blocks` is set.",
+          "type": "textarea",
+          "required": false,
+          "default": "The first paragraph sets the scene and introduces the central claim of the piece, laying out the timeline that investigators later found impossible to reconcile with the official account.\n\nA second paragraph carries the supporting evidence and the crucial phrase we highlight, drawn from a memo circulated three days before the announcement.\n\nOfficials declined to comment on the record. A spokesperson said the matter was under review and that the department would cooperate fully with any inquiry.",
+          "group": "content"
+        },
+        {
+          "key": "blocks",
+          "label": "Structured Blocks",
+          "description": "Full structured content. Overrides the headline/body shorthand, giving precise control over block order, types and ids (which annotations can target).",
+          "type": "object-array",
+          "required": false,
+          "group": "content",
+          "itemSchema": [
+            {
+              "key": "id",
+              "label": "Block ID",
+              "description": "Stable id used by annotations to target this block. Auto-assigned if omitted.",
+              "type": "text",
+              "required": false
+            },
+            {
+              "key": "type",
+              "label": "Block Type",
+              "description": "Kind of article block.",
+              "type": "enum",
+              "required": true,
+              "options": [
+                {
+                  "value": "kicker",
+                  "label": "Kicker (eyebrow)"
+                },
+                {
+                  "value": "heading",
+                  "label": "Heading"
+                },
+                {
+                  "value": "subheading",
+                  "label": "Subheading / Deck"
+                },
+                {
+                  "value": "byline",
+                  "label": "Byline"
+                },
+                {
+                  "value": "paragraph",
+                  "label": "Paragraph"
+                },
+                {
+                  "value": "quote",
+                  "label": "Pull Quote"
+                },
+                {
+                  "value": "caption",
+                  "label": "Caption"
+                },
+                {
+                  "value": "divider",
+                  "label": "Divider (rule)"
+                }
+              ]
+            },
+            {
+              "key": "text",
+              "label": "Text",
+              "description": "Block text (omit for divider).",
+              "type": "textarea",
+              "required": false
+            },
+            {
+              "key": "columnBreak",
+              "label": "Column Break",
+              "description": "Force this block to start a new column (broadsheet/tabloid).",
+              "type": "boolean",
+              "required": false,
+              "default": false
+            },
+            {
+              "key": "fontSize",
+              "label": "Font Size (px)",
+              "description": "Per-block font size override.",
+              "type": "number",
+              "required": false,
+              "min": 8,
+              "max": 200
+            },
+            {
+              "key": "align",
+              "label": "Align",
+              "description": "Per-block text alignment override.",
+              "type": "enum",
+              "required": false,
+              "options": [
+                {
+                  "value": "left",
+                  "label": "Left"
+                },
+                {
+                  "value": "center",
+                  "label": "Center"
+                },
+                {
+                  "value": "right",
+                  "label": "Right"
+                },
+                {
+                  "value": "justify",
+                  "label": "Justify"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "images",
+          "label": "Images / Video",
+          "description": "Photos or video embedded into the article flow.",
+          "type": "object-array",
+          "required": false,
+          "group": "content",
+          "itemSchema": [
+            {
+              "key": "id",
+              "label": "Image ID",
+              "description": "Stable id for this image.",
+              "type": "text",
+              "required": false
+            },
+            {
+              "key": "src",
+              "label": "Source",
+              "description": "Image/video filename in public/ or a remote URL.",
+              "type": "file",
+              "required": true
+            },
+            {
+              "key": "isStaticFile",
+              "label": "Is Static File?",
+              "description": "True = resolve via staticFile(); false = use the URL as-is.",
+              "type": "boolean",
+              "required": false,
+              "default": true
+            },
+            {
+              "key": "isVideo",
+              "label": "Is Video?",
+              "description": "Render as <OffthreadVideo> instead of <Img>.",
+              "type": "boolean",
+              "required": false,
+              "default": false
+            },
+            {
+              "key": "startFrom",
+              "label": "Start From (sec)",
+              "description": "Video trim start in seconds.",
+              "type": "number",
+              "required": false,
+              "min": 0,
+              "step": 0.1
+            },
+            {
+              "key": "endAt",
+              "label": "End At (sec)",
+              "description": "Video trim end in seconds.",
+              "type": "number",
+              "required": false,
+              "min": 0,
+              "step": 0.1
+            },
+            {
+              "key": "caption",
+              "label": "Caption",
+              "description": "Photo caption text.",
+              "type": "text",
+              "required": false
+            },
+            {
+              "key": "placement",
+              "label": "Placement",
+              "description": "Where the image sits in the layout.",
+              "type": "enum",
+              "required": false,
+              "default": "hero",
+              "options": [
+                {
+                  "value": "hero",
+                  "label": "Hero (full-width, above headline)"
+                },
+                {
+                  "value": "inline",
+                  "label": "Inline (full-width in flow)"
+                },
+                {
+                  "value": "float-left",
+                  "label": "Float Left (text wraps right)"
+                },
+                {
+                  "value": "float-right",
+                  "label": "Float Right (text wraps left)"
+                },
+                {
+                  "value": "sidebar",
+                  "label": "Sidebar (side rail)"
+                }
+              ]
+            },
+            {
+              "key": "afterBlock",
+              "label": "After Block Index",
+              "description": "Insert after the block at this index (inline/float placements).",
+              "type": "number",
+              "required": false,
+              "min": 0
+            },
+            {
+              "key": "heightPct",
+              "label": "Height (% of sheet)",
+              "description": "Height as % of the sheet height. Default 22.",
+              "type": "number",
+              "required": false,
+              "default": 22,
+              "min": 1,
+              "max": 100
+            },
+            {
+              "key": "widthPct",
+              "label": "Width (% of sheet)",
+              "description": "Width as % of the sheet width. Defaults to 100 for hero/inline, 42 for floats.",
+              "type": "number",
+              "required": false,
+              "min": 1,
+              "max": 100
+            },
+            {
+              "key": "grayscale",
+              "label": "Grayscale",
+              "description": "Desaturate to match halftone print, 0–1. Default 0.85 for newsprint tones.",
+              "type": "number",
+              "required": false,
+              "min": 0,
+              "max": 1,
+              "step": 0.05
+            },
+            {
+              "key": "objectFit",
+              "label": "Object Fit",
+              "description": "How the image fills its box.",
+              "type": "enum",
+              "required": false,
+              "default": "cover",
+              "options": [
+                {
+                  "value": "cover",
+                  "label": "Cover"
+                },
+                {
+                  "value": "contain",
+                  "label": "Contain"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "layout",
+          "label": "Layout Mode",
+          "description": "Overall page construction.",
+          "type": "enum",
+          "required": false,
+          "default": "web-article",
+          "group": "page",
+          "options": [
+            {
+              "value": "web-article",
+              "label": "Web Article (single column, hero image)"
+            },
+            {
+              "value": "broadsheet",
+              "label": "Broadsheet (masthead + multi-column)"
+            },
+            {
+              "value": "tabloid",
+              "label": "Tabloid (huge condensed headline)"
+            },
+            {
+              "value": "clipping",
+              "label": "Clipping (torn-out fragment, rotated)"
+            }
+          ]
+        },
+        {
+          "key": "columns",
+          "label": "Columns",
+          "description": "Body column count. Default: 1 for web-article, 3 for broadsheet, 2 for tabloid.",
+          "type": "enum",
+          "required": false,
+          "group": "page",
+          "options": [
+            {
+              "value": "1",
+              "label": "1 column"
+            },
+            {
+              "value": "2",
+              "label": "2 columns"
+            },
+            {
+              "value": "3",
+              "label": "3 columns"
+            },
+            {
+              "value": "4",
+              "label": "4 columns"
+            }
+          ]
+        },
+        {
+          "key": "baseFontSize",
+          "label": "Base Font Size (px)",
+          "description": "Root size the whole article scales from — every text tier is an em multiple of this, so it is the single lever for overall type size. Leave blank for a format-aware default: a real newspaper measure on wide canvases, and much larger type on 9:16 so body copy is readable on a phone.",
+          "type": "number",
+          "required": false,
+          "min": 8,
+          "max": 96,
+          "group": "page"
+        },
+        {
+          "key": "masthead",
+          "label": "Masthead",
+          "description": "Masthead title for broadsheet/tabloid layouts, e.g. 'THE DAILY HERALD'.",
+          "type": "text",
+          "required": false,
+          "default": "THE TELEGRAPH",
+          "group": "page"
+        },
+        {
+          "key": "mastheadSubline",
+          "label": "Masthead Subline",
+          "description": "Small line under the masthead, e.g. 'LONDON · TUESDAY, AUGUST 29, 2024'.",
+          "type": "text",
+          "required": false,
+          "group": "page"
+        },
+        {
+          "key": "dateBadge",
+          "label": "Date Badge",
+          "description": "Red date chip, as seen in the reference videos. Accepts a plain string shorthand (badge text) which the component normalises into this object.",
+          "type": "object",
+          "required": false,
+          "group": "page",
+          "nestedSchema": [
+            {
+              "key": "text",
+              "label": "Text",
+              "description": "Badge label text.",
+              "type": "text",
+              "required": true
+            },
+            {
+              "key": "color",
+              "label": "Background Color",
+              "description": "Chip background colour.",
+              "type": "color",
+              "required": false,
+              "default": "#D32F2F"
+            },
+            {
+              "key": "textColor",
+              "label": "Text Color",
+              "description": "Chip text colour.",
+              "type": "color",
+              "required": false,
+              "default": "#FFFFFF"
+            },
+            {
+              "key": "position",
+              "label": "Position",
+              "description": "Where on the sheet the badge sits.",
+              "type": "enum",
+              "required": false,
+              "default": "top-right",
+              "options": [
+                {
+                  "value": "top-left",
+                  "label": "Top Left"
+                },
+                {
+                  "value": "top-right",
+                  "label": "Top Right"
+                },
+                {
+                  "value": "bottom-left",
+                  "label": "Bottom Left"
+                },
+                {
+                  "value": "bottom-right",
+                  "label": "Bottom Right"
+                }
+              ]
+            },
+            {
+              "key": "enterFrame",
+              "label": "Enter Frame",
+              "description": "Frame the badge animates in. Default 0.",
+              "type": "number",
+              "required": false,
+              "default": 0,
+              "min": 0
+            }
+          ]
+        },
+        {
+          "key": "sourceBadge",
+          "label": "Source Badge",
+          "description": "'SOURCE: The Telegraph online' chip. Accepts a plain string shorthand (badge text) which the component normalises into this object.",
+          "type": "object",
+          "required": false,
+          "group": "page",
+          "nestedSchema": [
+            {
+              "key": "text",
+              "label": "Text",
+              "description": "Badge label text.",
+              "type": "text",
+              "required": true
+            },
+            {
+              "key": "color",
+              "label": "Background Color",
+              "description": "Chip background colour.",
+              "type": "color",
+              "required": false,
+              "default": "#2B2B2B"
+            },
+            {
+              "key": "textColor",
+              "label": "Text Color",
+              "description": "Chip text colour.",
+              "type": "color",
+              "required": false,
+              "default": "#F5EFE0"
+            },
+            {
+              "key": "position",
+              "label": "Position",
+              "description": "Where on the sheet the badge sits.",
+              "type": "enum",
+              "required": false,
+              "default": "bottom-right",
+              "options": [
+                {
+                  "value": "top-left",
+                  "label": "Top Left"
+                },
+                {
+                  "value": "top-right",
+                  "label": "Top Right"
+                },
+                {
+                  "value": "bottom-left",
+                  "label": "Bottom Left"
+                },
+                {
+                  "value": "bottom-right",
+                  "label": "Bottom Right"
+                }
+              ]
+            },
+            {
+              "key": "enterFrame",
+              "label": "Enter Frame",
+              "description": "Frame the badge animates in. Default 0.",
+              "type": "number",
+              "required": false,
+              "default": 0,
+              "min": 0
+            }
+          ]
+        },
+        {
+          "key": "backgroundColor",
+          "label": "Canvas Background",
+          "description": "Canvas background behind the sheet.",
+          "type": "color",
+          "required": false,
+          "default": "#14100D",
+          "group": "page"
+        },
+        {
+          "key": "backdrop",
+          "label": "Desk Backdrop",
+          "description": "Show a soft desk/table gradient behind the sheet.",
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "group": "page"
+        },
+        {
+          "key": "paper",
+          "label": "Paper",
+          "description": "Paper stock and sheet appearance.",
+          "type": "object",
+          "required": false,
+          "group": "paper",
+          "nestedSchema": [
+            {
+              "key": "tone",
+              "label": "Tone",
+              "description": "Paper stock tone. Drives base colour, ink colour and grain defaults.",
+              "type": "enum",
+              "required": false,
+              "default": "aged",
+              "options": [
+                {
+                  "value": "white",
+                  "label": "White (clean modern)"
+                },
+                {
+                  "value": "cream",
+                  "label": "Cream (warm print)"
+                },
+                {
+                  "value": "aged",
+                  "label": "Aged (yellowed archive)"
+                },
+                {
+                  "value": "newsprint",
+                  "label": "Newsprint (grey-brown pulp)"
+                },
+                {
+                  "value": "sepia",
+                  "label": "Sepia (heavy warm wash)"
+                }
+              ]
+            },
+            {
+              "key": "color",
+              "label": "Paper Color",
+              "description": "Explicit paper colour override (CSS colour). Leave blank to inherit from the tone.",
+              "type": "color",
+              "required": false,
+              "default": ""
+            },
+            {
+              "key": "inkColor",
+              "label": "Ink Color",
+              "description": "Ink colour override (CSS colour). Leave blank to inherit from the tone.",
+              "type": "color",
+              "required": false,
+              "default": ""
+            },
+            {
+              "key": "grain",
+              "label": "Grain",
+              "description": "Paper grain / fibre intensity, 0–1.",
+              "type": "number",
+              "required": false,
+              "default": 0.35,
+              "min": 0,
+              "max": 1,
+              "step": 0.05
+            },
+            {
+              "key": "vignette",
+              "label": "Vignette",
+              "description": "Inner vignette / edge darkening on the sheet itself, 0–1.",
+              "type": "number",
+              "required": false,
+              "default": 0.25,
+              "min": 0,
+              "max": 1,
+              "step": 0.05
+            },
+            {
+              "key": "torn",
+              "label": "Torn Edges",
+              "description": "Irregular torn edges instead of a clean rectangle.",
+              "type": "boolean",
+              "required": false,
+              "default": false
+            },
+            {
+              "key": "tornRoughness",
+              "label": "Torn Roughness",
+              "description": "Roughness of the torn edge, 0–1. Only used when Torn Edges is on.",
+              "type": "number",
+              "required": false,
+              "default": 0.5,
+              "min": 0,
+              "max": 1,
+              "step": 0.05
+            },
+            {
+              "key": "shadow",
+              "label": "Drop Shadow",
+              "description": "Drop shadow beneath the sheet.",
+              "type": "boolean",
+              "required": false,
+              "default": true
+            },
+            {
+              "key": "foldCrease",
+              "label": "Fold Crease",
+              "description": "Faint horizontal fold crease across the sheet.",
+              "type": "boolean",
+              "required": false,
+              "default": false
+            },
+            {
+              "key": "widthPct",
+              "label": "Sheet Width (%)",
+              "description": "Sheet width as % of the canvas.",
+              "type": "number",
+              "required": false,
+              "default": 78,
+              "min": 20,
+              "max": 100
+            },
+            {
+              "key": "rotate",
+              "label": "Rotate (°)",
+              "description": "In-plane rotation of the sheet in degrees.",
+              "type": "number",
+              "required": false,
+              "default": 0,
+              "min": -45,
+              "max": 45,
+              "step": 0.5
+            },
+            {
+              "key": "borderRadius",
+              "label": "Border Radius (px)",
+              "description": "Corner radius of the sheet.",
+              "type": "number",
+              "required": false,
+              "default": 2,
+              "min": 0,
+              "max": 60
+            }
+          ]
+        },
+        {
+          "key": "annotations",
+          "label": "Annotations",
+          "description": "Hand-drawn marker highlights / underlines / circles that sweep over targeted text. Target a block by id or index, or an exact substring within it.",
+          "type": "object-array",
+          "required": false,
+          "group": "annotations",
+          "default": [
+            {
+              "matchText": "impossible to reconcile",
+              "kind": "underline",
+              "animation": "sweep",
+              "emphasis": "read"
+            },
+            {
+              "matchText": "crucial phrase",
+              "kind": "highlight",
+              "animation": "sweep",
+              "emphasis": "reveal"
+            },
+            {
+              "matchText": "declined to comment",
+              "kind": "circle",
+              "animation": "sweep",
+              "emphasis": "read"
+            }
+          ],
+          "itemSchema": [
+            {
+              "key": "targetId",
+              "label": "Target Block ID",
+              "description": "Target block by its id.",
+              "type": "text",
+              "required": false
+            },
+            {
+              "key": "targetIndex",
+              "label": "Target Block Index",
+              "description": "Target block by index in `blocks`. Used when Target Block ID is absent.",
+              "type": "number",
+              "required": false,
+              "min": 0
+            },
+            {
+              "key": "matchText",
+              "label": "Match Text",
+              "description": "Annotate only the first occurrence of this substring inside the target block (case-insensitive) — highlights the exact phrase being narrated.",
+              "type": "text",
+              "required": false
+            },
+            {
+              "key": "kind",
+              "label": "Kind",
+              "description": "How the annotation is drawn. Falls back to the scene default kind.",
+              "type": "enum",
+              "required": false,
+              "options": [
+                {
+                  "value": "highlight",
+                  "label": "Highlight (filled marker bar)"
+                },
+                {
+                  "value": "underline",
+                  "label": "Underline"
+                },
+                {
+                  "value": "strike",
+                  "label": "Strikethrough"
+                },
+                {
+                  "value": "box",
+                  "label": "Box (hand-drawn rectangle)"
+                },
+                {
+                  "value": "circle",
+                  "label": "Circle (hand-drawn ellipse)"
+                }
+              ]
+            },
+            {
+              "key": "color",
+              "label": "Color",
+              "description": "Marker colour. Defaults to the scene highlight colour.",
+              "type": "color",
+              "required": false
+            },
+            {
+              "key": "opacity",
+              "label": "Opacity",
+              "description": "Alpha of the marker, 0–1. Default 0.45 for highlight, 0.9 for strokes.",
+              "type": "number",
+              "required": false,
+              "min": 0,
+              "max": 1,
+              "step": 0.05
+            },
+            {
+              "key": "roughness",
+              "label": "Roughness",
+              "description": "Hand-drawn edge roughness, 0–1. 0 = clean, 1 = heavily roughened (After Effects 'Roughen Edges' look). Default 0.55.",
+              "type": "number",
+              "required": false,
+              "default": 0.55,
+              "min": 0,
+              "max": 1,
+              "step": 0.05
+            },
+            {
+              "key": "startFrame",
+              "label": "Start Frame",
+              "description": "Absolute frame the annotation starts drawing on. Leave blank to auto-spread across the scene — recommended, since the camera needs room to travel, settle and dwell at each phrase.",
+              "type": "number",
+              "required": false,
+              "min": 0
+            },
+            {
+              "key": "durationFrames",
+              "label": "Duration (frames)",
+              "description": "Frames the draw-on takes. Leave blank to inherit from Emphasis. Below ~15 the stroke completes before the eye lands on it and the page looks pre-annotated.",
+              "type": "number",
+              "required": false,
+              "min": 1
+            },
+            {
+              "key": "endFrame",
+              "label": "End Frame",
+              "description": "Frame at which the annotation disappears. Default: never.",
+              "type": "number",
+              "required": false,
+              "min": 0
+            },
+            {
+              "key": "animation",
+              "label": "Animation",
+              "description": "How the marker draws on.",
+              "type": "enum",
+              "required": false,
+              "default": "sweep",
+              "options": [
+                {
+                  "value": "sweep",
+                  "label": "Sweep (left→right wipe)"
+                },
+                {
+                  "value": "fade",
+                  "label": "Fade"
+                },
+                {
+                  "value": "scale-x",
+                  "label": "Scale-X (grow from left)"
+                },
+                {
+                  "value": "none",
+                  "label": "None"
+                }
+              ]
+            },
+            {
+              "key": "overText",
+              "label": "Over Text",
+              "description": "Draw the marker above the text instead of behind it.",
+              "type": "boolean",
+              "required": false,
+              "default": false
+            },
+            {
+              "key": "emphasis",
+              "label": "Emphasis",
+              "description": "How hard the camera sells this annotation. Sets zoom, settle, stroke speed, dwell and page dimming together, so a sequence is paced by picking a level per beat instead of tuning five numbers. Anything set explicitly on the annotation still wins.",
+              "type": "enum",
+              "required": false,
+              "default": "read",
+              "options": [
+                {
+                  "value": "glance",
+                  "label": "Glance — stays wide, quick mark, no dimming"
+                },
+                {
+                  "value": "read",
+                  "label": "Read — settles at reading distance, dims the page (default)"
+                },
+                {
+                  "value": "reveal",
+                  "label": "Reveal — pushes in tight, holds long, strongest dimming"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "highlightColor",
+          "label": "Highlighter Color",
+          "description": "Colour for 'highlight' washes. Composited with multiply, like a real highlighter over paper.",
+          "type": "color",
+          "required": false,
+          "default": "#FFE24D",
+          "group": "annotations"
+        },
+        {
+          "key": "markerInkColor",
+          "label": "Pen Color",
+          "description": "Colour for line markers — underline, strike, circle, box. Deliberately separate from the highlighter: a pale highlighter tint drawn as a thin line on paper stock is almost invisible.",
+          "type": "color",
+          "required": false,
+          "default": "#C62B1C",
+          "group": "annotations"
+        },
+        {
+          "key": "highlightKind",
+          "label": "Highlight Kind",
+          "description": "Default annotation kind when an annotation omits `kind`.",
+          "type": "enum",
+          "required": false,
+          "default": "highlight",
+          "group": "annotations",
+          "options": [
+            {
+              "value": "highlight",
+              "label": "Highlight (filled marker bar)"
+            },
+            {
+              "value": "underline",
+              "label": "Underline"
+            },
+            {
+              "value": "strike",
+              "label": "Strikethrough"
+            },
+            {
+              "value": "box",
+              "label": "Box (hand-drawn rectangle)"
+            },
+            {
+              "value": "circle",
+              "label": "Circle (hand-drawn ellipse)"
+            }
+          ]
+        },
+        {
+          "key": "highlightRoughness",
+          "label": "Highlight Roughness",
+          "description": "Default hand-drawn edge roughness for all annotations, 0–1.",
+          "type": "number",
+          "required": false,
+          "default": 0.55,
+          "min": 0,
+          "max": 1,
+          "step": 0.05,
+          "group": "annotations"
+        },
+        {
+          "key": "annotationStartFrame",
+          "label": "Annotation Start Frame",
+          "description": "Frame the first annotation starts when annotations omit `startFrame`.",
+          "type": "number",
+          "required": false,
+          "default": 24,
+          "min": 0,
+          "group": "annotations"
+        },
+        {
+          "key": "annotationStagger",
+          "label": "Annotation Stagger",
+          "description": "Frames between consecutive auto-staggered annotations. LEAVE BLANK for automatic layout, which is almost always what you want: the annotations are then spread across the scene's real duration, each one given time proportional to what it actually costs to draw and read. Setting a value is an explicit authoring decision and switches the automatic layout off, which on a long scene means every mark is drawn in the first few seconds and the camera has nothing to look at for the rest of it.",
+          "type": "number",
+          "required": false,
+          "min": 0,
+          "group": "annotations"
+        },
+        {
+          "key": "focusMode",
+          "label": "Focus Mode",
+          "description": "How the camera behaves relative to the annotations. 'Follow Annotations' travels to each highlighted phrase just before its marker draws, dwells, then moves on — the editorial-explainer look. 'Static Arc' is a single slow move over the whole page.",
+          "type": "enum",
+          "required": false,
+          "default": "annotations",
+          "group": "camera",
+          "options": [
+            {
+              "value": "annotations",
+              "label": "Follow Annotations (recommended)"
+            },
+            {
+              "value": "none",
+              "label": "Static Arc"
+            }
+          ]
+        },
+        {
+          "key": "focusZoom",
+          "label": "Focus Zoom",
+          "description": "Zoom used when framing a phrase. Higher = tighter on the text.",
+          "type": "number",
+          "required": false,
+          "default": 1.75,
+          "min": 1,
+          "max": 4,
+          "step": 0.05,
+          "group": "camera"
+        },
+        {
+          "key": "focusWideZoom",
+          "label": "Wide Zoom",
+          "description": "Zoom for the establishing and closing wide shots.",
+          "type": "number",
+          "required": false,
+          "default": 0.8,
+          "min": 0.4,
+          "max": 1.5,
+          "step": 0.02,
+          "group": "camera"
+        },
+        {
+          "key": "focusTravelFrames",
+          "label": "Travel Frames",
+          "description": "Frames spent moving between phrases. Higher = slower, calmer camera. Below ~20 a move stops reading as travel and starts reading as a cut.",
+          "type": "number",
+          "required": false,
+          "default": 32,
+          "min": 4,
+          "max": 90,
+          "step": 1,
+          "group": "camera"
+        },
+        {
+          "key": "focusDwellFrames",
+          "label": "Dwell Frames",
+          "description": "Frames held on a phrase after its marker finishes drawing.",
+          "type": "number",
+          "required": false,
+          "default": 20,
+          "min": 0,
+          "max": 90,
+          "step": 1,
+          "group": "camera"
+        },
+        {
+          "key": "focusCentering",
+          "label": "Centering",
+          "description": "How completely a phrase is centred. 1 = dead centre, 0 = no pan.",
+          "type": "number",
+          "required": false,
+          "default": 0.92,
+          "min": 0,
+          "max": 1,
+          "step": 0.02,
+          "group": "camera"
+        },
+        {
+          "key": "cameraMotion",
+          "label": "Camera Motion Style",
+          "description": "Named house style for the annotation-following camera. Sets orbit, tilt, orientation intensity, float, creep and pull-back together. Every individual control below overrides one part of it, so pick a style first and only reach for the sliders if you need to.",
+          "type": "enum",
+          "required": false,
+          "default": "documentary",
+          "group": "camera",
+          "options": [
+            {
+              "value": "locked",
+              "label": "Locked Off",
+              "description": "No float, no creep, barely any angle. Maximum legibility — use when the text itself is the point."
+            },
+            {
+              "value": "calm",
+              "label": "Calm",
+              "description": "Everything present but restrained. Good under heavy narration."
+            },
+            {
+              "value": "documentary",
+              "label": "Documentary",
+              "description": "House style. The measured default: 0 cuts, 0 stalls, ~26px/frame peak."
+            },
+            {
+              "value": "dramatic",
+              "label": "Dramatic",
+              "description": "Bigger angles and a stronger bank into each subject."
+            }
+          ]
+        },
+        {
+          "key": "cameraOrbit",
+          "label": "Resting Orbit (Y)",
+          "description": "Yaw held while reading a phrase, in degrees. The wide shots sit proportionally wider, so moving in to read also settles the page. Keep small — a news page is text, and text distorts fast off-axis.",
+          "type": "number",
+          "required": false,
+          "min": 0,
+          "max": 20,
+          "step": 0.5,
+          "unit": "°",
+          "group": "camera"
+        },
+        {
+          "key": "cameraTilt",
+          "label": "Resting Tilt (X)",
+          "description": "Pitch held while reading a phrase, in degrees. Below ~1° the sheet is effectively orthographic: panning produces no parallax and the page reads as a flat picture being slid rather than a surface being moved across.",
+          "type": "number",
+          "required": false,
+          "min": 0,
+          "max": 15,
+          "step": 0.5,
+          "unit": "°",
+          "group": "camera"
+        },
+        {
+          "key": "cameraIntensity",
+          "label": "Orientation Intensity",
+          "description": "How strongly each phrase gets its own camera angle, 0–1. At 0 every stop shares one orientation, so a move between two of them is pure translation — which is exactly what reads as a cut rather than a move. Same meaning as 'intensity' on a video item's coordinated focus point.",
+          "type": "number",
+          "required": false,
+          "min": 0,
+          "max": 1,
+          "step": 0.05,
+          "group": "camera"
+        },
+        {
+          "key": "cameraDrift",
+          "label": "Idle Drift",
+          "description": "Amplitude of the permanent slow float, 0–1. A camera that is perfectly still and then departs at travel speed reads as two states rather than one continuous shot. 0 locks it off.",
+          "type": "number",
+          "required": false,
+          "min": 0,
+          "max": 1,
+          "step": 0.05,
+          "group": "camera"
+        },
+        {
+          "key": "cameraCreep",
+          "label": "Hold Push-In",
+          "description": "Slow push-in while holding on a phrase, 0–1. Keeps the page moving gently while a marker is being drawn, so the next move is a change of rate rather than a start from rest.",
+          "type": "number",
+          "required": false,
+          "min": 0,
+          "max": 1,
+          "step": 0.05,
+          "group": "camera"
+        },
+        {
+          "key": "cameraPullBack",
+          "label": "Travel Pull-Back",
+          "description": "How far the camera widens while crossing between phrases, 0–1. A little is a depth cue that keeps the viewer oriented; too much and the move reads as a zoom-out plus a zoom-in plus a slide, i.e. three events instead of one.",
+          "type": "number",
+          "required": false,
+          "min": 0,
+          "max": 1,
+          "step": 0.05,
+          "group": "camera"
+        },
+        {
+          "key": "verticalFollow",
+          "label": "Vertical Follow",
+          "description": "How completely the camera chases a phrase vertically, 0–1. Full centring makes the camera climb the whole sheet, which on a tall page is a long unrewarding sweep. Lower values stay calm; the subject is still guaranteed on-screen because the damping is relaxed automatically whenever it would push the phrase out of the safe band.",
+          "type": "number",
+          "required": false,
+          "min": 0,
+          "max": 1,
+          "step": 0.05,
+          "group": "camera"
+        },
+        {
+          "key": "cameraPreset",
+          "label": "Camera Preset",
+          "description": "Named camera motion preset. Only used when Focus Mode is 'Static Arc' (or there are no annotations). Default 'Article Safe' keeps the whole sheet in frame; the other presets are framed for full-bleed imagery and will crop a text page.",
+          "type": "enum",
+          "required": false,
+          "default": "article-safe",
+          "group": "camera",
+          "options": [
+            {
+              "value": "article-safe",
+              "label": "Article Safe (recommended)"
+            },
+            {
+              "value": "orbit-right",
+              "label": "Orbit Right"
+            },
+            {
+              "value": "orbit-left",
+              "label": "Orbit Left"
+            },
+            {
+              "value": "push-in",
+              "label": "Push In (dolly)"
+            },
+            {
+              "value": "push-in-out",
+              "label": "Push In & Out"
+            },
+            {
+              "value": "pull-out",
+              "label": "Pull Out"
+            },
+            {
+              "value": "pan-up",
+              "label": "Pan Up (crane)"
+            },
+            {
+              "value": "pan-down",
+              "label": "Pan Down"
+            },
+            {
+              "value": "dramatic-arc",
+              "label": "Dramatic Arc"
+            },
+            {
+              "value": "hover",
+              "label": "Hover (subtle)"
+            },
+            {
+              "value": "fly-over",
+              "label": "Fly Over"
+            },
+            {
+              "value": "reveal",
+              "label": "Reveal"
+            },
+            {
+              "value": "whip-pan",
+              "label": "Whip Pan"
+            },
+            {
+              "value": "one-side-perspective",
+              "label": "One-Side Perspective"
+            },
+            {
+              "value": "zoom-track",
+              "label": "Zoom Track"
+            },
+            {
+              "value": "cinematic-pan",
+              "label": "Cinematic Pan"
+            },
+            {
+              "value": "zoom-pulse",
+              "label": "Zoom Pulse"
+            },
+            {
+              "value": "static",
+              "label": "Static (no movement)"
+            }
+          ]
+        },
+        {
+          "key": "zoom",
+          "label": "Zoom",
+          "description": "Zoom scale range. 2 points for [start, end] or 3 for [start, peak, end].",
+          "type": "range",
+          "required": false,
+          "min": 0.1,
+          "max": 5,
+          "step": 0.05,
+          "points": 2,
+          "unit": "×",
+          "group": "camera"
+        },
+        {
+          "key": "panX",
+          "label": "Pan X",
+          "description": "Horizontal pan range.",
+          "type": "range",
+          "required": false,
+          "min": -50,
+          "max": 50,
+          "step": 0.5,
+          "points": 2,
+          "unit": "%",
+          "group": "camera"
+        },
+        {
+          "key": "panY",
+          "label": "Pan Y",
+          "description": "Vertical pan range.",
+          "type": "range",
+          "required": false,
+          "min": -50,
+          "max": 50,
+          "step": 0.5,
+          "points": 2,
+          "unit": "%",
+          "group": "camera"
+        },
+        {
+          "key": "rotateX",
+          "label": "Tilt (X)",
+          "description": "X-axis tilt range in degrees.",
+          "type": "range",
+          "required": false,
+          "min": -90,
+          "max": 90,
+          "step": 0.5,
+          "points": 2,
+          "unit": "°",
+          "group": "camera"
+        },
+        {
+          "key": "rotateY",
+          "label": "Orbit (Y)",
+          "description": "Y-axis rotation range in degrees.",
+          "type": "range",
+          "required": false,
+          "min": -180,
+          "max": 180,
+          "step": 1,
+          "points": 2,
+          "unit": "°",
+          "group": "camera"
+        },
+        {
+          "key": "rotateZ",
+          "label": "Roll (Z)",
+          "description": "Z-axis roll range in degrees.",
+          "type": "range",
+          "required": false,
+          "min": -180,
+          "max": 180,
+          "step": 1,
+          "points": 2,
+          "unit": "°",
+          "group": "camera"
+        },
+        {
+          "key": "cameraEasing",
+          "label": "Camera Easing",
+          "description": "Easing for range-mode camera interpolation.",
+          "type": "enum",
+          "required": false,
+          "default": "cubic",
+          "group": "camera",
+          "options": [
+            {
+              "value": "linear",
+              "label": "Linear"
+            },
+            {
+              "value": "ease-in",
+              "label": "Ease In"
+            },
+            {
+              "value": "ease-out",
+              "label": "Ease Out"
+            },
+            {
+              "value": "ease-in-out",
+              "label": "Ease In-Out"
+            },
+            {
+              "value": "spring",
+              "label": "Spring"
+            },
+            {
+              "value": "snap",
+              "label": "Snap"
+            },
+            {
+              "value": "cubic",
+              "label": "Cubic"
+            }
+          ]
+        },
+        {
+          "key": "zoomIntensity",
+          "label": "Zoom Intensity",
+          "description": "Scale the zoom effect (0–2, default 1).",
+          "type": "number",
+          "required": false,
+          "default": 1,
+          "min": 0,
+          "max": 2,
+          "step": 0.1,
+          "group": "camera"
+        },
+        {
+          "key": "tiltIntensity",
+          "label": "Tilt Intensity",
+          "description": "Scale rotateX / tilt (0–2, default 1).",
+          "type": "number",
+          "required": false,
+          "default": 1,
+          "min": 0,
+          "max": 2,
+          "step": 0.1,
+          "group": "camera"
+        },
+        {
+          "key": "panIntensity",
+          "label": "Pan Intensity",
+          "description": "Scale panX / panY (0–2, default 1).",
+          "type": "number",
+          "required": false,
+          "default": 1,
+          "min": 0,
+          "max": 2,
+          "step": 0.1,
+          "group": "camera"
+        },
+        {
+          "key": "orbitIntensity",
+          "label": "Orbit Intensity",
+          "description": "Scale rotateY / orbit (0–2, default 1).",
+          "type": "number",
+          "required": false,
+          "default": 1,
+          "min": 0,
+          "max": 2,
+          "step": 0.1,
+          "group": "camera"
+        },
+        {
+          "key": "shake",
+          "label": "Camera Shake",
+          "description": "Camera shake with envelope patterns.",
+          "type": "toggle-object",
+          "required": false,
+          "group": "camera",
+          "toggleKey": "enabled",
+          "nestedSchema": [
+            {
+              "key": "amplitude",
+              "label": "Amplitude (px)",
+              "description": "Shake strength in pixels (default 2).",
+              "type": "number",
+              "required": false,
+              "default": 2,
+              "min": 0,
+              "max": 20,
+              "step": 0.5
+            },
+            {
+              "key": "frequency",
+              "label": "Frequency (Hz)",
+              "description": "Shake speed (default 3).",
+              "type": "number",
+              "required": false,
+              "default": 3,
+              "min": 0.5,
+              "max": 20,
+              "step": 0.5
+            },
+            {
+              "key": "pattern",
+              "label": "Pattern",
+              "description": "Envelope pattern over time.",
+              "type": "enum",
+              "required": false,
+              "default": "constant",
+              "options": [
+                {
+                  "value": "constant",
+                  "label": "Constant"
+                },
+                {
+                  "value": "crescendo",
+                  "label": "Crescendo"
+                },
+                {
+                  "value": "decrescendo",
+                  "label": "Decrescendo"
+                },
+                {
+                  "value": "burst",
+                  "label": "Burst"
+                },
+                {
+                  "value": "pulse",
+                  "label": "Pulse"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "pip",
+          "label": "Picture-in-Picture",
+          "description": "Cut-out speaker composited in front of the article.",
+          "type": "object",
+          "required": false,
+          "group": "media",
+          "nestedSchema": [
+            {
+              "key": "src",
+              "label": "PIP Source",
+              "description": "Video/image filename in public/ or a remote URL.",
+              "type": "file",
+              "required": true
+            },
+            {
+              "key": "isVideo",
+              "label": "Is Video?",
+              "description": "True for a video source.",
+              "type": "boolean",
+              "required": false,
+              "default": false
+            },
+            {
+              "key": "isStaticFile",
+              "label": "Is Static File?",
+              "description": "True = resolve via staticFile(); false = use the URL as-is.",
+              "type": "boolean",
+              "required": false,
+              "default": true
+            },
+            {
+              "key": "startFrom",
+              "label": "Start From (sec)",
+              "description": "Video trim start in seconds.",
+              "type": "number",
+              "required": false,
+              "min": 0,
+              "step": 0.1
+            },
+            {
+              "key": "endAt",
+              "label": "End At (sec)",
+              "description": "Video trim end in seconds.",
+              "type": "number",
+              "required": false,
+              "min": 0,
+              "step": 0.1
+            },
+            {
+              "key": "volume",
+              "label": "Volume",
+              "description": "Audio volume (0–1).",
+              "type": "number",
+              "required": false,
+              "min": 0,
+              "max": 1,
+              "step": 0.1
+            },
+            {
+              "key": "position",
+              "label": "Position",
+              "description": "Corner (or centre) placement.",
+              "type": "enum",
+              "required": false,
+              "default": "bottom-right",
+              "options": [
+                {
+                  "value": "top-left",
+                  "label": "Top Left"
+                },
+                {
+                  "value": "top-right",
+                  "label": "Top Right"
+                },
+                {
+                  "value": "bottom-left",
+                  "label": "Bottom Left"
+                },
+                {
+                  "value": "bottom-right",
+                  "label": "Bottom Right"
+                },
+                {
+                  "value": "center",
+                  "label": "Center"
+                }
+              ]
+            },
+            {
+              "key": "size",
+              "label": "Size (%)",
+              "description": "Size as % of canvas width (default 25).",
+              "type": "number",
+              "required": false,
+              "default": 25,
+              "min": 5,
+              "max": 80
+            },
+            {
+              "key": "borderRadius",
+              "label": "Border Radius (px)",
+              "description": "Corner rounding.",
+              "type": "number",
+              "required": false
+            },
+            {
+              "key": "borderColor",
+              "label": "Border Color",
+              "description": "PIP border colour.",
+              "type": "color",
+              "required": false,
+              "default": "#FFFFFF"
+            },
+            {
+              "key": "borderWidth",
+              "label": "Border Width (px)",
+              "description": "PIP border thickness.",
+              "type": "number",
+              "required": false,
+              "min": 0
+            },
+            {
+              "key": "margin",
+              "label": "Margin (px)",
+              "description": "Gap from the canvas edge.",
+              "type": "number",
+              "required": false,
+              "min": 0
+            },
+            {
+              "key": "enterFrame",
+              "label": "Enter Frame",
+              "description": "Frame the PIP appears.",
+              "type": "number",
+              "required": false,
+              "min": 0
+            },
+            {
+              "key": "exitFrame",
+              "label": "Exit Frame",
+              "description": "Frame the PIP disappears.",
+              "type": "number",
+              "required": false,
+              "min": 0
+            },
+            {
+              "key": "aspectRatio",
+              "label": "Aspect Ratio",
+              "description": "Aspect ratio string, e.g. '16:9', '1:1', '9:16'.",
+              "type": "text",
+              "required": false
+            }
+          ]
+        },
+        {
+          "key": "paperZ",
+          "label": "Paper Z-Depth (px)",
+          "description": "Z-depth of the paper sheet in px.",
+          "type": "number",
+          "required": false,
+          "default": 0,
+          "min": -200,
+          "max": 200,
+          "group": "media"
+        },
+        {
+          "key": "photoZ",
+          "label": "Photo Z-Depth (px)",
+          "description": "Z-depth of embedded photos, creating parallax against the sheet.",
+          "type": "number",
+          "required": false,
+          "default": 18,
+          "min": -200,
+          "max": 200,
+          "group": "media"
+        },
+        {
+          "key": "effects",
+          "label": "Effects",
+          "description": "Post-processing effect stack (passthrough to the 3D camera). Toggle each effect on and tune its params.",
+          "type": "object",
+          "required": false,
+          "group": "effects",
+          "nestedSchema": [
+            {
+              "key": "depthOfField",
+              "label": "Depth of Field",
+              "description": "Auto-blur layers by Z-distance from the focal plane.",
+              "type": "toggle-object",
+              "required": false,
+              "toggleKey": "enabled",
+              "nestedSchema": [
+                {
+                  "key": "focalZ",
+                  "label": "Focal Z",
+                  "description": "Z-depth in perfect focus (default 0).",
+                  "type": "number",
+                  "required": false,
+                  "default": 0,
+                  "min": -300,
+                  "max": 300
+                },
+                {
+                  "key": "falloff",
+                  "label": "Falloff",
+                  "description": "Blur per 100px of Z-distance.",
+                  "type": "number",
+                  "required": false,
+                  "default": 0.03,
+                  "min": 0,
+                  "max": 0.2,
+                  "step": 0.005
+                }
+              ]
+            },
+            {
+              "key": "vignette",
+              "label": "Vignette",
+              "description": "Dark edge overlay that intensifies with zoom.",
+              "type": "toggle-object",
+              "required": false,
+              "toggleKey": "enabled",
+              "nestedSchema": [
+                {
+                  "key": "intensity",
+                  "label": "Intensity",
+                  "description": "Base vignette strength (0–1).",
+                  "type": "number",
+                  "required": false,
+                  "default": 0.3,
+                  "min": 0,
+                  "max": 1,
+                  "step": 0.05
+                },
+                {
+                  "key": "dynamicWithZoom",
+                  "label": "Dynamic with Zoom",
+                  "description": "Scale intensity with camera zoom.",
+                  "type": "boolean",
+                  "required": false,
+                  "default": true
+                },
+                {
+                  "key": "color",
+                  "label": "Color",
+                  "description": "Vignette tint color.",
+                  "type": "color",
+                  "required": false,
+                  "default": "rgba(0,0,0,1)"
+                }
+              ]
+            },
+            {
+              "key": "filmGrain",
+              "label": "Film Grain",
+              "description": "Animated noise texture overlay.",
+              "type": "toggle-object",
+              "required": false,
+              "toggleKey": "enabled",
+              "nestedSchema": [
+                {
+                  "key": "intensity",
+                  "label": "Intensity",
+                  "description": "Grain opacity (0–0.15).",
+                  "type": "number",
+                  "required": false,
+                  "default": 0.04,
+                  "min": 0,
+                  "max": 0.15,
+                  "step": 0.005
+                }
+              ]
+            },
+            {
+              "key": "chromaticAberration",
+              "label": "Chromatic Aberration",
+              "description": "RGB color fringing at edges.",
+              "type": "toggle-object",
+              "required": false,
+              "toggleKey": "enabled",
+              "nestedSchema": [
+                {
+                  "key": "offset",
+                  "label": "Offset (px)",
+                  "description": "Color shift distance.",
+                  "type": "number",
+                  "required": false,
+                  "default": 2,
+                  "min": 0,
+                  "max": 10,
+                  "step": 0.5
+                }
+              ]
+            },
+            {
+              "key": "colorGrade",
+              "label": "Color Grade",
+              "description": "Warm/cool color tint overlay.",
+              "type": "toggle-object",
+              "required": false,
+              "toggleKey": "enabled",
+              "nestedSchema": [
+                {
+                  "key": "tint",
+                  "label": "Tint Color",
+                  "description": "Tint color.",
+                  "type": "color",
+                  "required": false,
+                  "default": "rgba(255,160,60,1)"
+                },
+                {
+                  "key": "intensity",
+                  "label": "Intensity",
+                  "description": "Tint opacity.",
+                  "type": "number",
+                  "required": false,
+                  "default": 0.06,
+                  "min": 0,
+                  "max": 0.3,
+                  "step": 0.01
+                },
+                {
+                  "key": "blend",
+                  "label": "Blend Mode",
+                  "description": "CSS blend mode.",
+                  "type": "enum",
+                  "required": false,
+                  "default": "color",
+                  "options": [
+                    {
+                      "value": "color",
+                      "label": "Color"
+                    },
+                    {
+                      "value": "multiply",
+                      "label": "Multiply"
+                    },
+                    {
+                      "value": "screen",
+                      "label": "Screen"
+                    },
+                    {
+                      "value": "overlay",
+                      "label": "Overlay"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "letterbox",
+              "label": "Letterbox",
+              "description": "Cinematic black bars top and bottom.",
+              "type": "toggle-object",
+              "required": false,
+              "toggleKey": "enabled",
+              "nestedSchema": [
+                {
+                  "key": "height",
+                  "label": "Bar Height (px)",
+                  "description": "Height of each bar.",
+                  "type": "number",
+                  "required": false,
+                  "default": 80,
+                  "min": 20,
+                  "max": 200,
+                  "step": 10
+                },
+                {
+                  "key": "animate",
+                  "label": "Animate In",
+                  "description": "Animate bars sliding in.",
+                  "type": "boolean",
+                  "required": false,
+                  "default": true
+                }
+              ]
+            },
+            {
+              "key": "glow",
+              "label": "Ambient Glow",
+              "description": "Radial background glow.",
+              "type": "toggle-object",
+              "required": false,
+              "toggleKey": "enabled",
+              "nestedSchema": [
+                {
+                  "key": "color",
+                  "label": "Color",
+                  "description": "Glow tint.",
+                  "type": "color",
+                  "required": false,
+                  "default": "rgba(138,43,226,0.15)"
+                },
+                {
+                  "key": "radius",
+                  "label": "Radius (px)",
+                  "description": "Glow radius.",
+                  "type": "number",
+                  "required": false,
+                  "default": 400,
+                  "min": 100,
+                  "max": 1000,
+                  "step": 50
+                },
+                {
+                  "key": "intensity",
+                  "label": "Intensity",
+                  "description": "Glow opacity.",
+                  "type": "number",
+                  "required": false,
+                  "default": 0.5,
+                  "min": 0,
+                  "max": 1,
+                  "step": 0.05
+                }
+              ]
+            },
+            {
+              "key": "particles",
+              "label": "Particles",
+              "description": "Floating dust / spark particles (e.g. drifting paper dust).",
+              "type": "toggle-object",
+              "required": false,
+              "toggleKey": "enabled",
+              "nestedSchema": [
+                {
+                  "key": "count",
+                  "label": "Count",
+                  "description": "Number of particles.",
+                  "type": "number",
+                  "required": false,
+                  "default": 30,
+                  "min": 5,
+                  "max": 100,
+                  "step": 5
+                },
+                {
+                  "key": "speed",
+                  "label": "Speed",
+                  "description": "Movement speed multiplier.",
+                  "type": "number",
+                  "required": false,
+                  "default": 1,
+                  "min": 0.1,
+                  "max": 3,
+                  "step": 0.1
+                },
+                {
+                  "key": "color",
+                  "label": "Color",
+                  "description": "Particle color.",
+                  "type": "color",
+                  "required": false,
+                  "default": "rgba(255,200,100,0.6)"
+                }
+              ]
+            },
+            {
+              "key": "anamorphicStreak",
+              "label": "Anamorphic Streak",
+              "description": "Horizontal light streak overlay.",
+              "type": "toggle-object",
+              "required": false,
+              "toggleKey": "enabled",
+              "nestedSchema": [
+                {
+                  "key": "color",
+                  "label": "Color",
+                  "description": "Streak tint.",
+                  "type": "color",
+                  "required": false,
+                  "default": "rgba(140,180,255,0.06)"
+                },
+                {
+                  "key": "speed",
+                  "label": "Speed",
+                  "description": "Movement speed.",
+                  "type": "number",
+                  "required": false,
+                  "default": 1,
+                  "min": 0.1,
+                  "max": 3,
+                  "step": 0.1
+                }
+              ]
+            },
+            {
+              "key": "lightSweep",
+              "label": "Light Sweep",
+              "description": "Animated light beam overlay.",
+              "type": "toggle-object",
+              "required": false,
+              "toggleKey": "enabled",
+              "nestedSchema": [
+                {
+                  "key": "count",
+                  "label": "Beam Count",
+                  "description": "Number of light beams.",
+                  "type": "number",
+                  "required": false,
+                  "default": 5,
+                  "min": 1,
+                  "max": 12
+                },
+                {
+                  "key": "color",
+                  "label": "Color",
+                  "description": "Beam color.",
+                  "type": "color",
+                  "required": false,
+                  "default": "rgba(255,255,255,0.04)"
+                },
+                {
+                  "key": "speed",
+                  "label": "Speed",
+                  "description": "Movement speed.",
+                  "type": "number",
+                  "required": false,
+                  "default": 1,
+                  "min": 0.1,
+                  "max": 3,
+                  "step": 0.1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "cameraKeyframes",
+          "label": "Camera Keyframes",
+          "description": "Full camera timeline control. Overrides preset + range mode when set.",
+          "type": "object-array",
+          "required": false,
+          "group": "advanced",
+          "itemSchema": [
+            {
+              "key": "at",
+              "label": "At",
+              "description": "Normalized time 0–1, or an absolute frame number when Is Frame is on.",
+              "type": "number",
+              "required": true,
+              "min": 0
+            },
+            {
+              "key": "isFrame",
+              "label": "Is Frame?",
+              "description": "Treat `at` as an absolute frame number instead of normalized 0–1.",
+              "type": "boolean",
+              "required": false,
+              "default": false
+            },
+            {
+              "key": "zoom",
+              "label": "Zoom",
+              "description": "Zoom scale at this keyframe.",
+              "type": "number",
+              "required": false,
+              "min": 0.1,
+              "max": 5,
+              "step": 0.05
+            },
+            {
+              "key": "panX",
+              "label": "Pan X (%)",
+              "description": "Horizontal pan at this keyframe.",
+              "type": "number",
+              "required": false,
+              "min": -50,
+              "max": 50,
+              "step": 0.5
+            },
+            {
+              "key": "panY",
+              "label": "Pan Y (%)",
+              "description": "Vertical pan at this keyframe.",
+              "type": "number",
+              "required": false,
+              "min": -50,
+              "max": 50,
+              "step": 0.5
+            },
+            {
+              "key": "rotateX",
+              "label": "Tilt (X°)",
+              "description": "X-axis tilt at this keyframe.",
+              "type": "number",
+              "required": false,
+              "min": -90,
+              "max": 90,
+              "step": 0.5
+            },
+            {
+              "key": "rotateY",
+              "label": "Orbit (Y°)",
+              "description": "Y-axis rotation at this keyframe.",
+              "type": "number",
+              "required": false,
+              "min": -180,
+              "max": 180,
+              "step": 1
+            },
+            {
+              "key": "rotateZ",
+              "label": "Roll (Z°)",
+              "description": "Z-axis roll at this keyframe.",
+              "type": "number",
+              "required": false,
+              "min": -180,
+              "max": 180,
+              "step": 1
+            },
+            {
+              "key": "easing",
+              "label": "Easing",
+              "description": "Per-segment easing to reach this keyframe from the previous one.",
+              "type": "enum",
+              "required": false,
+              "options": [
+                {
+                  "value": "linear",
+                  "label": "Linear"
+                },
+                {
+                  "value": "ease-in",
+                  "label": "Ease In"
+                },
+                {
+                  "value": "ease-out",
+                  "label": "Ease Out"
+                },
+                {
+                  "value": "ease-in-out",
+                  "label": "Ease In-Out"
+                },
+                {
+                  "value": "spring",
+                  "label": "Spring"
+                },
+                {
+                  "value": "snap",
+                  "label": "Snap"
+                },
+                {
+                  "value": "cubic",
+                  "label": "Cubic"
+                }
+              ]
+            },
+            {
+              "key": "hold",
+              "label": "Hold (frames)",
+              "description": "Hold at this value for N frames before transitioning to the next.",
+              "type": "number",
+              "required": false,
+              "min": 0
+            },
+            {
+              "key": "label",
+              "label": "Label",
+              "description": "Optional label for debugging.",
+              "type": "text",
+              "required": false
+            }
+          ]
+        },
+        {
+          "key": "perspectiveDepth",
+          "label": "Perspective Depth (px)",
+          "description": "Distance from the lens to the page, in px — the focal length of the shot. LOW values (under ~1200) put the vanishing point close and keystone the type into looking distorted rather than tilted; HIGH values give a long, flat, cinematic lens. Defaults to a long lens because a news page is mostly text and text must stay readable.",
+          "type": "number",
+          "required": false,
+          "default": 2000,
+          "min": 400,
+          "max": 5000,
+          "step": 50,
+          "group": "advanced"
+        },
+        {
+          "key": "perspectiveOrigin",
+          "label": "Perspective Origin",
+          "description": "Vanishing point (default '50% 50%').",
+          "type": "text",
+          "required": false,
+          "group": "advanced"
+        },
+        {
+          "key": "enter",
+          "label": "Enter Transition",
+          "description": "Scene entrance animation.",
+          "type": "enum",
+          "required": false,
+          "group": "advanced",
+          "options": [
+            {
+              "value": "fade",
+              "label": "Fade"
+            },
+            {
+              "value": "zoom-in",
+              "label": "Zoom In"
+            },
+            {
+              "value": "zoom-out",
+              "label": "Zoom Out"
+            },
+            {
+              "value": "slide-up",
+              "label": "Slide Up"
+            },
+            {
+              "value": "slide-down",
+              "label": "Slide Down"
+            },
+            {
+              "value": "slide-left",
+              "label": "Slide Left"
+            },
+            {
+              "value": "slide-right",
+              "label": "Slide Right"
+            },
+            {
+              "value": "rotate-in",
+              "label": "Rotate In"
+            },
+            {
+              "value": "rotate-out",
+              "label": "Rotate Out"
+            },
+            {
+              "value": "slam",
+              "label": "Slam"
+            },
+            {
+              "value": "flip",
+              "label": "Flip"
+            },
+            {
+              "value": "none",
+              "label": "None"
+            }
+          ]
+        },
+        {
+          "key": "exit",
+          "label": "Exit Transition",
+          "description": "Scene exit animation.",
+          "type": "enum",
+          "required": false,
+          "group": "advanced",
+          "options": [
+            {
+              "value": "fade",
+              "label": "Fade"
+            },
+            {
+              "value": "zoom-in",
+              "label": "Zoom In"
+            },
+            {
+              "value": "zoom-out",
+              "label": "Zoom Out"
+            },
+            {
+              "value": "slide-up",
+              "label": "Slide Up"
+            },
+            {
+              "value": "slide-down",
+              "label": "Slide Down"
+            },
+            {
+              "value": "slide-left",
+              "label": "Slide Left"
+            },
+            {
+              "value": "slide-right",
+              "label": "Slide Right"
+            },
+            {
+              "value": "rotate-in",
+              "label": "Rotate In"
+            },
+            {
+              "value": "rotate-out",
+              "label": "Rotate Out"
+            },
+            {
+              "value": "slam",
+              "label": "Slam"
+            },
+            {
+              "value": "flip",
+              "label": "Flip"
+            },
+            {
+              "value": "none",
+              "label": "None"
+            }
+          ]
+        },
+        {
+          "key": "enterDuration",
+          "label": "Enter Duration (frames)",
+          "description": "Entrance animation length.",
+          "type": "number",
+          "required": false,
+          "min": 1,
+          "max": 90,
+          "group": "advanced"
+        },
+        {
+          "key": "exitDuration",
+          "label": "Exit Duration (frames)",
+          "description": "Exit animation length.",
+          "type": "number",
+          "required": false,
+          "min": 1,
+          "max": 90,
+          "group": "advanced"
         }
       ]
     }
