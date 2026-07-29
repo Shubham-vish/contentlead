@@ -44,7 +44,7 @@ Read individual rule files for detailed explanations and code examples:
 - [rules/image-annotation.md](rules/image-annotation.md) — Annotating screenshots: marker pen, highlight/underline/circle, dim styles, travelling spotlight
 - [rules/news-article-scene.md](rules/news-article-scene.md) — 3D newspaper/article scene: layouts, paper stock, inline marker annotations, annotation-following camera
 - [rules/text-match-cut.md](rules/text-match-cut.md) — Text match cut: one word pinned on screen while newspaper after newspaper cuts behind it
-- [rules/text-match-cut-highlight.md](rules/text-match-cut-highlight.md) — Highlighter variant: a phrase sharp inside a yellow box while defocused article pages flick past
+- [rules/text-match-cut-highlight.md](rules/text-match-cut-highlight.md) — Highlighter variants: a phrase sharp inside a yellow box while article pages flick past behind it, defocused evenly or with focus pulled to the highlighted line
 - [rules/text-animations.md](rules/text-animations.md) — Typography, typewriter, kinetic text
 - [rules/charts.md](rules/charts.md) — Bar charts, pie charts, counters, data visualization
 - [rules/camera-engine.md](rules/camera-engine.md) — Perspective zoom, shake, POI, 5 camera presets, BREATHE mechanism

@@ -1,6 +1,19 @@
-# Text match cut — highlighter variant
+# Text match cut — highlighter variants
 
-The sibling of [text-match-cut.md](text-match-cut.md). Same idea — one thing stays
+Two scenes, both siblings of [text-match-cut.md](text-match-cut.md):
+
+| Scene | Anchor | What is defocused |
+|---|---|---|
+| **Text Match Cut (Highlighter)** | yellow box | the whole page, evenly, plus chromatic aberration |
+| **Text Match Cut (Focus Pull)** | yellow box | everything except the highlighted LINE, smearing vertically with distance |
+
+They share the box-is-the-anchor principle, the measured font advances, the
+`textLength` fit and the frame-derived geometry rule, so most of this page
+applies to both. The Focus Pull differences are at the bottom.
+
+## Highlighter
+
+Same idea — one thing stays
 nailed to the frame while the page behind it is replaced ten times a second — but
 the anchor is a **yellow highlighter box**, the pages are **web articles** rather
 than newspapers, and everything except the box is **defocused with chromatic
@@ -103,3 +116,73 @@ Two of its metrics were wrong before the scene was, so be suspicious of a failur
 
 Verified: portrait and landscape both pass, `"AI"` and `"Artificial Intelligence"`
 both pass, and a negative control with 14px of injected jitter correctly fails.
+
+---
+
+# Focus Pull variant
+
+Source: `SkillTown/scripts/community-scenes/text-match-cut-focus.tsx`.
+Published as **"Text Match Cut (Focus Pull)"**.
+
+Same yellow box, but instead of defocusing the page evenly it **pulls focus to
+the highlighted line**. Text on and immediately around that line is razor sharp;
+everything above and below smears away vertically, harder the further it goes.
+The page is also zoomed much further in, so lines run off both edges of frame.
+
+## Measured off the reference (1080x1920 @ 24fps)
+
+| | |
+|---|---|
+| cut cadence | 2–3 frames @24fps = **8–12 cuts/sec** → `holdFrames: 3` @30fps |
+| box | x[200:880] = **63% of frame width**, h 123px, dead constant |
+| box centre | cx **0.500**, cy **0.380** — lower than the Highlighter's 0.26 |
+| focus falloff | **pearson r = −0.721** between sharpness and distance from the highlight |
+| | `\|dy\|` 7.27 at the line, ~1.0 beyond 600px — near text is **3.84× sharper** |
+| smear axis | `\|dy\|/\|dx\|` 0.46–0.59 → the blur runs **vertically** |
+| colours | highlighter [203,196,31], paper [209,210,194], ink [37,38,26] |
+
+## Why it is built out of independent lines
+
+A spatially varying blur is not something one SVG filter can express. So the
+page is drawn as **one element per line**, each carrying its own filter chosen
+from twelve pre-declared `feGaussianBlur` levels.
+
+That is not a workaround — it is also exactly how the reference behaves. Whole
+lines smear as a unit, because the thing being defocused is a line of type, not
+a texture. `stdDeviation` takes separate x and y values, so the streak is made
+vertical by keeping x small, matching the measured anisotropy.
+
+## Two things that are easy to get wrong
+
+**The sharp zone must be wider than one line.** At ±0.55 lines only the focus
+line itself is crisp, and the measured near/far ratio came out at 1.86× against
+the reference's 3.84× — the phrase read as a caption pasted onto a blur rather
+than part of a sentence. At ±1.35 lines the neighbouring lines stay legible and
+the ratio reaches 3.12×.
+
+**The headline must be laid out defensively.** Deriving the number of body lines
+above the highlight from the frame height put the headline at y = −56, so it
+silently never rendered. `bodyAbove` now varies 0–2 by page (which is also what
+the reference does, and stops consecutive cuts looking like one page with the
+words swapped), and the headline and breadcrumb are simply **omitted when they
+do not fit** rather than being allowed to compute a negative y.
+
+## Verifying
+
+`SkillTown-Desktop/tests/visual/focus-cut-check.py` — box lock, focus falloff
+(both the correlation *and* the near/far ratio), and page turnover.
+
+| variant | result |
+|---|---|
+| portrait 1080×1920 | PASS — drift 1.0px, r −0.795, ratio 3.12× |
+| landscape 1920×1080 | PASS — drift 2.0px, r −0.758, ratio 4.98× |
+| keyword `"AI"` | PASS — box shrinks to fit, ratio 2.70× |
+| keyword `"Artificial Intelligence"` | PASS — drift 0.0px, ratio 3.53× |
+| **negative** (`smearScale: 0`) | **FAIL, exit 1** — r flips to +0.235, ratio 0.90× |
+
+**Checker trap, same family as the others on this page:** the near/far split was
+first written as fixed 300px/700px cuts. In a 1080-tall landscape frame that
+selects no bands at all on the far side, producing a `nan` ratio and failing a
+scene that was behaving perfectly. The split is now a fraction of frame height
+(0.156 / 0.365), with an explicit guard for an empty bin. Always sanity-check a
+verifier at both orientations before trusting a failure.
