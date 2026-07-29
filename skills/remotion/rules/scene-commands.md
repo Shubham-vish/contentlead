@@ -25,6 +25,25 @@ All commands go to `POST /api/execute` with bearer auth.
 | Customize a catalog scene (add overlays, combine) | `scene.addBundledScene` importing from `@shubham-vish/remotion-templates` |
 | Simple text/shape animation, no imports | `scene.addCustomScene` (sandbox) |
 | Captions with word-level timing | `scene.addBundledScene` with `@remotion/captions` |
+| Reuse a scene someone already published | `scene.listCommunityScenes` → `scene.addCommunityScene` |
+
+### Community library (shared, no package release)
+`scene.listCommunityScenes` / `scene.addCommunityScene` read the **Community**
+tab — bundled scenes stored in the shared database rather than in
+`@shubham-vish/remotion-templates`. Check here before writing a new scene from
+scratch; someone may already have built it.
+
+- Adding one copies the **compiled bundle onto the timeline item**, so the scene
+  keeps rendering (and exports) even if the library entry later changes.
+- **No configurable props.** Values are baked into the source. To change
+  anything, read the scene's `sourceCode`, edit it, and re-add with
+  `scene.addBundledScene`.
+- `addCommunityScene` params: `sceneId` (required), `startTime` (ms),
+  `duration` (**frames**).
+
+Rule of thumb: a **catalog** scene is the right home for something reusable and
+prop-driven; the **community library** is for fixed scenes you want to share
+without publishing a new package version.
 
 Current executor behavior:
 - Library scenes come from `SCENE_CATALOG`.
