@@ -177,10 +177,47 @@ node scripts/verify-community-bundles.cjs     # exits non-zero on any failure
 
 It must live inside the repo, not `/tmp`, or `require("react")` cannot resolve.
 
+## List controls belong on every scene tab
+
+Common, My and Community are all scene lists, so they carry the same controls:
+a count, a cycling sort button (`A→Z` → `Z→A` → `Short` → `Long`) and
+**Preview all**. Sort options live in `menu-item/templates/sort-options.ts`, a
+leaf module — importing them from `constants.ts` drags in `SCENE_CATALOG` and
+every Remotion effect package it references, which is enough to break a jsdom
+test run with `No "exports" main defined in @remotion/light-leaks`.
+
+**Preview all forces per-card state.** A list that keeps `previewResult`,
+`propValues` and `livePreviewProps` on the parent, keyed to a single
+`selectedScene`, cannot expand more than one card — every card would render the
+selected scene. `CommunitySceneCard` therefore owns its own bundle load, prop
+values, debounce and settings toggle. That also removes the need to reset the
+settings panel when the selection changes: a collapsed card unmounts, so its
+state cannot leak into the next one.
+
+## Contrast, measured
+
+The active category pill was `dark:bg-emerald-500` with white text — **2.54:1**,
+below even the 3:1 large-text floor. `emerald-700` gives **5.48:1**, clearing
+WCAG AA for body text. Compute it rather than eyeballing:
+
+```js
+const lum = h => [1,3,5].map(i => parseInt(h.substr(i,2),16)/255)
+  .map(v => v <= 0.03928 ? v/12.92 : ((v+0.055)/1.055)**2.4)
+  .reduce((a,c,i) => a + [0.2126,0.7152,0.0722][i]*c, 0);
+```
+
 ## A broken `globals.css` takes down every route
 
 A stylesheet syntax error is not a styling bug — Next returns **500 for the whole
 app**, API routes included, and the message points at a line number in the
 *compiled* CSS that does not exist in the source file. It is easy to cause by
-inserting a block on top of a multi-line comment's opening line. `app/__tests__/globals-css-parses.test.ts`
-parses the file with postcss and checks the comment delimiters balance.
+inserting a block on top of a multi-line comment's opening line. `app/__tests__/stylesheets-parse.test.ts` parses every app stylesheet with
+**lightningcss**, which is the parser Next actually uses.
+
+Two weaker checks were tried first and both are wrong:
+
+- **postcss accepts the exact broken file** that 500'd the app. It is not a
+  substitute for the real parser.
+- **Counting `/*` against `*/`** does catch it, but false-positives on ordinary
+  prose inside a comment — `/content/*` in `05-semantic-tokens.css` reads as an
+  extra opener.
