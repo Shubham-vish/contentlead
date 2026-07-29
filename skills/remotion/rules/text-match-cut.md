@@ -35,9 +35,18 @@ their values into the source, so **edit the code, then add it**.
 headline lines `before` / `after` the keyword. Either may be `""`. They stack
 **above and below** the keyword, the way real headlines are set.
 
-**Scene duration:** `PAPERS.length * holdFrames` frames of cutting, then it rests
-on the last paper as the payoff. Twelve papers at 3 frames = 36, so ~90 frames
-total gives roughly a second of cutting and a beat to land on.
+**Scene duration:** the deck **cycles for the whole clip** — it does not run out.
+An earlier version clamped at `PAPERS.length * holdFrames` (12 papers × 3 = 36 of
+90 frames) and then froze on the last paper for the remaining two thirds, which
+reads as the animation breaking rather than as a payoff. Each lap is reseeded on
+the *step counter*, not the paper index, so a second pass through the deck does
+not repeat the first pass's random layout. Set `settleFrames` above `0` only if
+you deliberately want a hold on the final paper.
+
+That freeze also **flattered the verification metrics**: identical consecutive
+frames make "change inside the pinned word" ≈ 0, so the inside/outside ratio
+looked far better than the motion deserved. Fixing the freeze made the numbers
+look *worse* while the scene got better — see the measurement note below.
 
 ## The four constraints that do all the work
 
@@ -98,3 +107,22 @@ a vignette push 85–95% of every frame below the paper threshold, so the union
 becomes the whole frame and the ratio collapses no matter how much changed —
 at paper level a static frame scored 8.2% against a real cut's 11.9%, which
 cannot discriminate at all. At glyph level the same pair reads 13.8% vs 78.5%.
+
+## Verifying it: measure the word's position, not the pixels around it
+
+`SkillTown-Desktop/tests/visual/match-cut-check.py` renders the scene through the
+real export path and checks three things. The important one is the **direct
+position test**: mask the ink inside the pinned region and track its centroid and
+bounding box across frames. The newspaper scene measures **0.09px centroid drift
+and 0px bbox drift over 90 frames**.
+
+The older "mean pixel change inside the word vs outside it" ratio is kept, but
+only as a coarse guard. It is unreliable on its own, because the rectangle around
+a word is mostly the *gaps between its letters*, and the page behind those gaps is
+replaced on every cut. The harder the scene cuts, the worse that ratio looks —
+which is exactly backwards. When it flagged a failure at 3.4×, the fix was to
+measure the glyph position directly and prove the word had not moved, **not** to
+lower the threshold.
+
+Always re-run the negative control after touching the checker: set `holdFrames`
+to something huge so the render is static, and confirm the check still exits 1.
