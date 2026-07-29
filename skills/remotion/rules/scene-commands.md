@@ -35,11 +35,22 @@ scratch; someone may already have built it.
 
 - Adding one copies the **compiled bundle onto the timeline item**, so the scene
   keeps rendering (and exports) even if the library entry later changes.
-- **No configurable props.** Values are baked into the source. To change
-  anything, read the scene's `sourceCode`, edit it, and re-add with
-  `scene.addBundledScene`.
+- **Editable props, if the scene declares them.** A scene that exports a
+  `propsSchema` exposes those fields; `listCommunityScenes` returns the schema so
+  you can see what is settable before adding. Pass values as `sceneProps`.
+  A scene with no `propsSchema` is fixed — to change anything, read its
+  `sourceCode`, edit it, and re-add with `scene.addBundledScene`.
 - `addCommunityScene` params: `sceneId` (required), `startTime` (ms),
-  `duration` (**frames**).
+  `duration` (**frames**), `sceneProps` (object).
+- Unknown `sceneProps` keys are **rejected with an error listing the allowed
+  keys** rather than silently ignored, so a guessed prop name fails loudly.
+
+```jsonc
+// scene.addCommunityScene
+{ "sceneId": "bscene_2dcfba564c7e4cb9",
+  "duration": 90,
+  "sceneProps": { "keyword": "MOMENTUM", "ink": "#1a2b4a" } }
+```
 
 Rule of thumb: a **catalog** scene is the right home for something reusable and
 prop-driven; the **community library** is for fixed scenes you want to share

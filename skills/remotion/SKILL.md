@@ -50,6 +50,7 @@ Read individual rule files for detailed explanations and code examples:
 - [rules/camera-engine.md](rules/camera-engine.md) — Perspective zoom, shake, POI, 5 camera presets, BREATHE mechanism
 - [rules/effects.md](rules/effects.md) — FilmGrain, ChromaticAberration, SpeakerPIP
 - [rules/scene-commands.md](rules/scene-commands.md) — API commands: addCustomScene, addLibraryScene, listScenes, etc.
+- [rules/community-scene-props.md](rules/community-scene-props.md) — Giving a bundled community scene editable props via a `propsSchema` export
 - [rules/scene-catalog-guide.md](rules/scene-catalog-guide.md) — Scene selection strategy, categories, pairing logic
 - [rules/transitions-and-captions.md](rules/transitions-and-captions.md) — LightLeaks, custom transitions, 7 TikTok caption styles
 - [rules/sfx-and-audio.md](rules/sfx-and-audio.md) — SFX search/placement, voiceover, volume guidelines
