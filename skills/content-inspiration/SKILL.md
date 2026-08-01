@@ -1,7 +1,7 @@
 ---
 name: content-inspiration
-description: Research trending content, analyze competitors, search across platforms (IG, YT, Twitter, Reddit, tech news), transcribe videos, and store findings. Use MCP tools for full research or desktop bridge for quick lookups.
-tags: inspiration, trending, research, competitor, niche, search, transcribe, hooks, ideas, content-planning, scraping, twitter, reddit, technews, instagram, youtube
+description: Research trending content, analyze competitors, search across platforms (IG, YT, X/Twitter, Reddit, tech news), transcribe videos, save findings and references, push AI-generated insights into the SkillTown Findings UI. Covers the /content/inspiration (legacy IG feed), /content/inspiration/explore (transient fan-out search), and /content/inspiration/pulse (persistent niche monitoring) surfaces. Use MCP scraping tools for direct source access, or the desktop bridge for logged-in-user context and UI integration.
+tags: inspiration, trending, research, competitor, niche, search, transcribe, hooks, ideas, content-planning, scraping, twitter, x, reddit, technews, instagram, youtube, findings, ai-output, pulse, explore, velocity, bridge, cookies, references, viral-hooks, hook-analysis
 ---
 
 # Content Inspiration & Research
@@ -13,6 +13,39 @@ Two access paths:
 
 1. **MCP Server tools** (full research) — scrape IG/YT/Twitter, Reddit, tech news, web search, context memory
 2. **Desktop bridge endpoints** (quick lookups) — feed, search, transcribe from the Electron app
+
+## When to use this skill
+
+Load `content-inspiration` when the user wants to:
+- **Discover** what's trending / going viral on a topic ("what's hot in AI editing this week?")
+- **Study** a competitor's content ("analyze mkbhd's last 10 reels")
+- **Extract** hooks / transcripts / viral patterns from existing videos
+- **Monitor** niches over time (Pulse)
+- **Push AI-generated findings** into the SkillTown UI (hooks analysis, virality tables, etc.)
+- **Save references** to great examples the user can revisit
+
+## When NOT to use this skill (use a sibling instead)
+
+- Actually **posting** content to IG/YT/LinkedIn → use `content-publishing`
+- **Editing** a video or creating scenes → use `contentlead` / `remotion`
+- **Scoring a script** for virality (no scraping needed) → use `script-evaluator`
+- **Extracting viral clips from long videos** the user already has → use `ai-clipping`
+- **Detecting a creator's editing style** → use `creator-styles`
+
+## Quick decision tree
+
+```
+Need to search a topic across sources?           → /search (bridge) or scraping_* (MCP)
+Need to see items I've already synced?           → /feed (bridge)
+Need to persistently monitor a niche?            → /niches (bridge)
+Need a transcript?
+  ├── Instagram, by shortcode                   → /transcribe (bridge)
+  ├── YouTube/X/Reddit, by URL                  → /transcript (bridge, unified)
+  └── Any source via MCP                         → scraping_*_get_transcript
+Need to save a great example permanently?        → /references (bridge, action:"pin")
+Need to show the user an analysis result?        → /ai-output (bridge)
+Need to check if IG/X are connected?             → /connection-status (bridge)
+```
 
 ---
 
@@ -121,6 +154,9 @@ All endpoints require `Authorization: Bearer <token>` from `~/.skilltown-desktop
 | GET | `/api/bridge/inspiration/niches` | List all niches (Pulse) |
 | GET | `/api/bridge/inspiration/niches/:slug` | Get a specific niche |
 | GET | `/api/bridge/inspiration/export` | Export items (JSON/CSV) |
+| GET | `/api/bridge/inspiration/connection-status` | Which sources are connected (pre-flight for /search) |
+| GET | `/api/bridge/inspiration/references` | List pinned reference items |
+| GET | `/api/bridge/inspiration/transcript?key=X` | Poll async transcript status |
 
 ### Write Operations
 
@@ -133,9 +169,11 @@ All endpoints require `Authorization: Bearer <token>` from `~/.skilltown-desktop
 | POST | `/api/bridge/inspiration/niches` | Create a new niche |
 | DELETE | `/api/bridge/inspiration/niches/:slug` | Delete a niche |
 | POST | `/api/bridge/inspiration/niches/:slug/refresh` | Refresh a niche |
-| POST | `/api/bridge/inspiration/transcribe` | Transcribe a single video |
-| POST | `/api/bridge/inspiration/transcribe-bulk` | Transcribe up to 10 videos |
+| POST | `/api/bridge/inspiration/transcribe` | Transcribe a single IG reel (by shortcode) |
+| POST | `/api/bridge/inspiration/transcribe-bulk` | Transcribe up to 10 IG reels |
+| POST | `/api/bridge/inspiration/transcript` | Unified transcript — YT/X/Reddit/IG (by URL) |
 | POST | `/api/bridge/inspiration/items/update` | Update item metadata (transcript, notes, tags, aiSummary, aiHookScore) |
+| POST | `/api/bridge/inspiration/references` | Pin / unpin / update a reference |
 | POST | `/api/bridge/inspiration/ai-output` | Push AI findings to the UI panel |
 
 > **Full parameter reference** (bodies, defaults, response shapes, gotchas) lives in `bridge-endpoints.md`. Table above is the quick index.

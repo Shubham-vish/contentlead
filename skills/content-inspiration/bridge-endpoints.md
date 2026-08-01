@@ -333,26 +333,171 @@ There is currently **no GET side** for reading findings — the FindingsPanel po
 
 ---
 
+### `GET /api/bridge/inspiration/connection-status`
+
+Pre-flight for `/search`. Returns per-source connection state so an AI can skip sources that would fail with `needsConnect`.
+
+**No params.**
+
+**Response:**
+```json
+{
+  "hasCookies": true,
+  "platformCookies": { "instagram": true, "x": false, "youtube": false, "reddit": false },
+  "status": "ok",
+  "platforms": {
+    "instagram": {
+      "has_cookies": true,
+      "saved_at": "2025-11-14T10:22:15.417Z",
+      "last_verified_at": "2025-11-14T11:04:02.001Z",
+      "identity": { "handle": "shubham", "name": "Shubham", "externalId": "1234..." }
+    }
+  }
+}
+```
+
+**Common pattern:**
+```
+1. GET /connection-status
+2. If !platformCookies.instagram → skip "instagram" from sources array in /search
+3. Or: if platform.instagram.has_cookies && !platform.instagram.last_verified_at → 
+   warn user to reconnect
+```
+
+---
+
+### `GET /api/bridge/inspiration/references`
+
+List the user's pinned references, newest first.
+
+**No params.**
+
+**Response:**
+```json
+{
+  "items": [
+    { "id": "userId__external", "item": UnifiedItem, "note": "great hook",
+      "tags": ["hook","tutorial"], "pinnedAt": "2025-11-01T…" }
+  ],
+  "total": 3
+}
+```
+
+---
+
+### `POST /api/bridge/inspiration/references`
+
+Pin, unpin, or update a reference.
+
+**Body — pin:**
+```json
+{ "action": "pin", "item": UnifiedItem, "note": "great hook", "tags": ["hook"] }
+```
+
+**Body — unpin:**
+```json
+{ "action": "unpin", "item": { "id": "…" } }
+```
+
+**Body — update (note/tags on an already-pinned item):**
+```json
+{ "action": "update", "itemId": "userId__external", "note": "…", "tags": ["…"] }
+```
+
+| Field | Notes |
+|---|---|
+| `action` | `"pin"` (default) \| `"unpin"` \| `"update"`. |
+| `item` | Required for `pin`/`unpin`. Full `UnifiedItem` shape (must have `id`, `source`, `canonicalUrl`, `author`, `media`, `engagement`). For unpin only `item.id` is required. |
+| `itemId` | Alternative to `item` for `update` — the client may not have the full item on hand when editing notes/tags. |
+| `note` | Optional freeform note. |
+| `tags` | Optional string array. |
+
+**Responses:**
+- pin → `{ pinned: true, reference: {…} }`
+- unpin → `{ unpinned: true, itemId: "…" }`
+- update → `{ updated: true, reference: {…} }`; `404` if not previously pinned.
+
+---
+
+### `POST /api/bridge/inspiration/transcript`  (unified, non-IG)
+
+Complements `/transcribe` (IG-only, shortcode-based). This one takes a **URL** and works for **YouTube / X / Reddit / Instagram** via the unified transcription pipeline.
+
+**Body:**
+```json
+{
+  "source": "youtube",
+  "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "videoUrl": "…direct stream URL for Whisper (optional)…",
+  "externalId": "…override cache key (optional, rare)…",
+  "title": "for failure UX",
+  "language": "en",
+  "force": false
+}
+```
+
+| Field | Notes |
+|---|---|
+| `source` | Required. `"youtube"` \| `"x"` \| `"reddit"` \| `"instagram"`. |
+| `url` | Required (or `videoUrl`). The canonical page URL. |
+| `videoUrl` | Optional direct stream URL — for Whisper providers when the page URL doesn't have a stream. IG/X/Reddit typically need this because Whisper can't fetch from the page URL alone. |
+| `externalId` | Optional — pre-computed cache key. Normally derived automatically from the URL. |
+| `title` | Optional — shown in the UI for failure cases. |
+| `language` | Optional BCP-47. Default `"en"`. |
+| `force` | Bypass the transcript cache. Default `false`. |
+
+**Response — sync provider (YouTube captions):**
+```json
+{ "ok": true, "source": "youtube", "transcript": "…", "segments": [{"start":0,"end":2.5,"text":"…"}], "language": "en" }
+```
+
+**Response — async provider (Whisper for IG/X/Reddit):**
+```json
+{ "cacheKey": "…", "state": "processing", "providerId": "whisper",
+  "expectedSeconds": 30, "processingStartedAt": "…" }
+```
+Poll `GET /api/bridge/inspiration/transcript?key=<cacheKey>` until `state !== "processing"`.
+
+**Failure states:**
+- `"failed"` — transient error. Retry with `force: true`.
+- `"no_captions"` — YouTube video has no captions (benign; don't auto-retry).
+
+---
+
+### `GET /api/bridge/inspiration/transcript?key=<cacheKey>`
+
+Poll an async transcript job.
+
+**Response:**
+```json
+{ "cacheKey": "…", "state": "ready" | "processing" | "failed" | "no_captions" | "idle",
+  "result": TranscriptResult,   // present when state === "ready"
+  "errorMessage": "…",           // present on failed
+  "processingStartedAt": "…",    // present while processing
+  "providerId": "…", "expectedSeconds": 30 }
+```
+
+`"idle"` means no job exists for this key yet.
+
+---
+
 ## Not currently exposed via the bridge
 
 These Next.js routes exist but aren't wrapped as `/api/bridge/inspiration/*`. An AI running on the desktop side has to either add a bridge passthrough or hit `contentlead.in` directly with the user's session cookies:
 
 | Next.js path | Purpose | Where to reach it |
 |---|---|---|
-| `/api/content/inspiration/connection-status` | Which sources have valid cookies/session | Web UI only today |
 | `/api/content/inspiration/current-cookies` | Read stored cookies for a source | Web UI only |
 | `/api/content/inspiration/connect-source` | Kick off Electron social-browser login | Web UI only |
 | `/api/content/inspiration/connect-ig` | IG-specific connect flow | Web UI only |
 | `/api/content/inspiration/verify-connection` | Ping to confirm cookies still valid | Web UI only |
 | `/api/content/inspiration/extension-results` | Ingestion endpoint (browser extension → Cosmos) | Extension only |
-| `/api/content/inspiration/references` | Reference library (save/list/delete) | Web UI only |
-| `/api/content/inspiration/transcript` + `/transcript/status` | Fetch stored transcript by shortcode / poll status | Web UI only |
-| `/api/content/inspiration/transcribe/status` | Poll long-running transcription jobs | Web UI only |
+| `/api/content/inspiration/transcribe/status` | Poll long-running IG transcription jobs (shortcode-based) | Web UI only — use `/transcript` (unified) instead when possible |
 | `/api/content/inspiration/creators/[username]` | Deep-dive on ONE tracked creator | Web UI only |
 | `/api/content/inspiration/creators/preview` | Preview a creator before adding | Web UI only |
 | `/api/content/inspiration/creators/load-older` | Backfill older items for a tracked creator | Web UI only |
 | `/api/content/inspiration/creators/items` | Flat item list across creators (with filters) | Web UI only |
-| `/api/content/inspiration/niches/[slug]/items` | Paginated items list within a niche | Web UI only |
+| `/api/content/inspiration/niches/[slug]/items` | DELETE cached items for a niche (clear cache) | Web UI only |
 | `/api/content/inspiration/video-proxy` + `-two` | CORS-safe video streaming for the in-app player | Player only |
 
 If a workflow needs one of these, add a bridge passthrough following the pattern in `SkillTown-Desktop/electron/api-server/bridge-routes.cjs` (line ~1255+). Read-only routes are easy: 1 handler + 1 route registration in `api-server.cjs`.
