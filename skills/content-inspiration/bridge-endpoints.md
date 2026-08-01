@@ -520,12 +520,23 @@ Or on failure:
 
 Download a video/audio URL to a local file on disk. Chooses a backend automatically per URL:
 
-| URL type | Backend | Examples |
-|---|---|---|
-| YT, X/Twitter, TikTok, FB, Vimeo, Reddit post | `yt-dlp` | `youtube.com/watch?v=…`, `tiktok.com/@user/video/…` |
-| Direct CDN URL (video file) | `direct-fetch` | IG `videoUrl`, `v.redd.it/…mp4`, any `.mp4/.m4a/.webm` |
+| URL type | Backend | Examples | Auth |
+|---|---|---|---|
+| YouTube | `yt-dlp` | `youtube.com/watch?v=…`, `youtu.be/…` | none needed |
+| TikTok, FB, Vimeo, Reddit posts | `yt-dlp` | `tiktok.com/@user/video/…` | usually none |
+| **Instagram** | `yt-dlp` | `instagram.com/reel/…`, `/p/…` | **cookies required** (as of 2024) |
+| **Twitter / X** | `yt-dlp` | `x.com/user/status/…` | **cookies required** (as of 2024) |
+| Direct CDN URL | `direct-fetch` | IG `videoUrl`, `v.redd.it/…mp4`, any `.mp4/.m4a/.webm` | Referer/Cookie headers if needed |
 
-**Auto-install:** if yt-dlp isn't on the machine (Homebrew, PATH, or bundled), it downloads the official release from GitHub Releases into `userData/bin/` on first use. End users do NOT need to `brew install yt-dlp`.
+**Auto-cookie injection (Instagram, X/Twitter):**
+When the URL is an IG or X domain and no explicit cookies are provided, the bridge automatically pulls cookies from the desktop app's social-browser session (the same jar behind the existing IG scraper) and writes a temp Netscape cookies.txt file that yt-dlp consumes. **The caller doesn't need to do anything.** Prerequisite: the user has connected the source at least once via `GET /api/bridge/inspiration/connection-status` → `POST /api/mcp/instagram/connect` (or the UI's Connect flow).
+
+If the user isn't logged in yet, the request returns `{ok:false, error:"unavailable", …}` with a hint. Recovery options for the client:
+- Prompt user to connect via `/connection-status` UI, then retry.
+- Fall back to `cookiesFromBrowser: "chrome"` (or firefox/safari) to use the user's browser session directly.
+- Ask user to export cookies to a Netscape file and pass `cookiesFile: "/path/…"`.
+
+**Auto-install:** if yt-dlp isn't on the machine (Homebrew, PATH, or bundled), the module downloads the official release from GitHub Releases into `userData/bin/` on first use. End users do NOT need to `brew install yt-dlp`.
 
 **Body:**
 | Field | Type | Default | Notes |
@@ -538,6 +549,11 @@ Download a video/audio URL to a local file on disk. Chooses a backend automatica
 | `maxSizeMB` | number | `500` | Enforced by `--max-filesize` pre-transfer and byte-counter post-transfer |
 | `timeoutMs` | number | `300000` (5 min) | Overall wall-clock cap; child is `SIGKILL`ed on timeout |
 | `headers` | `{userAgent?, referer?, cookie?}` | none | For direct-fetch CDNs that 403 without auth (IG, Reddit signed URLs) |
+| `cookiesFile` | string | auto-injected for IG/X | Path to Netscape cookies.txt for yt-dlp `--cookies` |
+| `cookiesFromBrowser` | `"chrome"\|"firefox"\|"safari"\|"edge"\|…` | none | yt-dlp `--cookies-from-browser` — reads user's own browser session |
+| `referer` | string | none | yt-dlp `--referer` |
+| `userAgent` | string | none | yt-dlp `--user-agent` |
+| `autoCookies` | boolean | `true` | Set `false` to skip auto-injection from social-browser |
 
 **Success 200:**
 ```json
@@ -555,7 +571,8 @@ Download a video/audio URL to a local file on disk. Chooses a backend automatica
     "ext": "mp4"
   },
   "elapsedMs": 9889,
-  "backend": "yt-dlp"
+  "backend": "yt-dlp",
+  "cookieSource": "none" // or "user-provided" | "browser" | "social-browser (auto-injected)"
 }
 ```
 
@@ -582,7 +599,7 @@ Download a video/audio URL to a local file on disk. Chooses a backend automatica
 **Typical workflows:**
 
 ```jsonc
-// 1. Download a YouTube video for AI clipping
+// 1. Download a YouTube video for AI clipping — no cookies needed
 POST /api/bridge/media/download
 { "url": "https://youtube.com/watch?v=abc123", "quality": "720p" }
 // → filePath goes straight to ai-clipping.probeVideo / editor.import
@@ -592,7 +609,18 @@ POST /api/bridge/media/download
 { "url": "https://youtube.com/watch?v=abc123", "quality": "audio-only" }
 // → filePath is .m4a, feed to /api/media/transcribe
 
-// 3. Download an IG reel your scraper already found videoUrl for
+// 3. Instagram reel — cookies auto-injected from social-browser
+POST /api/bridge/media/download
+{ "url": "https://www.instagram.com/reel/DKvBQvNSMSC/" }
+// Prereq: user has connected IG via /api/mcp/instagram/connect at least once.
+// Response includes cookieSource:"social-browser (auto-injected)".
+// If not connected yet: returns ok:false with a hint to run /connection-status.
+
+// 4. IG/X fallback — use the user's Chrome cookies directly (if they're logged in there)
+POST /api/bridge/media/download
+{ "url": "https://x.com/user/status/…", "cookiesFromBrowser": "chrome" }
+
+// 5. Download an IG reel your scraper already resolved videoUrl for (no cookies needed)
 POST /api/bridge/media/download
 {
   "url": "https://scontent-xxx.cdninstagram.com/…/video.mp4",
@@ -600,7 +628,7 @@ POST /api/bridge/media/download
   "headers": { "referer": "https://www.instagram.com/" }
 }
 
-// 4. Scratch download to /tmp for a one-shot workflow
+// 6. Scratch download to /tmp for a one-shot workflow
 POST /api/bridge/media/download
 { "url": "…", "outputDir": "/tmp/ai-clipping-scratch", "quality": "1080p" }
 ```
