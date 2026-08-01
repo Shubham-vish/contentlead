@@ -481,6 +481,140 @@ Poll an async transcript job.
 
 ---
 
+## Media download (URL → local file)
+
+### `GET /api/bridge/media/download`
+
+Probe the media downloader. Returns yt-dlp availability, default output dir, and current limits. **Fast** — no download, just a health check.
+
+**Response:**
+```json
+{
+  "available": true,
+  "ytDlpPath": "/Users/you/Library/Application Support/ContentLead/bin/yt-dlp_macos",
+  "bundledYtDlpPath": "/Users/you/Library/Application Support/ContentLead/bin/yt-dlp_macos",
+  "defaultOutputDir": "/Users/you/Downloads/SkillTown Media",
+  "maxSizeMB": 500,
+  "timeoutMs": 300000,
+  "note": "yt-dlp detected — platform URLs (YouTube/X/TikTok/…) will work."
+}
+```
+
+If `available: false`, POST `{action:"install-yt-dlp"}` to preload the binary (~30MB from GitHub Releases, ~5-10s on decent broadband). Otherwise the first `POST` with a `url` will auto-install lazily on demand.
+
+### `POST /api/bridge/media/download {action:"install-yt-dlp"}`
+
+Force-install the yt-dlp binary into `userData/bin/`. Idempotent — concurrent calls share the same in-flight download. Use this from a "download engine" progress UI or in test setup to preheat the environment.
+
+**Response:**
+```json
+{ "ok": true, "ytDlpPath": "/…/yt-dlp_macos", "elapsedMs": 6555 }
+```
+
+Or on failure:
+```json
+{ "ok": false, "error": "install_failed", "message": "HTTP 503 from github.com/…" }
+```
+
+### `POST /api/bridge/media/download`
+
+Download a video/audio URL to a local file on disk. Chooses a backend automatically per URL:
+
+| URL type | Backend | Examples |
+|---|---|---|
+| YT, X/Twitter, TikTok, FB, Vimeo, Reddit post | `yt-dlp` | `youtube.com/watch?v=…`, `tiktok.com/@user/video/…` |
+| Direct CDN URL (video file) | `direct-fetch` | IG `videoUrl`, `v.redd.it/…mp4`, any `.mp4/.m4a/.webm` |
+
+**Auto-install:** if yt-dlp isn't on the machine (Homebrew, PATH, or bundled), it downloads the official release from GitHub Releases into `userData/bin/` on first use. End users do NOT need to `brew install yt-dlp`.
+
+**Body:**
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `url` | string | required | http(s) only |
+| `source` | `"auto"\|"yt-dlp"\|"direct"` | `"auto"` | Override backend picker |
+| `quality` | `"best"\|"1080p"\|"720p"\|"audio-only"` | `"best"` | `audio-only` writes `.m4a` |
+| `outputDir` | string | `~/Downloads/SkillTown Media` | Must resolve under `$HOME` or a temp dir |
+| `filename` | string | derived from URL / title | Sanitized — no path separators, control chars, capped 200 chars |
+| `maxSizeMB` | number | `500` | Enforced by `--max-filesize` pre-transfer and byte-counter post-transfer |
+| `timeoutMs` | number | `300000` (5 min) | Overall wall-clock cap; child is `SIGKILL`ed on timeout |
+| `headers` | `{userAgent?, referer?, cookie?}` | none | For direct-fetch CDNs that 403 without auth (IG, Reddit signed URLs) |
+
+**Success 200:**
+```json
+{
+  "ok": true,
+  "filePath": "/Users/you/Downloads/SkillTown Media/Me_at_the_zoo.mp4",
+  "metadata": {
+    "title": "Me at the zoo",
+    "source": "yt-dlp",
+    "size": 629172,
+    "sizeMB": 0.6,
+    "duration": 19,
+    "width": 320,
+    "height": 240,
+    "ext": "mp4"
+  },
+  "elapsedMs": 9889,
+  "backend": "yt-dlp"
+}
+```
+
+**Failure 200** (never throws — always check `ok`):
+```json
+{ "ok": false, "error": "unavailable", "message": "Video is unavailable, private, or region-locked." }
+```
+
+**Error codes:**
+| `error` | Cause | Client action |
+|---|---|---|
+| `missing_url` | URL not provided | Fix request |
+| `invalid_output_dir` | `outputDir` escapes $HOME/tmp | Pick a safe dir |
+| `yt_dlp_install_failed` | Auto-install failed | Retry; suggest `brew install yt-dlp` |
+| `yt_dlp_not_found` | Install unavailable | Manual install required |
+| `file_too_large` | Exceeds `maxSizeMB` | Raise cap or pick lower quality |
+| `unavailable` | Video is private/region-locked | Nothing — surface to user |
+| `unsupported_url` | yt-dlp doesn't know this site | Try `source:"direct"` if it's a CDN URL |
+| `http_error` | Direct-fetch got non-200 | Add cookie/referer via `headers` |
+| `timeout` | Exceeded `timeoutMs` | Retry with longer timeout or lower quality |
+| `spawn_failed` | yt-dlp binary broken | Force-reinstall via `action:"install-yt-dlp"` |
+| `output_missing` | yt-dlp exited 0 but no file | Rare — report as bug |
+
+**Typical workflows:**
+
+```jsonc
+// 1. Download a YouTube video for AI clipping
+POST /api/bridge/media/download
+{ "url": "https://youtube.com/watch?v=abc123", "quality": "720p" }
+// → filePath goes straight to ai-clipping.probeVideo / editor.import
+
+// 2. Grab just the audio for transcription
+POST /api/bridge/media/download
+{ "url": "https://youtube.com/watch?v=abc123", "quality": "audio-only" }
+// → filePath is .m4a, feed to /api/media/transcribe
+
+// 3. Download an IG reel your scraper already found videoUrl for
+POST /api/bridge/media/download
+{
+  "url": "https://scontent-xxx.cdninstagram.com/…/video.mp4",
+  "source": "direct",
+  "headers": { "referer": "https://www.instagram.com/" }
+}
+
+// 4. Scratch download to /tmp for a one-shot workflow
+POST /api/bridge/media/download
+{ "url": "…", "outputDir": "/tmp/ai-clipping-scratch", "quality": "1080p" }
+```
+
+**Discovery order** (in order):
+1. `YT_DLP_PATH` env
+2. `userData/bin/yt-dlp[.exe]` (the auto-installed binary — primary end-user path)
+3. `/opt/homebrew/bin/yt-dlp` (macOS Homebrew)
+4. `/usr/local/bin/yt-dlp`
+5. `yt-dlp` on PATH (`which` / `where`)
+6. Auto-install from `https://github.com/yt-dlp/yt-dlp/releases/latest`
+
+---
+
 ## Not currently exposed via the bridge
 
 These Next.js routes exist but aren't wrapped as `/api/bridge/inspiration/*`. An AI running on the desktop side has to either add a bridge passthrough or hit `contentlead.in` directly with the user's session cookies:

@@ -1,7 +1,7 @@
 ---
 name: content-inspiration
-description: Research trending content, analyze competitors, search across platforms (IG, YT, X/Twitter, Reddit, tech news), transcribe videos, save findings and references, push AI-generated insights into the SkillTown Findings UI. Covers the /content/inspiration (legacy IG feed), /content/inspiration/explore (transient fan-out search), and /content/inspiration/pulse (persistent niche monitoring) surfaces. Use MCP scraping tools for direct source access, or the desktop bridge for logged-in-user context and UI integration.
-tags: inspiration, trending, research, competitor, niche, search, transcribe, hooks, ideas, content-planning, scraping, twitter, x, reddit, technews, instagram, youtube, findings, ai-output, pulse, explore, velocity, bridge, cookies, references, viral-hooks, hook-analysis
+description: Research trending content, analyze competitors, search across platforms (IG, YT, X/Twitter, Reddit, tech news), transcribe videos, download videos from any URL (YouTube/IG/TikTok/X → local mp4), save findings and references, push AI-generated insights into the SkillTown Findings UI. Covers the /content/inspiration (legacy IG feed), /content/inspiration/explore (transient fan-out search), and /content/inspiration/pulse (persistent niche monitoring) surfaces. Use MCP scraping tools for direct source access, or the desktop bridge for logged-in-user context, UI integration, and URL-to-file downloads (auto-installs yt-dlp).
+tags: inspiration, trending, research, competitor, niche, search, transcribe, hooks, ideas, content-planning, scraping, twitter, x, reddit, technews, instagram, youtube, findings, ai-output, pulse, explore, velocity, bridge, cookies, references, viral-hooks, hook-analysis, media-download, yt-dlp, url-download, video-download, download-video, save-to-disk, ai-clipping-input, tiktok
 ---
 
 # Content Inspiration & Research
@@ -45,6 +45,9 @@ Need a transcript?
 Need to save a great example permanently?        → /references (bridge, action:"pin")
 Need to show the user an analysis result?        → /ai-output (bridge)
 Need to check if IG/X are connected?             → /connection-status (bridge)
+Need to download a URL's video to disk?          → /media/download (bridge)
+Need to feed a shared URL to AI clipping/editor? → /media/download → filePath → next tool
+Need to check if yt-dlp is installed/preload it? → GET /media/download, POST {action:"install-yt-dlp"}
 ```
 
 ---
@@ -157,6 +160,7 @@ All endpoints require `Authorization: Bearer <token>` from `~/.skilltown-desktop
 | GET | `/api/bridge/inspiration/connection-status` | Which sources are connected (pre-flight for /search) |
 | GET | `/api/bridge/inspiration/references` | List pinned reference items |
 | GET | `/api/bridge/inspiration/transcript?key=X` | Poll async transcript status |
+| GET | `/api/bridge/media/download` | Probe: is yt-dlp installed? Default output dir + limits |
 
 ### Write Operations
 
@@ -175,6 +179,8 @@ All endpoints require `Authorization: Bearer <token>` from `~/.skilltown-desktop
 | POST | `/api/bridge/inspiration/items/update` | Update item metadata (transcript, notes, tags, aiSummary, aiHookScore) |
 | POST | `/api/bridge/inspiration/references` | Pin / unpin / update a reference |
 | POST | `/api/bridge/inspiration/ai-output` | Push AI findings to the UI panel |
+| POST | `/api/bridge/media/download` | Download a URL to disk (YT/IG/X/TikTok/Reddit/CDN → local mp4/m4a). Auto-installs yt-dlp on first use. |
+| POST | `/api/bridge/media/download` | `{action:"install-yt-dlp"}` → force-preload the yt-dlp binary (~30MB) |
 
 > **Full parameter reference** (bodies, defaults, response shapes, gotchas) lives in `bridge-endpoints.md`. Table above is the quick index.
 
