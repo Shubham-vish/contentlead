@@ -67,6 +67,7 @@ If `itemIds` is omitted, current selection is used. The command:
 ```
 
 `sourceUrl` must be fetchable in the editor renderer. Data URLs and same-origin/accessible HTTPS images work.
+Deleting an asset or kit fails while timeline items still reference it. Remove those items first so saved projects never retain broken media URLs.
 
 Place an asset:
 
