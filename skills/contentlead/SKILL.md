@@ -50,6 +50,7 @@ If you add text on Track 2 and a video on Track 0, the text will be **invisible*
 | Transcripts, Auto-Captions | `transcription-and-editing` | `content.applyCaptions`, `query.getTranscriptionStatus` |
 | Animations, Transitions, VFX | `animations-and-effects` | `editor.setAnimation`, `editor.addTransitionBetween`, `editor.addKeyframe` |
 | Full E2E Pipeline & Scenes | `storystudio-pipeline` | (Workflow guide, pipeline states) |
+| My Scenes (per-user saved library) | `my-scenes` | `scene.saveToMyScenes`, `scene.listMyScenes`, `scene.getMyScene`, `scene.addMyScene`, `scene.updateMyScene`, `scene.deleteMyScene` |
 | Project save/load, Export | `project-and-export` | `editor.save`, `editor.export`, `project.getFullState` |
 | Read timeline/editor state | `queries-and-state` | `query.getTimelineItems`, `query.getTrackInfo`, `query.getEditorState` |
 | Debugging, Logs, Arch | `infrastructure` | `GET /api/diagnostics`, `GET /api/console-errors` |
@@ -58,6 +59,9 @@ If you add text on Track 2 and a video on Track 0, the text will be **invisible*
 | Multi-tab collaboration | `multi-tab` | `GET /api/tabs`, `POST /api/tabs/new`, `tabId` on `/api/execute` |
 | **AI Viral Clipping** | `ai-clipping` | Transcribe → score virality → extract clips → reframe 9:16 → render |
 | **Script Evaluation & Writing** | `script-evaluator` | Score scripts 0-100, rewrite hooks, write viral scripts from scratch |
+| **Podcast Layouts (2p/1p/share/9:16)** | `podcast-layouts` | `layout.list`, `layout.apply`, `layout.getActive`, `layout.tagRole` |
+| **Masks & Animated Reveals** | `masking-and-reveal` | `mask.get`, `mask.set`, `mask.clear`, `reveal.listPresets`, `reveal.apply`, `reveal.clear` |
+| **Brand Kits** | `brand-kits` | `brand.listKits`, `brand.apply`, `brand.applyColor`, `brand.applyFont`, `brand.addAssetToCanvas` |
 
 ## Disambiguation: Which Text/Cut command do I use?
 

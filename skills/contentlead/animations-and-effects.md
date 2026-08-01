@@ -96,7 +96,7 @@ Animate a specific property at a frame.
 | `itemId` | `string` | required | Target timeline item |
 | `property` | `string` | required | `opacity`, `x`, `y`, or `scale` |
 | `value` | `number` | required | Property value at that frame |
-| `frame` | `number` | required | Frame number relative to item start |
+| `frame` | `number` | required | Absolute composition frame |
 | `easing` | `string` | `"linear"` | `linear`, `easeIn`, `easeOut`, `easeInOut` |
 
 Example:
@@ -116,13 +116,14 @@ Example:
 
 ## `editor.removeKeyframe`
 
-Remove a keyframe from a property at a frame.
+Remove a keyframe by id, or resolve it from an exact frame.
 
 | Param | Type | Default | Description |
 |---|---|---|---|
 | `itemId` | `string` | required | Target timeline item |
 | `property` | `string` | required | `opacity`, `x`, `y`, or `scale` |
-| `frame` | `number` | required | Frame number to remove |
+| `keyframeId` | `string` | optional | Exact keyframe id |
+| `frame` | `number` | optional | Exact frame to resolve when `keyframeId` is omitted |
 
 Example:
 
