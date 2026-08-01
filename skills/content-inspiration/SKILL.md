@@ -24,6 +24,8 @@ Two access paths:
 | Scrape Instagram profiles/reels, Twitter search/trending | `social-scraping.md` |
 | Search Reddit, browse subreddits, get comments | `reddit-research.md` |
 | Aggregate tech news, RSS feeds, web search/crawl | `news-and-web.md` |
+| Understand /inspiration vs /explore vs /pulse, velocity, needsConnect, FanOutResponse | `explore-vs-pulse.md` |
+| Full desktop bridge endpoint reference (params, responses, gotchas) | `bridge-endpoints.md` |
 
 ---
 
@@ -127,7 +129,7 @@ All endpoints require `Authorization: Bearer <token>` from `~/.skilltown-desktop
 | POST | `/api/bridge/inspiration/creators` | Add a new creator to track |
 | DELETE | `/api/bridge/inspiration/creators/:id` | Remove a tracked creator |
 | POST | `/api/bridge/inspiration/creators/refresh` | Refresh one creator's feed |
-| POST | `/api/bridge/inspiration/refresh-all` | Refresh ALL creators |
+| POST | `/api/bridge/inspiration/creators/refresh-all` | Refresh ALL creators |
 | POST | `/api/bridge/inspiration/niches` | Create a new niche |
 | DELETE | `/api/bridge/inspiration/niches/:slug` | Delete a niche |
 | POST | `/api/bridge/inspiration/niches/:slug/refresh` | Refresh a niche |
@@ -135,6 +137,8 @@ All endpoints require `Authorization: Bearer <token>` from `~/.skilltown-desktop
 | POST | `/api/bridge/inspiration/transcribe-bulk` | Transcribe up to 10 videos |
 | POST | `/api/bridge/inspiration/items/update` | Update item metadata (transcript, notes, tags, aiSummary, aiHookScore) |
 | POST | `/api/bridge/inspiration/ai-output` | Push AI findings to the UI panel |
+
+> **Full parameter reference** (bodies, defaults, response shapes, gotchas) lives in `bridge-endpoints.md`. Table above is the quick index.
 
 ### Examples
 
@@ -148,6 +152,8 @@ curl "http://127.0.0.1:$PORT/api/bridge/inspiration/feed?username=garyvee&limit=
 curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/search   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"context": "AI tools for content creators", "sources": ["instagram", "x", "youtube"]}'
 ```
 
+> **Valid `sources`:** `"instagram"`, `"x"` (Twitter/X — NOT `"twitter"`), `"youtube"`, `"reddit"`, `"technews"`. Default: `["instagram"]`. `context` may be a plain string (auto-expanded to a `SearchContext`) or a full object. Optional: `perSourceLimit` (default 10, max 25), `round` (0 initial, 1-5 for "Load more"), `seenIds` (dedupe). Response is a `FanOutResponse` — see `explore-vs-pulse.md` for shape and how to handle `needsConnect`/`fromCache`/`notice`.
+
 #### Bulk Transcribe (up to 10)
 ```bash
 curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/transcribe-bulk   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"items": [{"shortcode": "C8xABC"}, {"shortcode": "D9yDEF"}]}'
@@ -157,6 +163,8 @@ curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/transcribe-bulk   -H 
 ```bash
 curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/creators   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"source": "instagram", "identifier": "mkbhd"}'
 ```
+
+> **Valid `source`:** `"instagram"`, `"x"`, `"youtube"`, `"reddit"` — NOT `"technews"` (aggregate-only, not per-creator). `identifier` is: IG handle, X handle, YouTube `@handle`/channel URL/`UC…` id, or `r/subreddit`.
 
 #### Update Items (AI metadata enrichment)
 ```bash

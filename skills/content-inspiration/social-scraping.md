@@ -1,7 +1,8 @@
 # Social Scraping — Instagram & Twitter/X
 
-> **Requires cookies.** Use `scraping_cookie_update(platform="instagram"|"twitter", cookies="...")` first.
-> Check status with `scraping_cookie_status()`.
+> **These are MCP tools** (`scraping_instagram_*`, `scraping_twitter_*`) that talk to the `prepwithai_backend` MCP server. They require cookies uploaded via `scraping_cookie_update`. Use `scraping_cookie_status()` to verify.
+
+> **⚠️ Not the same as `/api/bridge/inspiration/search`.** The bridge search endpoint's Instagram source does NOT hit these MCP tools — it queries the user's **already-synced reel cache** in Cosmos (populated by the SkillTown Desktop app's Electron social browser). If the cache is empty, the search response returns `errorCode: "AUTH_MISSING_COOKIES"` + `needsConnect: true` telling the user to install the desktop app. See `explore-vs-pulse.md` for the distinction. Use the MCP tools below when you want to hit Instagram live for a *specific* username or reel URL.
 
 ---
 
