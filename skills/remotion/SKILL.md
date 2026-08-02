@@ -51,6 +51,7 @@ Read individual rule files for detailed explanations and code examples:
 - [rules/effects.md](rules/effects.md) — FilmGrain, ChromaticAberration, SpeakerPIP
 - [rules/scene-commands.md](rules/scene-commands.md) — API commands: addCustomScene, addLibraryScene, listScenes, etc.
 - [rules/community-scene-props.md](rules/community-scene-props.md) — Giving a bundled community scene editable props via a `propsSchema` export
+- [rules/editable-scene-nodes.md](rules/editable-scene-nodes.md) — Stable internal layers, direct preview editing, manifests, and node commands
 - [rules/scene-catalog-guide.md](rules/scene-catalog-guide.md) — Scene selection strategy, categories, pairing logic
 - [rules/transitions-and-captions.md](rules/transitions-and-captions.md) — LightLeaks, custom transitions, 7 TikTok caption styles
 - [rules/sfx-and-audio.md](rules/sfx-and-audio.md) — SFX search/placement, voiceover, volume guidelines

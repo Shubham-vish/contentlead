@@ -122,19 +122,22 @@ Think about **what's happening visually**, then match:
 
 ## Voiceover Workflow
 
+> **Full docs:** load the **`voice`** skill — it covers the live voice bridge
+> (clone, upload, generate, list, delete) with exact params. This is a quick
+> reference. Use the desktop bridge routes below (Bearer auth), **not** the old
+> `prepwithai_speech_*` MCP names.
+
 ### Generate TTS voiceover
 
 ```bash
-# 1. Generate speech via PrepWithAI
-prepwithai_speech_generate(
-  text="Welcome to SkillTown — your AI video editor",
-  voice_id="male-qn-qingse",
-  speed=1.0,
-  audio_format="mp3"
-)
-# → Returns audio_url, duration_seconds
+# 1. Generate speech via the desktop voice bridge
+curl -sX POST "$API/api/bridge/voice/generate" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"text":"Welcome to ContentLead — your AI video editor",
+       "voice_id":"English_expressive_narrator","speed":1.0,"format":"mp3"}'
+# → { audio_url, format, duration_seconds }
 
-# 2. Download
+# 2. Download (SAS URL — grab immediately)
 curl -sL "<audio_url>" -o ~/Downloads/voiceover.mp3
 
 # 3. Add to timeline
@@ -149,18 +152,18 @@ curl -sL "<audio_url>" -o ~/Downloads/voiceover.mp3
 ### Available voices
 
 ```bash
-prepwithai_speech_list_voices(voice_type="system")
-# Returns voice_id, name, language, gender
+curl -s "$API/api/bridge/voice/voices?voice_type=system" -H "Authorization: Bearer $TOKEN"
+# Returns voice_id, voice_name, voice_type, description. Use voice_type=voice_cloning for your cloned voices.
 ```
 
 ### Clone a voice
 
 ```bash
-prepwithai_speech_clone_voice(
-  audio_url="<reference_audio_url>",
-  demo_text="Text spoken in the reference audio"
-)
-# → Returns voice_id for use in speech_generate
+# From a local recording (upload + clone in one call)
+curl -sX POST "$API/api/bridge/voice/upload-and-clone" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"filePath":"/Users/.../sample.wav","demo_text":"Text spoken in the reference audio."}'
+# → { voice_id, upload_url, details }   (use voice_id in /generate)
 ```
 
 ## Audio + Timeline Tips

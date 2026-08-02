@@ -162,10 +162,10 @@ Compiles full `.tsx` source with real imports (via esbuild) and adds to timeline
 }
 ```
 
-**Supported imports (19 packages):** `react`, `react-dom`, `react/jsx-runtime`, `remotion`, `@remotion/noise`, `@remotion/shapes`, `@remotion/paths`, `@remotion/transitions`, `@remotion/media-utils`, `@remotion/motion-blur`, `@remotion/google-fonts`, `@remotion/light-leaks`, `@remotion/captions`, `@remotion/animation-utils`, `@remotion/layout-utils`, `@shubham-vish/remotion-templates`, `@skilltown/remotion-templates`
+**Supported imports:** `react`, `react-dom`, `react/jsx-runtime`, `remotion`, `@remotion/noise`, `@remotion/shapes`, `@remotion/paths`, `@remotion/transitions`, `@remotion/media-utils`, `@remotion/motion-blur`, `@remotion/google-fonts`, `@remotion/light-leaks`, `@remotion/captions`, `@remotion/animation-utils`, `@remotion/layout-utils`, `@shubham-vish/remotion-templates`, `@skilltown/remotion-templates`, `@shubham-vish/remotion-core`, `@shubham-vish/remotion-core/editable-scenes`
 
 ## `scene.addCustomScene`
-Params: `{ code, name?, from?, durationMs?, orientation? }`
+Params: `{ code, name?, from?, durationMs?, orientation?, editableManifest? }`
 
 ```bash
 curl -X POST http://127.0.0.1:$PORT/api/execute \
@@ -185,6 +185,35 @@ curl -X POST http://127.0.0.1:$PORT/api/execute \
     "orientation": "portrait"
   }
 }
+```
+
+Use `EditableSceneNode` wrappers plus `editableManifest` when internal elements
+must remain directly editable after insertion. See
+`rules/editable-scene-nodes.md`.
+
+## Editable scene node commands
+
+```json
+{"type":"scene.getEditableNodes","params":{"itemId":"scene-item-id"}}
+```
+
+```json
+{
+  "type": "scene.updateEditableNode",
+  "params": {
+    "itemId": "scene-item-id",
+    "nodeId": "headline",
+    "patch": {
+      "props": {"text": "Updated title"},
+      "transform": {"offsetX": 120, "offsetY": -40, "rotation": 3},
+      "timing": {"startMs": 250, "durationMs": 3000}
+    }
+  }
+}
+```
+
+```json
+{"type":"scene.resetEditableNode","params":{"itemId":"scene-item-id","nodeId":"headline"}}
 ```
 
 ## `scene.getSceneSource`

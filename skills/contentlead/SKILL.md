@@ -43,6 +43,7 @@ If you add text on Track 2 and a video on Track 0, the text will be **invisible*
 | Video & Chroma-key | `video` | `editor.addVideo`, `editor.addVideoSegments`, `editor.setClipState` |
 | Images & Static Media | `images` | `editor.addImage`, `editor.replaceMedia`, `media.validate` |
 | Audio, Gain, EQ, Noise | `audio-gain-eq` | `editor.addAudio`, `editor.setAudioGain`, `audio.setEq`, `audio.reduceNoise` |
+| **Voice cloning & TTS / voiceover** | `voice` | `POST /api/bridge/voice/{generate,clone,upload,upload-and-clone,delete}`, `GET /api/bridge/voice/voices` |
 | Position, Crop, Resize | `canvas-and-positioning` | `editor.positionItem`, `editor.resize`, `editor.cropItem` |
 | Trim/Split/Cut on timeline | `item-editing` | `editor.splitItem`, `editor.cutItem`, `editor.trimItem`, `editor.moveItem` |
 | Tracks, Z-order, Linking | `track-management` | `editor.reorderTracks`, `editor.linkTracks`, `editor.renameTrack` |

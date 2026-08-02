@@ -23,6 +23,7 @@ const Scene = () => {
 - **NO `const { ... } = Remotion;`** — there is no `Remotion` object in scope.
 - **Use frame-driven motion only** — not CSS animations/transitions.
 - **Props are not passed to timeline sandbox scenes** — use constants, arrays, or `useVideoConfig()`.
+- **Directly editable internal layers use `EditableSceneNode`** — it is an injected global; use stable IDs and pass the same definitions in `editableManifest` when adding through AI.
 - **Helper components can be declared before `Scene`**:
 
 ```jsx
