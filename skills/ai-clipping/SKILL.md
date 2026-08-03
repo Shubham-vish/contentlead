@@ -253,9 +253,13 @@ The `words[]` array from `query.transcribeWithSpeakers` includes a `speaker` fie
 - Speaker ratio per clip: aim for 30-70% split (pure monologue clips are less engaging)
 - Use `speakers.items` to identify who talks more overall — usually the guest
 
-### Caption Styling — Default Podcast Style
+### Caption Styling — Presets
 
-After applying captions, style them with `bulk.styleByType` for a clean podcast/reel look:
+After applying captions, style them with `bulk.styleByType`. Pick ONE of the presets below based on content type. All fields are real `caption` `details` fields supported by the renderer (`CaptionElement`): `color` (upcoming words), `appearedColor` (already-spoken), `activeColor` (word being spoken now), `activeFillColor` (pill highlight behind active word, `"transparent"` = off), `textShadow` (glow/drop-shadow), `WebkitTextStrokeColor`/`WebkitTextStrokeWidth` (outline), `backgroundColor`, `borderRadius`, `textTransform`, `fontFamily`, `fontWeight`.
+
+#### Preset A — Default Podcast Style (gold, uppercase)
+
+Clean podcast/interview look. Gold active word on a semi-transparent bar.
 
 ```json
 {"type": "bulk.styleByType", "params": {
@@ -290,6 +294,48 @@ After applying captions, style them with `bulk.styleByType` for a clean podcast/
 - **Semi-transparent dark background** — ensures readability over any video content
 - **Position at `top: 1300`** — lower third of 1080×1920 canvas, below speaker's face
 - **Do NOT use Bangers font** — it's too stylized for podcast/interview content
+
+#### Preset B — Karaoke Green (Hormozi-style, lowercase glow)
+
+High-retention short-form look: white words, bright **green** active word with a soft green glow, no background bar, lowercase. Best for fast-cut clips, talking-head reels, and hooks. This is the style used in the current viral clips.
+
+```json
+{"type": "bulk.styleByType", "params": {
+  "type": "caption",
+  "details": {
+    "fontSize": 78,
+    "fontFamily": "Montserrat",
+    "fontWeight": 800,
+    "width": 920,
+    "height": 220,
+    "top": 1240,
+    "left": 80,
+    "color": "#FFFFFF",
+    "appearedColor": "#FFFFFF",
+    "activeColor": "#3BE84F",
+    "activeFillColor": "transparent",
+    "backgroundColor": "transparent",
+    "WebkitTextStrokeColor": "#000000",
+    "WebkitTextStrokeWidth": "3px",
+    "textShadow": "0 0 18px rgba(59,232,79,0.55), 0 4px 10px rgba(0,0,0,0.7)",
+    "borderRadius": 0,
+    "textAlign": "center",
+    "textTransform": "none",
+    "opacity": 100
+  }
+}}
+```
+
+**Style notes:**
+- **Green (#3BE84F) active word** — the single word being spoken pops; everything else stays white
+- **`appearedColor` = white (same as base)** — words do NOT fade after being spoken (only the *current* word is colored). This is the karaoke "one word lit" feel from the screenshot.
+- **`textShadow` green glow** — `0 0 18px rgba(59,232,79,0.55)` gives the soft green halo; the second shadow (`0 4px 10px rgba(0,0,0,0.7)`) is a black drop for legibility on bright frames
+- **Black stroke (`WebkitTextStroke` 3px)** — keeps white words readable over any background; drop `backgroundColor` entirely (no bar)
+- **lowercase (`textTransform: "none"`)** — matches the casual, punchy short-form aesthetic; do NOT force uppercase here
+- **Position `top: 1240`** — sits just below vertical center on a 1080×1920 canvas, above the lower-third safe zone
+- **Optional pill variant** — set `activeFillColor` to a translucent green (e.g. `rgba(59,232,79,0.18)`) if you want a highlight box behind the active word instead of pure glow
+
+**Choosing a preset:** Podcast/interview/long-form → **Preset A (gold)**. Fast-cut reels, hooks, talking-head, energetic content → **Preset B (green karaoke)**.
 
 ---
 
