@@ -301,7 +301,7 @@ From the edit plan, add scenes for EVERY segment. **NO GAPS** — the entire dur
 }}
 ```
 
-Search assets: check `_Assets/music/` or use `prepwithai_sfx_search` for ambient tracks.
+Search assets: check `_Assets/music/` or use `POST /api/bridge/ai/sfx/search` for ambient tracks.
 
 ### 3.5 Checkpoint
 
@@ -433,7 +433,7 @@ Common effects: `blur` (background), `grayscale` (stylistic), `brightness`, `con
 
 Add sound effects at key moments (from the edit plan's `audio.sfx` array):
 
-1. Search: `prepwithai_sfx_search(query="cinematic whoosh", top_k=5)`
+1. Search: `POST /api/bridge/ai/sfx/search {"query":"cinematic whoosh","top_k":5}`
 2. Download the SFX file
 3. Add to timeline: `editor.addAudio` with short duration and appropriate volume
 
@@ -587,7 +587,7 @@ When the user provides only a topic or brief — AI generates everything:
 
 1. **Phase 1**: Skip media analysis. Generate content plan from topic.
 2. **Phase 2**: Plan segments. Use `POST /api/bridge/ai/text/generate` for script. Estimate durations.
-3. **Phase 3**: Generate voiceover with `prepwithai_speech_generate`. Generate background images with `POST /api/bridge/ai/image/generate`. Add motion-bg scenes.
+3. **Phase 3**: Generate voiceover with `POST /api/bridge/voice/generate` (see `voice` skill). Generate background images with `POST /api/bridge/ai/image/generate`. Add motion-bg scenes.
 4. **Phase 4**: Add generated voiceover as audio. Add text from script as sequential reveals. Generate B-roll images with `POST /api/bridge/ai/image/generate`.
 5. **Phases 5–8**: Same as standard flow.
 

@@ -90,9 +90,9 @@ Phase 7: Verify (state check, error check, gap check)
 | AI image generation | `POST /api/bridge/ai/image/generate` |
 | Image from references | `POST /api/bridge/ai/image/compose` |
 | Frame/image analysis | `POST /api/bridge/ai/image/analyze` |
-| Text-to-speech | `prepwithai_speech_generate` |
-| Voice cloning | `prepwithai_speech_clone_voice` |
-| Sound effects search | `prepwithai_sfx_search` |
+| Text-to-speech | `POST /api/bridge/voice/generate` |
+| Voice cloning | `POST /api/bridge/voice/clone` |
+| Sound effects search | `POST /api/bridge/ai/sfx/search` |
 | Script generation | `POST /api/bridge/ai/text/generate` |
 | Image search | `POST /api/bridge/ai/image/search` |
 

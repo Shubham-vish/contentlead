@@ -78,6 +78,10 @@ curl -sX POST "$API/api/bridge/ai/<group>/<action>" \
 | `POST /api/bridge/ai/image/compose` | `compose_image` | 1–14 reference images + prompt → composited image. |
 | `POST /api/bridge/ai/image/analyze` | `analyze_image` | GPT-4o Vision on an image URL or base64. |
 | `POST /api/bridge/ai/text/generate` | `text_completion` | Free-form GPT chat / structured output. |
+| `POST /api/bridge/ai/sfx/search` | `sfx/search` | Semantic sound-effects search (1000+ catalog). |
+| `GET /api/bridge/ai/sfx/categories` | `sfx/categories` | List SFX categories/subcategories + counts. |
+| `GET /api/bridge/ai/sfx/quick-picks` | `sfx/quick-picks` | Curated quick-pick SFX. |
+| `POST /api/bridge/ai/sfx/select` | `select_and_time_sfx` | AI selects + times SFX for a sentence/decision. |
 | `POST /api/bridge/ai/transcribe/short` | `transcribe_short_video` | ≤ 90 s / ≤ 25 MB. Sync. Words + SRT. |
 | `POST /api/bridge/ai/transcribe/long` | `analyze_audio` | Long files, chunked/async (job). |
 | `POST /api/bridge/ai/transcribe/speakers` | `transcribe_with_speakers` | Speaker-diarized transcript. |
@@ -268,6 +272,32 @@ curl -s "$API$JOB" -H "Authorization: Bearer $TOKEN" \
 The desktop opens ONE persistent Firebase SSE upstream per job and pushes
 changes into memory (~50 ms after the backend writes). Jobs auto-complete on
 `result.status === "success"` or `progress.percentage >= 100`.
+
+---
+
+## 5b. 🔊 Sound effects (SFX)
+
+Semantic search over a 1000+ SFX catalog, plus AI auto-selection/timing. SFX
+run on backend service keys — no per-user key needed.
+
+```bash
+# Browse the catalog
+curl -s "$API/api/bridge/ai/sfx/categories" -H "Authorization: Bearer $TOKEN" | jq '.data.categories'
+
+# Semantic search
+curl -sX POST "$API/api/bridge/ai/sfx/search" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"query":"dramatic cinematic boom","top_k":5,"category":"impacts","energy":"high","max_duration":3}' \
+  | jq '.data.results[] | {name, sfx_url, duration, category}'
+```
+
+Filters: `category`, `energy` (low/medium/high), `mood`, `min_duration`,
+`max_duration`, `top_k`. Results are SAS-signed for immediate download.
+
+`POST /api/bridge/ai/sfx/select` (AI select + time) takes a sentence + its
+timed decisions and returns the best-fit SFX aligned to those moments — the
+same engine TlEditingSolution uses for auto-SFX. Then add each hit to the
+timeline as audio via `editor.addAudio` (`/api/execute`; see `audio-gain-eq`).
 
 ---
 

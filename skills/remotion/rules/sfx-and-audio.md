@@ -13,15 +13,17 @@ SkillTown Desktop does NOT have a local SFX library. Instead, use **PrepWithAI M
 ### 1. Search for SFX
 
 ```bash
-# Via PrepWithAI MCP tool
-prepwithai_sfx_search(query="dramatic cinematic boom", top_k=5)
-# Returns: name, description, score, category, duration, blob_path, tags
+# Via the desktop AI bridge (no MCP)
+curl -sX POST "$API/api/bridge/ai/sfx/search" -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" -d '{"query":"dramatic cinematic boom","top_k":5}'
+# Returns: data.results[] with name, description, score, category, duration, sfx_url, tags
 
 # Filter by category, mood, energy
-prepwithai_sfx_search(query="whoosh", category="Transitions", energy="high", max_duration=2.0)
+curl -sX POST "$API/api/bridge/ai/sfx/search" -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" -d '{"query":"whoosh","category":"transitions","energy":"high","max_duration":2.0}'
 
 # List all categories
-prepwithai_sfx_categories()
+curl -s "$API/api/bridge/ai/sfx/categories" -H "Authorization: Bearer $TOKEN"
 ```
 
 ### 2. Download Locally
@@ -177,5 +179,5 @@ curl -sX POST "$API/api/bridge/voice/upload-and-clone" \
 > - **Core Set** (27 keyed sounds): `_Assets/sfx/core-set/` — one best sound per role, AI default. See `core_sfx_manifest.json` for ML analysis and `CORE_SFX_GUIDE.md` for quick reference.
 > - **Full Library** (81 sounds): `_Assets/sfx/remotion-ready/` — 12 categories with `sfx_manifest.json` for variety/fallback.
 > - **Placement guide**: See `_Agent/skills/sfx-placement.md` for the complete SFX placement workflow.
-> - Use `prepwithai_sfx_search` MCP tool for additional SFX from the cloud catalog (1000+ sounds).
+> - Use `POST /api/bridge/ai/sfx/search` (desktop AI bridge) for additional SFX from the cloud catalog (1000+ sounds).
 > - Regenerate manifests anytime: `python _Assets/sfx/_analysis/generate_manifest.py <folder>`
