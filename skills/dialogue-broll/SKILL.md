@@ -43,7 +43,7 @@ The whole point is **word alignment**, so never estimate timing proportionally. 
 - Break the transcript into **segments** = one sentence / one speaker-turn / one dialogue.
   Run the recipe below **per segment** (times are relative to that segment's start).
 
-See `ai-media` §Transcription and `ai-clipping` "Caption timing" for exact calls.
+See `ai-media` §5 Transcription and `ai-clipping` "Caption timing" for exact calls.
 
 ---
 
