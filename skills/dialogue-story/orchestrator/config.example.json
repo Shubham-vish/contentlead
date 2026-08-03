@@ -1,0 +1,8 @@
+{
+  "_comment": "PUBLIC TEMPLATE. Copy to config.local.json (gitignored) and fill with YOUR private values. This overlay keeps personal data (cloned voice IDs, character art paths, default background) OUT of the public, tracked scripts. run.mjs loads config.local.json automatically; nothing here is written back into scripts.",
+  "characters": {
+    "modi":  { "voiceId": "REPLACE_WITH_YOUR_MINIMAX_VOICE_ID", "image": "/absolute/path/to/your/modi.png",  "side": "left" },
+    "rahul": { "voiceId": "REPLACE_WITH_YOUR_MINIMAX_VOICE_ID", "image": "/absolute/path/to/your/rahul.png", "side": "right" }
+  },
+  "background_video": "/absolute/path/to/your/gameplay.mp4"
+}

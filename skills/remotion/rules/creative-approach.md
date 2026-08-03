@@ -87,14 +87,14 @@ Phase 7: Verify (state check, error check, gap check)
 
 | Capability | Tool |
 |-----------|------|
-| AI image generation | `prepwithai_image_generate` |
-| Image from references | `prepwithai_image_compose` |
-| Frame/image analysis | `prepwithai_image_analyze` |
+| AI image generation | `POST /api/bridge/ai/image/generate` |
+| Image from references | `POST /api/bridge/ai/image/compose` |
+| Frame/image analysis | `POST /api/bridge/ai/image/analyze` |
 | Text-to-speech | `prepwithai_speech_generate` |
 | Voice cloning | `prepwithai_speech_clone_voice` |
 | Sound effects search | `prepwithai_sfx_search` |
-| Script generation | `prepwithai_text_generate` |
-| Image search | `prepwithai_image_search` |
+| Script generation | `POST /api/bridge/ai/text/generate` |
+| Image search | `POST /api/bridge/ai/image/search` |
 
 ### From remotion-projects (reference — read the logic, not just presets):
 

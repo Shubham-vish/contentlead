@@ -188,7 +188,7 @@ interface Caption {
 
 Use PrepWithAI TTS + transcription workflow:
 1. Generate voiceover: `prepwithai_speech_generate` → audio URL
-2. Transcribe for word timestamps: `prepwithai_text_generate` or Whisper
+2. Transcribe for word timestamps: `POST /api/bridge/ai/transcribe/short` (`{video_url}`) or `POST /api/bridge/ai/transcribe/long` (`{audio_url, content_id?}`; subscribe with `POST /api/jobs/subscribe {kind:"transcription", firebase_path}`)
 3. Convert timestamps to Caption[] format
 4. Add TikTokCaptions scene to timeline
 
@@ -216,7 +216,7 @@ const pages = createTikTokStyleCaptions({ captions });
 
 **Full caption workflow:**
 1. Generate voiceover: `prepwithai_speech_generate` → audio URL
-2. Transcribe with word timestamps (Whisper or similar)
+2. Transcribe with word timestamps via `POST /api/bridge/ai/transcribe/short` or `POST /api/bridge/ai/transcribe/long`
 3. Create bundled scene using `@remotion/captions` to render animated subtitles
 4. Add as overlay on the timeline above video/content tracks
 

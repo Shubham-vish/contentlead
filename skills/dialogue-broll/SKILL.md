@@ -1,6 +1,6 @@
 ---
 name: dialogue-broll
-description: Add relevant background B-roll images/scenes driven by what is being said — for ANY clip, dialogue, or transcript. Ports the proven TlEditingSolution image logic: per-segment AI decides HOW MANY images + a search query each, sources them (stock search OR AI-generate), an AI picks the best result, then each image is aligned to word-level timestamps and placed on the timeline with gaps so the base video shows through. Format-agnostic — use it for viral clips, talking-head reels, dialogue-story reels, explainers, or any video where visuals should match the spoken words. Routes entirely through the SkillTown Desktop MCP proxy + editor commands (no manual JWT).
+description: Add relevant background B-roll images/scenes driven by what is being said — for ANY clip, dialogue, or transcript. Ports the proven TlEditingSolution image logic: per-segment AI decides HOW MANY images + a search query each, sources them (stock search OR AI-generate), an AI picks the best result, then each image is aligned to word-level timestamps and placed on the timeline with gaps so the base video shows through. Format-agnostic — use it for viral clips, talking-head reels, dialogue-story reels, explainers, or any video where visuals should match the spoken words. Routes entirely through the SkillTown Desktop AI bridge (/api/bridge/ai/*) + editor commands (no MCP, no manual JWT).
 tags: broll, b-roll, background, background-images, context-images, scenes, background-scenes, dialogue, dialogue-driven, transcript, word-timed, word-timing, timing, image-search, image-generate, stock, tavily, gemini, relevant-images, viral, reel, short, overlay, tlediting, tleditingsolution, ai-media, place-images, auto-broll
 ---
 
@@ -14,7 +14,7 @@ a faithful, generalized port of the **TlEditingSolution** `enhanced_image_operat
 flow (5M+ views), rebuilt on ContentLead's desktop-routed AI tools.
 
 > **This skill orchestrates existing primitives — it does not add new backend APIs.**
-> Sourcing/analysis = the **`ai-media`** skill (via `POST /api/mcp/call`). Placement =
+> Sourcing/analysis = the **`ai-media`** skill (via `POST /api/bridge/ai/*`). Placement =
 > the **`images`** / **`item-editing`** editor commands. Word timing = the
 > **`transcription-and-editing`** / **`ai-clipping`** skills. Load those for full arg
 > schemas; this file is the *recipe that chains them*.
@@ -38,8 +38,8 @@ The whole point is **word alignment**, so never estimate timing proportionally. 
 
 - Whole clip already transcribed → reuse it (`ai-clipping` Phase 1 /
   `query.transcribeWithSpeakers`).
-- Otherwise, per audio/segment: **`prepwithai_transcribe_with_speakers`** (diarized,
-  returns `speakerTranscript.words[]`) or `prepwithai_transcribe_short` (≤90s).
+- Otherwise, per audio/segment: **`POST /api/bridge/ai/transcribe/speakers`** (diarized,
+  returns `speakerTranscript.words[]`) or `POST /api/bridge/ai/transcribe/short` (≤90s).
 - Break the transcript into **segments** = one sentence / one speaker-turn / one dialogue.
   Run the recipe below **per segment** (times are relative to that segment's start).
 
@@ -58,12 +58,12 @@ for each segment (sentence / dialogue / speaker-turn):
   E. PLACE    add each image to the timeline at [segStart+start … segStart+end]
 ```
 
-All LLM steps use **`prepwithai_text_generate`** (from `ai-media`) with the prompts in the
-[Prompts](#prompts) section. All are JSON-in / JSON-out (`messages` is a JSON-encoded
-string — see `ai-media` gotcha #2).
+All LLM steps use **`POST /api/bridge/ai/text/generate`** (from `ai-media`) with the prompts in the
+[Prompts](#prompts) section. All are JSON-in / JSON-out — `messages` is a **real JSON array**
+(no stringification; that was an MCP-only quirk).
 
 ### A. Decide count + windows + queries  (LLM)
-Call `prepwithai_text_generate` with **[Prompt §A](#a-decide-images-per-segment)**, passing
+Call `POST /api/bridge/ai/text/generate` with **[Prompt §A](#a-decide-images-per-segment)**, passing
 the segment text + its duration. Returns:
 ```json
 { "images_needed": 2,
@@ -80,18 +80,20 @@ person/character shots**. Short/simple (<4 s) segments may get **1 or 0** images
 ### B. Source candidates — pick ONE mode (or hybrid)
 | Mode | Tool | Best for |
 |------|------|----------|
-| **Stock search** (default, = TlEditingSolution) | `prepwithai_image_search` `{ query: search_query + " without watermark" }` | Real things, places, people, products, logos, screenshots |
-| **AI-generate** | `prepwithai_image_generate` `{ prompt: search_query }` (or `_batch` for all queries) | Abstract ideas, stylized/branded looks, when stock is weak or watermarked |
-| **Hybrid (recommended)** | try `image_search`; if 0 good candidates or all watermarked → `image_generate` | Highest hit-rate |
+| **Stock search** (default, = TlEditingSolution) | `POST /api/bridge/ai/image/search` `{ query: search_query + " without watermark" }` | Real things, places, people, products, logos, screenshots |
+| **AI-generate** | `POST /api/bridge/ai/image/generate` `{ prompt: search_query }` | Abstract ideas, stylized/branded looks, when stock is weak or watermarked |
+| **Hybrid (recommended)** | try `image/search`; if 0 good candidates or all watermarked → `image/generate` | Highest hit-rate |
 
-> Requires API keys: `image_search` → Tavily, `image_generate` → Gemini. Manage via the
-> `web`/`psearch` domain `apikey_status`/`apikey_update` (see `ai-media` §7).
+> **API keys are injected server-side per-user** by the SkillTown proxy —
+> `image/search` uses your Tavily key, `image/generate` your Gemini key. You do NOT
+> send keys in the body. If missing, set them in the SkillTown app → Settings →
+> Image Search / Image Generation (see `ai-media` §8).
 
 ### C. Pick the best candidate  (LLM — search mode only)
-For stock results, call `prepwithai_text_generate` with **[Prompt §C](#c-pick-best-image)**,
+For stock results, call `POST /api/bridge/ai/text/generate` with **[Prompt §C](#c-pick-best-image)**,
 passing the segment text, the query, and the candidate `descriptions[]`. Returns
 `{ "index": n, "reason": "..." }`. Optionally sanity-check the chosen image with
-`prepwithai_image_analyze` (GPT-4o vision) before committing.
+`POST /api/bridge/ai/image/analyze` (GPT-4o vision) before committing.
 *(Generate mode skips this — you already have exactly one image per prompt.)*
 
 ### D. Align to word timestamps + add gaps
@@ -103,7 +105,7 @@ This is what makes images feel "synced to the words":
 3. Insert **0.5–1 s gaps** between consecutive images so the base video peeks through.
 4. Never overlap; clamp within the segment.
 > Optional LLM pass: feed the current windows + the full `words[]` to
-> `prepwithai_text_generate` with a "re-align to word timings and add gaps" instruction
+> `POST /api/bridge/ai/text/generate` with a "re-align to word timings and add gaps" instruction
 > (ported from `optimize_images_timing_with_gaps`) for a cleaner result on dense segments.
 
 ### E. Place on the timeline
@@ -118,7 +120,7 @@ Then per image:
 }}
 ```
 - **Re-host first** if the URL is a temporary SAS/stock link:
-  `prepwithai_asset_rehost` → permanent Azure URL (see `ai-media` gotcha #4).
+  `POST /api/bridge/ai/asset/rehost` → permanent Azure URL (see `ai-media` §6).
 - **Z-ORDER:** B-roll must sit **in front of** the base video but **behind** captions/titles.
   Add images on a mid track, then **always** call `editor.reorderTracks` so captions (front)
   > images > base video. See `contentlead` "Track Z-Order" + `track-management`.
@@ -192,7 +194,7 @@ being spoken. Return JSON: {"index": <n>, "reason": "<why>"}.
 
 ## Pitfalls
 - **No word timing → don't proceed.** Proportional guesses look off; always transcribe first.
-- **Temporary URLs expire.** `asset_rehost` (or download locally) before `editor.addImage`.
+- **Temporary URLs expire.** `asset/rehost` (or download locally) before `editor.addImage`.
 - **Watermarks.** Always append `" without watermark"` to search queries; if all candidates
   are watermarked, switch that decision to `image_generate`.
 - **Coverage creep.** Respect 60–90% coverage + gaps, or the base video disappears.
@@ -201,8 +203,8 @@ being spoken. Return JSON: {"index": <n>, "reason": "<why>"}.
 - **Overlap.** Clamp/space windows; never let two images share time on the same track.
 
 ## Cross-references
-- `ai-media` — the actual `prepwithai_image_search` / `image_generate` / `image_analyze` /
-  `text_generate` / `transcribe_*` / `asset_rehost` calls (arg schemas + setup).
+- `ai-media` — the actual `image/search` / `image/generate` / `image/analyze` /
+  `text/generate` / `transcribe/*` / `asset/rehost` bridge routes (arg schemas + setup).
 - `dialogue-story` — full two-character reel pipeline; its Stage 1.5 IS this recipe wired
   into that format (ports the same TlEditingSolution engine).
 - `ai-clipping` — viral clip pipeline + caption presets; use this skill to add B-roll to a

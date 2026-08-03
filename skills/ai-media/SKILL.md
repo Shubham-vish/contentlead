@@ -1,18 +1,39 @@
 ---
 name: ai-media
-description: AI-powered media generation and analysis — image generation/analysis/search, text generation, asset re-hosting, and transcription (including speaker-diarized). Routed through the local SkillTown Desktop MCP proxy so no manual JWT setup is required. Use whenever you need to create, find, or analyze media assets for a ContentLead video.
-tags: ai, media, image, generate, analyze, vision, text, transcribe, speakers, diarization, mcp, proxy, content
+description: AI-powered media generation and analysis — image search/generation/compose/analyze (vision), text generation, asset re-hosting, and transcription (short, long, speaker-diarized). Routed through the local SkillTown Desktop AI bridge (/api/bridge/ai/*) so there is no MCP server, no manual JWT, and no API keys in the request. Use whenever you need to create, find, or analyze media assets for a ContentLead video.
+tags: ai, media, image, generate, analyze, vision, text, transcribe, speakers, diarization, bridge, content
 ---
 
-# AI Media Generation & Analysis (via Desktop Proxy)
+# AI Media Generation & Analysis (via Desktop AI Bridge)
 
-> **MCP domain:** all tools in this skill are exposed on the MCP server under domain `prepwithai` (the backend service name) and prefixed `prepwithai_*`. Only the *skill folder* is named `ai-media` — the wire protocol is unchanged.
+Every capability in this skill is a **plain HTTP POST** to the local SkillTown
+Desktop app under `/api/bridge/ai/*`. There is **no MCP server** and **no
+JSON-RPC framing** — just one bearer token and one real JSON body.
 
-The backend runs on a **remote MCP server** (`mcp.prepwithai.in`). Talking to it directly requires a hand-copied JWT, an `x-user-id` header, and JSON-RPC framing. **Do not do that.**
+**How the auth + keys work (you don't manage any of it):**
 
-Instead, every call in this skill goes through the local **SkillTown Desktop MCP proxy** — one HTTP POST, one bearer token, one JSON body. The proxy mints and refreshes the JWT for you from your Electron cookies, caches tool schemas, and normalises the response envelope.
+```
+CLI/agent ──POST /api/bridge/ai/*──▶ SkillTown Desktop
+              (Bearer token)              │ attaches signed-in-user cookies
+                                          ▼
+                              SkillTown  /api/ai/<endpoint>
+                                          │ • getUser() from cookies
+                                          │ • injects PREPWITHAI_API_SECRET
+                                          │ • injects YOUR per-user Tavily/Gemini
+                                          │   key from your account settings
+                                          ▼
+                              api.prepwithai.in/api/<endpoint>
+```
 
-> Full endpoint contract: `_EditingStyleDetails/_Agent/skills/contentlead/mcp-via-desktop.md`
+You never copy a JWT, never send `x-user-id`, and **never put a Tavily or Gemini
+key in the body** — the SkillTown proxy resolves your per-user key server-side
+from your account (Settings → Image Search / Image Generation). If a key is
+missing you'll get a clear error telling you to set it there.
+
+> **Migrated from MCP:** this skill previously used `POST /api/mcp/call` with
+> stringified-JSON args and `prepwithai_*` tool names. That path is **gone**.
+> Args are now real JSON arrays/objects, responses are the backend JSON
+> directly (single parse — no `content.result` double-decode).
 
 ## 0. Setup — one-time per shell
 
@@ -23,273 +44,282 @@ eval "$(node -e '
   console.log(`export API=http://127.0.0.1:${c.port}\nexport TOKEN=${c.token}`);
 ')"
 
-# Sanity: proxy status — should show token.isFresh:true and knownDomains list
-curl -sf "$API/api/mcp/status" -H "Authorization: Bearer $TOKEN" \
-  | jq '{isFresh: .token.isFresh, expiresAt: .token.expiresAt, domains: .knownDomains, cached: .toolsCache.entries[].domain}'
+# Sanity: desktop is up and you are authenticated
+curl -sf "$API/api/health" -H "Authorization: Bearer $TOKEN" | jq '{status, cloud}'
 ```
 
 If `~/.skilltown-desktop/api.json` doesn't exist, the desktop app isn't running — ask the user to launch it.
 
-`/api/mcp/status` is also the best discovery endpoint: `knownDomains` lists every domain the proxy will accept, `aliases` documents shortcuts (e.g. `content` → `editor + storystudio`), and `metrics.callsByTool` tells you what's been used recently.
+**Every** call below uses `Authorization: Bearer $TOKEN` (the plain token
+without `Bearer` is rejected on bridge routes).
 
 ## 1. The one call shape you'll use everywhere
 
 ```bash
-curl -sX POST "$API/api/mcp/call" \
+curl -sX POST "$API/api/bridge/ai/<group>/<action>" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{
-    "domain": "prepwithai",
-    "tool":   "prepwithai_<name>",
-    "args":   { ... }
-  }'
+  -d '{ ...real JSON... }'
 ```
 
-### Gotchas that will bite you if you skip this section
-
-1. **Tool names include the domain prefix.** `prepwithai_health_check` — **not** `health_check`. The proxy passes the name verbatim to the remote MCP; unprefixed names return `Unknown tool`.
-2. **Some args are JSON-encoded STRINGS, not real arrays/objects.** Any schema field described as *"JSON array of ..."* or *"JSON object with ..."* (e.g. `messages`, `variables`, `prompts`, `reference_images`, `initial_state`) must be a **stringified JSON** value. See `text_generate` example below.
-3. **Response envelope:**
-   ```json
-   { "ok": true|false,
-     "domain": "prepwithai",
-     "tool":   "prepwithai_...",
-     "content": { "result": "<usually another JSON string>" },
-     "rawParts": [ { "type":"text", "text":"..." } ],
-     "elapsedMs": 237 }
-   ```
-   - Successful text payloads land in `content.result` (often a JSON string — double-parse when needed).
-   - Errors land in `content` as a plain string and `ok:false`.
-   - Extract with: `jq -r '.content.result'` then `jq -r 'fromjson | .whatever'`.
-4. **Assets return temporary Azure SAS URLs.** Download immediately or re-host via `prepwithai_asset_rehost` for a permanent URL.
-
-## 2. Discover live schemas whenever unsure
-
-Never guess field names — ask the proxy:
-
-```bash
-# All 23 prepwithai tools with full schemas
-curl -sf "$API/api/mcp/tools?domain=prepwithai" \
-  -H "Authorization: Bearer $TOKEN" | jq '.tools[] | {name, description, schema:.inputSchema}'
-
-# Refresh cache after MCP server upgrade
-curl -sf "$API/api/mcp/tools?domain=prepwithai&refresh=true" \
-  -H "Authorization: Bearer $TOKEN" > /dev/null
-```
+- **Response is the backend JSON directly.** e.g. image search → `{ "images": [...] }`.
+  On error → `{ "error": "...", "message": "...", "details": {...} }` with a non-2xx status.
+- **Assets return temporary Azure SAS URLs.** Download immediately, or re-host via
+  `asset/rehost` for a permanent URL before persisting into a project.
 
 ---
 
-## 3. Tool inventory (23 tools, live-verified)
+## 2. Route inventory
 
-### 🎨 Images
+| Route | Backend | Purpose |
+|-------|---------|---------|
+| `POST /api/bridge/ai/image/search` | `search_images` | Stock images via Tavily. Per-user Tavily key injected. |
+| `POST /api/bridge/ai/image/generate` | `process_image` | Text → image (Gemini). Per-user Gemini key injected. |
+| `POST /api/bridge/ai/image/compose` | `compose_image` | 1–14 reference images + prompt → composited image. |
+| `POST /api/bridge/ai/image/analyze` | `analyze_image` | GPT-4o Vision on an image URL or base64. |
+| `POST /api/bridge/ai/text/generate` | `text_completion` | Free-form GPT chat / structured output. |
+| `POST /api/bridge/ai/transcribe/short` | `transcribe_short_video` | ≤ 90 s / ≤ 25 MB. Sync. Words + SRT. |
+| `POST /api/bridge/ai/transcribe/long` | `analyze_audio` | Long files, chunked/async (job). |
+| `POST /api/bridge/ai/transcribe/speakers` | `transcribe_with_speakers` | Speaker-diarized transcript. |
+| `POST /api/bridge/ai/asset/rehost` | `upload_asset` | Any public URL → permanent Azure Blob. |
 
-| Tool | Purpose |
-|------|---------|
-| `prepwithai_image_generate` | Text → image (Gemini). Requires Gemini API key. |
-| `prepwithai_image_generate_batch` | Batch of prompts, processed sequentially. |
-| `prepwithai_image_compose` | 1–14 reference images + prompt → new composited image. |
-| `prepwithai_image_search` | Stock images via Tavily. Requires Tavily API key. |
-| `prepwithai_image_analyze` | GPT-4o Vision on an image URL. |
-| `prepwithai_asset_rehost` | Copy any public URL into permanent Azure Blob (`passets`). |
+---
+
+## 3. 🎨 Images
 
 **Aspect ratios:** `1:1`, `16:9`, `9:16`, `4:5`, `5:4`
 **Styles:** `photorealistic`, `illustration`, `watercolor`, `cinematic digital art`, …
 
-#### Full worked example — generate → download → add to editor timeline
+### Search stock images (Tavily)
 
 ```bash
-# 1. Generate
-OUT=$(curl -sX POST "$API/api/mcp/call" \
+curl -sX POST "$API/api/bridge/ai/image/search" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"domain":"prepwithai","tool":"prepwithai_image_generate","args":{
-        "prompt":"Futuristic AI workspace, holographic screens, purple neon",
-        "aspect_ratio":"9:16",
-        "style":"cinematic digital art"
-      }}')
-URL=$(echo "$OUT" | jq -r '.content.result | fromjson | .image_url')
+  -d '{"query":"steaming cup of masala chai on a wooden table","max_results":5}' \
+  | jq '.images[] | {url, description}'
+```
 
-# 2. Download locally (SAS URL — expires!)
+Defaults applied by the bridge: `provider:"tavily"`, `max_results:5`,
+`include_descriptions:true`. Override any by including it in the body.
+
+### Generate an image (Gemini) → download → add to timeline
+
+```bash
+# 1. Generate — bridge defaults operation:"generate", provider:"gemini",
+#    store_in_azure:true, so you get a durable Azure URL back.
+URL=$(curl -sX POST "$API/api/bridge/ai/image/generate" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"prompt":"Futuristic AI workspace, holographic screens, purple neon",
+       "aspect_ratio":"9:16","style":"cinematic digital art"}' \
+  | jq -r '.image_url // .azure_url // .url')
+
+# 2. Download locally (SAS URL — may expire)
 IMG=$(mktemp -t aibg).png
 curl -sfL "$URL" -o "$IMG"
 
-# 3. Add to editor timeline (direct /api/execute — NOT via MCP proxy)
+# 3. Add to editor timeline (direct /api/execute — NOT a bridge/ai call)
 curl -sX POST "$API/api/execute" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d "$(jq -n --arg s "$IMG" '{type:"editor.addImage",params:{src:$s,name:"AI Background",from:0,duration:5000}}')"
 ```
 
-> Editor commands (`editor.*`) go through `/api/execute`, NOT MCP. See `contentlead/*.md`.
+> Editor commands (`editor.*`, `scene.*`) go through `/api/execute`, NOT the AI
+> bridge. See `contentlead/*.md`.
 
-### 🎬 Video frame analysis (ffmpeg + `image_analyze`)
-
-Content-aware editing pattern — extract frames, analyse them, generate matching scenes.
+### Compose from reference images
 
 ```bash
-# 1. Extract frames at 25/50/75% of duration
+curl -sX POST "$API/api/bridge/ai/image/compose" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"prompt":"Put the product on a marble kitchen counter, morning light",
+       "reference_images":["https://…/product.png","https://…/kitchen.jpg"],
+       "aspect_ratio":"1:1"}' \
+  | jq -r '.image_url'
+```
+
+`reference_images` is a **real JSON array** (no stringification).
+
+### Analyze an image (GPT-4o Vision)
+
+```bash
+curl -sX POST "$API/api/bridge/ai/image/analyze" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"prompt":"Describe this frame in 20 words","image_url":"https://…/frame.jpg","detail_level":"high"}' \
+  | jq -r '.analysis // .result // .message'
+```
+
+Provide **either** `image_url` **or** `base64_image` (plus `prompt`).
+
+### 🎬 Video frame analysis (ffmpeg + analyze)
+
+```bash
+# 1. Extract frames at representative timestamps
 ffmpeg -ss 5  -i /path/video.mp4 -frames:v 1 -q:v 2 /tmp/frame-a.jpg -y
 ffmpeg -ss 15 -i /path/video.mp4 -frames:v 1 -q:v 2 /tmp/frame-b.jpg -y
 
-# 2a. Analyse locally with the `view` tool (free, no upload) — preferred for the AI.
-# 2b. OR re-host and analyse remotely:
-PUB=$(curl -sX POST "$API/api/mcp/call" \
+# 2a. Prefer the local `view` tool to read the frame (free, no upload).
+# 2b. OR re-host + analyze remotely:
+PUB=$(curl -sX POST "$API/api/bridge/ai/asset/rehost" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"domain":"prepwithai","tool":"prepwithai_asset_rehost","args":{"url":"https://…/frame.jpg"}}' \
-  | jq -r '.content.result | fromjson | .public_url')
+  -d '{"url":"https://…/frame.jpg"}' | jq -r '.public_url // .url')
 
-curl -sX POST "$API/api/mcp/call" \
+curl -sX POST "$API/api/bridge/ai/image/analyze" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d "$(jq -n --arg u "$PUB" '{domain:"prepwithai",tool:"prepwithai_image_analyze",args:{prompt:"Describe this frame in 20 words",image_url:$u,detail_level:"high"}}')"
+  -d "$(jq -n --arg u "$PUB" '{prompt:"Describe this frame in 20 words",image_url:$u,detail_level:"high"}')"
 ```
 
 Frame-extraction defaults: short clip (<30 s) → 5 s / 15 s / 25 s; long clip → 10 s / 30 s / 50 s.
 
-### ✍️ Text
+---
 
-| Tool | Purpose |
-|------|---------|
-| `prepwithai_text_generate` | Free-form GPT-4o chat (`messages` is a **JSON-encoded string**). |
-| `prepwithai_text_generate_from_template` | Predefined templates (`linkedin-post`, `content-title`, `content-description`, `content-title-description`, `instagram-caption`, `short-summary`, `seo-metadata`). |
-| `prepwithai_text_list_templates` | List all template keys. |
-| `prepwithai_text_template_info` | Full template details incl. system/user prompts and required variables. |
+## 4. ✍️ Text
 
-#### `text_generate` — note the JSON-in-string arg
+`text/generate` takes a **real `messages` array** (no stringification). Use a
+system message for role/format control, and `output_schema` (or
+`response_format`) for structured JSON.
 
 ```bash
-curl -sX POST "$API/api/mcp/call" \
+curl -sX POST "$API/api/bridge/ai/text/generate" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"domain":"prepwithai","tool":"prepwithai_text_generate","args":{
-        "messages":"[{\"role\":\"system\",\"content\":\"You are a caption writer.\"},{\"role\":\"user\",\"content\":\"3-word tagline for an AI editor.\"}]",
-        "model":"gpt-4o",
+  -d '{
+        "messages":[
+          {"role":"system","content":"You are a caption writer."},
+          {"role":"user","content":"3-word tagline for an AI editor."}
+        ],
         "temperature":0.7,
         "max_tokens":40
-      }}' | jq -r '.content.result | fromjson | .message'
+      }' | jq -r '.message // .text // .content'
 ```
 
-#### `text_generate_from_template`
+Structured output (e.g. for the B-roll planner in `dialogue-broll`):
 
 ```bash
-curl -sX POST "$API/api/mcp/call" \
+curl -sX POST "$API/api/bridge/ai/text/generate" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"domain":"prepwithai","tool":"prepwithai_text_generate_from_template","args":{
-        "template_key":"linkedin-post",
-        "variables":"{\"topic\":\"AI-powered video editing\",\"key_points\":\"speed, style consistency, zero setup\",\"audience\":\"content creators\",\"tone\":\"punchy\"}"
-      }}'
+  -d '{
+        "messages":[{"role":"user","content":"For this dialogue, output image search plans as JSON."}],
+        "output_schema":{"type":"object","properties":{"plans":{"type":"array"}}}
+      }'
 ```
 
-### 🎙️ Transcription (Whisper via PrepWithAI)
+> **Text templates gone with MCP.** The old `text_generate_from_template` /
+> `text_list_templates` tools were MCP-only convenience wrappers. Reproduce them
+> by putting the same instruction in a `system` message here (e.g. "Write a
+> LinkedIn post about {topic} for {audience}, tone: {tone}"). No separate
+> template endpoint is needed.
 
-| Tool | Use for |
-|------|---------|
-| `prepwithai_transcribe_short` | ≤ 90 s and ≤ 25 MB. Synchronous. Returns word/segment timestamps + SRT. |
-| `prepwithai_transcribe_long`  | Longer files. Chunked; **auto-tracked as a job** — see [job tracking](#-job-tracking) below. |
-| `prepwithai_transcribe_with_speakers` | Speaker-diarized (hybrid Whisper + GPT-4o). Returns `speakerTranscript.{dialogue[], words[]}`. |
-| `prepwithai_transcribe_retry` | Retry failed chunks (`retry_mode`: `failed` / `all` / `segment`). |
+---
+
+## 5. 🎙️ Transcription (Whisper via PrepWithAI)
+
+| Route | Use for |
+|-------|---------|
+| `transcribe/short` | ≤ 90 s and ≤ 25 MB. Synchronous. Returns word/segment timestamps + SRT. |
+| `transcribe/long`  | Longer files. Chunked/async — returns `{process_id, firebase_path}`. |
+| `transcribe/speakers` | Speaker-diarized (Whisper + GPT-4o). Returns `speakerTranscript.{dialogue[], words[]}`. |
 
 30+ languages auto-detected. Optional `translate_to_english`.
 
 ```bash
-# Short clip
-curl -sX POST "$API/api/mcp/call" \
+# Short clip — synchronous
+curl -sX POST "$API/api/bridge/ai/transcribe/short" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"domain":"prepwithai","tool":"prepwithai_transcribe_short","args":{
-        "video_url":"https://…/clip.mp4"
-      }}' | jq -r '.content.result | fromjson | {text, srt, segments:(.segments|length)}'
+  -d '{"video_url":"https://…/clip.mp4"}' \
+  | jq -r '{text, srt, segments:(.segments|length)}'
 
-# Long clip — fire and forget, tracker handles the rest
-RESP=$(curl -sX POST "$API/api/mcp/call" \
+# Speaker-diarized
+curl -sX POST "$API/api/bridge/ai/transcribe/speakers" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"domain":"prepwithai","tool":"prepwithai_transcribe_long","args":{
-        "audio_url":"https://…/podcast.mp3",
-        "content_id":"content_<your-id>",
-        "granularity":"word",
-        "num_passes":1
-      }}')
-JOB=$(echo "$RESP" | jq -r .trackingUrl)   # /api/jobs/<process_id>
-# Wait for completion via cached snapshot (0 ms — no external hit)
-until [ "$(curl -s $API$JOB -H "Authorization: Bearer $TOKEN" | jq -r .status)" = "complete" ]; do sleep 5; done
-# Read the transcript from the cache
-curl -s $API$JOB -H "Authorization: Bearer $TOKEN" \
-  | jq '.snapshot.result | {full_text, words: .complete_transcription.words}'
-
-# Retry any failed chunks
-PID=$(echo "$RESP" | jq -r '.content.result | fromjson | .process_id')
-curl -sX POST "$API/api/mcp/call" \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d "$(jq -n --arg p "$PID" '{domain:"prepwithai",tool:"prepwithai_transcribe_retry",args:{audio_url:"https://…/podcast.mp3",process_id:$p,retry_mode:"failed",content_id:"content_<your-id>"}}')"
+  -d '{"video_url":"https://…/podcast.mp4"}' \
+  | jq '.speakerTranscript | {speakers:(.dialogue|group_by(.speaker)|length), lines:(.dialogue|length)}'
 ```
 
-#### 🔔 Job tracking
+### Long transcription + job tracking
 
-Any tool that returns `{process_id, firebase_path}` (currently only
-`prepwithai_transcribe_long` and `_retry`) is **automatically registered** with
-the desktop's job tracker. The response includes a `trackingUrl` you can hit
-for the cached snapshot — no Firebase auth, no polling of external services.
+```bash
+# Fire the long job
+RESP=$(curl -sX POST "$API/api/bridge/ai/transcribe/long" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"audio_url":"https://…/podcast.mp3","content_id":"content_<your-id>","granularity":"word","num_passes":1}')
+PID=$(echo "$RESP"  | jq -r '.process_id')
+FBP=$(echo "$RESP"  | jq -r '.firebase_path')
+
+# Subscribe the desktop job tracker to the Firebase progress path, then poll the
+# cached snapshot (<1 ms, no external hit, no Firebase auth).
+JOB=$(curl -sX POST "$API/api/jobs/subscribe" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d "$(jq -n --arg p "$FBP" '{kind:"transcription",firebase_path:$p}')" | jq -r '.trackingUrl')
+
+until [ "$(curl -s "$API$JOB" -H "Authorization: Bearer $TOKEN" | jq -r .status)" = "complete" ]; do sleep 5; done
+curl -s "$API$JOB" -H "Authorization: Bearer $TOKEN" \
+  | jq '.snapshot.result | {full_text, words: .complete_transcription.words}'
+```
+
+#### Job tracking endpoints
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /api/jobs` | List all tracked jobs (`?status=in_progress\|complete\|failed\|stale`) |
-| `GET /api/jobs/:id` | Cached snapshot (progress, chunks, result) — served in <1 ms |
-| `GET /api/jobs/:id/stream` | SSE stream of live updates for reactive UI/CLI |
-| `POST /api/jobs/subscribe` | Manually track any Firebase path `{kind, firebase_path}` |
+| `POST /api/jobs/subscribe` | Track any Firebase path `{kind, firebase_path}` → `{trackingUrl}` |
+| `GET /api/jobs` | List tracked jobs (`?status=in_progress\|complete\|failed\|stale`) |
+| `GET /api/jobs/:id` | Cached snapshot (progress, chunks, result) — <1 ms |
+| `GET /api/jobs/:id/stream` | SSE stream of live updates |
 | `DELETE /api/jobs/:id` | Unsubscribe + drop cache |
 
 The desktop opens ONE persistent Firebase SSE upstream per job and pushes
-changes into memory as they arrive (~50 ms after the backend writes). Jobs
-auto-complete on `result.status === "success"` or `progress.percentage >= 100`.
-Same pattern generalizes to any future async job that writes to Firebase.
+changes into memory (~50 ms after the backend writes). Jobs auto-complete on
+`result.status === "success"` or `progress.percentage >= 100`.
 
-### 🛠️ Utility
+---
 
-| Tool | Purpose |
-|------|---------|
-| `prepwithai_health_check` | Backend heartbeat — quick sanity check that the PrepWithAI backend is up. |
-| `prepwithai_asset_rehost` | Any public URL → permanent Azure Blob URL. Use before analysing or before referencing an asset that has a SAS token. |
+## 6. 🛠️ Asset re-hosting
+
+Temporary SAS-token URLs expire. Copy any public URL into permanent Azure Blob
+(`passets`) before persisting or referencing it long-term:
 
 ```bash
-curl -sX POST "$API/api/mcp/call" \
+curl -sX POST "$API/api/bridge/ai/asset/rehost" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"domain":"prepwithai","tool":"prepwithai_health_check","args":{}}' \
-  | jq -r '.content.result'
+  -d '{"url":"https://…/temp-sas-image.png"}' | jq -r '.public_url // .url'
 ```
 
 ---
 
-## 4. Content-aware video editing pattern
+## 7. Content-aware video editing pattern
 
 The single most valuable use of this skill is combining **analysis + generation**:
 
 1. **Extract** representative frames from the source video (`ffmpeg`).
-2. **Understand** each frame — prefer the local `view` tool (free); fall back to `prepwithai_image_analyze` when the AI can't see the file.
+2. **Understand** each frame — prefer the local `view` tool (free); fall back to
+   `image/analyze` when the AI can't see the file.
 3. **Generate** matching content:
-   - Titles/descriptions → `prepwithai_text_generate_from_template`
-   - Backgrounds / B-roll → `prepwithai_image_generate` (or search stock via `prepwithai_image_search`)
-   - Long transcripts → `prepwithai_transcribe_long`
-4. **Attach** every generated asset to the timeline via `/api/execute` (`editor.addImage`, `editor.addText`, …). See `contentlead/*.md`.
+   - Titles/descriptions → `text/generate` (system-prompt as template)
+   - Backgrounds / B-roll → `image/generate`, or search stock via `image/search`
+   - Long transcripts → `transcribe/long`
+4. **Attach** every generated asset to the timeline via `/api/execute`
+   (`editor.addImage`, `editor.addText`, …). See `contentlead/*.md`.
+
+For dialogue-driven B-roll (decide → source → pick → align → place), load the
+**`dialogue-broll`** skill — it orchestrates this skill's routes per line of
+dialogue.
 
 ---
 
-## 5. Cross-references
+## 8. Notes & pitfalls
 
-- `contentlead/mcp-via-desktop.md` — full proxy protocol (mint/refresh/status/tools/call endpoints, error codes, retry semantics)
-- `contentlead/*.md` — editor commands (all `editor.*` and `scene.*` go through `/api/execute`, not MCP)
-- `content-inspiration/` — web/scraping/news domains for research inputs
-- `content-publishing/` — Instagram/LinkedIn/YouTube tools (their own MCP domains)
+- **Editor commands are NOT bridge/ai routes.** Use `/api/execute` for `editor.*`,
+  `scene.*`, `ui.*`. Only remote AI capabilities live under `/api/bridge/ai/*`.
+- **Never send API keys in the body.** The SkillTown proxy injects your per-user
+  Tavily (search) / Gemini (generate/compose) key server-side. If you get
+  `missing key`, set it in the SkillTown app → Settings → Image Search / Image
+  Generation, then retry.
+- **Args are real JSON.** `messages`, `reference_images`, `output_schema` are
+  arrays/objects — do NOT stringify them (that was an MCP-only quirk).
+- **SAS-token URLs expire** — always download or `asset/rehost` before persisting.
+- **`Bearer` prefix required** on bridge routes.
 
-## 6. Cheat sheet — every prepwithai tool as one curl
+## 9. Cross-references
 
-```bash
-POST $API/api/mcp/call
-  Authorization: Bearer $TOKEN
-  { "domain":"prepwithai", "tool":"prepwithai_<NAME>", "args": {...} }
-```
-
-`prepwithai_health_check · text_generate · text_generate_from_template · text_list_templates · text_template_info · image_generate · image_generate_batch · image_search · image_compose · image_analyze · asset_rehost · transcribe_short · transcribe_long · transcribe_retry`
-
-## 7. Notes & pitfalls
-
-- **Editor commands are NOT MCP tools.** Use `/api/execute` for `editor.*`, `scene.*`, `ui.*`. Only remote AI capabilities live in prepwithai/MCP.
-- **API keys** — `image_generate` needs Gemini; `image_search` needs Tavily. Manage via the `web` (a.k.a. `psearch`) domain: `apikey_status`, `apikey_update`, `apikey_delete`, `apikey_list_services`.
-- **SAS-token URLs expire** — always download or `asset_rehost` before persisting.
-- **JSON-in-string args** — `messages`, `variables`, `prompts`, `reference_images`, `initial_state`.
-- **Prefix rule** — tool names are `prepwithai_*` end-to-end; the domain field is not a substitute for the prefix.
-- **Refresh** — if a new tool was added upstream: `GET /api/mcp/tools?domain=prepwithai&refresh=true`.
+- `contentlead/*.md` — editor commands (all `editor.*` / `scene.*` via `/api/execute`)
+- `dialogue-broll/` — dialogue-driven B-roll orchestration (uses these routes)
+- `content-inspiration/` — web/scraping/news research inputs
+- `content-publishing/` — Instagram/LinkedIn/YouTube publishing

@@ -1,0 +1,23 @@
+{
+  "script_name": "airplane-mode-privacy",
+  "characters": {
+    "modi":  { "side": "left" },
+    "rahul": { "side": "right" }
+  },
+  "background_video": "PROVIDE_A_GAMEPLAY_MP4_PATH_OR_LEAVE_TO_SKIP",
+  "_setup": "Character voice IDs + art paths come from your private config.local.json (copy config.example.json). Nothing personal is stored in this public file.",
+  "dialogues": [
+    { "id": 1,  "character": "modi",  "sentence": "राहुल जी, Airplane mode में phone completely safe है na?" },
+    { "id": 2,  "character": "rahul", "sentence": "GALAT मोदी जी! यह सबसे बड़ा myth है!" },
+    { "id": 3,  "character": "modi",  "sentence": "Kya? लेकिन network तो बंद हो जाता है!" },
+    { "id": 4,  "character": "rahul", "sentence": "Network बंद होता है, लेकिन cell towers आपकी last location store करते हैं।" },
+    { "id": 5,  "character": "modi",  "sentence": "Matlab government track कर सकती है?" },
+    { "id": 6,  "character": "rahul", "sentence": "Not just government! Phone companies, apps, even hackers - सब आपको trace कर सकते हैं।" },
+    { "id": 7,  "character": "modi",  "sentence": "यह तो बहुत dangerous है! कैसे possible है?" },
+    { "id": 8,  "character": "rahul", "sentence": "IMEI number और SIM card identity कभी fully hidden नहीं होती। Even airplane mode में sensors data collect करते हैं।" },
+    { "id": 9,  "character": "modi",  "sentence": "तो solution क्या है? कैसे बचें?" },
+    { "id": 10, "character": "rahul", "sentence": "Real privacy के लिए Faraday bag use करो - यह सभी signals block करता है।" },
+    { "id": 11, "character": "modi",  "sentence": "Faraday bag? यह क्या होता है?" },
+    { "id": 12, "character": "rahul", "sentence": "Special pouch जो electromagnetic signals को block करता है। Comment करो 'SAFE' अगर इसके बारे में detailed video चाहिए!" }
+  ]
+}

@@ -6,6 +6,13 @@ tags: mcp, transcribe, prepwithai, learn, tools, discovery, proxy, token
 
 # MCP via Desktop Proxy
 
+> **Important — `prepwithai` AI media/text/transcribe is deprecated and removed from
+> this MCP proxy.** Image search/generation/composition/analysis, text generation,
+> transcription, and asset rehosting now use real JSON bodies at
+> `POST /api/bridge/ai/*` with the desktop bearer token. Load the `ai-media` skill for
+> those routes. Keep using this MCP proxy only for remaining MCP domains such as SFX,
+> scraping, web, learn, github, etc.
+
 The SkillTown-Desktop app now proxies all MCP tool calls through its
 local HTTP API. This means **AI CLIs no longer need to configure
 `mcp.json` with a manual JWT** — the desktop app mints, caches, and
@@ -77,9 +84,9 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 Invoke an MCP tool. Body:
 ```json
 {
-  "domain": "prepwithai",
-  "tool":   "prepwithai_transcribe_short",
-  "args":   { "video_url": "https://…/clip.mp4", "language": null, "translate_to_english": false },
+  "domain": "web",
+  "tool":   "web_search",
+  "args":   { "query": "react 19 features" },
   "timeoutMs": 120000   // optional, 1s..15min, default 5min
 }
 ```
@@ -88,8 +95,8 @@ Response wraps the MCP result:
 ```json
 {
   "ok": true,
-  "domain": "prepwithai",
-  "tool":   "prepwithai_transcribe_short",
+  "domain": "web",
+  "tool":   "web_search",
   "content": { … parsed tool output … },
   "rawParts": [ … raw MCP content parts … ],
   "elapsedMs": 8421
@@ -151,18 +158,19 @@ Aliases: `content` → `editor + storystudio`; `search` → `web`.
 
 ## Common calls
 
-**Transcribe a video/audio clip:**
+**Transcribe a video/audio clip (AI bridge, not MCP):**
 ```json
-POST /api/mcp/call
-{ "domain":"prepwithai", "tool":"prepwithai_transcribe_short", "args": { "video_url":"https://…/clip.mp4", "language":null } }
+POST /api/bridge/ai/transcribe/short
+{ "video_url":"https://…/clip.mp4" }
 ```
-> ⚠️ There is no unprefixed `transcribe_video` tool. The `prepwithai` transcription family:
-> - **`prepwithai_transcribe_short`** — synchronous, stateless. Args: `video_url`, `language?`, `translate_to_english?`. Use for clips ≤ ~90s / ≤ 25 MB.
-> - **`prepwithai_transcribe_long`** — async, chunked, Firebase-tracked. Args: `audio_url`, `content_id?`, `granularity?`. Returns `{process_id, firebase_path}` — poll via job tracker.
-> - **`prepwithai_transcribe_retry`** — retry failed chunks OR re-transcribe a segment. Args: `audio_url`, `process_id`, `retry_mode`.
-> - **`prepwithai_transcribe_with_speakers`** — hybrid Whisper + GPT-4o diarize. Args: `video_url`, `language?`, `quality?`.
+> AI transcription is no longer an MCP tool. Use the bridge routes:
+> - `POST /api/bridge/ai/transcribe/short` with `{video_url}` for short clips.
+> - `POST /api/bridge/ai/transcribe/long` with `{audio_url, content_id?}`; it returns
+>   `{process_id, firebase_path}`, then subscribe via
+>   `POST /api/jobs/subscribe {kind:"transcription", firebase_path}`.
+> - `POST /api/bridge/ai/transcribe/speakers` with `{video_url}` for speaker-tagged output.
 >
-> ⚠️ Param names differ: `_short` and `_with_speakers` take `video_url`; `_long` and `_retry` take `audio_url` (extract with `ffmpeg -i video.mp4 -vn audio.mp3` and upload via the Desktop's blob upload flow first).
+> Param names differ: short/speakers take `video_url`; long takes `audio_url`.
 
 **Search / fetch web content**:
 ```json

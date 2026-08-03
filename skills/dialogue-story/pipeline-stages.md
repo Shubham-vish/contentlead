@@ -14,8 +14,10 @@ skills already document. This skill only calls them in the proven order.
 
 ## Stage 0.5 — Script normalization (Hinglish → clean mixed script)
 - **Skip if:** dialogue already normalized (tracked via `_stages.norm` flag).
-- **Call:** `POST /api/mcp/call` → `prepwithai_text_generate` with the
-  *normalization* system prompt (see `ai-prompts.md §1`). Batch of 3 dialogues.
+- **Call:** `POST /api/bridge/ai/text/generate` with a real JSON body
+  `{ messages: [...] }` containing the *normalization* system prompt (see
+  `ai-prompts.md §1`). Batch of 3 dialogues. The response is backend JSON directly
+  (single parse; no MCP envelope).
 - **Write:** replaces `sentence` with the cleaned version.
 - Original engine: `sentence_ai_processor.py` (3 retries + confidence).
 
@@ -87,10 +89,9 @@ THEN batch the rest. This is exactly how the good audio was validated.
 
 ## Stage 1.1 — Word-level timestamps  ⭐ LOCAL — no MCP
 
-> **Transcription runs FULLY LOCALLY with faster-whisper. Do NOT route this through
-> `mcp.prepwithai.in` / `prepwithai_transcribe_*` / `editor.autoCaption` — those all call
-> the MCP proxy which is unreliable (502) and, when down, silently degrade captions to
-> fake even-spacing. We replaced it.**
+> **Transcription runs FULLY LOCALLY with faster-whisper for this pipeline. Do NOT route
+> this through the hosted AI transcribe bridge or `editor.autoCaption` — when remote
+> transcription is unavailable, captions can silently degrade to fake even-spacing.**
 
 - **Skip if:** `dialogue.word_data?.words?.length`.
 - **Call:** `python3 orchestrator/lib/transcribe_local.py <dialogue.audio.file>`
@@ -110,9 +111,10 @@ THEN batch the rest. This is exactly how the good audio was validated.
   via `snapKnown()` (proportional index map: exact 1:1 when counts match, graceful drift
   otherwise). This gives correct spelling + real spoken pacing. NO transcription of the
   romanization is needed. (`run.mjs stage12_translit` does this.)
-- **Fallback (no `latin`):** `prepwithai_text_generate` with the **transliteration prompt**
-  (`ai-prompts.md §2`) — this is critical for *correct on-screen Latin captions*.
-  Then map the Latin words back onto the `word_data` timings (same count/order).
+- **Fallback (no `latin`):** `POST /api/bridge/ai/text/generate` with
+  `{ messages: [...] }` and the **transliteration prompt** (`ai-prompts.md §2`) —
+  this is critical for *correct on-screen Latin captions*. Then map the Latin words
+  back onto the `word_data` timings (same count/order).
 - **Write:** `dialogue.proc_word_data = { text, words:[{word,start,end}] }`.
 - Rules baked into the prompt: keep language, only change script; standard Hindi
   transliteration; keep already-Latin words; **numbers as digits** ("दो"→"2",
@@ -126,18 +128,21 @@ This is the "relevant images to the exact words spoken" behavior.
 > line. Load `dialogue-broll` for the format-agnostic version (search-vs-generate modes,
 > word-alignment, timeline placement + z-order) usable on any clip.
 - **Skip if:** `dialogue.images?.length` (or explicitly `[]` meaning "decided none").
-- **Step A — decide count + windows:** `prepwithai_text_generate` with the
-  **multiple-images decision prompt** (`ai-prompts.md §3`), passing
+- **Step A — decide count + windows:** `POST /api/bridge/ai/text/generate` with
+  `{ messages: [...] }` and the **multiple-images decision prompt** (`ai-prompts.md §3`), passing
   `dialogue.proc_word_data.text` + `dialogue.audio.duration`. Returns
   `image_decisions:[{search_query, image_start_duration, image_end_duration, reasoning}]`.
   - Rules baked in: images cover **60–90%** of the dialogue (leave gameplay gaps);
     each image visible **1–3s min**; **no overlap**; concrete concepts only;
     **never** character images (modi/rahul); short/simple (<4s) dialogues may get
     1 or 0 images.
-- **Step B — search:** for each decision, `prepwithai_image_search`
-  `{ query: search_query + " without watermark" }`.
-- **Step C — pick best:** `prepwithai_text_generate` with the **best-image prompt**
-  (`ai-prompts.md §4`) over the result descriptions → chosen index.
+- **Step B — search:** for each decision, `POST /api/bridge/ai/image/search`
+  with `{ query: search_query + " without watermark" }`. Do not send Tavily keys;
+  SkillTown injects per-user keys server-side (configure them in app Settings →
+  Image Search if missing).
+- **Step C — pick best:** `POST /api/bridge/ai/text/generate` with
+  `{ messages: [...] }` and the **best-image prompt** (`ai-prompts.md §4`) over
+  the result descriptions → chosen index.
 - **Write:** `dialogue.images = [{ url, image_start, image_end, query, reason }]`
   (times **relative to the dialogue start**). If Step A/B fail → fallback single
   image `{ image_start:0.5, image_end: min(duration-0.5, 3.0) }`.
@@ -147,14 +152,14 @@ This is the "relevant images to the exact words spoken" behavior.
 ## Stage 2.0 — Title hook + Instagram caption
 Runs once over the **whole** combined Latin script (`proc_word_data.text` joined).
 - **Skip if:** `title_data` / `captioned_data` present (separate flags).
-- **2a Script analysis:** `prepwithai_text_generate` → `ScriptAnalysis`
+- **2a Script analysis:** `POST /api/bridge/ai/text/generate` → `ScriptAnalysis`
   `{ main_topic, key_concepts[], target_audience, content_type, engagement_style }`
   (`ai-prompts.md §5`). Cached in `script_analysis`.
-- **2b Hook title (on-screen overlay, 0–~3s):** `prepwithai_text_generate` with the
-  **hook-title prompt** (`ai-prompts.md §6`) →
+- **2b Hook title (on-screen overlay, 0–~3s):** `POST /api/bridge/ai/text/generate`
+  with `{ messages: [...] }` and the **hook-title prompt** (`ai-prompts.md §6`) →
   `title_data = { text_hook_line (2–5 words), duration_to_show_text_hook_line_in_video_start (3.0–5.0s) }`.
-- **2c IG caption package:** `prepwithai_text_generate` with the **caption prompt**
-  (`ai-prompts.md §7`) →
+- **2c IG caption package:** `POST /api/bridge/ai/text/generate` with
+  `{ messages: [...] }` and the **caption prompt** (`ai-prompts.md §7`) →
   `captioned_data = { main_caption(150–200w), hashtags(15–25), hook_line, call_to_action, text_hook_line }`.
 - Original engine: `process_caption.py` + `caption_generator.py`.
 

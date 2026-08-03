@@ -120,7 +120,7 @@ for pct in 25 50 75; do
 done
 ```
 
-Analyze extracted frames with `prepwithai_image_analyze` to understand content:
+Analyze extracted frames with `POST /api/bridge/ai/image/analyze` (`{prompt, image_url}` or `{prompt, base64_image}`) to understand content:
 - What's shown (people, UI, product, text)
 - Visual mood (dark, bright, colorful)
 - Relevant topics for scene selection
@@ -586,9 +586,9 @@ Report any:
 When the user provides only a topic or brief — AI generates everything:
 
 1. **Phase 1**: Skip media analysis. Generate content plan from topic.
-2. **Phase 2**: Plan segments. Use `prepwithai_text_generate` for script. Estimate durations.
-3. **Phase 3**: Generate voiceover with `prepwithai_speech_generate`. Generate background images with `prepwithai_image_generate`. Add motion-bg scenes.
-4. **Phase 4**: Add generated voiceover as audio. Add text from script as sequential reveals. Generate B-roll images with `prepwithai_image_generate`.
+2. **Phase 2**: Plan segments. Use `POST /api/bridge/ai/text/generate` for script. Estimate durations.
+3. **Phase 3**: Generate voiceover with `prepwithai_speech_generate`. Generate background images with `POST /api/bridge/ai/image/generate`. Add motion-bg scenes.
+4. **Phase 4**: Add generated voiceover as audio. Add text from script as sequential reveals. Generate B-roll images with `POST /api/bridge/ai/image/generate`.
 5. **Phases 5–8**: Same as standard flow.
 
 ### Variant B: Enhance Existing Project

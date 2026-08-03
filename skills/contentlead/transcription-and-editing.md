@@ -103,7 +103,7 @@ but for a long clip you can tail the job file to watch progress. Shape:
 Poll `steps.transcribe.progress` (0–100) for the slow transcription phase. On failure,
 the failing step gets `{ done: false, error: "..." }` and top-level `status: "failed"`.
 Use `query.getTranscriptionStatus` (below) as the reload-safe status source.
-### Option A (recommended): MCP + auto-tracked job
+### Option A (recommended): AI bridge + auto-tracked job
 
 Fire-and-forget with real-time push tracking. No polling. No secrets. Works
 from any AI CLI on any machine — the desktop app owns Firebase auth via cookies.
@@ -113,23 +113,27 @@ PORT=$(node -e "console.log(require(require('os').homedir()+'/.skilltown-desktop
 TOKEN=$(node -e "console.log(require(require('os').homedir()+'/.skilltown-desktop/api.json').token)")
 API=http://127.0.0.1:$PORT
 
-# 1. Extract audio (only step the AI does locally)
-ffmpeg -y -i /path/to/video.mp4 -vn -acodec libmp3lame -b:a 128k /tmp/audio.mp3
+# 1. Rehost an already-accessible audio URL (Azure blob under the hood — no manual SAS/keys needed)
+AUDIO_URL=$(curl -sX POST $API/api/bridge/ai/asset/rehost \
+  -H "Authorization: ******" -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com/audio.mp3"}' \
+  | jq -r '.url')
 
-# 2. Upload via MCP (Azure blob under the hood — no manual SAS/keys needed)
-AUDIO_URL=$(curl -sX POST $API/api/mcp/call \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"domain":"prepwithai","tool":"prepwithai_asset_rehost",
-        "args":{"source":"/tmp/audio.mp3","kind":"audio"}}' \
-  | jq -r '.content.result | fromjson | .url')
+# 2. Kick off transcription — returns immediately with process_id + firebase_path
+RESP=$(curl -sX POST $API/api/bridge/ai/transcribe/long \
+  -H "Authorization: ******" -H "Content-Type: application/json" \
+  -d "$(jq -n --arg audio_url "$AUDIO_URL" --arg content_id "content_<your-id>" \
+        '{audio_url:$audio_url, content_id:$content_id}')")
+FIREBASE_PATH=$(echo "$RESP" | jq -r .firebase_path)
+PROCESS_ID=$(echo "$RESP" | jq -r .process_id)
 
-# 3. Kick off transcription — returns immediately with a trackingUrl
-RESP=$(curl -sX POST $API/api/mcp/call \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d "{\"domain\":\"prepwithai\",\"tool\":\"prepwithai_transcribe_long\",
-       \"args\":{\"audio_url\":\"$AUDIO_URL\",\"language\":\"hi\",
-                    \"content_id\":\"content_<your-id>\"}}")
-JOB=$(echo "$RESP" | jq -r .trackingUrl)     # e.g. /api/jobs/<process_id>
+# 3. Subscribe the desktop job cache to the Firebase path
+JOB_RESP=$(curl -sX POST $API/api/jobs/subscribe \
+  -H "Authorization: ******" -H "Content-Type: application/json" \
+  -d "$(jq -n --arg firebase_path "$FIREBASE_PATH" \
+        '{kind:"transcription", firebase_path:$firebase_path}')")
+JOB=$(echo "$JOB_RESP" | jq -r --arg process_id "$PROCESS_ID" \
+  '.trackingUrl // ("/api/jobs/" + $process_id)')
 
 # 4a. Poll the cached snapshot (0ms latency — reads from desktop memory, not Firebase)
 while true; do
@@ -146,13 +150,13 @@ curl -N -s $API$JOB/stream -H "Authorization: Bearer $TOKEN"
 # 5. Read the finished transcript from the cached snapshot
 curl -s $API$JOB -H "Authorization: Bearer $TOKEN" \
   | jq '.snapshot.result | {full_text, srt: .srt_content, words: .complete_transcription.words}' \
-  > /tmp/transcript.json
+  > transcript.json
 ```
 
 **How the tracking works** (you never need to touch Firebase directly):
 
-1. `prepwithai_transcribe_long` returns `{process_id, firebase_path}` and the MCP proxy
-   auto-subscribes to that Firebase path via native SSE (`Accept: text/event-stream`).
+1. `POST /api/bridge/ai/transcribe/long` returns `{process_id, firebase_path}`.
+   Subscribe with `POST /api/jobs/subscribe {kind:"transcription", firebase_path}`.
 2. Every progress push from the backend lands in an in-memory cache on the desktop.
 3. `GET /api/jobs/:id` serves that cache in <1 ms — no external calls.
 4. When the backend writes `result.complete_transcription`, the job is auto-marked
@@ -248,7 +252,7 @@ This gives the most natural output (matches how Indians text on WhatsApp/IG).
 
 ### Approach 3: LLM-based transliteration (highest quality)
 
-Use `prepwithai_text_generate` MCP tool with a prompt:
+Use `POST /api/bridge/ai/text/generate` with `{ messages: [...] }` and a prompt:
 ```
 Convert this Hindi (Devanagari) text to natural Hinglish (Latin script) as Indians text on social media. Keep English words unchanged. Be casual, not formal.
 ```
