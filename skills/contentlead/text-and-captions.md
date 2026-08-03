@@ -2,6 +2,15 @@
 
 Use these commands to manually add text overlays, titles, lower thirds, and manual karaoke-style captions to the timeline.
 
+> **⭐ STYLE-FIRST RULE — prefer Remotion scenes for text.**
+> `editor.addText` / `editor.addCaption` produce **flat, plainly-styled** text. Whenever the
+> goal is a polished/branded/viral look (titles, hooks, kinetic captions, animated lower-thirds),
+> **use a Remotion scene instead** (`scene.addBundledScene`, `scene.addCustomScene`,
+> `scene.addLibraryScene`) — these give springs, per-word animation, gradients, strokes, glow
+> and custom fonts, and stay fully editable. Load the `remotion` skill for the text/caption
+> scene catalog. Reach for the plain commands below ONLY when no suitable Remotion scene exists
+> or you explicitly need a quick, unstyled element.
+
 > **Disambiguation:** 
 > - If you want **automatic, transcription-driven subtitles**, use `content.applyCaptions` (see `transcription-and-editing` skill).
 > - If you want to fix a typo in an existing auto-caption, use `editor.editCaptionWord` (see `transcription-and-editing`).
