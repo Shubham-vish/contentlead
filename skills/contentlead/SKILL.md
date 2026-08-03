@@ -60,6 +60,8 @@ If you add text on Track 2 and a video on Track 0, the text will be **invisible*
 | Multi-tab collaboration | `multi-tab` | `GET /api/tabs`, `POST /api/tabs/new`, `tabId` on `/api/execute` |
 | **AI Viral Clipping** | `ai-clipping` | Transcribe → score virality → extract clips → reframe 9:16 → render |
 | **Script Evaluation & Writing** | `script-evaluator` | Score scripts 0-100, rewrite hooks, write viral scripts from scratch |
+| **Dialogue-Story Reels (2-char, Modi–Rahul style)** | `dialogue-story` | Full viral pipeline: script→TTS voices→word-timed Latin captions→per-dialogue AI images→hook title + IG caption→Remotion compose. `orchestrator/run.mjs` |
+| **Dialogue-driven B-roll (relevant images timed to words)** | `dialogue-broll` | Per-segment: AI decides #images + query → search/generate → pick best → word-timestamp align + gaps → place on timeline. Ports TlEditingSolution image logic; works on ANY clip |
 | **Podcast Layouts (2p/1p/share/9:16)** | `podcast-layouts` | `layout.list`, `layout.apply`, `layout.getActive`, `layout.tagRole` |
 | **Masks & Animated Reveals** | `masking-and-reveal` | `mask.get`, `mask.set`, `mask.clear`, `reveal.listPresets`, `reveal.apply`, `reveal.clear` |
 | **Brand Kits** | `brand-kits` | `brand.listKits`, `brand.apply`, `brand.applyColor`, `brand.applyFont`, `brand.addAssetToCanvas` |

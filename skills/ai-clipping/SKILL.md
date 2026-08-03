@@ -337,6 +337,11 @@ High-retention short-form look: white words, bright **green** active word with a
 
 **Choosing a preset:** Podcast/interview/long-form → **Preset A (gold)**. Fast-cut reels, hooks, talking-head, energetic content → **Preset B (green karaoke)**.
 
+> **Add relevant B-roll to the finished clip:** to make contextual images pop in as
+> concepts are spoken (word-timed, with gaps over the talking head), load the
+> **`dialogue-broll`** skill. It reuses this clip's word-level transcript and the
+> `ai-media` image tools.
+
 ---
 
 ## Phase 2: Score Virality (YOUR BRAIN)
