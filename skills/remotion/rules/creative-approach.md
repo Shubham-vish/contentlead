@@ -83,7 +83,7 @@ Phase 7: Verify (state check, error check, gap check)
 | **Data** | `SyntaxHighlighter`, `ConsoleOutput` | Code/terminal displays |
 | **Branding** | `BrandLogo`, `YellowButton`, `InstagramCTA` | CTAs and brand elements |
 
-### Via PrepWithAI MCP tools:
+### Via the desktop AI bridge:
 
 | Capability | Tool |
 |-----------|------|
@@ -92,9 +92,11 @@ Phase 7: Verify (state check, error check, gap check)
 | Frame/image analysis | `POST /api/bridge/ai/image/analyze` |
 | Text-to-speech | `POST /api/bridge/voice/generate` |
 | Voice cloning | `POST /api/bridge/voice/clone` |
+| Delete a cloned voice | `POST /api/bridge/voice/delete` |
 | Sound effects search | `POST /api/bridge/ai/sfx/search` |
 | Script generation | `POST /api/bridge/ai/text/generate` |
 | Image search | `POST /api/bridge/ai/image/search` |
+| Rehost an external asset | `POST /api/bridge/ai/asset/rehost` |
 
 ### From remotion-projects (reference — read the logic, not just presets):
 

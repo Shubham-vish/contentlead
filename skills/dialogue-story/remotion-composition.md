@@ -65,8 +65,17 @@ For each `img` in `dialogue.images`:
   (original: `image_actual_start = max(title_duration, image_actual_start)`).
 - Position: top area with margins `image_x_margin = image_y_margin = 60`; size to a
   comfortable card (leave gameplay visible per the 60–90% coverage rule).
-- **Remotion upgrade:** add a quick pop/fade-in + subtle Ken Burns; cross-fade between
-  consecutive images within a dialogue.
+- **Remotion upgrade — VARY the entrance, keep it SNAPPY:** each context image gets a
+  quick enter animation, but **do NOT reuse the same preset for every card** — rotate
+  through a set so the reel feels alive. Recommended rotation (cycle per image within a
+  dialogue, and alternate across dialogues):
+  `scaleIn → slideInRight → slideInLeft → slideInTop → dropAnimationIn → flipIn`.
+  **Speed:** `duration` **280–340 ms** (fast/punchy). The 500 ms default is too slow for
+  brain-rot pacing — always pass an explicit short `duration`. Pair with a subtle Ken
+  Burns drift while on screen; cross-fade between consecutive images in a dialogue.
+  Apply via `editor.setAnimation {itemId, animationIn:<preset>, duration:300}` (see the
+  contentlead **animations-and-effects** skill for the full enter-preset list). Reminder:
+  animations do **not** survive save/restore — re-apply after every reload.
 
 ## Layer 1 — Karaoke subtitles (correct Latin script)
 Source: `proc_word_data.words` (Latin!) with per-word `start/end` — these timings come

@@ -111,6 +111,25 @@ Full details, resumability logic, and exact command payloads: **`pipeline-stages
 
 ## ⭐ Verified voice recipe (do this first, never skip)
 
+> # ⚠️ AUDIO ORDER RULE — READ THIS FIRST ⚠️
+> **Preferred in-app flow:** Generate → place RAW audio on timeline → add captions /
+> linked visuals → `editor.removeSilence { apply:true, cascadeLinkedTracks:true }`.
+>
+> **Offline Python flow:** Generate → PROCESS (trim + boost) → place on timeline →
+> THEN caption from the processed file.
+>
+> **Caption karaoke style (active-word scale):** `details.animation` controls the
+> active-word pop. Default is now `letterKaraoke/scaleAnimationLetterEffectSoft`
+> (gentle ~1.14x — classy, readable). Use `letterKaraoke/scaleAnimationLetterEffect`
+> for the big 1.4x pop, or `none` for pure color-only (no scale). Switch on existing
+> captions with `bulk.styleByType {type:"caption",details:{animation:"..."}}`.
+>
+> Captions are separate timeline items and word timings are absolute. If captions
+> already exist, do **not** trim with Python afterward; use `editor.removeSilence`
+> so linked captions/images shift with the audio. If you inherit an edit where
+> captions were made from untrimmed audio and cannot use linked-track cascade, do
+> **boost/normalize only** (`--no-trim`, same duration).
+
 The single most important correctness rule in this pipeline:
 
 1. **Voices = CLONED voices** (`voice_type: voice_cloning`), set in `config.local.json`:
@@ -121,9 +140,65 @@ The single most important correctness rule in this pipeline:
 3. **Call:** `POST /api/bridge/voice/generate` (Bearer auth) `{ text, voice_id, speed:1.0, format:"mp3" }`
    → `{ audio_url, duration_seconds }`. Add with `editor.addAudio {src,from,volume:95}`,
    first line at `from:0`, each next at the running sum of prior durations.
-4. **Smoke-test one line first** (generate Modi's line, add at `from:0`, confirm it sounds
+4. **Preferred gap removal:** add captions / character images / b-roll as linked
+   timeline items, then call `editor.removeSilence` on each dialogue audio item with
+   `apply:true, cascadeLinkedTracks:true`. This removes internal gaps and keeps all
+   linked caption/image timing synced automatically.
+5. **Offline/pre-import option:** if you are composing from files before timeline
+   import, run the downloaded mp3 through the **voice** skill's
+   `scripts/process_dialogue_audio.py` BEFORE `editor.addAudio`. This is the ported
+   TlEditingSolution audio prep (silence trim −40 dBFS / 100 ms + normalize + 13 dB).
+   **Re-read the processed clip's duration** (it shrinks after trimming) and use THAT
+   for the running offset. See the **voice** skill §3b for flags (`--boost-db`,
+   `--max-gap-ms`, `--no-normalize`).
+6. **Smoke-test one line first** (generate Modi's line, add at `from:0`, confirm it sounds
    right) before batching all dialogues. See `pipeline-stages.md → Stage 1.0` for the
    exact curl and both worked examples.
+
+### Native in-timeline silence removal: `editor.removeSilence`
+
+Use this for the timeline version of the dialogue reel. It runs the app's native
+silence detector (`lib/podcast/audio/silenceDetector.ts`) and cut engine
+(`timelineCutsCore.applyCutsToStateManager`) with the same knobs as the old Python
+script: threshold dBFS, min-silence, and merge-gap. It detects internal silence in
+an audio/video item and splices it out. With `cascadeLinkedTracks:true` (default),
+linked caption items, character images, and b-roll grouped with the audio are
+shifted automatically.
+
+| Param | Type | Default | Notes |
+|-------|------|---------|-------|
+| `itemId` | `string` | required | Audio or video timeline item to de-silence |
+| `thresholdDbfs` | `number` | `-50` | Silence threshold in dBFS. Raise toward `-45` to catch soft pauses; never above `-45` |
+| `minSilenceMs` | `number` | `800` | Minimum silence length to cut. Keep ≥ `120` |
+| `mergeGapMs` | `number` | `200` | Merge nearby silent ranges before cutting |
+| `mode` | `'remove'\|'split-only'` | `'remove'` | `remove` = splice + ripple-close holes; `split-only` = just split |
+| `rippleScope` | `'all'\|'linked'\|'source'` | `'all'` | Which tracks shift left to stay in sync. `cascadeLinkedTracks:false` = alias for `source` |
+| `apply` | `boolean` | `true` | `false` = dry run, no timeline mutation |
+| `cuts` | `{sourceStart,sourceEnd}[]` | — | Two-step: apply these exact cuts, skip detection |
+
+Dry run (`apply:false`) returns
+`{ ranges:[{startMs,endMs,peakDbfs}], cuts:[{sourceStart,sourceEnd}], totalRemovedMs }`
+without modifying the timeline. Apply mode (`apply:true`) makes the cuts.
+
+```bash
+# Read API/TOKEN as in Startup protocol, then:
+curl -sX POST "$API/api/execute" -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"type":"editor.removeSilence","params":{"itemId":"audio_abc","apply":false,"thresholdDbfs":-50,"minSilenceMs":800,"mergeGapMs":200}}'
+
+curl -sX POST "$API/api/execute" -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"type":"editor.removeSilence","params":{"itemId":"audio_abc","apply":true,"cascadeLinkedTracks":true}}'
+```
+
+> **⏱️ Timing rules (don't over-trim, keep a turn-taking pause):**
+> - Flat waveform stretches are usually **soft real audio** (breaths, word tails at
+>   ~−42 dBFS), not silence — the waveform just scales to peak. Use `-50/800` (default,
+>   only true dead air) or `-45 dBFS / 150 ms / mergeGap 120` (tight but natural).
+>   **Never** exceed `-45 dBFS` or drop below ~`120 ms` min, or speech turns choppy.
+>   An already-processed clip reporting **0 removable** at default is correct — leave it.
+> - **Light pause between speakers:** place each next line at `prevLineEnd + 120–200 ms`
+>   (~150 ms natural; ≤80 ms rushed). `editor.removeSilence` anchors the first clip and
+>   preserves this inter-clip gap while rippling the next speaker left. See the **voice**
+>   skill §3b-1a for the full timing rules.
 
 ## Startup protocol (same as ContentLead)
 
@@ -170,3 +245,383 @@ two-hander: teacher↔student, founder↔skeptic, Elon↔Peter, etc. Extra chara
 already exists under `TlEditingSolution/CharImages/` (elon, peter, stewie, trump).
 Keep the **role contrast** (curious questioner vs. confident expert) — that contrast
 is what drives retention. See `script-schema-and-formula.md`.
+
+## 🎬 Live In-App Edit Playbook — Two-Character Reel (verified working)
+
+Use this runbook when recreating the battle-tested two-character dialogue-story reel directly in the ContentLead/SkillTown desktop editor. It assumes a vertical 1080×1920 reel, two exact-length speaker audio files, character PNGs, word-timed b-roll images, and paged karaoke captions.
+
+### 1. Auth, connection, and tab targeting
+
+1. Read fresh connection data **every session** and after every app restart/origin switch:
+   ```bash
+   cat ~/.skilltown-desktop/api.json
+   # → { "port": 54110, "token": "...", "mediaServerPort": 54109, "tabs": [...] }
+   ```
+   The API `port` rotates on app restart. Never hardcode it.
+2. Send all editor commands to:
+   ```http
+   POST http://127.0.0.1:<port>/api/execute
+   Authorization: Bearer <token>
+   Content-Type: application/json
+   ```
+   Body shape:
+   ```json
+   { "type": "editor.addImage", "params": { "url": "..." }, "tabId": "tab_abc" }
+   ```
+3. If multiple tabs are open, `tabId` is mandatory. Omitting it returns `tabId_required` / HTTP 409. Resolve tabs with:
+   ```http
+   GET http://127.0.0.1:<port>/api/tabs
+   Authorization: Bearer <token>
+   ```
+   Also include `tabId` when capturing screenshots:
+   ```http
+   GET /api/screenshot?tabId=<tabId>
+   ```
+4. Use media-server URLs for **all** local media sources:
+   ```text
+   http://127.0.0.1:<mediaServerPort>/media?path=<URL-ENCODED-ABSOLUTE-PATH>
+   ```
+   HTTPS/blob URLs are also acceptable when already produced by the app. Do **not** use raw local file paths that get embedded as data URIs; cloud save can fail from project bloat.
+
+### 2. Canonical asset layout and timing (~11.8s reel)
+
+| Layer | Timing | Layout / params |
+|---|---:|---|
+| Total duration | `11831ms` | Modi audio `6329ms` + `150ms` gap + Rahul audio `5352ms` |
+| Gameplay video | `[0, 11831]` | `x:0, y:0, width:1080, height:1920, trim:{from:0,to:11831}` |
+| Speaker A audio | `[0, 6329]` | `editor.addAudio {url, from:0, to:6329}` |
+| Speaker B audio | `[6479, 11831]` | `editor.addAudio {url, from:6479, to:11831}` |
+| Character A / Modi left | `[0, 6329]` | `x:-430, y:830, width:1463, height:1200` |
+| Character B / Rahul right | `[6479, 11831]` | `x:200, y:830, width:1200, height:1200` |
+| B-roll images | word windows | `x:70, y:110, width:940, height:940`, retimed to the illustrated phrase |
+
+Keep the inter-speaker gap light and natural: `120–200ms`, with `150ms` as the canonical default.
+
+### 3. Build order — follow exactly
+
+1. Clear the timeline:
+   ```json
+   { "type": "editor.clearTimeline", "params": {} }
+   ```
+   Or filtered:
+   ```json
+   { "type": "editor.clearTimeline", "params": { "types": ["video", "audio", "image", "caption"] } }
+   ```
+2. Add gameplay background video:
+   ```json
+   { "type": "editor.addVideo", "params": {
+     "url": "http://127.0.0.1:<mediaServerPort>/media?path=<encoded-bg-path>",
+     "from": 0,
+     "to": 11831,
+     "trim": { "from": 0, "to": 11831 },
+     "x": 0, "y": 0, "width": 1080, "height": 1920
+   }}
+   ```
+   Save the returned `result.itemId`.
+3. Fix z-order immediately. Gameplay video can render in front of images because track priority order places text/caption first, then audio, video, image. Video can hide character images unless pushed backward.
+   ```json
+   { "type": "query.getTrackInfo", "params": {} }
+   ```
+   Find the track containing the gameplay `itemId`, then:
+   ```json
+   { "type": "editor.editTrack", "params": { "trackId": "<videoTrackId>", "metadata": { "priority": 6 } } }
+   { "type": "editor.reorderTracks", "params": {} }
+   ```
+   Higher `metadata.priority` means further back.
+4. Add exact-length speaker audio:
+   ```json
+   { "type": "editor.addAudio", "params": { "url": "<modi-audio-url>", "from": 0, "to": 6329 } }
+   { "type": "editor.addAudio", "params": { "url": "<rahul-audio-url>", "from": 6479, "to": 11831 } }
+   ```
+5. Add character images:
+   ```json
+   { "type": "editor.addImage", "params": { "url": "<modi-png-url>", "from": 0, "to": 6329, "x": -430, "y": 830, "width": 1463, "height": 1200 } }
+   { "type": "editor.addImage", "params": { "url": "<rahul-png-url>", "from": 6479, "to": 11831, "x": 200, "y": 830, "width": 1200, "height": 1200 } }
+   ```
+6. Add b-roll images, one image per illustrated phrase window:
+   ```json
+   { "type": "editor.addImage", "params": { "url": "<broll-url>", "from": 2420, "to": 3540, "x": 70, "y": 110, "width": 940, "height": 940 } }
+   ```
+7. Add captions as 3-word phrase pages (see next section).
+8. Reorder tracks again:
+   ```json
+   { "type": "editor.reorderTracks", "params": {} }
+   ```
+9. Apply entrance animations (characters + b-roll).
+10. Save locally and to cloud, then verify visually.
+
+Handlers accept these aliases: `src`/`url`, `from`/`from_ms`, `to`, `duration`/`duration_ms`/`durationMs`, `trim:{from,to}`, `width`, `height`, `x`, `y`. `x`/`y` become left/top pixels.
+
+### 4. Captions — the #1 correctness rule
+
+The standard caption renderer displays **all words in one caption item at once**. Therefore, never put a full sentence into one caption item. Proper viral karaoke is **one caption item per phrase-page**, usually 3 words per page, with each page having its own continuous time window.
+
+Rules:
+
+1. Split each speaker line into ~3-word pages.
+2. Make page windows continuous: each page `to` equals the next page `from`; the last page `to` equals the line end. This prevents caption flicker/gaps.
+3. Word timings inside a caption item are **0-based relative to that item's `display.from`**. If the page starts globally at `2420ms`, a global word `2420–3540` becomes `{start:0,end:1120}`.
+4. Pass `words` at the top level, not inside `details`. `details.words` can override the normalized word array because `details` is spread last.
+5. Pass `to` explicitly. Otherwise the handler default can set `captionTo = params.to ?? 3000`.
+6. `wordsPerLine` is a string enum, never a number:
+   ```text
+   "punctuationOrPause" | "time" | "singleWord"
+   ```
+   Numeric values crash the caption control at OPTIONS lookup. `linesPerCaption` is a number.
+
+Recommended caption command:
+
+```json
+{ "type": "editor.addCaption", "params": {
+  "from": 2420,
+  "to": 3540,
+  "words": [
+    { "word": "ye", "start": 0, "end": 260 },
+    { "word": "AI", "start": 260, "end": 620 },
+    { "word": "kaam", "start": 620, "end": 1120 }
+  ],
+  "wordsPerLine": "punctuationOrPause",
+  "linesPerCaption": 1,
+  "fontFamily": "Montserrat",
+  "fontWeight": 800,
+  "fontSize": 88,
+  "color": "#FFFFFF",
+  "activeColor": "#FFCE3A",
+  "appearedColor": "#FFFFFF",
+  "strokeWidth": 9,
+  "strokeColor": "#000000",
+  "textShadow": "0 5px 20px rgba(0,0,0,0.7)",
+  "lineHeight": 1.14,
+  "width": 980,
+  "x": 50,
+  "y": 1250,
+  "animation": "letterKaraoke/scaleAnimationLetterEffectSoft"
+}}
+```
+
+Active-word scale animation options:
+
+| Value | Effect |
+|---|---|
+| `letterKaraoke/scaleAnimationLetterEffectSoft` | Default classy active-word pop, gentle ~1.14× |
+| `letterKaraoke/scaleAnimationLetterEffect` | Big active-word pop, ~1.4× |
+| `none` | Color-only karaoke, no scale |
+
+Change existing captions in bulk:
+
+```json
+{ "type": "bulk.styleByType", "params": { "type": "caption", "details": { "animation": "letterKaraoke/scaleAnimationLetterEffectSoft" } } }
+```
+
+In the UI this is Caption Words → **Word Animation**. `Active Word – Soft/Big` scales only the currently spoken word. Fade/Scale/Slide/Zoom/Pop/Jump/Pulse are per-word entrance intros, not active-word-only scaling.
+
+#### Copy-paste Python helper: 3-word paged captions
+
+```python
+def caption_pages(words, line_from, line_to, page_size=3):
+    """
+    words: [{'word': str, 'start': global_ms, 'end': global_ms}, ...]
+    returns editor.addCaption params with continuous page windows and relative word timings
+    """
+    pages = []
+    chunks = [words[i:i + page_size] for i in range(0, len(words), page_size)]
+    for idx, chunk in enumerate(chunks):
+        page_from = chunk[0]['start'] if idx > 0 else line_from
+        if idx + 1 < len(chunks):
+            page_to = chunks[idx + 1][0]['start']
+        else:
+            page_to = line_to
+        pages.append({
+            'from': page_from,
+            'to': page_to,
+            'words': [
+                {
+                    'word': w['word'],
+                    'start': max(0, w['start'] - page_from),
+                    'end': max(0, w['end'] - page_from),
+                }
+                for w in chunk
+            ],
+            'wordsPerLine': 'punctuationOrPause',
+            'linesPerCaption': 1,
+            'fontFamily': 'Montserrat',
+            'fontWeight': 800,
+            'fontSize': 88,
+            'color': '#FFFFFF',
+            'activeColor': '#FFCE3A',
+            'appearedColor': '#FFFFFF',
+            'strokeWidth': 9,
+            'strokeColor': '#000000',
+            'textShadow': '0 5px 20px rgba(0,0,0,0.7)',
+            'lineHeight': 1.14,
+            'width': 980,
+            'x': 50,
+            'y': 1250,
+            'animation': 'letterKaraoke/scaleAnimationLetterEffectSoft',
+        })
+    return pages
+```
+
+### 5. Entrance animations
+
+Use `editor.setAnimation` for in-animations:
+
+```json
+{ "type": "editor.setAnimation", "params": { "itemId": "<itemId>", "animationIn": "slideInLeft", "duration": 420 } }
+```
+
+Legacy syntax is also supported:
+
+```json
+{ "type": "editor.setAnimation", "params": { "itemId": "<itemId>", "animationType": "in", "type": "slideInLeft", "duration": 420 } }
+```
+
+Recommended animation plan:
+
+| Item | Preset | Duration |
+|---|---|---:|
+| Modi / left character | `slideInLeft` | `420ms` |
+| Rahul / right character | `slideInRight` | `420ms` |
+| B-roll image 1 | `scaleIn` | `300–320ms` |
+| B-roll image 2 | `zoomIn` | `300–320ms` |
+| B-roll image 3 | `slideInRight` | `300–320ms` |
+| B-roll image 4 | `slideInDown` | `300–320ms` |
+| B-roll image 5 | `slideInLeft` | `300–320ms` |
+
+Valid entrance presets include `fadeIn`, `scaleIn`, `scaleOut`, `slideInLeft`, `slideInRight`, `slideInUp`, `slideInDown`, `slideOutLeft`, `slideOutRight`, `zoomIn`, `zoomOut`. Default duration is `500ms`; use `350–420ms` for snappier reels.
+
+> Warning: `setAnimation` entrance animations currently do **not** persist through project save/restore reload. Re-apply all entrance animations after every reload.
+
+### 6. Audio preprocessing and silence removal
+
+Correct sequence:
+
+1. Process/trim/boost audio first.
+2. Place processed audio on the timeline.
+3. Build captions from the processed audio so word timings match.
+
+Offline pipeline default: trim gaps + boost before import, for example with `--max-gap-ms 250`. Do not over-trim: never exceed `-45 dBFS` threshold and do not go below about `120ms` min silence. Keep inter-speaker pauses in the `120–200ms` range.
+
+If captions/images already exist on the timeline, do **not** re-trim externally with Python. Use first-class in-app silence removal so linked captions/images shift together:
+
+```json
+{ "type": "editor.removeSilence", "params": {
+  "itemId": "<audioItemId>",
+  "apply": true,
+  "cascadeLinkedTracks": true,
+  "thresholdDbfs": -50,
+  "minSilenceMs": 800,
+  "mergeGapMs": 200
+}}
+```
+
+For a dry run:
+
+```json
+{ "type": "editor.removeSilence", "params": {
+  "itemId": "<audioItemId>",
+  "apply": false,
+  "thresholdDbfs": -50,
+  "minSilenceMs": 800,
+  "mergeGapMs": 200
+}}
+```
+
+### 7. Save and visual verification
+
+1. Local autosave:
+   ```http
+   POST /api/project/save
+   Authorization: Bearer <token>
+   Content-Type: application/json
+   ```
+   Body:
+   ```json
+   { "tabId": "<tabId>" }
+   ```
+   A small saved size such as `~46KB` is good; it indicates URL-based media, not giant data-URI embeds.
+2. Cloud save:
+   ```json
+   { "type": "editor.save", "params": {} }
+   ```
+   Confirm `status: "success"`. Cloud save requires all `src` fields to be media-server/blob/HTTPS URLs rather than bloated local data URIs.
+3. Seek and screenshot:
+   ```json
+   { "type": "editor.seekTo", "params": { "time": 6479 } }
+   ```
+   Or:
+   ```json
+   { "type": "editor.seekToFrame", "params": { "frame": 194 } }
+   ```
+   Then:
+   ```http
+   GET /api/screenshot?tabId=<tabId>
+   ```
+   The response is JSON `{ "imageBase64": "..." }`; decode it to PNG if needed.
+4. If the preview frame looks stale right after edits, force a refresh by playing a short range:
+   ```json
+   { "type": "editor.previewRange", "params": { "from": 6400, "to": 7000 } }
+   ```
+   Avoid `query.capturePreviewFrame`; it has returned blank frames in this workflow.
+5. Every `/api/execute` response includes `editorHealth` and `warnings[]`. Treat the command as healthy only when:
+   ```text
+   editorHealth.status === "clean"
+   editorHealth.newConsoleErrors === 0
+   warnings is empty or non-critical
+   ```
+
+### 8. Minimal overall build skeleton
+
+```python
+TOTAL = 11831
+MODI_END = 6329
+RAHUL_FROM = 6479
+RAHUL_END = 11831
+TAB_ID = '<tabId>'
+
+def cmd(type_, params):
+    return {
+        'type': type_,
+        'params': params,
+        'tabId': TAB_ID,
+    }
+
+commands = [
+    cmd('editor.clearTimeline', {}),
+    cmd('editor.addVideo', {
+        'url': bg_url, 'from': 0, 'to': TOTAL,
+        'trim': {'from': 0, 'to': TOTAL},
+        'x': 0, 'y': 0, 'width': 1080, 'height': 1920,
+    }),
+    # Read returned gameplay itemId, query.getTrackInfo, edit its track metadata.priority=6, reorderTracks.
+    cmd('editor.addAudio', {'url': modi_audio_url, 'from': 0, 'to': MODI_END}),
+    cmd('editor.addAudio', {'url': rahul_audio_url, 'from': RAHUL_FROM, 'to': RAHUL_END}),
+    cmd('editor.addImage', {'url': modi_png_url, 'from': 0, 'to': MODI_END, 'x': -430, 'y': 830, 'width': 1463, 'height': 1200}),
+    cmd('editor.addImage', {'url': rahul_png_url, 'from': RAHUL_FROM, 'to': RAHUL_END, 'x': 200, 'y': 830, 'width': 1200, 'height': 1200}),
+]
+
+for image in broll_images:
+    commands.append(cmd('editor.addImage', {
+        'url': image['url'], 'from': image['from'], 'to': image['to'],
+        'x': 70, 'y': 110, 'width': 940, 'height': 940,
+    }))
+
+for page in caption_pages(all_words_for_line, line_from=0, line_to=6329):
+    commands.append(cmd('editor.addCaption', page))
+
+commands += [
+    cmd('editor.reorderTracks', {}),
+    # editor.setAnimation for characters and b-roll itemIds.
+    cmd('editor.save', {}),
+]
+```
+
+### Common pitfalls
+
+- Putting all words in one caption item creates a giant text block. Use 3-word paged caption items.
+- Numeric `wordsPerLine` crashes the caption control. Use string enum values only.
+- Forgetting to fix gameplay video track priority hides characters and b-roll behind the video.
+- Using local file path `src`s can create data-URI bloat and make cloud save fail. Use media-server URLs.
+- Not re-applying `editor.setAnimation` after reload means entrance animations disappear.
+- Trusting a screenshot immediately after edits can show stale preview state. Force refresh with `editor.previewRange`.
+- Hardcoding the API port breaks after restart. Always re-read `~/.skilltown-desktop/api.json`.

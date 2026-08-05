@@ -1,99 +1,95 @@
-# Social Scraping — Instagram & Twitter/X
+# Social Research — Instagram & Twitter/X
 
-> **These are MCP tools** (`scraping_instagram_*`, `scraping_twitter_*`) that talk to the `prepwithai_backend` MCP server. They require cookies uploaded via `scraping_cookie_update`. Use `scraping_cookie_status()` to verify.
+Use the SkillTown Desktop bridge and the user's connected desktop sessions. Read auth from `~/.skilltown-desktop/api.json`, then call `http://127.0.0.1:$PORT/api/bridge/...` with `Authorization: Bearer $TOKEN`.
 
-> **⚠️ Not the same as `/api/bridge/inspiration/search`.** The bridge search endpoint's Instagram source does NOT hit these MCP tools — it queries the user's **already-synced reel cache** in Cosmos (populated by the SkillTown Desktop app's Electron social browser). If the cache is empty, the search response returns `errorCode: "AUTH_MISSING_COOKIES"` + `needsConnect: true` telling the user to install the desktop app. See `explore-vs-pulse.md` for the distinction. Use the MCP tools below when you want to hit Instagram live for a *specific* username or reel URL.
-
----
-
-## Instagram Scraping (3 tools)
-
-### `scraping_instagram_download_reels` — Get reels from a profile
-
-| Param | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `username` | string | ✅ | — | Instagram username (without @) |
-| `count` | int | | `5` | Number of reels (1–5). For more, call with `offset`. |
-| `offset` | int | | `0` | Skip N reels. Use `next_offset` from previous response. |
-
-**Returns:** Video URLs, captions, likes, views, comments, duration + `next_offset`.
+> **Instagram cache vs live nuance:** `/api/bridge/inspiration/search` with `sources:["instagram"]` searches the user's already-synced reels cache in Cosmos. It does not pull arbitrary Instagram live results. For a specific creator, add them to tracked creators, refresh them, then read `/feed`. For an arbitrary reel/video URL, download it with `/api/bridge/media/download`.
 
 ---
 
-### `scraping_instagram_download_reel_url` — Get reel by URL
+## Instagram creator reels — tracked creator flow
 
-| Param | Type | Required | Description |
-|-------|------|----------|-------------|
-| `reel_url` | string | ✅ | Full URL (e.g. `"https://www.instagram.com/reel/ABC123/"`) |
+### 1) Add or ensure the creator is tracked
 
----
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/creators"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"source":"instagram","identifier":"mkbhd"}'
+```
 
-### `scraping_instagram_get_user_info` — Get profile info
+### 2) Refresh that creator live
 
-| Param | Type | Required | Description |
-|-------|------|----------|-------------|
-| `username` | string | ✅ | Instagram username (without @) |
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/creators/refresh"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"source":"instagram","identifier":"mkbhd"}'
+```
 
-**Returns:** Followers, following, posts count, bio, profile picture URL.
+### 3) Read synced reels from the cache
 
----
+```bash
+curl "http://127.0.0.1:$PORT/api/bridge/inspiration/feed?username=mkbhd&limit=10"   -H "Authorization: Bearer $TOKEN"
+```
 
-## Twitter/X Scraping (3 tools)
-
-### `scraping_twitter_search` — Search tweets
-
-| Param | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `query` | string | ✅ | — | Search query |
-| `limit` | int | | `10` | Max results |
-| `product` | string | | `"Latest"` | `"Latest"` or `"Top"` |
-| `min_likes` | int | | `0` | Min like count |
-| `min_retweets` | int | | `0` | Min retweet count |
-| `min_replies` | int | | `0` | Min reply count |
-| `language` | string | | — | Language code (`"en"`) |
-| `since` | string | | — | Start date `"YYYY-MM-DD"` |
-| `until` | string | | — | End date `"YYYY-MM-DD"` |
-| `has_media` | string | | — | Filter: `"images"`, `"videos"`, `"media"` |
-| `exclude_replies` | bool | | `false` | Exclude reply tweets |
-| `exclude_retweets` | bool | | `false` | Exclude retweets |
-| `verified_only` | bool | | `false` | Only verified accounts |
-| `from_users` | string | | — | JSON array: `'["elonmusk", "openai"]'` |
+**Returns:** synced reel items with captions, engagement, duration, media metadata, shortcode, and cache state.
 
 ---
 
-### `scraping_twitter_get_trending` — Get trending topics
+## Instagram reel by URL
 
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| `woeid` | int | `23424848` | Where On Earth ID. India=`23424848`, US=`23424977`, Global=`1` |
+Use the media downloader for arbitrary reel/post/video URLs:
 
----
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/media/download"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"url":"https://www.instagram.com/reel/ABC123/","quality":"720p"}'
+```
 
-### `scraping_twitter_get_user_tweets` — Get user timeline
-
-| Param | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `username` | string | ✅ | — | Twitter username (without @) |
-| `limit` | int | | `10` | Number of tweets |
-| `cursor` | string | | — | Pagination cursor from previous response |
+The bridge auto-installs `yt-dlp` when needed and auto-pulls desktop social-browser cookies for Instagram/X if the user has connected that source.
 
 ---
 
-## Cookie Management
+## Instagram profile info
 
-### `scraping_cookie_update` — Set browser cookies
+Tracked creator records include normalized identifier, display name, avatar, notes, and refresh timestamps via:
 
-| Param | Type | Description |
-|-------|------|-------------|
-| `platform` | string | `"instagram"`, `"twitter"`, `"youtube"`, `"reddit"` |
-| `cookies` | string | JSON array from Cookie-Editor browser extension |
+```bash
+curl "http://127.0.0.1:$PORT/api/bridge/inspiration/creators"   -H "Authorization: Bearer $TOKEN"
+```
 
-### `scraping_cookie_status` — Check which platforms have cookies
+Note: no bridge route currently exposes detailed Instagram profile stats such as follower/following/post counts and bio. Use the tracked creator record where available.
 
-No params. Returns which platforms have active cookies.
+---
 
-**How to get cookies:**
-1. Install "Cookie-Editor" browser extension
-2. Log in to Instagram/Twitter in the browser
-3. Click Cookie-Editor → Export → Copy
-4. Pass the JSON to `scraping_cookie_update`
+## Twitter/X search
+
+Use cross-source search with `"x"` (not `"twitter"`):
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/search"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"context":"AI video editing","sources":["x"],"limit":10}'
+```
+
+For richer query constraints, include them in `context` (for example: `"AI video editing with 50+ likes, latest posts only"`) and filter returned `UnifiedItem.engagement` fields client-side.
+
+---
+
+## Twitter/X trending topics
+
+Note: no bridge route currently exposes Twitter/X trending topics by WOEID. Approximate with `/api/bridge/inspiration/search` or built-in web search.
+
+---
+
+## Twitter/X user timeline
+
+Track and refresh an X creator, then read results through Explore/Pulse/feed surfaces as returned by the bridge:
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/creators"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"source":"x","identifier":"openai"}'
+
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/creators/refresh"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"source":"x","identifier":"openai"}'
+```
+
+---
+
+## Connection and cookie prerequisites
+
+Check source connection before search or download:
+
+```bash
+curl "http://127.0.0.1:$PORT/api/bridge/inspiration/connection-status"   -H "Authorization: Bearer $TOKEN"
+```
+
+If Instagram/X are not connected or cookies are invalid, send the user through the desktop app's Connect flow, then retry. Search responses may return `errorCode:"AUTH_MISSING_COOKIES"`, `needsConnect:true`, or `needsCookieRefresh:true`; surface those as connection actions rather than hard failures.

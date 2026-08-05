@@ -97,6 +97,138 @@ curl -sX POST "$API/api/execute" -H "$AUTH" -H "Content-Type: application/json" 
 > `~/Music`, `~/Codes`, etc. Save the mp3 there so the timeline can play it.
 > Voiceover/narration volume guideline: **80–100** (see `remotion/rules/sfx-and-audio`).
 
+## 3b. Remove silence / tighten dialogue — native timeline command (preferred) or offline Python
+
+Raw TTS/cloned clips have dead air at the head/tail of each line and inconsistent
+loudness. For punchy dialogue reels (brain-rot / Modi-vs-Rahul style), there are
+now **two correct paths**:
+
+> # ⚠️ ORDER IS NON-NEGOTIABLE ⚠️
+> **Preferred in-app path:** PLACE RAW AUDIO → ADD CAPTIONS/LINKED VISUALS →
+> `editor.removeSilence` with `cascadeLinkedTracks:true`.
+>
+> **Offline Python path:** PROCESS AUDIO → PLACE PROCESSED AUDIO → *THEN* CAPTION.
+>
+> Caption word timings are stored as **absolute timeline times**. If you use the
+> Python script, **NEVER caption first and trim later** — every word after the first
+> shifts earlier and the karaoke desyncs. If the audio is already on the timeline
+> with captions/images, use `editor.removeSilence` instead; it splices the audio and
+> automatically shifts linked tracks to stay in sync.
+
+### 3b-1. Preferred: `editor.removeSilence` for audio already on the timeline
+
+Use this when the audio/video item is already in the editor. It runs the app's
+native silence detector and cut engine: detects internal silence in the item's
+audio, then splices it out on the timeline. With `cascadeLinkedTracks:true`
+(default), linked tracks — captions, character images, b-roll grouped with the
+audio — are shifted automatically so everything stays synced.
+
+| Param | Type | Default | Notes |
+|-------|------|---------|-------|
+| `itemId` | `string` | required | Audio or video timeline item to de-silence |
+| `thresholdDbfs` | `number` | `-50` | Silence threshold in dBFS. Raise toward `-45` to catch soft breathy pauses; do not go above `-45` |
+| `minSilenceMs` | `number` | `800` | Minimum silence length to cut. Lower = tighter; keep ≥ `120` |
+| `mergeGapMs` | `number` | `200` | Merge nearby silent ranges before cutting |
+| `mode` | `'remove'\|'split-only'` | `'remove'` | `remove` = splice out silence AND ripple-close the holes; `split-only` = just cut, leave pieces in place |
+| `rippleScope` | `'all'\|'linked'\|'source'` | `'all'` | Which tracks shift left to stay in sync after a cut. `all` = every later item; `linked` = the clip's track + its link group; `source` = only the clip's own track. `cascadeLinkedTracks:false` is accepted as an alias for `source` |
+| `apply` | `boolean` | `true` | `false` = dry run, no timeline mutation |
+| `cuts` | `{sourceStart,sourceEnd}[]` | — | Two-step: apply these exact cuts and skip detection (e.g. cuts returned from a prior dry run, optionally reviewed) |
+
+**How it works (two phases):** (1) it cuts the silent source spans out of the clip,
+then (2) ripple-closes the resulting display holes and shifts every later item left by
+the same cumulative delta. The **first clip is anchored** and **intentional gaps between
+clips are preserved** — trimming one speaker's internal pauses slides the next speaker
+left but keeps the turn-taking gap.
+
+```bash
+# Step 1 — dry run: returns the cut ranges WITHOUT touching the timeline
+curl -sX POST "$API/api/execute" -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"type":"editor.removeSilence","params":{"itemId":"audio_abc","apply":false,"thresholdDbfs":-45,"minSilenceMs":150,"mergeGapMs":120}}'
+
+# Step 2a — apply (detects + splices + ripples every later item left to stay in sync)
+curl -sX POST "$API/api/execute" -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"type":"editor.removeSilence","params":{"itemId":"audio_abc","apply":true,"thresholdDbfs":-45,"minSilenceMs":150}}'
+
+# Step 2b — OR apply exact reviewed cuts from the dry run (skips re-detection)
+curl -sX POST "$API/api/execute" -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"type":"editor.removeSilence","params":{"itemId":"audio_abc","apply":true,"cuts":[{"sourceStart":640,"sourceEnd":880}]}}'
+```
+
+Response `result` includes `{ applied, cutsApplied, rippledItemCount, rippleScope,
+ranges:[{startMs,endMs,peakDbfs}], cuts:[{sourceStart,sourceEnd}], totalRemovedMs }`.
+`apply:false` sets `applied:false` and mutates nothing. Every call is undoable
+(`editor.undo`; a real remove = 2 history steps: cut + ripple-close).
+
+### 3b-1a. ⏱️ Timing rules — don't over-trim, keep a light inter-speaker pause
+
+**Don't over-trim (protect natural speech):**
+
+- Flat/quiet stretches in a waveform are usually **soft real audio** — breaths, word
+  tails, trailing vowels at roughly −40 to −45 dBFS — **not silence**. The waveform
+  renderer scales to peak, so soft audio *looks* like empty gaps.
+- Presets, gentlest → tightest:
+  - `-50 dBFS / 800 ms` (**default**) — only true long dead air. Safest.
+  - `-45 dBFS / 150 ms / mergeGap 120` — **recommended for punchy reels**; removes
+    breathy inter-word pauses while keeping speech natural.
+  - **Do NOT** raise the threshold above `-45 dBFS` or drop `minSilenceMs` below
+    ~`120 ms` — you start clipping consonant/word tails and breaths → choppy, robotic
+    speech. Leave ≥ ~120 ms of any real pause.
+- If a clip was already run through `process_dialogue_audio.py --max-gap-ms …`, a
+  default `editor.removeSilence` will report **0 removable** — that is **correct**,
+  there is no dead air left. Don't crank the threshold just to "see something cut."
+
+**Light pause between speakers (turn-taking):**
+
+- Never butt one speaker's audio hard against the next. A turn change needs a short beat.
+- Place each next line at `previousLineEnd + PAUSE`, with **PAUSE ≈ 120–200 ms**
+  (~150 ms feels natural; ≤80 ms sounds rushed; >300 ms drags).
+- `editor.removeSilence` **preserves** this gap: it anchors the first clip and only
+  closes the silence windows it detected, so trimming speaker A's internal pauses
+  ripples speaker B left **but keeps the turn-taking gap** (verified — an 80 ms
+  Modi→Rahul gap survived a trim pass).
+- To *standardize* the turn gap, trim first, then set it explicitly with
+  `editor.moveItem` on the next clip (`from = prevEnd + 150`).
+
+### 3b-2. Offline/pre-import option: `process_dialogue_audio.py`
+
+Use the Python path only when preparing files **before** importing them into the
+timeline. It remains useful for batch offline processing and loudness prep, but
+the in-timeline "remove gaps" job should use `editor.removeSilence`.
+
+This is a faithful port of the TlEditingSolution pipeline
+(`AudioTrimmer.trim_silence` + `boost_audio.py`).
+
+Script: [`scripts/process_dialogue_audio.py`](scripts/process_dialogue_audio.py)
+
+What it does, in order: **trim** leading/trailing silence (thresh −40 dBFS,
+min-silence 100 ms) → optionally **collapse** long internal pauses → **boost**
+(+dB gain and/or peak normalize). Defaults mirror TlEditing: −40 dBFS / 100 ms,
+**+13 dB**, normalize **on**.
+
+```bash
+# one-time: pip install pydub   (ffmpeg must be on PATH)
+
+# process a single downloaded line in place (TlEditing defaults: trim + normalize + 13 dB)
+python "$SKILLS/voice/scripts/process_dialogue_audio.py" ~/Downloads/voiceover.mp3
+
+# gentler boost, write to a new file, no normalize
+python "$SKILLS/voice/scripts/process_dialogue_audio.py" in.mp3 -o out.mp3 --boost-db 6 --no-normalize
+
+# also shorten mid-line pauses longer than 350 ms
+python "$SKILLS/voice/scripts/process_dialogue_audio.py" in.mp3 --max-gap-ms 350
+
+# batch a whole folder of dialogue lines, in place
+python "$SKILLS/voice/scripts/process_dialogue_audio.py" "~/Downloads/dialogue/*.mp3" --boost-db 13
+```
+
+Then `editor.addAudio` the **processed** file and caption from that processed
+file. In-place runs write a one-time `.backup` next to the original. Run
+`--help` for all flags.
+
+> **Rule of thumb:** for multi-speaker dialogue reels, trim every line and boost to a
+> consistent level so no speaker is quieter than another. Use `--max-gap-ms` only when
+> a specific line drags; the head/tail trim alone already tightens most cuts.
+
 ## 4. Clone a voice
 
 ### 4a. From a local recording (one call)

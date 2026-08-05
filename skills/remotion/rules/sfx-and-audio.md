@@ -6,14 +6,14 @@ tags: sfx, audio, sound-effects, whoosh, transition-sound, voiceover, volume
 
 # SFX & Audio Workflow
 
-SkillTown Desktop does NOT have a local SFX library. Instead, use **PrepWithAI MCP tools** to search, discover, and download sound effects, then add them to the timeline.
+SkillTown Desktop does NOT have a local SFX library. Instead, use **the SkillTown Desktop AI bridge (`/api/bridge/ai/sfx/*`)** to search, discover, and download sound effects, then add them to the timeline.
 
 ## SFX Acquisition Workflow
 
 ### 1. Search for SFX
 
 ```bash
-# Via the desktop AI bridge (no MCP)
+# Via the desktop AI bridge
 curl -sX POST "$API/api/bridge/ai/sfx/search" -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" -d '{"query":"dramatic cinematic boom","top_k":5}'
 # Returns: data.results[] with name, description, score, category, duration, sfx_url, tags
@@ -53,7 +53,7 @@ curl -sL "<blob_url>" -o ~/Downloads/boom.mp3
 }}
 ```
 
-## SFX Categories (via PrepWithAI)
+## SFX Categories (via the desktop AI bridge)
 
 | Category | Examples | Use For |
 |----------|---------|---------|
@@ -126,8 +126,7 @@ Think about **what's happening visually**, then match:
 
 > **Full docs:** load the **`voice`** skill — it covers the live voice bridge
 > (clone, upload, generate, list, delete) with exact params. This is a quick
-> reference. Use the desktop bridge routes below (Bearer auth), **not** the old
-> `prepwithai_speech_*` MCP names.
+> reference. Use the desktop bridge routes below.
 
 ### Generate TTS voiceover
 
@@ -153,20 +152,15 @@ curl -sL "<audio_url>" -o ~/Downloads/voiceover.mp3
 
 ### Available voices
 
-```bash
-curl -s "$API/api/bridge/voice/voices?voice_type=system" -H "Authorization: Bearer $TOKEN"
-# Returns voice_id, voice_name, voice_type, description. Use voice_type=voice_cloning for your cloned voices.
-```
+> Note: choose a `voiceId` when calling `/api/bridge/voice/generate`.
 
 ### Clone a voice
 
-```bash
-# From a local recording (upload + clone in one call)
-curl -sX POST "$API/api/bridge/voice/upload-and-clone" \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"filePath":"/Users/.../sample.wav","demo_text":"Text spoken in the reference audio."}'
-# → { voice_id, upload_url, details }   (use voice_id in /generate)
-```
+Use `POST /api/bridge/voice/clone`.
+
+### Delete a cloned voice
+
+Use `POST /api/bridge/voice/delete`.
 
 ## Audio + Timeline Tips
 

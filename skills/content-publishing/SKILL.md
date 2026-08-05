@@ -12,15 +12,27 @@ This skill covers the **complete flow** from content creation to social media pu
 Create → Edit Metadata → Upload Video → Configure Channels → Set CTA → Publish → Verify
 ```
 
-All writes go to the **same Cosmos DB** that the ContentLead website (contentlead.in) uses.
-Changes made via these tools are **immediately visible** in the UI dashboard.
+The documented interface is the **SkillTown Desktop local HTTP API**. It writes to the same Cosmos DB used by contentlead.in, so changes appear in the dashboard immediately.
 
-> **⚠️ CRITICAL: Always publish with `content_id`.**
-> Direct/legacy mode (`account_id + video_url`) publishes successfully but is **NOT tracked**
-> in the ContentLead dashboard — the user won't see it in their content list.
+> **⚠️ CRITICAL: Always publish with `contentId`.**
+> Direct account/video publishing is not dashboard-tracked. The user will not see it in their ContentLead content list or publish status.
 
 > **⚠️ LinkedIn is NOT content-aware.** It does not read from or write to Content documents.
 > See `linkedin.md` for the workaround to maintain tracking.
+
+---
+
+## Auth for every call
+
+Read `~/.skilltown-desktop/api.json` fresh before each call; the port and token change after desktop restarts.
+
+```bash
+API=$(cat ~/.skilltown-desktop/api.json)
+PORT=$(echo "$API" | python3 -c "import sys,json; print(json.load(sys.stdin)['port'])")
+TOKEN=$(echo "$API" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+
+curl "http://127.0.0.1:$PORT/api/bridge/content?limit=5"   -H "Authorization: Bearer $TOKEN"
+```
 
 ---
 
@@ -28,7 +40,8 @@ Changes made via these tools are **immediately visible** in the UI dashboard.
 
 | When you need to... | Load |
 |---------------------|------|
-| Use local desktop bridge endpoints instead of MCP tools | `bridge-mode.md` |
+| Understand local HTTP auth, event stream, and endpoint tables | `bridge-mode.md` |
+| Create a content record and open an editor tab | `contentlead/infrastructure.md` → `POST /api/content/create` |
 | Create, list, get, update content, upload video/thumbnail | `content-lifecycle.md` |
 | Configure channel settings (captions, tags, scheduling, toggles) | `channel-configuration.md` |
 | Publish to Instagram, set up CTA/DM automation, poll status | `instagram.md` |
@@ -39,55 +52,46 @@ Changes made via these tools are **immediately visible** in the UI dashboard.
 
 ---
 
-## All Tools at a Glance
+## Endpoints at a Glance
 
-### Content Lifecycle (6 tools) → `content-lifecycle.md`
+### Content Lifecycle (6 endpoints) → `content-lifecycle.md`
 
-| Tool | What it does |
-|------|-------------|
-| `content_create` | Create a new Content document |
-| `content_list` | Browse/filter content with pagination |
-| `content_get` | Get full content with all metadata + channels |
-| `content_update` | Update title, description, caption, video URLs, thumbnail, status |
-| `content_get_upload_url` | Get pre-signed Azure Blob URL for uploading video/thumbnail |
-| `content_configure_publish` | Set channel config (caption, hashtags, account, schedule, toggle) |
+| Endpoint | What it does |
+|---------|-------------|
+| `POST /api/content/create` | Create a new Content document and optionally wait for the editor tab |
+| `GET /api/bridge/content` | Browse/filter content with pagination |
+| `GET /api/bridge/content/:id` | Get full content with all metadata + channels |
+| `PUT /api/bridge/content/:id` | Update title, description, caption, video URLs, thumbnail, status |
+| `POST /api/bridge/content/upload-url` | Get pre-signed Azure Blob URL for uploading video/thumbnail |
+| `POST /api/bridge/content/configure-publish` | Set channel config (caption, hashtags, account, schedule, toggle) |
 
-### Bridge Mode (HTTP endpoints) → `bridge-mode.md`
+### Instagram (10+ endpoints) → `instagram.md`
 
-| Endpoint family | What it does |
-|-----------------|-------------|
-| `/api/bridge/instagram/*` | Instagram MCP mirrors: accounts, publish/status, validate, posts, CTA automation |
-| `/api/bridge/youtube/*` | YouTube MCP mirror publishing |
-| `/api/bridge/content/*` | Content publish configuration mirror |
-| `/api/bridge/context/*` | Context store list/search/get/edit/manage mirrors |
-| `/api/bridge/learn/*` | Learn/KB list/search/get/edit/manage/category mirrors |
+| Endpoint | What it does |
+|---------|-------------|
+| `GET /api/bridge/instagram/accounts` | List connected Instagram accounts |
+| `GET /api/bridge/instagram/posts` | Get published posts with metrics and optional CTA config |
+| `POST /api/bridge/instagram/publish` | Start tracked reel publishing from a Content document |
+| `GET /api/bridge/instagram/publish/status` | Poll publish progress until `PUBLISHED` |
+| `GET /api/bridge/instagram/validate` | Check account token/session health |
+| `GET /api/bridge/instagram/automation` | Get CTA/DM automation config |
+| `POST /api/bridge/instagram/automation` | Set CTA keywords, DM templates, follow gates, account rules |
+| `POST/PATCH/DELETE /api/bridge/instagram/publish/schedule` | Schedule, reschedule, or cancel a reel |
+| `GET /api/bridge/instagram/publish/scheduled-status` | Get schedule state for one reel |
+| `GET /api/bridge/instagram/publish/list` | List scheduled/in-flight reels |
 
-### Instagram (7 MCP tools) → `instagram.md`
+### YouTube (1 endpoint) → `youtube.md`
 
-| Tool | What it does |
-|------|-------------|
-| `instagram_get_accounts` | List connected IG accounts |
-| `instagram_get_posts` | Get published posts with metrics |
-| `instagram_publish_reel` | Start reel publish (async — creates container) |
-| `instagram_publish_status` | Poll publish progress until PUBLISHED |
-| `instagram_validate_token` | Check if account token is still valid |
-| `instagram_get_automation` | Get CTA/DM automation config |
-| `instagram_update_automation` | Set CTA keywords, DM templates, follow gates |
+| Endpoint | What it does |
+|---------|-------------|
+| `POST /api/bridge/youtube/publish` | Upload video from Content and auto-post CTA comment |
 
-### YouTube (1 tool) → `youtube.md`
+### LinkedIn (2 endpoints) → `linkedin.md`
 
-| Tool | What it does |
-|------|-------------|
-| `youtube_publish` | Upload video + auto-post CTA comment |
-
-### LinkedIn (4 tools) → `linkedin.md`
-
-| Tool | What it does |
-|------|-------------|
-| `linkedin_get_account` | Get connected LinkedIn account |
-| `linkedin_post` | Create a post (⚠️ NOT content-aware) |
-| `linkedin_get_posts` | Get published posts |
-| `linkedin_delete_post` | Delete a post |
+| Endpoint | What it does |
+|---------|-------------|
+| `GET /api/bridge/accounts` | Get connected accounts, including LinkedIn accounts |
+| `POST /api/bridge/publish/linkedin` | Create a LinkedIn post (not content-aware) |
 
 ---
 
@@ -95,13 +99,13 @@ Changes made via these tools are **immediately visible** in the UI dashboard.
 
 ### Three Title Fields
 
-| Field | MCP param | Where it shows |
-|-------|-----------|----------------|
-| `title` | `title` | Internal/legacy — database label |
-| `displayTitle` | `display_title` | Dashboard content list |
-| `contentTitle` | `content_title` | YouTube title, social headings |
+| Field | Where it shows |
+|-------|----------------|
+| `title` | Internal/legacy database label |
+| `displayTitle` | Dashboard content list |
+| `contentTitle` | YouTube title, social headings |
 
-**Rule:** Always set `display_title` for dashboard. Set `content_title` for platform-facing titles.
+**Rule:** Always set `displayTitle` for the dashboard. Set `contentTitle` for platform-facing titles.
 
 ### Video URL Resolution Order (for publishing)
 
@@ -120,14 +124,26 @@ See `platform-rules.md` for details.
 | `ready` | Complete, ready to publish |
 | `published` | Published to at least one platform |
 
+### CTA / Comment Automation — set it BEFORE you publish or schedule
+
+There is **one shared draft CTA** per content: a `media_trigger` doc in the **`ContentLeadCTA`** container keyed by `contentId`, created with `POST /api/bridge/instagram/automation` (`action:"update_cta"`). It powers **both** the Instagram comment→DM automation **and** the pinned YouTube CTA comment.
+
+- It must exist **before** publish/schedule fires. At publish time it is auto-promoted to the live post's real `media_id` — no manual copy needed.
+- **If it does not exist when the post goes live, there is NO automation, and it cannot be attached retroactively through the publish flow.**
+- This is the #1 reason a published/scheduled reel shows "No automation set up." See `instagram.md` (Scheduling + CTA sections) and `youtube.md`.
+
+### Scheduling is Instagram-only
+
+Only Instagram reels have a scheduler (`.../publish/schedule`, published by a background worker). YouTube and LinkedIn publish immediately — to time them, run the publish call yourself at the desired moment.
+
 ---
 
 ## Related Skills
 
 | Skill | Relationship |
 |-------|-------------|
-| `content-inspiration` | Research topics, scrape competitors, find trending content **before** creating content. Instagram/YouTube/Twitter/Reddit scraping lives there. |
-| `contentlead` | Desktop editor commands — add text, video, audio, scenes to the timeline |
+| `content-inspiration` | Research topics, scrape competitors, find trending content before creating content. |
+| `contentlead` | Desktop editor commands — add text, video, audio, scenes to the timeline. Also documents `POST /api/content/create`. There is no `/api/bridge/content` create route; create via `/api/content/create`, then update via `PUT /api/bridge/content/:id`. |
 | `remotion` | Scene templates and custom scene authoring |
 
-> **For Instagram competitor/research scraping** (`scraping_instagram_download_reels`, `scraping_instagram_get_user_info`), see `content-inspiration/social-scraping.md`. This skill only covers **owned-account** publishing and management tools.
+> For Instagram competitor/research scraping, see `content-inspiration/social-scraping.md`. This skill only covers owned-account publishing and management.

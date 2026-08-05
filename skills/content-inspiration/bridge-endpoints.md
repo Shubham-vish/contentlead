@@ -31,7 +31,7 @@ Legacy IG-only feed. Reads the user's synced reels from Cosmos.
 { "items": InspirationReel[], "totalCount": N, "page": 1, "limit": 20, "hasMore": true }
 ```
 
-Pure Cosmos read — no MCP traffic. Cheap. Use this on every page-load, not `/search`.
+Pure Cosmos read — no live source pull. Cheap. Use this on every page-load, not `/search`.
 
 ---
 
@@ -63,11 +63,12 @@ List the user's Pulse niches.
 
 Each `NicheDoc` has `slug`, `name`, `sources[]`, `description`, `settings` (per-source query overrides), `stats.itemCount`, `stats.lastRefreshedAt`.
 
+
 ---
 
 ### `GET /api/bridge/inspiration/niches/:slug`
 
-Get one niche + its recent items.
+Get one Pulse niche plus its stored items.
 
 **Response:**
 ```json
@@ -95,7 +96,7 @@ Fan-out search across sources. **This is the workhorse for /explore.**
 {
   "context": "string OR SearchContext object",
   "sources": ["instagram", "x", "youtube", "reddit", "technews"],
-  "perSourceLimit": 10,
+  "limit": 10,
   "round": 0,
   "seenIds": []
 }
@@ -105,7 +106,7 @@ Fan-out search across sources. **This is the workhorse for /explore.**
 |---|---|---|---|
 | `context` | ✅ (or `query`) | — | Plain string is auto-expanded to `{query, keywords: query.split(/\s+/), hashtags: [], entities: [], origin: "desktop-bridge"}`. Pass a full `SearchContext` for entity/language hints. |
 | `sources` | | `["instagram"]` | Any subset of the 5 sources. |
-| `perSourceLimit` | | `10` | Max **25**. Higher → 400. |
+| `limit` | | `10` | Max **25** per source. Higher → 400. |
 | `round` | | `0` | 0 initial, 1-5 for "Load more". Rotates query suffixes so subsequent rounds surface NEW items, not the same top items again. |
 | `seenIds` | | `[]` | Any UnifiedItem id already shown. The route drops these from the response so pagination doesn't repeat. |
 
@@ -116,7 +117,7 @@ Fan-out search across sources. **This is the workhorse for /explore.**
 - `"Instagram results from your synced reels cache for \"<term>\"."` — expected on IG; not an error.
 
 **Common `errorCode`s:**
-- `AUTH_MISSING_COOKIES` — connect the source first (for IG: install desktop app).
+- `AUTH_MISSING_COOKIES` — connect the source first in the desktop app; if Desktop is missing, send the user to `/download`.
 - `AUTH_INVALID_COOKIES` — cookies expired. `needsCookieRefresh: true` → tell user to update.
 - `RATE_LIMITED` — retry after `retryAfterSec`.
 - `UPSTREAM_TIMEOUT` — the source page didn't respond in 30s. Retry.
@@ -141,7 +142,7 @@ Track a new creator.
 | `notes` | Optional freeform note. |
 | `username` | Legacy alias for `identifier` (IG only). Both work. |
 
-For IG, the route validates by calling `scraping_instagram_get_user_info` under the hood — confirms both that cookies are valid AND the handle exists. Other sources are regex-validated only (Phase 1).
+For IG, the route validates through the bridge-backed Instagram profile check — confirming both that cookies are valid and that the handle exists. Other sources are regex-validated only (Phase 1).
 
 **Response:** `{ creator: TrackedCreator }` on success. `400` with `{error, message}` on invalid identifier.
 
@@ -195,11 +196,10 @@ Create a Pulse niche.
 
 **Response:** `{ niche: NicheDoc }`.
 
----
 
 ### `DELETE /api/bridge/inspiration/niches/:slug`
 
-Delete a niche + all its items.
+Delete a Pulse niche and its cached items.
 
 **Response:** `{ok: true}`.
 
@@ -481,26 +481,28 @@ Poll an async transcript job.
 
 ---
 
+
+## General AI transcription
+
+### `POST /api/bridge/ai/transcribe/{short,long,speakers}`
+
+Transcribe any local or remote media, independent of the inspiration item cache. Use this after `/api/bridge/media/download` when the source lacks captions or when speaker diarization is needed.
+
+| Mode | Use |
+|---|---|
+| `short` | Short clips and quick turnarounds |
+| `long` | Longer media where chunking/long-form handling is needed |
+| `speakers` | Speaker-aware transcription/diarization |
+
+> Keep the request body aligned with the current desktop bridge capability surface. At minimum, provide the media location returned by `/api/bridge/media/download` when transcribing downloaded files.
+
+---
+
 ## Media download (URL → local file)
 
-### `GET /api/bridge/media/download`
+### Media downloader setup
 
-Probe the media downloader. Returns yt-dlp availability, default output dir, and current limits. **Fast** — no download, just a health check.
-
-**Response:**
-```json
-{
-  "available": true,
-  "ytDlpPath": "/Users/you/Library/Application Support/ContentLead/bin/yt-dlp_macos",
-  "bundledYtDlpPath": "/Users/you/Library/Application Support/ContentLead/bin/yt-dlp_macos",
-  "defaultOutputDir": "/Users/you/Downloads/SkillTown Media",
-  "maxSizeMB": 500,
-  "timeoutMs": 300000,
-  "note": "yt-dlp detected — platform URLs (YouTube/X/TikTok/…) will work."
-}
-```
-
-If `available: false`, POST `{action:"install-yt-dlp"}` to preload the binary (~30MB from GitHub Releases, ~5-10s on decent broadband). Otherwise the first `POST` with a `url` will auto-install lazily on demand.
+The media downloader is driven through `POST /api/bridge/media/download`. It auto-installs `yt-dlp` on first use when needed. To pre-install explicitly, POST `{ "action": "install-yt-dlp" }`.
 
 ### `POST /api/bridge/media/download {action:"install-yt-dlp"}`
 
@@ -529,7 +531,7 @@ Download a video/audio URL to a local file on disk. Chooses a backend automatica
 | Direct CDN URL | `direct-fetch` | IG `videoUrl`, `v.redd.it/…mp4`, any `.mp4/.m4a/.webm` | Referer/Cookie headers if needed |
 
 **Auto-cookie injection (Instagram, X/Twitter):**
-When the URL is an IG or X domain and no explicit cookies are provided, the bridge automatically pulls cookies from the desktop app's social-browser session (the same jar behind the existing IG scraper) and writes a temp Netscape cookies.txt file that yt-dlp consumes. **The caller doesn't need to do anything.** Prerequisite: the user has connected the source at least once via `GET /api/bridge/inspiration/connection-status` → `POST /api/mcp/instagram/connect` (or the UI's Connect flow).
+When the URL is an IG or X domain and no explicit cookies are provided, the bridge automatically pulls cookies from the desktop app's social-browser session and writes a Netscape cookies file that yt-dlp consumes. **The caller doesn't need to do anything.** Prerequisite: the user has connected the source at least once through the desktop app's Connect flow; preflight with `GET /api/bridge/inspiration/connection-status`.
 
 If the user isn't logged in yet, the request returns `{ok:false, error:"unavailable", …}` with a hint. Recovery options for the client:
 - Prompt user to connect via `/connection-status` UI, then retry.
@@ -544,7 +546,7 @@ If the user isn't logged in yet, the request returns `{ok:false, error:"unavaila
 | `url` | string | required | http(s) only |
 | `source` | `"auto"\|"yt-dlp"\|"direct"` | `"auto"` | Override backend picker |
 | `quality` | `"best"\|"1080p"\|"720p"\|"audio-only"` | `"best"` | `audio-only` writes `.m4a` |
-| `outputDir` | string | `~/Downloads/SkillTown Media` | Must resolve under `$HOME` or a temp dir |
+| `outputDir` | string | `~/Downloads/SkillTown Media` | Must resolve under `$HOME` |
 | `filename` | string | derived from URL / title | Sanitized — no path separators, control chars, capped 200 chars |
 | `maxSizeMB` | number | `500` | Enforced by `--max-filesize` pre-transfer and byte-counter post-transfer |
 | `timeoutMs` | number | `300000` (5 min) | Overall wall-clock cap; child is `SIGKILL`ed on timeout |
@@ -612,7 +614,7 @@ POST /api/bridge/media/download
 // 3. Instagram reel — cookies auto-injected from social-browser
 POST /api/bridge/media/download
 { "url": "https://www.instagram.com/reel/DKvBQvNSMSC/" }
-// Prereq: user has connected IG via /api/mcp/instagram/connect at least once.
+// Prereq: user has connected IG through the desktop app Connect flow at least once.
 // Response includes cookieSource:"social-browser (auto-injected)".
 // If not connected yet: returns ok:false with a hint to run /connection-status.
 
@@ -620,7 +622,7 @@ POST /api/bridge/media/download
 POST /api/bridge/media/download
 { "url": "https://x.com/user/status/…", "cookiesFromBrowser": "chrome" }
 
-// 5. Download an IG reel your scraper already resolved videoUrl for (no cookies needed)
+// 5. Download an IG reel when you already have a direct videoUrl (no cookies needed)
 POST /api/bridge/media/download
 {
   "url": "https://scontent-xxx.cdninstagram.com/…/video.mp4",
@@ -628,9 +630,9 @@ POST /api/bridge/media/download
   "headers": { "referer": "https://www.instagram.com/" }
 }
 
-// 6. Scratch download to /tmp for a one-shot workflow
+// 6. Scratch download under Downloads for a one-shot workflow
 POST /api/bridge/media/download
-{ "url": "…", "outputDir": "/tmp/ai-clipping-scratch", "quality": "1080p" }
+{ "url": "…", "outputDir": "~/Downloads/SkillTown Media/Scratch", "quality": "1080p" }
 ```
 
 **Discovery order** (in order):
@@ -645,7 +647,7 @@ POST /api/bridge/media/download
 
 ## Not currently exposed via the bridge
 
-These Next.js routes exist but aren't wrapped as `/api/bridge/inspiration/*`. An AI running on the desktop side has to either add a bridge passthrough or hit `contentlead.in` directly with the user's session cookies:
+These product capabilities are not in the verified desktop bridge mapping. Do not call cloud routes directly from the agent; use the web UI or add a documented desktop bridge passthrough first:
 
 | Next.js path | Purpose | Where to reach it |
 |---|---|---|
@@ -662,7 +664,7 @@ These Next.js routes exist but aren't wrapped as `/api/bridge/inspiration/*`. An
 | `/api/content/inspiration/niches/[slug]/items` | DELETE cached items for a niche (clear cache) | Web UI only |
 | `/api/content/inspiration/video-proxy` + `-two` | CORS-safe video streaming for the in-app player | Player only |
 
-If a workflow needs one of these, add a bridge passthrough following the pattern in `SkillTown-Desktop/electron/api-server/bridge-routes.cjs` (line ~1255+). Read-only routes are easy: 1 handler + 1 route registration in `api-server.cjs`.
+If a workflow needs one of these, add and document a desktop bridge passthrough before relying on it from agent instructions.
 
 ---
 

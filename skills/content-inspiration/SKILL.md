@@ -1,348 +1,179 @@
 ---
 name: content-inspiration
-description: Research trending content, analyze competitors, search across platforms (IG, YT, X/Twitter, Reddit, tech news), transcribe videos, download videos from any URL (YouTube/IG/TikTok/X → local mp4), save findings and references, push AI-generated insights into the SkillTown Findings UI. Covers the /content/inspiration (legacy IG feed), /content/inspiration/explore (transient fan-out search), and /content/inspiration/pulse (persistent niche monitoring) surfaces. Use MCP scraping tools for direct source access, or the desktop bridge for logged-in-user context, UI integration, and URL-to-file downloads (auto-installs yt-dlp).
+description: Research trending content, analyze competitors, search across platforms (IG, YT, X/Twitter, Reddit, tech news), transcribe videos, download videos from any URL (YouTube/IG/TikTok/X → local mp4), save findings and references, and push AI-generated insights into the SkillTown Findings UI. Covers /content/inspiration (legacy IG feed), /content/inspiration/explore (transient fan-out search), and /content/inspiration/pulse (persistent niche monitoring) using the SkillTown Desktop bridge plus built-in web/GitHub tools.
 tags: inspiration, trending, research, competitor, niche, search, transcribe, hooks, ideas, content-planning, scraping, twitter, x, reddit, technews, instagram, youtube, findings, ai-output, pulse, explore, velocity, bridge, cookies, references, viral-hooks, hook-analysis, media-download, yt-dlp, url-download, video-download, download-video, save-to-disk, ai-clipping-input, tiktok
 ---
 
 # Content Inspiration & Research
 
-Research tools for finding ideas, analyzing competitors, and discovering trends
-**before** creating content in the `content-publishing` pipeline.
+Research tools for finding ideas, analyzing competitors, and discovering trends **before** creating content in the `content-publishing` pipeline.
 
-Two access paths:
+Use one documented interface:
 
-1. **MCP Server tools** (full research) — scrape IG/YT/Twitter, Reddit, tech news, web search, context memory
-2. **Desktop bridge endpoints** (quick lookups) — feed, search, transcribe from the Electron app
+- **SkillTown Desktop bridge** — local HTTP routes under `http://127.0.0.1:$PORT/api/bridge/*` for logged-in-user context, UI integration, creator refresh, media downloads, references, transcripts, and Findings.
+- **Built-in agent tools** — web search, web fetch, and GitHub tools for general web/GitHub research.
+
+Auth for bridge calls:
+
+```bash
+API=$(cat ~/.skilltown-desktop/api.json)
+PORT=$(echo "$API" | python3 -c 'import sys,json; print(json.load(sys.stdin)["port"])')
+TOKEN=$(echo "$API" | python3 -c 'import sys,json; print(json.load(sys.stdin)["token"])')
+# Use: -H "Authorization: Bearer $TOKEN"
+```
 
 ## When to use this skill
 
 Load `content-inspiration` when the user wants to:
-- **Discover** what's trending / going viral on a topic ("what's hot in AI editing this week?")
-- **Study** a competitor's content ("analyze mkbhd's last 10 reels")
-- **Extract** hooks / transcripts / viral patterns from existing videos
-- **Monitor** niches over time (Pulse)
-- **Push AI-generated findings** into the SkillTown UI (hooks analysis, virality tables, etc.)
-- **Save references** to great examples the user can revisit
+- **Discover** what's trending / going viral on a topic.
+- **Study** a competitor's content.
+- **Extract** hooks, transcripts, and viral patterns from videos.
+- **Monitor** niches over time with Pulse.
+- **Push AI-generated findings** into the SkillTown UI.
+- **Save references** to examples the user can revisit.
 
-## When NOT to use this skill (use a sibling instead)
+## When NOT to use this skill
 
-- Actually **posting** content to IG/YT/LinkedIn → use `content-publishing`
-- **Editing** a video or creating scenes → use `contentlead` / `remotion`
-- **Scoring a script** for virality (no scraping needed) → use `script-evaluator`
-- **Extracting viral clips from long videos** the user already has → use `ai-clipping`
-- **Detecting a creator's editing style** → use `creator-styles`
+- Posting content to IG/YT/LinkedIn → use `content-publishing`.
+- Editing video or creating scenes → use `contentlead` / `remotion`.
+- Scoring a script without research → use `script-evaluator`.
+- Extracting viral clips from a video file → use `ai-clipping`.
+- Detecting a creator's editing style → use `creator-styles`.
 
 ## Quick decision tree
 
 ```
-Need to search a topic across sources?           → /search (bridge) or scraping_* (MCP)
-Need to see items I've already synced?           → /feed (bridge)
-Need to persistently monitor a niche?            → /niches (bridge)
+Need to search a topic across sources?           → POST /api/bridge/inspiration/search
+Need synced IG reels?                            → GET  /api/bridge/inspiration/feed
+Need a live pull for a specific creator?         → POST /creators, then POST /creators/refresh
+Need ongoing niche monitoring?                   → GET|POST /niches, GET|DELETE /niches/:slug, POST /niches/:slug/refresh
 Need a transcript?
-  ├── Instagram, by shortcode                   → /transcribe (bridge)
-  ├── YouTube/X/Reddit, by URL                  → /transcript (bridge, unified)
-  └── Any source via MCP                         → scraping_*_get_transcript
-Need to save a great example permanently?        → /references (bridge, action:"pin")
-Need to show the user an analysis result?        → /ai-output (bridge)
-Need to check if IG/X are connected?             → /connection-status (bridge)
-Need to download a URL's video to disk?          → /media/download (bridge)
-Need to feed a shared URL to AI clipping/editor? → /media/download → filePath → next tool
-Need to check if yt-dlp is installed/preload it? → GET /media/download, POST {action:"install-yt-dlp"}
+  ├── Instagram by shortcode                     → POST /transcribe or /transcribe-bulk
+  ├── YouTube/X/Reddit/Instagram by URL          → POST /transcript, poll GET /transcript?key=...
+  └── Any local/remote media                     → POST /api/bridge/ai/transcribe/{short,long,speakers}
+Need to save a great example permanently?        → POST /references {action:"pin"}
+Need to show the user an analysis result?        → POST /ai-output
+Need to check if IG/X are connected?             → GET  /connection-status
+Need to download a video URL to disk?            → POST /api/bridge/media/download
+Need web or GitHub research?                     → use built-in web search/fetch/GitHub tools
 ```
 
----
+## Instagram nuance: cache, creator refresh, and URL download
 
-## Load the Right Sub-Doc
+- `POST /api/bridge/inspiration/search` with source `"instagram"` searches the user's **already-synced reel cache** in Cosmos, populated by the SkillTown Desktop app's Electron social browser.
+- If the cache is empty or the user has not connected Instagram, per-source results can include `errorCode:"AUTH_MISSING_COOKIES"` and `needsConnect:true`. Ask the user to connect in the desktop app; you can preflight with `GET /api/bridge/inspiration/connection-status`.
+- To pull a **specific creator** live: `POST /api/bridge/inspiration/creators`, then `POST /api/bridge/inspiration/creators/refresh`, then read `/feed` or relevant stored items.
+- To grab an **arbitrary reel/video URL**: `POST /api/bridge/media/download`. The downloader auto-installs `yt-dlp` and auto-pulls desktop social-browser cookies for IG/X when available.
+
+## Load the right sub-doc
 
 | When you need to... | Load |
 |---------------------|------|
-| Search YouTube, get video info, transcripts, channel videos | `youtube-research.md` |
-| Scrape Instagram profiles/reels, Twitter search/trending | `social-scraping.md` |
-| Search Reddit, browse subreddits, get comments | `reddit-research.md` |
+| Search YouTube, get media, transcripts, channel videos | `youtube-research.md` |
+| Research Instagram profiles/reels and Twitter/X | `social-scraping.md` |
+| Search Reddit, subreddits, comments caveats | `reddit-research.md` |
 | Aggregate tech news, RSS feeds, web search/crawl | `news-and-web.md` |
 | Understand /inspiration vs /explore vs /pulse, velocity, needsConnect, FanOutResponse | `explore-vs-pulse.md` |
-| Full desktop bridge endpoint reference (params, responses, gotchas) | `bridge-endpoints.md` |
+| Full desktop bridge endpoint reference | `bridge-endpoints.md` |
 
----
+## Interfaces at a glance
 
-## All Tools at a Glance
+### Desktop bridge inspiration routes
 
-### YouTube Research (4 tools) → `youtube-research.md`
-
-| Tool | What it does |
+| Route | What it does |
 |------|-------------|
-| `scraping_youtube_search` | Search YouTube with filters (views, duration, region) |
-| `scraping_youtube_get_info` | Get video metadata + direct stream URLs |
-| `scraping_youtube_get_transcript` | Extract transcript/subtitles with timestamps |
-| `scraping_youtube_channel_videos` | List a channel's videos with pagination |
+| `POST /api/bridge/inspiration/search` | Cross-platform fan-out search across Instagram cache, X, YouTube, Reddit, tech news |
+| `GET /api/bridge/inspiration/feed` | Browse synced Instagram reels by tracked creator |
+| `GET|POST /api/bridge/inspiration/creators` | List/add tracked creators |
+| `POST /api/bridge/inspiration/creators/refresh` | Live refresh one tracked creator |
+| `POST /api/bridge/inspiration/creators/refresh-all` | Refresh all tracked creators |
+| `DELETE /api/bridge/inspiration/creators/:identifier` | Remove a tracked creator |
+| `GET|POST /api/bridge/inspiration/niches` | List/create Pulse niches |
+| `GET /api/bridge/inspiration/niches/:slug` | Fetch one Pulse niche plus its stored items |
+| `POST /api/bridge/inspiration/niches/:slug/refresh` | Refresh a Pulse niche and persist items |
+| `DELETE /api/bridge/inspiration/niches/:slug` | Delete a Pulse niche |
+| `POST /api/bridge/inspiration/transcribe` | Transcribe one Instagram reel by shortcode |
+| `POST /api/bridge/inspiration/transcribe-bulk` | Transcribe up to 10 Instagram reels |
+| `POST /api/bridge/inspiration/transcript` | Unified transcript request by URL |
+| `GET /api/bridge/inspiration/transcript?key=...` | Poll async transcript status |
+| `GET|POST /api/bridge/inspiration/references` | List/pin/unpin/update reference items |
+| `GET /api/bridge/inspiration/export` | Export items as JSON/CSV |
+| `POST /api/bridge/inspiration/items/update` | Update transcript/notes/tags/AI metadata |
+| `POST /api/bridge/inspiration/ai-output` | Push rich findings into the UI panel |
+| `GET /api/bridge/inspiration/connection-status` | Check source connection/cookie state |
+| `POST /api/bridge/media/download` | Download YouTube/IG/TikTok/X/Reddit/CDN media to local mp4/m4a |
+| `POST /api/bridge/ai/transcribe/{short,long,speakers}` | General AI transcription for local/remote media |
 
-### Social Scraping (6 tools + cookie management) → `social-scraping.md`
+### Built-in research tools
 
-| Tool | What it does |
-|------|-------------|
-| `scraping_instagram_download_reels` | Get reels from a profile |
-| `scraping_instagram_download_reel_url` | Get reel by URL |
-| `scraping_instagram_get_user_info` | Get profile info (followers, bio) |
-| `scraping_twitter_search` | Search tweets with engagement filters |
-| `scraping_twitter_get_trending` | Get trending topics |
-| `scraping_twitter_get_user_tweets` | Get user's timeline |
-| `scraping_cookie_update` | Set browser cookies for IG/Twitter |
-| `scraping_cookie_status` | Check which platforms have active cookies |
+Use the agent's built-in web search/web fetch/GitHub tools for current web, news, source-code, and repository research. Use `news-and-web.md` for suggested workflows and caveats.
 
-### Reddit Research (7 tools) → `reddit-research.md`
+## Examples
 
-| Tool | What it does |
-|------|-------------|
-| `scraping_reddit_fetch_posts` / `reddit_fetch_posts` | Get subreddit posts |
-| `scraping_reddit_search` / `reddit_search` | Search Reddit |
-| `scraping_reddit_get_comments` / `reddit_get_comments` | Get post comments |
-| `scraping_reddit_fetch_user_posts` | Get user's posts |
+### Search
 
-### News & Web (9 tools) → `news-and-web.md`
-
-| Tool | What it does |
-|------|-------------|
-| `technews_fetch` | Aggregate tech & AI news (9 sources) |
-| `technews_list_sources` | List news sources |
-| `technews_fetch_rss` | Fetch from RSS feeds |
-| `technews_extract` | Extract full article content |
-| `web_search` | Search the internet (Tavily) |
-| `web_fetch` | Fetch a single page (FREE) |
-| `web_extract` | Extract content from URLs |
-| `web_crawl` | Crawl a website |
-| `web_map` | Map a website's URL structure |
-
-### Context Store (5 tools — persistent AI memory)
-
-Personal context store for saving research, prompts, instructions, and references.
-
-| Tool | What it does |
-|------|-------------|
-| `context_list` | Browse context items (`"flat"` or `"tree"` view) |
-| `context_search` | Search by keyword, type, or tags |
-| `context_get` | Get a context item by ID |
-| `context_manage` | Create/update/delete items and folders |
-| `context_edit` | Edit item content in-place (find/replace/insert) |
-
----
-
-## Cookie Management
-
-Instagram and Twitter scraping require browser cookies.
-
-```python
-# Check which platforms have cookies
-scraping_cookie_status()
-
-# Set cookies (exported from Cookie-Editor browser extension)
-scraping_cookie_update(platform="instagram", cookies='[{"name":"sessionid","value":"..."}]')
-scraping_cookie_update(platform="twitter", cookies='[{"name":"auth_token","value":"..."}]')
-```
-
-YouTube does NOT need cookies for public videos.
-
----
-
-## Desktop Bridge Endpoints (Full CRUD)
-
-All endpoints require `Authorization: Bearer <token>` from `~/.skilltown-desktop/api.json`.
-
-### Read Operations
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/bridge/inspiration/feed` | Browse a creator's content feed |
-| POST | `/api/bridge/inspiration/search` | AI-powered cross-platform search |
-| GET | `/api/bridge/inspiration/creators` | List all tracked creators |
-| GET | `/api/bridge/inspiration/niches` | List all niches (Pulse) |
-| GET | `/api/bridge/inspiration/niches/:slug` | Get a specific niche |
-| GET | `/api/bridge/inspiration/export` | Export items (JSON/CSV) |
-| GET | `/api/bridge/inspiration/connection-status` | Which sources are connected (pre-flight for /search) |
-| GET | `/api/bridge/inspiration/references` | List pinned reference items |
-| GET | `/api/bridge/inspiration/transcript?key=X` | Poll async transcript status |
-| GET | `/api/bridge/media/download` | Probe: is yt-dlp installed? Default output dir + limits |
-
-### Write Operations
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/api/bridge/inspiration/creators` | Add a new creator to track |
-| DELETE | `/api/bridge/inspiration/creators/:id` | Remove a tracked creator |
-| POST | `/api/bridge/inspiration/creators/refresh` | Refresh one creator's feed |
-| POST | `/api/bridge/inspiration/creators/refresh-all` | Refresh ALL creators |
-| POST | `/api/bridge/inspiration/niches` | Create a new niche |
-| DELETE | `/api/bridge/inspiration/niches/:slug` | Delete a niche |
-| POST | `/api/bridge/inspiration/niches/:slug/refresh` | Refresh a niche |
-| POST | `/api/bridge/inspiration/transcribe` | Transcribe a single IG reel (by shortcode) |
-| POST | `/api/bridge/inspiration/transcribe-bulk` | Transcribe up to 10 IG reels |
-| POST | `/api/bridge/inspiration/transcript` | Unified transcript — YT/X/Reddit/IG (by URL) |
-| POST | `/api/bridge/inspiration/items/update` | Update item metadata (transcript, notes, tags, aiSummary, aiHookScore) |
-| POST | `/api/bridge/inspiration/references` | Pin / unpin / update a reference |
-| POST | `/api/bridge/inspiration/ai-output` | Push AI findings to the UI panel |
-| POST | `/api/bridge/media/download` | Download a URL to disk (YT/IG/X/TikTok/Reddit/CDN → local mp4/m4a). Auto-installs yt-dlp on first use. |
-| POST | `/api/bridge/media/download` | `{action:"install-yt-dlp"}` → force-preload the yt-dlp binary (~30MB) |
-
-> **Full parameter reference** (bodies, defaults, response shapes, gotchas) lives in `bridge-endpoints.md`. Table above is the quick index.
-
-### Examples
-
-#### Feed
 ```bash
-curl "http://127.0.0.1:$PORT/api/bridge/inspiration/feed?username=garyvee&limit=10"   -H "Authorization: Bearer $TOKEN"
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/search"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"context":"AI tools for content creators","sources":["instagram","x","youtube"],"limit":10}'
 ```
 
-#### Search
+Valid `sources`: `"instagram"`, `"x"`, `"youtube"`, `"reddit"`, `"technews"`.
+
+### Add and refresh a creator
+
 ```bash
-curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/search   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"context": "AI tools for content creators", "sources": ["instagram", "x", "youtube"]}'
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/creators"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"source":"instagram","identifier":"mkbhd"}'
+
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/creators/refresh"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"source":"instagram","identifier":"mkbhd"}'
 ```
 
-> **Valid `sources`:** `"instagram"`, `"x"` (Twitter/X — NOT `"twitter"`), `"youtube"`, `"reddit"`, `"technews"`. Default: `["instagram"]`. `context` may be a plain string (auto-expanded to a `SearchContext`) or a full object. Optional: `perSourceLimit` (default 10, max 25), `round` (0 initial, 1-5 for "Load more"), `seenIds` (dedupe). Response is a `FanOutResponse` — see `explore-vs-pulse.md` for shape and how to handle `needsConnect`/`fromCache`/`notice`.
+### Bulk transcribe Instagram reels
 
-#### Bulk Transcribe (up to 10)
 ```bash
-curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/transcribe-bulk   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"items": [{"shortcode": "C8xABC"}, {"shortcode": "D9yDEF"}]}'
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/transcribe-bulk"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"items":[{"shortcode":"C8xABC"},{"shortcode":"D9yDEF"}]}'
 ```
 
-#### Add Creator
+### Push AI findings to the UI panel
+
 ```bash
-curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/creators   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"source": "instagram", "identifier": "mkbhd"}'
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/ai-output"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"title":"Viral Hook Analysis","format":"markdown","content":"## Top Patterns
+| Hook | Count |
+|---|---|
+| Question | 5 |","context":{"page":"explore","query":"AI tools","itemCount":12}}'
 ```
 
-> **Valid `source`:** `"instagram"`, `"x"`, `"youtube"`, `"reddit"` — NOT `"technews"` (aggregate-only, not per-creator). `identifier` is: IG handle, X handle, YouTube `@handle`/channel URL/`UC…` id, or `r/subreddit`.
+### Download a URL for clipping/editor workflows
 
-#### Update Items (AI metadata enrichment)
 ```bash
-curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/items/update   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"items": [{"id": "userId__shortcode", "aiSummary": "Tutorial on...", "aiHookScore": 85, "tags": ["tutorial", "AI"]}]}'
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/media/download"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"url":"https://youtube.com/watch?v=abc123","quality":"720p"}'
 ```
 
-#### Push AI Findings to UI Panel (markdown)
-```bash
-curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/ai-output \
-  -H "Authorization: ******" -H "Content-Type: application/json" \
-  -d '{"title": "Viral Hook Analysis", "format": "markdown",
-       "content": "## Top Patterns\n| Hook | Count |\n|---|---|\n| Question | 5 |",
-       "context": {"page": "explore", "query": "AI tools", "itemCount": 12},
-       "actions": [{"id": "select", "label": "Select Top", "type": "select-items", "payload": {"itemIds": ["id1"]}}]}'
-```
+## Research workflows
 
-#### Push Full-Page HTML (opens in expanded dialog with zoom/pan)
-```bash
-curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/ai-output \
-  -H "Authorization: ******" -H "Content-Type: application/json" \
-  -d '{"title": "📊 Analytics Dashboard", "format": "fullpage",
-       "content": "<!DOCTYPE html><html><head><style>body{background:#0f0f23;color:#e2e8f0;font-family:system-ui}.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px}</style></head><body><h1>Dashboard</h1><div class=\"card\">Rich HTML content here</div></body></html>",
-       "context": {"page": "feed", "itemCount": 100},
-       "actions": [{"id": "export", "label": "📥 Export", "type": "export", "payload": {}}]}'
-```
+### Full topic research
 
-#### Push Inline HTML Snippet (renders in-card)
-```bash
-curl -X POST http://127.0.0.1:$PORT/api/bridge/inspiration/ai-output \
-  -H "Authorization: ******" -H "Content-Type: application/json" \
-  -d '{"title": "🎨 KPI Cards", "format": "html",
-       "content": "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:8px\"><div style=\"background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:10px;padding:12px;color:white\"><div style=\"font-size:24px;font-weight:800\">29.5M</div><div style=\"font-size:10px\">Total Views</div></div></div>",
-       "context": {"page": "feed"}}'
-```
+1. `POST /api/bridge/inspiration/search` with `sources:["youtube","reddit","technews","x"]`.
+2. Use built-in web search/fetch for fresh articles or source pages.
+3. Transcribe top videos via `/api/bridge/inspiration/transcript` or media download + `/api/bridge/ai/transcribe/{short,long,speakers}`.
+4. Save best examples with `/api/bridge/inspiration/references`.
+5. Push the analysis with `/api/bridge/inspiration/ai-output`.
 
----
+### Competitor analysis
 
-## AI Findings Panel
+1. Add competitor via `/api/bridge/inspiration/creators` for `instagram`, `x`, `youtube`, or `reddit`.
+2. Refresh via `/api/bridge/inspiration/creators/refresh`.
+3. Pull synced feed/items, download top URLs if needed, transcribe, and analyze hooks/CTA/structure.
 
-The AI can push rich analysis results directly into the app UI. Users see findings in the **Findings** rail panel (Brain icon) on all 3 pages (/inspiration, /explore, /pulse).
+### Find viral hooks
 
-### How it works
-1. AI calls `POST /api/bridge/inspiration/ai-output` with markdown/HTML content
-2. Web app stores the finding (in-memory, max 50 per user)
-3. FindingsPanel polls every 5s and renders new cards
-4. User sees: title, context bar, rendered markdown, action buttons, pin/copy/dismiss
-5. Unread badge appears on Brain icon until user opens the panel
-
-### Finding format
-```json
-{
-  "title": "string (required)",
-  "content": "markdown or HTML string (required, max 100KB; 500KB for fullpage)",
-  "format": "markdown | html | json | fullpage",
-  "context": {"page": "explore|pulse|feed", "query": "...", "itemCount": 12},
-  "actions": [
-    {"id": "unique", "label": "Button text", "type": "select-items|export|save-reference|copy|custom", "payload": {"itemIds": [...]}}
-  ],
-  "sessionId": "optional group ID"
-}
-```
-
-### Format types
-| Format | Behavior | Max Size |
-|--------|----------|----------|
-| `markdown` | Rendered inline via ReactMarkdown + GFM tables/code | 100KB |
-| `html` | Rendered inline via `dangerouslySetInnerHTML` (styled snippets) | 100KB |
-| `json` | Rendered as formatted JSON | 100KB |
-| `fullpage` | Shows preview card in panel; click opens **expanded dialog** (90vw×85vh) with sandboxed iframe | 500KB |
-
-### Expanded dialog features
-- **Fullpage findings** auto-open in a large dialog with toolbar (Export, New Tab, Copy, Close)
-- **Any finding** can be expanded via the "Expand" link on each card
-- **Zoom/Pan**: Ctrl+Scroll to zoom (cursor-centered), Space+Drag to pan, Double-click to reset
-- **New Tab**: Opens content in a standalone browser window with same zoom/pan + themed scrollbar
-- **Markdown findings** get ZoomPanViewport (same as /learn pages)
-- **HTML/fullpage findings** render in a sandboxed iframe with themed scrollbar injected
-
-### Action types
-| Type | Behavior |
-|------|----------|
-| `select-items` | Dispatches selection event with `payload.itemIds` |
-| `export` | Downloads the finding content as `.md` file |
-| `copy` | Copies `payload.text` (or full content) to clipboard |
-| `save-reference` | Dispatches event to save to reference library |
-| `custom` | Dispatches generic event with full payload |
-
----
-
-## Research Workflows
-
-### Workflow 1: Full topic research
-```python
-# 1. What's trending?
-technews_fetch(sources="hackernews,producthunt", limit=10, since_hours=24)
-
-# 2. What's Twitter saying?
-scraping_twitter_search(query="AI video editing", limit=10, min_likes=50)
-
-# 3. What's Reddit discussing?
-scraping_reddit_search(query="best video editing tools 2025", subreddit="videography")
-
-# 4. What's on YouTube?
-scraping_youtube_search(query="AI video editing tutorial", limit=10, min_views=10000)
-
-# 5. Study a top video
-scraping_youtube_get_transcript(url="https://youtube.com/watch?v=...")
-
-# 6. Save findings
-context_manage(operations='{"action": "create_article", "title": "Research: AI Editing", "content": "..."}')
-```
-
-### Workflow 2: Competitor analysis
-```python
-scraping_instagram_get_user_info(username="competitor")
-scraping_instagram_download_reels(username="competitor", count=5)
-scraping_youtube_channel_videos(channel="@competitor", limit=10)
-scraping_twitter_get_user_tweets(username="competitor", limit=20)
-```
-
-### Workflow 3: Find viral hooks
-```python
-scraping_youtube_search(query="viral hooks tutorial", min_views=50000)
-scraping_youtube_get_transcript(url="<top result>")
-# → Analyze first 3-5 segments for the hook pattern
-```
-
----
+1. Search `youtube`, `instagram`, and `x` for the topic.
+2. Filter by engagement/velocity.
+3. Transcribe top performers.
+4. Analyze the first 3-5 seconds/segments and push findings to the UI.
 
 ## Tips
 
-- **YouTube doesn't need cookies** — `scraping_youtube_*` works without setup
-- **Always check cookie status first** for IG/Twitter scraping
-- **Search broadly, then narrow** — start general, filter by engagement
-- **Transcribe top performers** — study hooks (first 30s), CTAs, structure
-- **Save findings** — use `context_manage` to store research for later
-- **Combine platforms** — trending on Twitter + performing on YouTube = validated topic
+- Use `"x"`, not `"twitter"`, in `sources`.
+- Check `/connection-status` before Instagram/X-heavy work.
+- Search broadly, then filter by engagement and recency.
+- Save findings and references so the user can revisit them.
+- Combine platforms: web/news trend + YouTube performance + X discussion = stronger validation.

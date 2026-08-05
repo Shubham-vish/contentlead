@@ -1,154 +1,126 @@
 # Content Lifecycle — Create, Read, Update, Upload
 
-> **Copilot CLI without MCP server:** use bridge mode through the running SkillTown Desktop app. See [`bridge-mode.md`](bridge-mode.md) for auth, endpoint parity, and curl examples.
+The SkillTown Desktop local HTTP API is the documented interface for content lifecycle work. Read `~/.skilltown-desktop/api.json` fresh before each call and use `Authorization: Bearer $TOKEN`.
 
-## MCP Tools
+## Endpoints
 
-### `content_create` — Create new content
+### `POST /api/content/create` — Create new content
 
-Creates a new Content document in the database.
+Creates a new Content document in Cosmos DB. This endpoint lives in the `contentlead` skill (`contentlead/infrastructure.md`) because it can also open an editor tab.
 
-| Param | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `title` | string | ✅ | — | Content title (max 255 chars) |
-| `display_title` | string | | = title | User-facing display name in the dashboard |
-| `content_title` | string | | = title | Platform-specific title (YouTube, social) |
+> **⚠️ There is no `POST /api/bridge/content` create route.** Create with `/api/content/create`, then use `PUT /api/bridge/content/:id` to set titles, video URLs, captions, thumbnails, and status.
+
+| Body field | Type | Required | Default | Description |
+|------------|------|----------|---------|-------------|
+| `title` | string | ✅ | — | Content title |
 | `description` | string | | `""` | Content description |
-| `status` | string | | `"draft"` | `"draft"`, `"ready"`, or `"published"` |
+| `waitForReady` | bool | | `false` | Wait for the editor tab to be ready |
+| `timeoutMs` | int | | route default | Max wait time if `waitForReady` is true |
 
-**Returns:** Full Content document JSON with `content_id`, `id`, `userId`, `createdAt`, etc.
+**Returns:** `{ contentId, tabId, editorReady, ... }`.
 
-```python
-content_create(title="5 AI Tools for 2025", description="Deep dive into the best AI tools")
-# → { "id": "xxx", "content_id": "content_xxx", "title": "5 AI Tools for 2025", "status": "draft", ... }
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/content/create"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"title":"5 AI Tools for 2025","description":"Deep dive into the best AI tools","waitForReady":true,"timeoutMs":120000}'
+```
+
+To set dashboard/platform titles immediately after creation:
+
+```bash
+curl -X PUT "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"displayTitle":"5 AI Tools You Need in 2025","contentTitle":"5 AI Tools You Need in 2025","status":"draft"}'
 ```
 
 ---
 
-### `content_list` — Browse content
+### `GET /api/bridge/content` — Browse content
 
 Lists the user's content documents with pagination and filtering.
 
-| Param | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `limit` | int | | `20` | Max items to return |
-| `offset` | int | | `0` | Pagination offset |
-| `status` | string | | `""` (all) | Filter: `"draft"`, `"ready"`, `"published"`, or `""` for all |
+| Query | Type | Default | Description |
+|-------|------|---------|-------------|
+| `limit` | int | `20` | Max items to return |
+| `offset` | int | `0` | Pagination offset |
+| `status` | string | all | Filter: `draft`, `ready`, `published`, or omit for all |
 
-**Returns:** `{ items: [Content...], total: N, offset: N, limit: N }`
+**Returns:** `{ items: [Content...], total, offset, limit }`.
 
-Each item contains: `id`, `content_id`, `title`, `displayTitle`, `status`, `thumbnail`, `videoUrl`, `channels`, `createdAt`, `updatedAt`
+Each item contains: `id`, `content_id`, `title`, `displayTitle`, `status`, `thumbnail`, `videoUrl`, `channels`, `createdAt`, `updatedAt`.
 
-```python
-content_list(status="draft", limit=5)
-# → { "items": [...], "total": 42, "offset": 0, "limit": 5 }
-
-content_list(offset=20, limit=20)  # page 2
+```bash
+curl "http://127.0.0.1:$PORT/api/bridge/content?status=draft&limit=5"   -H "Authorization: Bearer $TOKEN"
 ```
 
 ---
 
-### `content_get` — Get full content details
+### `GET /api/bridge/content/:id` — Get full content details
 
 Returns the complete Content document with all metadata, channels, and publish state.
 
-| Param | Type | Required | Description |
-|-------|------|----------|-------------|
-| `content_id` | string | ✅ | The content ID to retrieve |
+| Path param | Required | Description |
+|------------|----------|-------------|
+| `:id` | ✅ | Content ID to retrieve |
 
-**Returns:** Full Content document JSON including:
+**Returns:**
 - Top-level: `title`, `displayTitle`, `contentTitle`, `description`, `caption`, `status`
 - Video: `videoUrl`, `videoSasUrl`, `downloadableSasUrl`, `sasExpiresAt`
 - Media: `thumbnail`
-- Channels: `channels.instagram`, `channels.youtube`, `channels.linkedin` (each with config + publish state)
+- Channels: `channels.instagram`, `channels.youtube`, `channels.linkedin`
 - Timestamps: `createdAt`, `updatedAt`
 
-```python
-content_get(content_id="content_xxx")
-# Use to check: Is video attached? Is channel configured? Is it already published?
+```bash
+curl "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN"
 ```
+
+Use this to check whether video is attached, channels are configured, or a platform is already published.
 
 ---
 
-### `content_update` — Update content metadata
+### `PUT /api/bridge/content/:id` — Update content metadata
 
-Updates top-level metadata on a Content document. Only provided fields are changed — others remain untouched.
+Updates top-level metadata on a Content document. Only provided fields are changed.
 
-| Param | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `content_id` | string | ✅ | — | Content ID to update |
-| `title` | string | | — | Internal title (legacy) |
-| `display_title` | string | | — | Dashboard display name |
-| `content_title` | string | | — | Platform title (YouTube, social) |
-| `description` | string | | — | Content description |
-| `caption` | string | | — | Social media caption text |
-| `video_url` | string | | — | Base video blob URL (no SAS token) |
-| `video_sas_url` | string | | — | Video streaming URL with SAS token |
-| `downloadable_sas_url` | string | | — | Video download URL with SAS token |
-| `sas_expires_at` | string | | — | ISO datetime when SAS URLs expire |
-| `thumbnail` | string | | — | Thumbnail image URL |
-| `status` | string | | — | `"draft"`, `"ready"`, or `"published"` |
+| Body field | Type | Description |
+|------------|------|-------------|
+| `title` | string | Internal title (legacy) |
+| `displayTitle` | string | Dashboard display name |
+| `contentTitle` | string | Platform title (YouTube, social) |
+| `description` | string | Content description |
+| `caption` | string | Social media caption text |
+| `status` | string | `draft`, `ready`, or `published` |
+| `videoUrl` | string | Base video blob URL (no SAS token) |
+| `videoSasUrl` | string | Video streaming URL with SAS token |
+| `downloadableSasUrl` | string | Video download URL with SAS token |
+| `sasExpiresAt` | string | ISO datetime when SAS URLs expire |
+| `thumbnail` | string | Thumbnail image URL |
+| `channels` | object | Channel config/publish state object |
 
 **Returns:** Updated Content document JSON.
 
 **Error:** `{ "error": "status must be draft, ready, or published" }` if invalid status.
 
-```python
-# Set multiple fields at once
-content_update(
-    content_id="content_xxx",
-    display_title="5 AI Tools You Need in 2025",
-    content_title="5 AI Tools You Need in 2025",
-    description="A deep dive into the best AI tools for content creators",
-    thumbnail=uploaded_thumb["videoUrl"],  # `videoUrl` field is the canonical (no-SAS) blob URL — see `content_get_upload_url` below
-    status="ready"
-)
+```bash
+curl -X PUT "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"displayTitle":"5 AI Tools You Need in 2025","contentTitle":"5 AI Tools You Need in 2025","description":"A deep dive into the best AI tools for content creators","thumbnail":"https://storage.blob.../thumb.jpg","status":"ready"}'
+```
 
-# After uploading a video, pass the canonical URL that the upload flow
-# returns back to `content_update`.
-# ⚠️ Never hand-craft Blob URLs or SAS query strings yourself — the SAS is a
-# bearer capability and the Desktop-mediated flow mints/rotates it for you.
-#
-# Recommended path (verified live 2026-07-19):
-#   POST http://127.0.0.1:$PORT/api/bridge/content/upload-url
-#   body: {"contentId": "...", "fileName": "video.mp4", "contentType": "video/mp4"}
-# This proxies through the Desktop to the Next.js /api/content/upload-url route
-# using the signed-in user's cookies — no manual auth needed.
-#
-# Response fields (verified live from /api/bridge/content/upload-url):
-#   uploadUrl            — SAS URL with 'rcw' perms; PUT bytes here
-#   videoUrl             — same URL WITHOUT the SAS query string (canonical, no-SAS)
-#   downloadableSasUrl   — SAS read URL, expires per sasExpiresAt (ISO string)
-#   sasExpiresAt         — ISO timestamp when downloadableSasUrl expires
-#   headers              — required PUT headers (x-ms-blob-type, Content-Type, ...)
-#   metadata             — {blobName, containerName, accountName, ...}
-#
-# ⚠️ The MCP tool `content_get_upload_url` (defined in MCP_Server/mcp/domains/
-# content/content_publish.py) is currently NOT exposed by the running MCP proxy —
-# use the bridge route above instead.
-#
-# Then update the Content doc:
-content_update(
-    content_id="content_xxx",
-    video_url=uploaded["videoUrl"],
-    downloadable_sas_url=uploaded["downloadableSasUrl"],
-    sas_expires_at=uploaded["sasExpiresAt"],
-)
+After uploading a video, pass the canonical URL and SAS fields returned by the upload flow. Never hand-craft Blob URLs or SAS query strings yourself; the Desktop-mediated flow mints/rotates them.
+
+```bash
+curl -X PUT "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"videoUrl":"https://storage.blob.../video.mp4","downloadableSasUrl":"https://storage.blob.../video.mp4?sv=...","sasExpiresAt":"2027-06-15T12:00:00.000Z"}'
 ```
 
 ---
 
-### `content_get_upload_url` — Get SAS upload URL
+### `POST /api/bridge/content/upload-url` — Get SAS upload URL
 
 Gets a pre-signed Azure Blob Storage URL for uploading a file (video or thumbnail) to content.
 
-| Param | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `content_id` | string | ✅ | — | Content ID to upload to |
-| `file_name` | string | ✅ | — | File name (e.g. `"video.mp4"`, `"thumbnail.jpg"`) |
-| `content_type` | string | | auto-detect | MIME type (e.g. `"video/mp4"`, `"image/jpeg"`) |
+| Body field | Type | Required | Description |
+|------------|------|----------|-------------|
+| `contentId` | string | ✅ | Content ID to upload to |
+| `fileName` | string | ✅ | File name, e.g. `video.mp4`, `thumbnail.jpg` |
+| `contentType` | string | | MIME type, e.g. `video/mp4`, `image/jpeg` |
 
 **Returns:**
+
 ```json
 {
   "uploadUrl": "https://...?sv=2022&sig=...",
@@ -167,28 +139,19 @@ Gets a pre-signed Azure Blob Storage URL for uploading a file (video or thumbnai
 }
 ```
 
-**After upload, link the URLs to the Content doc:**
-```python
-# 1. Get upload URL
-result = content_get_upload_url(content_id="content_xxx", file_name="video.mp4", content_type="video/mp4")
+Manual upload flow:
 
-# 2. Upload file (PUT binary to uploadUrl — done by client, not AI)
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/upload-url"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","fileName":"final-render.mp4","contentType":"video/mp4"}'
 
-# 3. Link the URLs to the Content document
-content_update(
-    content_id="content_xxx",
-    video_url=result["videoUrl"],
-    downloadable_sas_url=result["downloadableSasUrl"],
-    sas_expires_at=result["sasExpiresAt"]
-)
+# PUT binary bytes to response.uploadUrl with response.headers, then update the Content doc with response.videoUrl, response.downloadableSasUrl, and response.sasExpiresAt.
 ```
 
-> **Note:** The AI agent cannot upload binary file data itself. This tool is useful when
-> a client system or user is doing the actual upload, and the AI coordinates the flow.
+> The AI agent usually coordinates this flow; the client/system performs the binary upload.
 
 ### Local render upload shortcut — preferred for Desktop renders
 
-For videos rendered by SkillTown Desktop, prefer `POST /api/render` with a `contentId` and `uploadToCloud: true` instead of the manual SAS upload dance above:
+For videos rendered by SkillTown Desktop, prefer `POST /api/render` with a `contentId` and `uploadToCloud: true` instead of the manual SAS upload flow:
 
 ```json
 {
@@ -199,38 +162,49 @@ For videos rendered by SkillTown Desktop, prefer `POST /api/render` with a `cont
 }
 ```
 
-When upload succeeds, the render job extracts a frame-1 thumbnail, uploads both MP4 and thumbnail through the Content upload-URL flow, updates `Content.videoUrl`, `Content.videoSasUrl`, `Content.downloadableSasUrl`, `Content.sasExpiresAt`, and `Content.thumbnail`, and returns `cloudVideoUrl`, `thumbnailUrl`, and `contentUpdated: true`. If cloud upload fails, the local render still succeeds and the response includes the failure reason. `GET /api/render/:jobId` includes the same upload fields once upload completes.
+When upload succeeds, the render job extracts a frame-1 thumbnail, uploads both MP4 and thumbnail, updates `Content.videoUrl`, `Content.videoSasUrl`, `Content.downloadableSasUrl`, `Content.sasExpiresAt`, and `Content.thumbnail`, and returns `cloudVideoUrl`, `thumbnailUrl`, and `contentUpdated: true`. If cloud upload fails, the local render still succeeds and the response includes the failure reason. `GET /api/render/:jobId` includes the same upload fields once upload completes.
+
+---
+
+### `POST /api/bridge/content/configure-publish` — Configure channel publishing
+
+Sets `Content.channels[platform]`. See `channel-configuration.md` for platform config schemas.
+
+| Body field | Type | Required | Description |
+|------------|------|----------|-------------|
+| `contentId` | string | ✅ | Content ID to configure |
+| `platform` | string | ✅ | `instagram`, `youtube`, or `linkedin` |
+| `config` | object | ✅ | Platform-specific config fields |
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"instagram","config":{"enabled":true,"toPublish":true,"postType":"reel","caption":"Comment FREE for the guide","hashtags":["AI","tools"],"selectedAccount":"ig_account_id"}}'
+```
 
 ---
 
 ## Content Document Schema
 
-```
+```text
 Content {
-  // Identity
   id                    // Cosmos DB doc ID
   content_id            // Content ID (format: "content_xxx")
   userId                // Owner user ID
   createdAt, updatedAt  // Timestamps
 
-  // Top-level metadata (content_update)
   title                 // Internal title
   displayTitle          // Dashboard display name
   contentTitle          // Platform title (YouTube, social)
   description           // Content description
   caption               // Social media caption
 
-  // Media (content_update)
   thumbnail             // Thumbnail image URL
   videoUrl              // Base video blob URL (no SAS token)
   videoSasUrl           // Streaming URL with SAS token
   downloadableSasUrl    // Download/publish URL with SAS token
   sasExpiresAt          // When SAS URLs expire
 
-  // Status
   status                // "draft" | "ready" | "published"
 
-  // Channel configs (content_configure_publish) — see channel-configuration.md
   channels: {
     instagram: { ... }
     youtube: { ... }
@@ -247,22 +221,8 @@ For channel sub-schemas, see `channel-configuration.md`.
 
 | Error | When | What to do |
 |-------|------|-----------|
-| `{ "error": "Unauthorized" }` | Invalid/missing auth | Check MCP auth setup (x-user-id, x-api-key) |
-| `{ "error": "Content not found" }` | Invalid content_id | Verify with `content_list()` |
-| `{ "error": "Title is required" }` | `content_create` without title | Provide `title` param |
+| `{ "error": "Unauthorized" }` | Invalid/missing local auth or expired desktop session | Re-read `api.json`; if still unauthorized, sign in via desktop UI |
+| `{ "error": "Content not found" }` | Invalid `contentId` | Verify with `GET /api/bridge/content` |
+| `{ "error": "Title is required" }` | Create without title | Provide `title` |
 | `{ "error": "Title must be 255 characters or less" }` | Title too long | Shorten title |
 | `{ "error": "status must be draft, ready, or published" }` | Invalid status | Use `draft`, `ready`, or `published` |
-
----
-
-## Auth
-
-MCP tools authenticate via the SkillTownClient:
-
-```
-MCP Tool → SkillTownClient → HTTP Request → SkillTown Web API → Cosmos DB
-                ↓
-    Headers: x-user-id, x-api-key (JWT), x-mcp-secret
-```
-
-Auth is configured automatically when the MCP server starts with valid credentials.

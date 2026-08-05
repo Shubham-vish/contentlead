@@ -1,69 +1,50 @@
 # Reddit Research — Posts, Search, Comments
 
-Two sets of Reddit tools exist with slightly different capabilities:
+Use `/api/bridge/inspiration/search` for topic/subreddit discovery and the built-in web tools for public Reddit pages when deeper thread inspection is needed.
 
-| Domain | Prefix | Extra features |
-|--------|--------|---------------|
-| Scraping | `scraping_reddit_*` | More filter params, pagination with `after` cursor, user posts |
-| Reddit | `reddit_*` | Simpler interface |
-
-Both work — use whichever fits your need.
+Auth pattern: read `~/.skilltown-desktop/api.json`, then send `Authorization: Bearer $TOKEN` to `http://127.0.0.1:$PORT/api/bridge/...`.
 
 ---
 
-## `scraping_reddit_fetch_posts` / `reddit_fetch_posts` — Get subreddit posts
+## Search Reddit
 
-| Param | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `subreddits` | string | ✅ | — | Comma-separated: `"videography,filmmaking"` |
-| `sort` | string | | `"hot"` | `"hot"`, `"new"`, `"top"`, `"rising"` |
-| `limit` | int | | `10` | Max posts |
-| `time_filter` | string | | `"week"` | `"hour"`, `"day"`, `"week"`, `"month"`, `"year"`, `"all"` |
-| `include_comments` | bool | | `false` | Include top comments |
-| `comments_per_post` | int | | `5` | Comments per post (if included) |
-| `after` | string | | — | Pagination cursor (scraping variant only) |
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/search"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"context":"best video editing tools in r/videography with high comments","sources":["reddit"],"limit":10}'
+```
+
+Use the natural-language `context` for subreddit, recency, score/comment hints, then filter returned `UnifiedItem.engagement` fields client-side.
 
 ---
 
-## `scraping_reddit_search` / `reddit_search` — Search Reddit
+## Subreddit posts
 
-| Param | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `query` | string | ✅ | — | Search query |
-| `subreddit` | string | | — | Restrict to subreddit |
-| `sort` | string | | `"relevance"` | `"relevance"`, `"hot"`, `"top"`, `"new"`, `"comments"` |
-| `time_filter` | string | | `"month"` | Time range |
-| `limit` | int | | `10` | Max results |
-| `include_comments` | bool | | `false` | Include comments |
-| `min_score` | int | | `0` | Min upvotes (scraping variant) |
-| `min_comments` | int | | `0` | Min comment count (scraping variant) |
-| `author` | string | | — | Filter by author (scraping variant) |
-| `flair` | string | | — | Filter by flair (scraping variant) |
+For ongoing tracking, add a subreddit as a creator-like source and refresh it:
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/creators"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"source":"reddit","identifier":"r/videography"}'
+
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/creators/refresh"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"source":"reddit","identifier":"r/videography"}'
+```
+
+For ad-hoc browsing, use `/search` with `sources:["reddit"]`.
 
 ---
 
-## `scraping_reddit_get_comments` / `reddit_get_comments` — Get post comments
+## Comments on a Reddit post
 
-| Param | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `permalink` | string | ✅ | — | Post permalink (e.g. `"/r/videography/comments/abc123/title/"`) |
-| `limit` | int | | `20` | Max comments |
+Note: no bridge route currently exposes structured Reddit comments. Use built-in web fetch on the public permalink when needed.
 
 ---
 
-## `scraping_reddit_fetch_user_posts` — Get user's posts (scraping only)
+## User posts
 
-| Param | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `username` | string | ✅ | — | Reddit username |
-| `sort` | string | | `"new"` | `"new"`, `"hot"`, `"top"` |
-| `limit` | int | | `10` | Max posts |
+Note: no bridge route currently exposes Reddit user-post threads. Approximate with `/search` using `context:"posts by u/<username> ..."`, or use built-in web search/fetch.
 
 ---
 
 ## Tips
 
-- **Combine subreddits:** `"videography,filmmaking,editors"` for broader research
-- **Use `min_score`** to filter for proven content
-- **Include comments** for audience sentiment analysis
-- **Sort by `top`** with `time_filter="month"` for best recent content
+- Use `"reddit"` in the bridge `sources` array.
+- Combine subreddits in the `context` text for broad research.
+- Include comments/score/recency requirements in `context`, then filter the response.
+- Save promising posts with `/api/bridge/inspiration/references`.

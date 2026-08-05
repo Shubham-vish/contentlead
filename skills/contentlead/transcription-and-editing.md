@@ -557,7 +557,7 @@ For screen-share + face-cam videos, position captions in the black bars:
 ```bash
 # 1. Extract audio + transcribe
 ffmpeg -i video.mp4 -vn -acodec aac /tmp/audio.m4a
-# → upload + transcribe via MCP → get word timestamps
+# → upload + transcribe via /api/bridge/ai/transcribe/* → get word timestamps
 
 # 2. Analyze transcript → identify segments + pauses
 

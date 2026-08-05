@@ -1,31 +1,35 @@
 # LinkedIn — Posting & Management
 
-> **Copilot CLI without MCP server:** use bridge mode through the running SkillTown Desktop app. See [`bridge-mode.md`](bridge-mode.md) for auth, endpoint parity, and curl examples.
+Use the SkillTown Desktop local HTTP API. Read `~/.skilltown-desktop/api.json` fresh before each call and use `Authorization: Bearer $TOKEN`.
 
 > **⚠️ LinkedIn publishing is NOT content-aware.**
-> The `linkedin_post` tool does NOT read from or write to Content documents.
-> Posts go live but are NOT tracked in the ContentLead dashboard's publish status.
-> See the workaround below to maintain content tracking.
+> `POST /api/bridge/publish/linkedin` does not read from or write to Content documents.
+> Posts go live but are not tracked in the ContentLead dashboard's publish status unless you do the manual tracking update below.
 
 ---
 
-## Tools
+## Accounts
 
-### `linkedin_get_account` — Get connected account
+### `GET /api/bridge/accounts` — Get connected accounts
 
-No parameters.
+Returns aggregate connected accounts, including LinkedIn accounts.
+
+```bash
+curl "http://127.0.0.1:$PORT/api/bridge/accounts"   -H "Authorization: Bearer $TOKEN"
+```
+
+Example LinkedIn account shape:
 
 ```json
 {
   "success": true,
-  "total": 1,
-  "active": 1,
   "accounts": [
     {
       "id": "def456",
       "name": "John Doe",
       "headline": "Content Creator",
-      "profilePic": "https://..."
+      "profilePic": "https://...",
+      "platform": "linkedin"
     }
   ]
 }
@@ -33,77 +37,47 @@ No parameters.
 
 ---
 
-### `linkedin_post` — Create a post
+## Posting
 
-| Param | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `text` | string | ✅ | — | Post content (up to 3000 chars) |
-| `image_urls` | string | | — | JSON array of image URLs (1–9): `'["https://..."]'` |
-| `article_url` | string | | — | URL to share as a link card |
-| `article_title` | string | | — | Custom title for the article card |
-| `article_description` | string | | — | Custom description for the article card |
-| `visibility` | string | | `"PUBLIC"` | `"PUBLIC"` or `"CONNECTIONS"` |
+### `POST /api/bridge/publish/linkedin` — Create a post
 
-Post type is inferred: text only, text + images, or text + article link.
+| Body field | Required | Description |
+|------------|----------|-------------|
+| `accountId` | ✅ | LinkedIn account ID from `GET /api/bridge/accounts` |
+| `text` | ✅ | Post content |
+| `postType` | | Post type, if needed by the route |
+| `imageUrns` | | LinkedIn image URNs |
 
-**LinkedIn is synchronous** — response confirms success immediately.
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/publish/linkedin"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"accountId":"def456","text":"New video! 🎬
 
----
+#content","postType":"post","imageUrns":[]}'
+```
 
-### `linkedin_get_posts` — Get published posts
+LinkedIn posting is synchronous: the response confirms success immediately.
 
-| Param | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `count` | int | | `20` | Number of posts (newest first) |
-
----
-
-### `linkedin_delete_post` — Delete a post
-
-| Param | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `post_urn` | string | ✅ | — | Post URN from `linkedin_get_posts` (e.g. `"urn:li:share:12345"`) |
-| `delete_from_linkedin` | bool | | `true` | Also delete from LinkedIn. `false` = local DB only. |
+> TODO(no-bridge-equivalent): The previous docs covered article link-card fields, visibility selection, listing published LinkedIn posts, and deleting LinkedIn posts. The verified local endpoint mapping only includes account discovery and post creation.
 
 ---
 
 ## Content-Aware Workaround
 
-Since LinkedIn tools don't read Content documents, follow this pattern to maintain tracking:
-
-```python
-# 1. Read content to get the caption/description
-content = content_get(content_id="content_xxx")
-caption = content.get("caption") or content.get("description", "")
-
-# 2. Post to LinkedIn
-linkedin_post(
-    text=f"{caption}\n\n#AI #ContentCreation",
-    visibility="PUBLIC"
-)
-
-# 3. Manually update content status to reflect the publish
-content_configure_publish(
-    content_id="content_xxx",
-    platform="linkedin",
-    status="published"
-)
-```
-
-This way the ContentLead dashboard shows LinkedIn as published, even though the tool itself doesn't track it.
-
----
-
-## Legacy Desktop Bridge (Alternative)
-
-> **⚠️ This legacy bridge is also NOT content-aware for LinkedIn.** No new `/api/bridge/linkedin/*` MCP-mirror endpoints shipped yet; see [`bridge-mode.md`](bridge-mode.md).
+Since LinkedIn posting does not read Content documents, follow this pattern to maintain dashboard tracking:
 
 ```bash
-curl -X POST http://127.0.0.1:$PORT/api/bridge/publish/linkedin \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"accountId": "def456", "text": "New video! 🎬\n\n#content"}'
-# → { "success": true, "post": { "id": "urn:li:share:xxx", ... } }
+# 1. Read content to get caption/description
+curl "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN"
+
+# 2. Post to LinkedIn
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/publish/linkedin"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"accountId":"def456","text":"Just published a deep dive into AI tools!
+
+#AI #ContentCreation"}'
+
+# 3. Mark LinkedIn status on the Content doc
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"linkedin","config":{"status":"published"}}'
 ```
+
+This way the ContentLead dashboard shows LinkedIn as published even though the post endpoint itself does not track Content state.
 
 ---
 
@@ -111,13 +85,12 @@ curl -X POST http://127.0.0.1:$PORT/api/bridge/publish/linkedin \
 
 | Error | When | Fix |
 |-------|------|-----|
-| `not_authenticated` | Bridge: user not logged in | Log in via Electron app |
-| `missing_params` | No text provided | Provide `text` param |
-| Character limit exceeded | Text > 3000 chars | Shorten post text |
+| `not_authenticated` | User not logged in | Log in via SkillTown Desktop |
+| `missing_params` | No text or account provided | Provide `accountId` and `text` |
+| Character limit exceeded | Text too long | Shorten post text |
 
 ## Tips
 
-- **LinkedIn is synchronous and fast** — no polling needed
-- **Always do the content-aware workaround** — read content → post → update status
-- **Use `article_url` for link previews** — LinkedIn auto-generates rich cards
-- **Keep posts professional** — LinkedIn audience expects different tone than IG/YT
+- LinkedIn is synchronous and fast; no polling needed.
+- Always do the content-aware workaround: read content → post → update channel status.
+- Keep posts professional; LinkedIn audience expects a different tone than IG/YT.

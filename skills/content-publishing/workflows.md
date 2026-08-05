@@ -1,208 +1,172 @@
 # Workflows — End-to-End Publishing Flows
 
-## Workflow 1: Full Pipeline — Create → Configure → CTA → Publish All Platforms
-
-```python
-# ─── STEP 1: Create content ───
-result = content_create(title="5 AI Tools for 2025")
-content_id = result["content_id"]  # "content_xxx"
-
-# ─── STEP 2: Set metadata + video ───
-content_update(
-    content_id=content_id,
-    display_title="5 AI Tools You Need in 2025",
-    content_title="5 AI Tools You Need in 2025",
-    description="A deep dive into AI tools for content creators",
-    caption="5 AI tools you need right now! 🚀\n\nComment 'FREE' to get the guide!",
-    video_url="https://storage.blob.../video.mp4",
-    downloadable_sas_url="https://storage.blob.../video.mp4?sv=...",
-    sas_expires_at="2025-12-31T00:00:00Z",
-    thumbnail="https://storage.blob.../thumb.jpg",
-    status="ready"
-)
-
-# ─── STEP 3: Get account IDs ───
-ig_accounts = instagram_get_accounts()
-# → use account id "ig_abc123"
-
-li_accounts = linkedin_get_account()
-# → use account id "li_def456"
-
-# ─── STEP 4: Configure channels ───
-content_configure_publish(
-    content_id=content_id, platform="instagram",
-    enabled=True, to_publish=True, post_type="reel",
-    caption="5 AI tools you need right now! 🚀\n\nComment 'FREE' to get the guide!",
-    hashtags='["AI", "tools", "2025", "contentcreator"]',
-    selected_account="ig_abc123"
-)
-
-content_configure_publish(
-    content_id=content_id, platform="youtube",
-    enabled=True, to_publish=True, post_type="long",
-    title="5 AI Tools You Need in 2025",
-    description="In this video, I share the top 5 AI tools...",
-    tags='["AI", "tools", "tutorial"]',
-    privacy="public", category="22",
-    selected_account="UCxxx"
-)
-
-content_configure_publish(
-    content_id=content_id, platform="linkedin",
-    enabled=True, to_publish=True, post_type="post",
-    title="5 AI Tools You Need in 2025",
-    description="Just published a deep dive into AI tools...\n\n#AI #ContentCreation",
-    selected_account="li_def456"
-)
-
-```
-
-Step 5 (CTA) should be set before publishing. The bridge accepts agent-friendly `messageBody` + `buttons[]`, writes the draft to `ContentLeadCTA` keyed by `media_${contentId}`, and publish status auto-syncs it to `ConfigurationData` when the real Instagram media ID lands. CTA is contentId-scoped, not tab-scoped, so no `tabId` is required. See [`bridge-mode.md`](bridge-mode.md) for the full bridge endpoint reference.
+All examples use the SkillTown Desktop local HTTP API. Read `~/.skilltown-desktop/api.json` fresh before the workflow and use `Authorization: Bearer $TOKEN`.
 
 ```bash
-# ─── STEP 5: Set CTA automation (before publishing) ───
-TOK=$(python3 -c "import json;print(json.load(open('/Users/shubham/.skilltown-desktop/api.json'))['token'])")
-PORT=$(python3 -c "import json;print(json.load(open('/Users/shubham/.skilltown-desktop/api.json'))['port'])")
-curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/automation" \
-  -H "Authorization: ******" -H "Content-Type: application/json" \
-  -d '{"action":"update_cta","contentId":"content_xxx","contains":["FREE","GUIDE","LINK","SEND"],"messageBody":"Here is your free AI tools guide.","buttons":[{"label":"Download Guide","url":"https://mysite.com/guide"},{"label":"Watch Tutorial","url":"https://mysite.com/tutorial"}],"commentReplies":["Thanks! Check your DMs 🎁","Sent! Look in your inbox 📩"],"enableCommentReply":true,"enableFollowGate":true,"followReply":"Follow us first, then comment again!","followButtonText":"Follow @myhandle","containerName":"ContentLeadCTA","syncToProduction":false}'
+API=$(cat ~/.skilltown-desktop/api.json)
+PORT=$(echo "$API" | python3 -c "import sys,json; print(json.load(sys.stdin)['port'])")
+TOKEN=$(echo "$API" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
 ```
 
-If you render the video locally in SkillTown Desktop, prefer `POST /api/render` with `contentId` and `uploadToCloud: true` before publishing. It renders locally, uploads the MP4 + thumbnail, and sets `Content.videoUrl`, SAS URLs, and `thumbnail`, so you can skip Workflow 2's manual upload steps for local renders.
+## Workflow 1: Full Pipeline — Create → Configure → CTA → Publish All Platforms
 
-```python
+### Step 1: Create content
 
-# ─── STEP 6: Publish to Instagram ───
-instagram_publish_reel(content_id=content_id)
-# → { "containerId": "17889xxx", "shouldPoll": true }
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/content/create"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"title":"5 AI Tools for 2025","description":"A deep dive into AI tools for content creators","waitForReady":true,"timeoutMs":120000}'
+# Save contentId from the response, e.g. content_xxx.
+```
 
-# Poll every 15 seconds
-instagram_publish_status(content_id=content_id, auto_publish=True)
-# → { "status": "IN_PROGRESS", "shouldPoll": true }
-# ... poll again ...
-# → { "status": "PUBLISHED", "mediaId": "17889xxx", "permalink": "https://..." }
+### Step 2: Set metadata and video
 
-# ─── STEP 7: Publish to YouTube ───
-youtube_publish(content_id=content_id)
-# → { "success": true, "videoId": "dQw4...", "cta": { "posted": true, "pinned": true } }
+```bash
+curl -X PUT "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"displayTitle":"5 AI Tools You Need in 2025","contentTitle":"5 AI Tools You Need in 2025","description":"A deep dive into AI tools for content creators","caption":"5 AI tools you need right now! 🚀
 
-# ─── STEP 8: Post to LinkedIn (NOT content-aware — manual workaround) ───
-content = content_get(content_id=content_id)
-yt_url = content["channels"]["youtube"].get("published_url", "")
+Comment FREE to get the guide!","videoUrl":"https://storage.blob.../video.mp4","downloadableSasUrl":"https://storage.blob.../video.mp4?sv=...","sasExpiresAt":"2025-12-31T00:00:00Z","thumbnail":"https://storage.blob.../thumb.jpg","status":"ready"}'
+```
 
-linkedin_post(
-    text=f"Just published: 5 AI Tools You Need in 2025! 🚀\n\nWatch: {yt_url}\n\n#AI #ContentCreation",
-    visibility="PUBLIC"
-)
+If you render locally in SkillTown Desktop, prefer `POST /api/render` with `contentId` and `uploadToCloud:true`; it renders locally, uploads the MP4 + thumbnail, and sets `Content.videoUrl`, SAS URLs, and `thumbnail` automatically.
 
-# Manually mark LinkedIn as published
-content_configure_publish(content_id=content_id, platform="linkedin", status="published")
+### Step 3: Get account IDs
 
-# ─── STEP 9: Verify everything ───
-final = content_get(content_id=content_id)
-# Check: channels.instagram.published === true  ✅
-# Check: channels.youtube.published === true     ✅
-# Check: channels.linkedin.status === "published" ✅
+```bash
+curl "http://127.0.0.1:$PORT/api/bridge/instagram/accounts"   -H "Authorization: Bearer $TOKEN"
+
+curl "http://127.0.0.1:$PORT/api/bridge/accounts"   -H "Authorization: Bearer $TOKEN"
+```
+
+Use the returned Instagram account ID, YouTube channel/account ID, and LinkedIn account ID.
+
+### Step 4: Configure channels
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"instagram","config":{"enabled":true,"toPublish":true,"postType":"reel","caption":"5 AI tools you need right now! 🚀
+
+Comment FREE to get the guide!","hashtags":["AI","tools","2025","contentcreator"],"selectedAccount":"ig_abc123"}}'
+
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"youtube","config":{"enabled":true,"toPublish":true,"postType":"long","title":"5 AI Tools You Need in 2025","description":"In this video, I share the top 5 AI tools...","tags":["AI","tools","tutorial"],"privacy":"public","category":"22","selectedAccount":"UCxxx"}}'
+
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"linkedin","config":{"enabled":true,"toPublish":true,"postType":"post","title":"5 AI Tools You Need in 2025","description":"Just published a deep dive into AI tools...
+
+#AI #ContentCreation","selectedAccount":"li_def456"}}'
+```
+
+### Step 5: Set Instagram CTA before publishing
+
+The CTA endpoint accepts agent-friendly `messageBody` + `buttons[]`, writes the draft to `ContentLeadCTA` keyed by `media_${contentId}`, and publish status auto-syncs it to `ConfigurationData` when the real Instagram media ID lands. CTA is contentId-scoped, not tab-scoped, so no `tabId` is required.
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/automation"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"action":"update_cta","contentId":"content_xxx","contains":["FREE","GUIDE","LINK","SEND"],"messageBody":"Here is your free AI tools guide.","buttons":[{"label":"Download Guide","url":"https://mysite.com/guide"},{"label":"Watch Tutorial","url":"https://mysite.com/tutorial"}],"commentReplies":["Thanks! Check your DMs 🎁","Sent! Look in your inbox 📩"],"enableCommentReply":true,"enableFollowGate":true,"followReply":"Follow us first, then comment again!","followButtonText":"Follow @myhandle","containerName":"ContentLeadCTA","syncToProduction":false}'
+```
+
+### Step 6: Publish to Instagram
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx"}'
+
+# Poll every 15 seconds until shouldPoll is false.
+curl "http://127.0.0.1:$PORT/api/bridge/instagram/publish/status?contentId=content_xxx&publish=true"   -H "Authorization: Bearer $TOKEN"
+```
+
+Expected final response includes `status:"PUBLISHED"`, `mediaId`, and `permalink`.
+
+### Step 7: Publish to YouTube
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/youtube/publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx"}'
+```
+
+Expected response includes `success:true`, `videoId`, and optional CTA comment state.
+
+### Step 8: Post to LinkedIn and mark tracking manually
+
+LinkedIn posting is not content-aware. Read the Content doc if you need a caption or YouTube URL, post, then manually mark LinkedIn status.
+
+```bash
+curl "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN"
+
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/publish/linkedin"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"accountId":"li_def456","text":"Just published: 5 AI Tools You Need in 2025! 🚀
+
+#AI #ContentCreation"}'
+
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"linkedin","config":{"status":"published"}}'
+```
+
+### Step 9: Verify everything
+
+```bash
+curl "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN"
+# Check channels.instagram.published === true
+# Check channels.youtube.published === true
+# Check channels.linkedin.status === "published"
 ```
 
 ---
 
 ## Workflow 2: Upload Video via SAS URL
 
-> **Preferred for local renders:** use `POST /api/render` with `{"contentId":"content_xxx","uploadToCloud":true}`. It uploads the MP4 and thumbnail and updates the Content document automatically. Use the manual SAS flow below only for external/client-side binary uploads.
+> Preferred for local renders: use `POST /api/render` with `{ "contentId":"content_xxx", "uploadToCloud":true }`. It uploads the MP4 and thumbnail and updates the Content document automatically. Use the manual SAS flow below only for external/client-side binary uploads.
 
-```python
+```bash
 # 1. Get upload URL
-upload = content_get_upload_url(
-    content_id="content_xxx",
-    file_name="final-render.mp4",
-    content_type="video/mp4"
-)
-# → { uploadUrl, videoUrl, downloadableSasUrl, sasExpiresAt, headers }
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/upload-url"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","fileName":"final-render.mp4","contentType":"video/mp4"}'
+# Response includes uploadUrl, videoUrl, downloadableSasUrl, sasExpiresAt, headers.
 
-# 2. Client/system uploads binary to upload["uploadUrl"] via HTTP PUT
-#    Headers: { "x-ms-blob-type": "BlockBlob", "Content-Type": "video/mp4" }
+# 2. Client/system uploads binary to uploadUrl via HTTP PUT with response.headers.
 
 # 3. Link uploaded video to content
-content_update(
-    content_id="content_xxx",
-    video_url=upload["videoUrl"],
-    downloadable_sas_url=upload["downloadableSasUrl"],
-    sas_expires_at=upload["sasExpiresAt"]
-)
+curl -X PUT "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"videoUrl":"https://storage.blob.../video.mp4","downloadableSasUrl":"https://storage.blob.../video.mp4?sv=...","sasExpiresAt":"2027-06-15T12:00:00.000Z"}'
 ```
 
 ---
 
-## Workflow 3: Schedule Content for Later
+## Workflow 3: Schedule a Reel for Later (Instagram only)
 
-```python
-# Configure but don't publish yet
-content_configure_publish(
-    content_id="content_xxx",
-    platform="instagram",
-    enabled=True,
-    to_publish=True,
-    status="scheduled",
-    publish_date="2025-06-15",
-    publish_timestamp="2025-06-15T14:00:00+05:30",
-    caption="Coming soon! 🎬",
-    selected_account="ig_abc123",
-    post_type="reel"
-)
+> **Scheduling exists only for Instagram reels.** YouTube and LinkedIn have no scheduler — they publish immediately (Workflow 1, Steps 7–8). To "schedule" those, run the publish call yourself at the desired time.
+
+### Step 1 (REQUIRED for comment automation): set the CTA draft FIRST
+
+A scheduled reel's automation is created **only** by promoting a pre-existing draft CTA when the slot fires. If you skip this, the reel publishes with **no** comment/DM automation, and it cannot be attached retroactively through this flow. So set the CTA before scheduling — run **Workflow 1, Step 5** (the `update_cta` call with `containerName:"ContentLeadCTA"`) for this `contentId` now. Skip this step only if the reel deliberately needs no automation.
+
+### Step 2: Schedule the reel
+
+Use the dedicated schedule endpoint. `wallTime` must satisfy the server's minimum-lead and slot-boundary rules; if it is rejected, the error states the exact required lead time and slot size — round up to the next slot and retry. Do not hard-code specific minute values, as they can change.
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/publish/schedule"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","selectedAccount":"ig_abc123","wallTime":"2026-08-05T14:00","timeZone":"Asia/Kolkata","caption":"Coming soon! 🎬","hashtags":["AI","tools"]}'
 ```
 
-> **Note:** Scheduling sets the metadata but does NOT auto-publish at the scheduled time.
-> A separate scheduler service or manual trigger is needed to actually publish.
+### Step 3: Manage / track the schedule
+
+Use `PATCH /api/bridge/instagram/publish/schedule` to reschedule and `DELETE /api/bridge/instagram/publish/schedule` to cancel (both reject once publishing has started). Track progress with `GET /api/bridge/instagram/publish/scheduled-status?contentId=content_xxx` and watch `publish_state` advance `scheduled → claimed → creating_container → container_processing → container_ready → publishing → published` (see the lifecycle table in `instagram.md`). When it reaches `published`, `media_id` and `published_url` are set, and — if you did Step 1 — the CTA is now live on the real post.
 
 ---
 
 ## Workflow 4: Check Publish Readiness
 
-```python
-content = content_get(content_id="content_xxx")
-
-# Has video?
-has_video = bool(content.get("videoUrl") or content.get("downloadableSasUrl"))
-
-# SAS URLs still valid?
-from datetime import datetime
-sas_expires = content.get("sasExpiresAt")
-sas_valid = sas_expires and datetime.fromisoformat(sas_expires) > datetime.now()
-
-# Instagram configured?
-ig = content.get("channels", {}).get("instagram", {})
-ig_ready = ig.get("selected_account") and ig.get("caption")
-
-# Already published?
-ig_published = ig.get("published", False)
-
-# Summary
-print(f"Video: {has_video}, SAS valid: {sas_valid}, IG ready: {ig_ready}, IG published: {ig_published}")
+```bash
+curl "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN"
 ```
+
+Check:
+- Has video: `videoUrl` or `downloadableSasUrl` is present.
+- SAS URLs are still valid: `sasExpiresAt` is in the future.
+- Instagram configured: `channels.instagram.selected_account` and `channels.instagram.caption` exist.
+- Already published: `channels.instagram.published` is not true before a first publish.
 
 ---
 
 ## Workflow 5: Find Existing Content and Publish
 
-```python
-# List all ready content
-ready = content_list(status="ready", limit=10)
+```bash
+# List ready content
+curl "http://127.0.0.1:$PORT/api/bridge/content?status=ready&limit=10"   -H "Authorization: Bearer $TOKEN"
 
-# Pick one
-content_id = ready["items"][0]["content_id"]
+# Read selected content
+curl "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN"
 
-# Check if it's already configured for Instagram
-content = content_get(content_id=content_id)
-ig = content.get("channels", {}).get("instagram", {})
-
-if ig.get("selected_account") and ig.get("caption") and not ig.get("published"):
-    # Ready to publish
-    instagram_publish_reel(content_id=content_id)
-    # ... poll status ...
-else:
-    # Needs configuration first
-    content_configure_publish(content_id=content_id, platform="instagram", ...)
+# If configured and not already published, publish Instagram
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx"}'
 ```
 
 ---
@@ -214,6 +178,6 @@ else:
 | Publishing for the first time? | Workflow 1 (full pipeline) |
 | Just uploading a local render? | `POST /api/render` with `contentId` + `uploadToCloud:true` |
 | Uploading an external video binary? | Workflow 2 (SAS URL upload) |
-| Setting up for future publish? | Workflow 3 (schedule) |
+| Setting up Instagram for future publish? | Workflow 3 (schedule endpoint) |
 | Not sure if content is ready? | Workflow 4 (readiness check) |
 | Content exists, just need to publish? | Workflow 5 (find & publish) |

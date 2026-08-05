@@ -1,63 +1,62 @@
 # Channel Configuration — Set Up Platforms Before Publishing
 
-Use `content_configure_publish` to set platform-specific settings on a Content document
-**before** calling the publish tools.
+Use `POST /api/bridge/content/configure-publish` to set platform-specific settings on a Content document **before** publishing.
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"instagram","config":{"enabled":true,"toPublish":true}}'
+```
 
 ---
 
-## `content_configure_publish` — Configure channel for publishing
+## Endpoint body
 
-Sets config on `Content.channels[platform]`. Call once per platform.
-
-| Param | Type | Required | Description |
+| Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `content_id` | string | ✅ | Content ID to configure |
-| `platform` | string | ✅ | `"instagram"`, `"youtube"`, or `"linkedin"` |
+| `contentId` | string | ✅ | Content ID to configure |
+| `platform` | string | ✅ | `instagram`, `youtube`, or `linkedin` |
+| `config` | object | ✅ | Platform-specific settings below |
 
-### Common Params (all platforms)
+### Common `config` fields (all platforms)
 
-| Param | Type | Default | Description |
+| Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `selected_account` | string | — | Account/channel ID. Get from `instagram_get_accounts()`, `linkedin_get_account()`, or bridge `GET /api/bridge/accounts`. |
-| `post_type` | string | — | **IG:** `"reel"`, `"feed"`, `"story"` · **YT:** `"long"`, `"short"` · **LI:** `"post"`, `"article"` |
-| `to_publish` | bool | — | Mark channel for publishing (`true`/`false`) |
+| `selectedAccount` | string | — | Account/channel ID. Get Instagram accounts from `GET /api/bridge/instagram/accounts`; LinkedIn and aggregate accounts from `GET /api/bridge/accounts`. |
+| `postType` | string | — | **IG:** `reel`, `feed`, `story` · **YT:** `long`, `short` · **LI:** `post`, `article` |
+| `toPublish` | bool | — | Mark channel for publishing |
 | `enabled` | bool | — | Enable/disable this channel |
-| `status` | string | — | Channel status: `"draft"`, `"scheduled"`, `"ready"` (convention, not enforced) |
-| `publish_date` | string | — | Scheduled date: `"2025-06-15"` |
-| `publish_timestamp` | string | — | Scheduled datetime: `"2025-06-15T14:00:00+05:30"` |
+| `status` | string | — | Channel status: `draft`, `scheduled`, `ready` (convention, not enforced) |
+| `publishDate` | string | — | Scheduled date: `2025-06-15` |
+| `publishTimestamp` | string | — | Scheduled datetime: `2025-06-15T14:00:00+05:30` |
 
-### Instagram-Specific
+### Instagram-specific `config`
 
-| Param | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
 | `caption` | string | Post caption text |
-| `hashtags` | string | JSON array: `'["ai", "video", "tools"]'` |
-| `location` | string | Location tag (e.g. `"Mumbai, India"`) |
+| `hashtags` | array or JSON string | Hashtags, e.g. `["ai", "video", "tools"]` |
+| `location` | string | Location tag, e.g. `Mumbai, India` |
+| `taggedUsers` | array or JSON string | Tagged users, if supported by the current backend |
 
-> `tagged_users` is in the server allowlist but not yet exposed as an MCP tool param.
+### YouTube-specific `config`
 
-### YouTube-Specific
-
-| Param | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
 | `title` | string | Video title |
 | `description` | string | Video description |
-| `tags` | string | JSON array: `'["AI", "tutorial"]'` |
-| `privacy` | string | `"public"`, `"private"`, or `"unlisted"` |
-| `thumbnail_url` | string | Custom thumbnail URL |
-| `category` | string | YouTube category ID (default `"22"` = People & Blogs) |
+| `tags` | array or JSON string | Tags, e.g. `["AI", "tutorial"]` |
+| `privacy` | string | `public`, `private`, or `unlisted` |
+| `thumbnailUrl` | string | Custom thumbnail URL |
+| `category` | string | YouTube category ID (default `22` = People & Blogs) |
+| `playlistId` | string | Playlist ID, if supported by the current backend |
 
-> `playlist_id` is in the server allowlist but not yet exposed as an MCP tool param.
+### LinkedIn-specific `config`
 
-### LinkedIn-Specific
-
-| Param | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
 | `title` | string | Post title |
-| `description` | string | Post content text (stored as `content` field internally) |
-| `hashtags` | string | JSON array: `'["marketing", "ai"]'` |
-
-> `mention_users` is in the server allowlist but not yet exposed as an MCP tool param.
+| `description` | string | Post content text (stored as `content` internally) |
+| `hashtags` | array or JSON string | Hashtags, e.g. `["marketing", "ai"]` |
+| `mentionUsers` | array or JSON string | Mentioned users, if supported by the current backend |
 
 ---
 
@@ -68,9 +67,9 @@ Sets config on `Content.channels[platform]`. Call once per platform.
   "success": true,
   "contentId": "content_xxx",
   "platform": "instagram",
-  "applied": ["caption", "hashtags", "selected_account", "platform"],
-  "rejected": ["some_invalid_field"],
-  "config": { /* current channel config after update */ }
+  "applied": ["caption", "hashtags", "selectedAccount", "platform"],
+  "rejected": ["someInvalidField"],
+  "config": { "...": "current channel config after update" }
 }
 ```
 
@@ -78,7 +77,7 @@ Sets config on `Content.channels[platform]`. Call once per platform.
 
 ## Blocked Fields (System-Owned — Cannot Be Set Manually)
 
-These are written **automatically** during publish. Setting them via `content_configure_publish` will result in rejection:
+These are written automatically during publish. Setting them through channel configuration will result in rejection:
 
 `published`, `published_at`, `media_id`, `video_id`, `container_id`, `publish_progress`,
 `published_url`, `youtube_response`, `instagram_response`, `linkedin_response`, `linkedin_id`,
@@ -91,54 +90,43 @@ These are written **automatically** during publish. Setting them via `content_co
 
 ### `channels.instagram`
 
-```
-// User-configurable (via content_configure_publish):
+```text
+// User-configurable:
 platform, post_type, caption, hashtags, location, tagged_users,
 selected_account, to_publish, enabled, status,
 publish_date, publish_timestamp
 
-// System-written after publish (read-only):
-published          // true when published
-published_at       // ISO timestamp
-media_id           // Instagram media ID
-container_id       // Container ID (during async publish)
-published_url      // Permalink (e.g. https://instagram.com/reel/xxx)
-publish_progress   // { stage, timestamp, error }
-error_message      // Error details if publish failed
+// System-written after publish:
+published, published_at, media_id, container_id, published_url,
+publish_progress, error_message
 ```
 
 ### `channels.youtube`
 
-```
+```text
 // User-configurable:
 platform, post_type, title, description, tags, category, privacy,
 thumbnail_url, selected_account, to_publish, enabled, status,
 publish_date, publish_timestamp, playlist_id
 
 // System-written after publish:
-published, published_at, video_id, published_url,
-youtube_response,        // Full YouTube API response
-cta_comment_id,          // YouTube comment ID for CTA
-cta_comment_posted,      // true if CTA comment was posted
-cta_comment_pinned,      // true if CTA comment was pinned
-cta_comment_posted_at
+published, published_at, video_id, published_url, youtube_response,
+cta_comment_id, cta_comment_posted, cta_comment_pinned, cta_comment_posted_at
 ```
 
 ### `channels.linkedin`
 
-```
+```text
 // User-configurable:
 platform, post_type, title, content, hashtags, mention_users,
 selected_account, to_publish, enabled, status,
 publish_date, publish_timestamp
 
-// System-written after publish:
+// System-written after publish or manual tracking update:
 published, published_at, linkedin_id, published_url
 ```
 
-> **⚠️ LinkedIn note:** The `linkedin_post` tool does NOT write to these fields automatically.
-> You must manually call `content_configure_publish(platform="linkedin", status="published")`
-> after posting. See `linkedin.md` for details.
+> **⚠️ LinkedIn note:** `POST /api/bridge/publish/linkedin` does not update these fields automatically. After posting, call `POST /api/bridge/content/configure-publish` with `platform:"linkedin"` and `config.status:"published"`. See `linkedin.md`.
 
 ---
 
@@ -146,56 +134,26 @@ published, published_at, linkedin_id, published_url
 
 ### Configure Instagram for a reel
 
-```python
-content_configure_publish(
-    content_id="content_xxx",
-    platform="instagram",
-    enabled=True,
-    to_publish=True,
-    caption="5 AI tools you need right now! 🚀\n\nComment 'FREE' to get the guide!",
-    hashtags='["AI", "tools", "2025", "contentcreator"]',
-    selected_account="ig_account_id",
-    post_type="reel"
-)
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"instagram","config":{"enabled":true,"toPublish":true,"caption":"5 AI tools you need right now! 🚀
+
+Comment FREE to get the guide!","hashtags":["AI","tools","2025","contentcreator"],"selectedAccount":"ig_account_id","postType":"reel"}}'
 ```
 
 ### Configure YouTube
 
-```python
-content_configure_publish(
-    content_id="content_xxx",
-    platform="youtube",
-    enabled=True,
-    to_publish=True,
-    title="5 AI Tools You Need in 2025",
-    description="In this video, I share the top 5 AI tools...",
-    tags='["AI", "tools", "tutorial", "2025"]',
-    privacy="public",
-    category="22",
-    selected_account="UCxxx",
-    post_type="long"
-)
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"youtube","config":{"enabled":true,"toPublish":true,"title":"5 AI Tools You Need in 2025","description":"In this video, I share the top 5 AI tools...","tags":["AI","tools","tutorial","2025"],"privacy":"public","category":"22","selectedAccount":"UCxxx","postType":"long"}}'
 ```
 
 ### Schedule content for later
 
-```python
-content_configure_publish(
-    content_id="content_xxx",
-    platform="instagram",
-    status="scheduled",
-    publish_date="2025-06-15",
-    publish_timestamp="2025-06-15T14:00:00+05:30"
-)
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"instagram","config":{"status":"scheduled","publishDate":"2025-06-15","publishTimestamp":"2025-06-15T14:00:00+05:30"}}'
 ```
 
 ### Toggle a channel off
 
-```python
-content_configure_publish(
-    content_id="content_xxx",
-    platform="youtube",
-    enabled=False,
-    to_publish=False
-)
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"youtube","config":{"enabled":false,"toPublish":false}}'
 ```

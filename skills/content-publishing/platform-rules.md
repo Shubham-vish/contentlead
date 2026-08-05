@@ -2,38 +2,32 @@
 
 ## SAS URL Expiry
 
-Azure Blob Storage SAS (Shared Access Signature) URLs are **time-limited**.
-If expired, video publish/streaming will fail.
+Azure Blob Storage SAS (Shared Access Signature) URLs are time-limited. If expired, video publish/streaming will fail.
 
 ### Checking Expiry
 
-```python
-content = content_get(content_id="content_xxx")
-sas_expires = content.get("sasExpiresAt")
-# Compare with current time — if past, URLs are dead
+```bash
+curl "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN"
+# Check sasExpiresAt against current time.
 ```
 
 ### Refreshing SAS URLs
 
-```python
-# Get fresh upload URL (generates new SAS tokens)
-result = content_get_upload_url(content_id="content_xxx", file_name="video.mp4")
+```bash
+# Get fresh upload/read URLs
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/upload-url"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","fileName":"video.mp4","contentType":"video/mp4"}'
 
-# Update content with new URLs
-content_update(
-    content_id="content_xxx",
-    downloadable_sas_url=result["downloadableSasUrl"],
-    sas_expires_at=result["sasExpiresAt"]
-)
+# After uploading bytes if needed, update content with returned fields
+curl -X PUT "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"downloadableSasUrl":"https://...?sv=...","sasExpiresAt":"2027-06-15T12:00:00.000Z"}'
 ```
 
 ### URL Types
 
 | URL Field | SAS? | Expires? | Use case |
 |-----------|------|----------|----------|
-| `videoUrl` | No | Never | Permanent reference (can't stream without SAS) |
+| `videoUrl` | No | Never | Permanent reference (may not stream without SAS) |
 | `videoSasUrl` | Yes | Yes | Browser playback/streaming |
-| `downloadableSasUrl` | Yes | Yes | Download + **publishing** (adds Content-Disposition header) |
+| `downloadableSasUrl` | Yes | Yes | Download + publishing (adds Content-Disposition header) |
 
 ### Resolution Order for Publishing
 
@@ -104,7 +98,7 @@ The publish pipeline tries each in order. If the first available URL works, it u
 
 | Problem | Symptom | Fix |
 |---------|---------|-----|
-| SAS URL expired | `403 Forbidden` or empty response | Refresh with `content_get_upload_url` |
+| SAS URL expired | `403 Forbidden` or empty response | Refresh with `POST /api/bridge/content/upload-url` |
 | Video URL unreachable | Publish hangs or errors | Ensure URL is publicly accessible |
 | Token expired | `401` or `token_expired` error | User must reconnect account in ContentLead UI |
 | Video too large | Upload timeout or IG rejection | Compress video, reduce resolution |
@@ -117,7 +111,7 @@ The publish pipeline tries each in order. If the first available URL works, it u
 
 ## Image Format Best Practices
 
-- **JPEG for thumbnails and backgrounds** — much smaller than PNG
-- **Keep total base64 under 2 MB** — prevents renderer crashes in the editor
-- **Use CDN URLs** — Azure Blob URLs with SAS tokens are fast and reliable
-- **Don't use localhost URLs** — social APIs can't access local files
+- JPEG for thumbnails and backgrounds — much smaller than PNG.
+- Keep total base64 under 2 MB to prevent renderer crashes in the editor.
+- Use CDN URLs or Azure Blob URLs with SAS tokens.
+- Do not use localhost URLs for social publishing; social APIs cannot access local files.

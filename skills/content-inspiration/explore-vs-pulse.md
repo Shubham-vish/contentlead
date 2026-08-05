@@ -4,7 +4,7 @@ There are **three distinct routes** in the SkillTown web app for content researc
 
 | Route | Component | Data model | Purpose |
 |---|---|---|---|
-| `/content/inspiration` | `ContentInspirationEngineView` | **Instagram-only reels cache** in Cosmos (per-user) | Legacy feed. Browse synced IG reels by tracked creator. Read-only for MCP. |
+| `/content/inspiration` | `ContentInspirationEngineView` | **Instagram-only reels cache** in Cosmos (per-user) | Legacy feed. Browse synced IG reels by tracked creator through the desktop bridge. |
 | `/content/inspiration/explore` | `ExploreSurface` | **Transient fan-out** — no persistence | Ad-hoc topic/URL/text search across sources. Results vanish on refresh. |
 | `/content/inspiration/pulse` | `PulseSurface` | **Persistent niches** in Cosmos (niche-items container) | "Monitor these keywords across these sources forever." Items accumulate. |
 
@@ -47,7 +47,7 @@ Per-source result (`perSource[i]`):
   // Non-fatal error state — the fan-out kept going for other sources
   error?: string;                    // User-friendly message
   errorCode?: string;                // Stable enum (see below)
-  rawError?: string;                 // Original MCP message; only surface via a "Details" disclosure
+  rawError?: string;                 // Original upstream/bridge message; only surface via a "Details" disclosure
   retryable?: boolean;
   retryAfterSec?: number;            // Backoff hint for rate limits
 
@@ -81,8 +81,8 @@ if (source.needsConnect) {
   //   AUTH_MISSING_COOKIES   → first-time connect
   //   AUTH_INVALID_COOKIES   → expired/rotated → needsCookieRefresh = true
   //   AUTH_INSUFFICIENT_SCOPE → account exists but can't access this content
-  // For IG on Explore/Pulse: the fix is "install SkillTown Desktop" → send user to /download.
-  // For IG/X/etc via MCP: call scraping_cookie_update with fresh cookies.
+  // For IG on Explore/Pulse: the fix is to connect the source in SkillTown Desktop; if Desktop is missing, send user to /download.
+  // For IG/X: send the user through the desktop Connect flow, then retry.
 }
 ```
 
@@ -137,7 +137,7 @@ Consistent naming across the codebase:
 
 | Value | Platform | Notes |
 |---|---|---|
-| `"instagram"` | Instagram | Cache-only on Explore/Pulse search; MCP-only for tracked-creator refresh |
+| `"instagram"` | Instagram | Cache-only on Explore/Pulse search; use tracked creator add + refresh for live creator pulls |
 | `"x"` | Twitter/X | **NOT `"twitter"`** — the API always uses `"x"` |
 | `"youtube"` | YouTube | HTML scrape (no cookies needed) |
 | `"reddit"` | Reddit | Public JSON API (no cookies needed) |
@@ -152,7 +152,7 @@ For **creator tracking** (`POST /creators`, `POST /creators/refresh`) the valid 
 1. **`"twitter"` is not a valid source id.** Use `"x"` everywhere.
 2. **IG search returns empty with `needsConnect: true` if the user hasn't installed the desktop app.** That's not a bug — server can't scrape IG live. Send them to `/download`.
 3. **`round` maxes at 5.** After that, `exhausted: true` and further "Load more" calls will short-circuit.
-4. **`perSourceLimit` maxes at 25.** Requesting more returns 400.
+4. **`limit` maxes at 25 per source.** Requesting more returns 400.
 5. **`ai-output` findings are in-memory per Next.js instance, max 50 per user.** In desktop single-instance mode this is fine. If the marketing site ever runs multi-instance, findings won't sync across pods.
 6. **Bridge auth needs `Bearer` prefix.** `Authorization: Bearer <token>` — without the word `Bearer` the server returns `{"error": "unauthorized"}`.
 7. **The `Cap.ContentInspirationView` capability gate** wraps every route. If a user's plan doesn't include it, they get 403 — not 401. The bridge doesn't translate this — the AI sees `403` and should surface a plan upgrade message.
