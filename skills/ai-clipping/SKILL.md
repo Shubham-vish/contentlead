@@ -445,7 +445,7 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/content/create" \
 # → {contentId, navigated: true}
 ```
 
-**⚠️ Wait 10-12 seconds after navigation for DB content to load** (race condition — see AGENTS.md Step 5).
+**⚠️ Wait 10-12 seconds after navigation for DB content to load** (race condition — the editor page navigates before Cosmos content finishes loading; poll `query.getEditorState` / editor summary and confirm the project/canvas is present before adding items).
 
 ### 3.2 Set up canvas for vertical
 

@@ -172,6 +172,6 @@ Use `POST /api/bridge/voice/delete`.
 > **Reference**: SFX lives in two tiers:
 > - **Core Set** (27 keyed sounds): `_Assets/sfx/core-set/` — one best sound per role, AI default. See `core_sfx_manifest.json` for ML analysis and `CORE_SFX_GUIDE.md` for quick reference.
 > - **Full Library** (81 sounds): `_Assets/sfx/remotion-ready/` — 12 categories with `sfx_manifest.json` for variety/fallback.
-> - **Placement guide**: See `_Agent/skills/sfx-placement.md` for the complete SFX placement workflow.
+> - **Placement guide**: See `content-direction/sfx-placement.md` (skill doc) for the complete SFX placement workflow.
 > - Use `POST /api/bridge/ai/sfx/search` (desktop AI bridge) for additional SFX from the cloud catalog (1000+ sounds).
 > - Regenerate manifests anytime: `python _Assets/sfx/_analysis/generate_manifest.py <folder>`

@@ -134,7 +134,7 @@ curl -X POST http://127.0.0.1:$PORT/api/execute \
 
 ### Activity Logs & Error Checking
 
-> ⚠️ **Before starting any work**, follow the **Mandatory Startup Protocol** in AGENTS.md — check health, errors, timeline validation, and media status.
+> ⚠️ **Before starting any work**, follow the startup protocol in `getting-started.md` (Discovery → Authentication → Health Check → User Login Check → First Command Sequence) — check health, errors, timeline validation, and media status. *(If you are working inside the `_Agent` repo, `AGENTS.md § MANDATORY Startup Protocol` is the fuller reference.)*
 
 After executing commands, always check for errors:
 ```bash
@@ -179,7 +179,7 @@ To add local files (audio/video/images) to the editor, use the **media server** 
 
 ## Categories & Quick Reference
 
-> **Canonical command reference**: See `AGENTS.md § Complete Command Reference` for the authoritative list of all 90+ commands with full parameter signatures.
+> **Canonical command reference**: the categorized commands **below** are the quick reference. For full parameter signatures, load the relevant `contentlead/` sub-doc (e.g. `track-management.md`, `item-editing.md`, `animations-and-effects.md`, `text-and-captions.md`, `video.md`, `images.md`). *(If you are working inside the `_Agent` repo, `AGENTS.md § Complete Command Reference` consolidates all 90+ commands in one place.)*
 
 ### Media (add items to timeline)
 - `editor.addText` — styled text overlay with fonts, colors, shadows, strokes

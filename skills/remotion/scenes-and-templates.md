@@ -80,7 +80,7 @@ Fetch editable props for one scene. **Always call this before adding text overla
 
 The response includes an `inputSchema` string showing all available props and a `fields` array with details.
 
-**⚠️ Text props in scenes**: If a scene has props like `title`, `subtitle`, `overlayTitle`, `textLine1`, etc., the scene RENDERS that text internally. Do NOT duplicate it with separate text track items — this causes overlapping text. See AGENTS.md "Scene Text vs Track Text" section.
+**⚠️ Text props in scenes**: If a scene has props like `title`, `subtitle`, `overlayTitle`, `textLine1`, etc., the scene RENDERS that text internally. Do NOT duplicate it with separate text track items — this causes overlapping text. **Rule:** when a scene's `inputSchema`/`fields` already expose a text prop, pass the text via that prop and do not add a matching `editor.addText` track item for the same string.
 
 Example:
 
