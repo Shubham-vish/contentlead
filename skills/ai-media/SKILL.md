@@ -1,13 +1,13 @@
 ---
 name: ai-media
-description: AI-powered media generation and analysis — image search/generation/compose/analyze (vision), text generation, asset re-hosting, and transcription (short, long, speaker-diarized). Routed through the local SkillTown Desktop AI bridge (/api/bridge/ai/*) so there is no MCP server, no manual JWT, and no API keys in the request. Use whenever you need to create, find, or analyze media assets for a ContentLead video.
+description: AI-powered media generation and analysis — image search/generation/compose/analyze (vision), text generation, asset re-hosting, and transcription (short, long, speaker-diarized). Routed through the local SkillTown Desktop AI bridge (/api/bridge/ai/*) so there is no separate tool-proxy server, no manual JWT, and no API keys in the request. Use whenever you need to create, find, or analyze media assets for a ContentLead video.
 tags: ai, media, image, generate, analyze, vision, text, transcribe, speakers, diarization, bridge, content
 ---
 
 # AI Media Generation & Analysis (via Desktop AI Bridge)
 
 Every capability in this skill is a **plain HTTP POST** to the local SkillTown
-Desktop app under `/api/bridge/ai/*`. There is **no MCP server** and **no
+Desktop app under `/api/bridge/ai/*`. There is **no separate tool-proxy server** and **no
 JSON-RPC framing** — just one bearer token and one real JSON body.
 
 **How the auth + keys work (you don't manage any of it):**
@@ -30,8 +30,8 @@ key in the body** — the SkillTown proxy resolves your per-user key server-side
 from your account (Settings → Image Search / Image Generation). If a key is
 missing you'll get a clear error telling you to set it there.
 
-> **Migrated from MCP:** this skill previously used `POST /api/mcp/call` with
-> stringified-JSON args and `prepwithai_*` tool names. That path is **gone**.
+> **Legacy path removed:** this skill previously used a stringified-JSON tool-call proxy with
+> `prepwithai_*` tool names. That path is **gone**.
 > Args are now real JSON arrays/objects, responses are the backend JSON
 > directly (single parse — no `content.result` double-decode).
 
@@ -206,8 +206,8 @@ curl -sX POST "$API/api/bridge/ai/text/generate" \
       }'
 ```
 
-> **Text templates gone with MCP.** The old `text_generate_from_template` /
-> `text_list_templates` tools were MCP-only convenience wrappers. Reproduce them
+> **Text templates removed.** The old `text_generate_from_template` /
+> `text_list_templates` tools were legacy convenience wrappers. Reproduce them
 > by putting the same instruction in a `system` message here (e.g. "Write a
 > LinkedIn post about {topic} for {audience}, tone: {tone}"). No separate
 > template endpoint is needed.
@@ -343,7 +343,7 @@ dialogue.
   `missing key`, set it in the SkillTown app → Settings → Image Search / Image
   Generation, then retry.
 - **Args are real JSON.** `messages`, `reference_images`, `output_schema` are
-  arrays/objects — do NOT stringify them (that was an MCP-only quirk).
+  arrays/objects — do NOT stringify them (that was a legacy proxy quirk).
 - **SAS-token URLs expire** — always download or `asset/rehost` before persisting.
 - **`Bearer` prefix required** on bridge routes.
 

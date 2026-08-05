@@ -21,7 +21,7 @@ curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `selectedAccount` | string | — | Account/channel ID. Get Instagram accounts from `GET /api/bridge/instagram/accounts`; LinkedIn and aggregate accounts from `GET /api/bridge/accounts`. |
-| `postType` | string | — | **IG:** `reel`, `feed`, `story` · **YT:** `long`, `short` · **LI:** `post`, `article` |
+| `postType` / `post_type` | string | — | **IG:** `reel`, `feed`, `story`, `image`, `carousel` · **YT:** `long`, `short` · **LI:** `post`, `article` |
 | `toPublish` | bool | — | Mark channel for publishing |
 | `enabled` | bool | — | Enable/disable this channel |
 | `status` | string | — | Channel status: `draft`, `scheduled`, `ready` (convention, not enforced) |
@@ -36,6 +36,16 @@ curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H 
 | `hashtags` | array or JSON string | Hashtags, e.g. `["ai", "video", "tools"]` |
 | `location` | string | Location tag, e.g. `Mumbai, India` |
 | `taggedUsers` | array or JSON string | Tagged users, if supported by the current backend |
+| `media_items` | array | For `post_type:"image"`, `"story"`, or `"carousel"`: `[{ "type": "image"|"video", "url": "https://..." }]` |
+
+Instagram media rules:
+- `image`: one public HTTPS image URL in `media_items`; captions supported.
+- `story`: one public HTTPS image or video URL in `media_items`; stories have no caption.
+- `carousel`: 2–10 public HTTPS image/video items in `media_items`; captions supported.
+- Reels use the Content video URL instead of `media_items`.
+- **Sound/music:** a photo published as a photo is always silent — the API cannot add music to a still image, story, or carousel photo. To get sound, supply a `{ "type": "video" }` item whose file already contains the audio (in a carousel, sound plays only on that video slide). See `instagram.md` → "Sound / music, and story limitations".
+- **Stories:** API stories are plain image/video only — no link stickers, polls, quizzes, countdowns, or music stickers (must be added manually in-app).
+- Instagram allows about 50 published posts per account per 24 hours.
 
 ### YouTube-specific `config`
 
@@ -93,7 +103,7 @@ These are written automatically during publish. Setting them through channel con
 ```text
 // User-configurable:
 platform, post_type, caption, hashtags, location, tagged_users,
-selected_account, to_publish, enabled, status,
+media_items, selected_account, to_publish, enabled, status,
 publish_date, publish_timestamp
 
 // System-written after publish:
@@ -138,6 +148,29 @@ published, published_at, linkedin_id, published_url
 curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"instagram","config":{"enabled":true,"toPublish":true,"caption":"5 AI tools you need right now! 🚀
 
 Comment FREE to get the guide!","hashtags":["AI","tools","2025","contentcreator"],"selectedAccount":"ig_account_id","postType":"reel"}}'
+```
+
+### Configure and publish an Instagram image / story / carousel
+
+Set `postType` + `media_items` via configure-publish, then call `POST /api/bridge/instagram/publish`. Full per-type curl examples (image, story, carousel, and music/sound rules) live in `instagram.md` → "Image, Story, and Carousel examples". Quick image example:
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{
+    "contentId": "content_xxx",
+    "platform": "instagram",
+    "config": {
+      "enabled": true,
+      "toPublish": true,
+      "selectedAccount": "ig_account_id",
+      "postType": "image",
+      "caption": "New launch is live 🚀",
+      "media_items": [
+        { "type": "image", "url": "https://cdn.example.com/launch-image.jpg" }
+      ]
+    }
+  }'
+
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx"}'
 ```
 
 ### Configure YouTube

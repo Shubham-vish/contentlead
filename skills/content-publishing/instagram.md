@@ -80,20 +80,24 @@ Possible errors: `token_invalid`, `token_expired`, `permissions_revoked`. If unh
 
 ## Publishing
 
-### `POST /api/bridge/instagram/publish` — Start reel publish
+### `POST /api/bridge/instagram/publish` — Start tracked Instagram publish
 
 | Body field | Required | Description |
 |------------|----------|-------------|
-| `contentId` | ✅ | Reads caption, account, and video from Content doc. Tracks in dashboard. |
+| `contentId` | ✅ | Reads account and configured Instagram channel data from Content doc. Tracks in dashboard. |
 | `accountId` | | Optional account override |
 
 > **⚠️ Always use `contentId`.** Direct account/video workflows can publish but are not dashboard-tracked, so they are intentionally not documented for agent use.
+>
+> **Note:** `POST /api/bridge/instagram/publish` publishes whatever `channels.instagram.post_type` is set to (`reel`, `image`, `story`, `carousel`).
 
 Prerequisites:
-- Content has video (`videoUrl`, `videoSasUrl`, or `downloadableSasUrl` set through content update/render upload)
+- For `post_type:"reel"`: Content has video (`videoUrl`, `videoSasUrl`, or `downloadableSasUrl` set through content update/render upload)
+- For `post_type:"image"`, `"story"`, or `"carousel"`: `channels.instagram.media_items` is set to public HTTPS media URLs
 - `channels.instagram.selected_account` is set through channel configuration, unless `accountId` is provided
 - Not already published (`channels.instagram.published !== true`)
 - Not currently publishing (`publish_progress.stage !== "processing"`)
+- Instagram platform limit: about 50 published posts per account per 24 hours
 
 ```bash
 curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","accountId":"ig_account_id"}'
@@ -159,6 +163,112 @@ Content doc updates: when published with `contentId`, the endpoint writes `publi
 CTA auto-sync: when a real Instagram `media_id` lands, the status endpoint copies any draft CTA from `ContentLeadCTA` keyed by `media_${contentId}` to `ConfigurationData` keyed by `media_${media_id}`. No manual CTA copy is needed after publishing.
 
 Polling strategy: call every 10–30 seconds until `shouldPoll` is false.
+
+---
+
+## Image, Story, and Carousel examples
+
+Configure the channel first with `POST /api/bridge/content/configure-publish` (set `post_type` + `media_items`), then publish with `POST /api/bridge/instagram/publish`. The publish route posts whatever `post_type` is configured.
+
+### Image post
+
+Requirements: one public HTTPS image URL; captions are supported.
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{
+    "contentId": "content_xxx",
+    "platform": "instagram",
+    "config": {
+      "enabled": true,
+      "toPublish": true,
+      "selectedAccount": "ig_account_id",
+      "postType": "image",
+      "caption": "New launch is live 🚀",
+      "hashtags": ["launch", "contentlead"],
+      "media_items": [
+        { "type": "image", "url": "https://cdn.example.com/launch-image.jpg" }
+      ]
+    }
+  }'
+
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx"}'
+```
+
+### Story post
+
+Requirements: one public HTTPS image or video URL; stories have no caption.
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{
+    "contentId": "content_xxx",
+    "platform": "instagram",
+    "config": {
+      "enabled": true,
+      "toPublish": true,
+      "selectedAccount": "ig_account_id",
+      "postType": "story",
+      "media_items": [
+        { "type": "image", "url": "https://cdn.example.com/story-frame.jpg" }
+      ]
+    }
+  }'
+
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx"}'
+```
+
+### Carousel post
+
+Requirements: 2–10 public HTTPS image/video items; captions are supported.
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{
+    "contentId": "content_xxx",
+    "platform": "instagram",
+    "config": {
+      "enabled": true,
+      "toPublish": true,
+      "selectedAccount": "ig_account_id",
+      "postType": "carousel",
+      "caption": "Swipe through the full breakdown →",
+      "media_items": [
+        { "type": "image", "url": "https://cdn.example.com/slide-1.jpg" },
+        { "type": "video", "url": "https://cdn.example.com/slide-2.mp4" }
+      ]
+    }
+  }'
+
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx"}'
+```
+
+---
+
+## Sound / music, and story limitations (important)
+
+**Sound on image / story / carousel — there is no API for music on a photo.** Instagram's Content Publishing API cannot attach a music track to a still image, story, or carousel photo. A photo published as a photo is always silent. To get sound you must publish **video**:
+
+- Provide a `media_item` with `"type": "video"` whose file already contains the audio. That video slide/story/reel will play with sound.
+- To turn a still image into a "photo with music", you must first **render image + audio into a short MP4** and then publish that MP4 as a `video` item (reel, video story, or a video slide in a carousel).
+  - In the web UI this render happens automatically in the browser (the "Add music" button on an image slide → produces an MP4 → the item becomes `{ "type": "video", ... }`).
+  - **From the bridge, the AI must supply an already-rendered MP4 URL** (there is no server-side image+audio render exposed through the API). Point a `media_item` of `"type": "video"` at that MP4 URL.
+- In a **photo carousel, music plays only on the individual video slide(s)** — Instagram cannot lay one track across the whole carousel via the API.
+
+```bash
+# Carousel where slide 2 has music: supply a pre-rendered MP4 for that slide.
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{
+    "contentId": "content_xxx",
+    "platform": "instagram",
+    "config": {
+      "postType": "carousel",
+      "caption": "…",
+      "media_items": [
+        { "type": "image", "url": "https://cdn.example.com/slide-1.jpg" },
+        { "type": "video", "url": "https://cdn.example.com/slide-2-with-music.mp4" }
+      ]
+    }
+  }'
+```
+
+**Stories cannot have link stickers or interactive stickers via the API.** Meta's Content Publishing API publishes only plain image/video stories. It **cannot** add link stickers (clickable URLs), polls, quizzes, countdowns, question stickers, or music stickers. Those must be added manually in the Instagram app. (@mention tagging in stories became available July 2025, but link stickers remain unavailable to all API clients.) To drive traffic from stories, use the bio link, the comment→DM CTA automation on feed posts/reels, or a manual reminder workflow.
 
 ---
 

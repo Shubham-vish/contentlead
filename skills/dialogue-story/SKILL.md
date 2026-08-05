@@ -233,7 +233,7 @@ node orchestrator/run.mjs orchestrator/scripts/example.dialogue.json --plan
 
 The orchestrator prints each stage, skips completed ones, and stops on the first
 failure with the exact endpoint + payload it tried (so it's debuggable). It drives:
-the **voice** bridge, the **ai-media** MCP proxy, and the **contentlead** editor
+the **voice** bridge, the **ai-media** AI bridge, and the **contentlead** editor
 commands — all already documented in their own skills; this skill orchestrates them
 in the proven order.
 

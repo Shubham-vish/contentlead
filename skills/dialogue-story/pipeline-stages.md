@@ -17,7 +17,7 @@ skills already document. This skill only calls them in the proven order.
 - **Call:** `POST /api/bridge/ai/text/generate` with a real JSON body
   `{ messages: [...] }` containing the *normalization* system prompt (see
   `ai-prompts.md §1`). Batch of 3 dialogues. The response is backend JSON directly
-  (single parse; no MCP envelope).
+  (single parse; no envelope wrapper).
 - **Write:** replaces `sentence` with the cleaned version.
 - Original engine: `sentence_ai_processor.py` (3 retries + confidence).
 
@@ -40,7 +40,7 @@ skills already document. This skill only calls them in the proven order.
    sounds bad. **Never romanize the TTS input.** (`latin` is a *separate* field used only
    for on-screen captions — see Stage 1.2.)
 
-### Endpoint (direct voice bridge — bypasses the dead MCP proxy)
+### Endpoint (direct voice bridge)
 `POST /api/bridge/voice/generate` with `Authorization: Bearer <token>` from
 `~/.skilltown-desktop/api.json`.
 
@@ -87,7 +87,7 @@ THEN batch the rest. This is exactly how the good audio was validated.
 - Original engine parity: `audio_processor.py` + `services/minimax_voice_service.py`
   (model `speech-2.5-hd-preview`), which also fed the raw Devanagari `sentence` to TTS.
 
-## Stage 1.1 — Word-level timestamps  ⭐ LOCAL — no MCP
+## Stage 1.1 — Word-level timestamps  ⭐ LOCAL
 
 > **Transcription runs FULLY LOCALLY with faster-whisper for this pipeline. Do NOT route
 > this through the hosted AI transcribe bridge or `editor.autoCaption` — when remote

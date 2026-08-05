@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local word-level transcription — the offline WhisperX replacement (no MCP).
+"""Local word-level transcription — the offline WhisperX replacement (fully local).
 
 Usage:
   python3 transcribe_local.py <audio.mp3> [--known "known latin sentence"] [--lang hi] [--model small]

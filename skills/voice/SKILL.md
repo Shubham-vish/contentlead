@@ -10,9 +10,9 @@ Clone a voice, synthesize narration, and add it to the timeline — all through 
 local SkillTown Desktop **voice bridge**. Every call is a single HTTP request with
 one bearer token. The bridge forwards to the SkillTown `/api/ai/*` proxy, which
 authenticates from your Electron cookies and injects the backend secret
-server-side. **No hand-copied JWT, no MCP framing, no local secrets.**
+server-side. **No hand-copied JWT, no RPC framing, no local secrets.**
 
-> These are the REAL, live-verified endpoints. The old `prepwithai_speech_*` MCP
+> These are the REAL, live-verified endpoints. The old `prepwithai_speech_*`
 > tool names are **not** the supported path — use `/api/bridge/voice/*` below.
 
 ## 0. Setup — one-time per shell
@@ -317,4 +317,4 @@ curl -sX DELETE "$API/api/bridge/voice/voices/moss_audio_xxxxxxxx?voice_type=voi
 
 - `remotion/rules/sfx-and-audio` — voiceover volume levels, SFX, audio mixing.
 - `contentlead/audio-gain-eq` — gain/EQ/ducking once the voiceover is on the timeline.
-- `ai-media/SKILL` — other AI media (image/text/transcription) via the desktop MCP proxy.
+- `ai-media/SKILL` — other AI media (image/text/transcription) via the desktop AI bridge.

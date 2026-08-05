@@ -63,7 +63,7 @@ curl "http://127.0.0.1:$PORT/api/bridge/content?limit=5"   -H "Authorization: Be
 | `GET /api/bridge/content/:id` | Get full content with all metadata + channels |
 | `PUT /api/bridge/content/:id` | Update title, description, caption, video URLs, thumbnail, status |
 | `POST /api/bridge/content/upload-url` | Get pre-signed Azure Blob URL for uploading video/thumbnail |
-| `POST /api/bridge/content/configure-publish` | Set channel config (caption, hashtags, account, schedule, toggle) |
+| `POST /api/bridge/content/configure-publish` | Set channel config (caption, hashtags, account, schedule, media items, toggle) |
 
 ### Instagram (10+ endpoints) → `instagram.md`
 
@@ -71,7 +71,7 @@ curl "http://127.0.0.1:$PORT/api/bridge/content?limit=5"   -H "Authorization: Be
 |---------|-------------|
 | `GET /api/bridge/instagram/accounts` | List connected Instagram accounts |
 | `GET /api/bridge/instagram/posts` | Get published posts with metrics and optional CTA config |
-| `POST /api/bridge/instagram/publish` | Start tracked reel publishing from a Content document |
+| `POST /api/bridge/instagram/publish` | Start tracked Instagram publishing from a Content document; publishes the configured `post_type` (`reel`, `image`, `story`, `carousel`, etc.) |
 | `GET /api/bridge/instagram/publish/status` | Poll publish progress until `PUBLISHED` |
 | `GET /api/bridge/instagram/validate` | Check account token/session health |
 | `GET /api/bridge/instagram/automation` | Get CTA/DM automation config |
@@ -131,6 +131,15 @@ There is **one shared draft CTA** per content: a `media_trigger` doc in the **`C
 - It must exist **before** publish/schedule fires. At publish time it is auto-promoted to the live post's real `media_id` — no manual copy needed.
 - **If it does not exist when the post goes live, there is NO automation, and it cannot be attached retroactively through the publish flow.**
 - This is the #1 reason a published/scheduled reel shows "No automation set up." See `instagram.md` (Scheduling + CTA sections) and `youtube.md`.
+
+### Instagram post types
+
+Set `channels.instagram.post_type` with `/api/bridge/content/configure-publish`. Supported values: `reel`, `feed`, `story`, `image`, `carousel`.
+
+- `reel` uses the Content video URL.
+- `image`, `story`, and `carousel` use `media_items: [{ "type": "image"|"video", "url": "https://..." }]`.
+- Media URLs must be public HTTPS URLs. Carousel requires 2–10 items. Stories do not use captions.
+- Publish with `POST /api/bridge/instagram/publish`; it publishes whatever the configured `post_type` is.
 
 ### Scheduling is Instagram-only
 

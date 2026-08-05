@@ -1,6 +1,6 @@
 ---
 name: dialogue-broll
-description: Add relevant background B-roll images/scenes driven by what is being said — for ANY clip, dialogue, or transcript. Ports the proven TlEditingSolution image logic: per-segment AI decides HOW MANY images + a search query each, sources them (stock search OR AI-generate), an AI picks the best result, then each image is aligned to word-level timestamps and placed on the timeline with gaps so the base video shows through. Format-agnostic — use it for viral clips, talking-head reels, dialogue-story reels, explainers, or any video where visuals should match the spoken words. Routes entirely through the SkillTown Desktop AI bridge (/api/bridge/ai/*) + editor commands (no MCP, no manual JWT).
+description: Add relevant background B-roll images/scenes driven by what is being said — for ANY clip, dialogue, or transcript. Ports the proven TlEditingSolution image logic: per-segment AI decides HOW MANY images + a search query each, sources them (stock search OR AI-generate), an AI picks the best result, then each image is aligned to word-level timestamps and placed on the timeline with gaps so the base video shows through. Format-agnostic — use it for viral clips, talking-head reels, dialogue-story reels, explainers, or any video where visuals should match the spoken words. Routes entirely through the SkillTown Desktop AI bridge (/api/bridge/ai/*) + editor commands (no manual JWT).
 tags: broll, b-roll, background, background-images, context-images, scenes, background-scenes, dialogue, dialogue-driven, transcript, word-timed, word-timing, timing, image-search, image-generate, stock, tavily, gemini, relevant-images, viral, reel, short, overlay, tlediting, tleditingsolution, ai-media, place-images, auto-broll
 ---
 
@@ -60,7 +60,7 @@ for each segment (sentence / dialogue / speaker-turn):
 
 All LLM steps use **`POST /api/bridge/ai/text/generate`** (from `ai-media`) with the prompts in the
 [Prompts](#prompts) section. All are JSON-in / JSON-out — `messages` is a **real JSON array**
-(no stringification; that was an MCP-only quirk).
+(no stringification; that was a legacy proxy quirk).
 
 ### A. Decide count + windows + queries  (LLM)
 Call `POST /api/bridge/ai/text/generate` with **[Prompt §A](#a-decide-images-per-segment)**, passing

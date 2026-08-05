@@ -103,7 +103,7 @@ function distributeTiming(sentence, duration) {
   });
 }
 
-// Local word-level transcription — the OFFLINE WhisperX replacement (no MCP).
+// Local word-level transcription — the OFFLINE WhisperX replacement (fully local).
 // Runs lib/transcribe_local.py (faster-whisper) on a local audio FILE and returns
 // { duration, language, heard:[{word,start,end}], words:[...] } — timings come from
 // the ACTUAL audio, never even-spacing. `known` snaps our correct Latin words onto

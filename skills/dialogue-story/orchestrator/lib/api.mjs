@@ -4,7 +4,7 @@
 //   - voice     : POST /api/bridge/voice/*
 //   - contentlead editor : POST /api/execute { type:"editor.*", params }
 // All are documented in their own skills; this only calls them in order.
-// NOTE: the MCP proxy (/api/mcp/call) has been REMOVED for AI media/text/transcribe —
+// NOTE: the old tool-call proxy has been REMOVED for AI media/text/transcribe —
 // everything now flows through the desktop AI bridge, same auth chain as voice.
 
 import os from "node:os";
@@ -88,7 +88,7 @@ export async function downloadTo(url, filePath) {
   return filePath;
 }
 
-// ---- voice bridge (DIRECT — bypasses the MCP proxy) ------------------------
+// ---- voice bridge (DIRECT) -------------------------------------------------
 export async function voiceGenerate({ text, voiceId, format = "mp3", speed = 1.0 }) {
   // POST /api/bridge/voice/generate → { status, audio_url, format, duration_seconds }
   const out = await post("/api/bridge/voice/generate", { text, voice_id: voiceId, format, speed });
