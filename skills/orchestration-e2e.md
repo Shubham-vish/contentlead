@@ -568,7 +568,8 @@ Report any:
 
 | Error | Cause | Fix |
 |---|---|---|
-| `401 Unauthorized` | Token expired | Re-read `~/.skilltown-desktop/api.json` |
+| `401 Unauthorized` / `unauthorized` | Local bridge token stale or missing `Bearer` prefix | Re-read `~/.skilltown-desktop/api.json` and resend as `Authorization: Bearer <token>`. This is **not** a user sign-in problem. |
+| `session_expired`, `not_authenticated`, or `cloud.authenticated: false` on `/api/health` | The desktop app's **cloud session** is signed out or expired (Electron cookie auth) | **Stop and ask the user to sign in inside the SkillTown / ContentLead desktop app**, then retry. Re-reading `api.json` will NOT fix this — voice, AI, and any cloud-backed step require a signed-in session. Do not fabricate results or retry blindly. |
 | `503 editor_not_ready` | Page not loaded | `POST /api/navigate` → `POST /api/editor/wait-ready` |
 | `ECONNREFUSED` | App not running | Start SkillTown Desktop |
 | Items not appearing | Media URL unreachable | Check `/api/local-file` endpoint, use HTTP URLs |

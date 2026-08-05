@@ -683,8 +683,10 @@ Common bridge-level errors (before hitting the cloud):
 - `content_too_large` — `ai-output` payload > 100 KB (non-fullpage).
 
 Cloud-level errors (from `/api/content/inspiration/*`) pass through with status codes:
-- 401 → not logged in (rare — the bridge attaches auth automatically; check `~/.skilltown-desktop/api.json`).
-- 403 → capability gate refused (`Cap.ContentInspirationView` not on the user's plan).
+- 401 → **two different causes, two different fixes:**
+  - Missing/invalid local bridge token (e.g. no `Bearer` prefix) → re-read `~/.skilltown-desktop/api.json` and resend `Authorization: Bearer <token>`.
+  - The desktop app's **cloud session is signed out/expired** → **stop and ask the user to sign in inside the desktop app**, then retry. Re-reading `api.json` will NOT fix this. Do not guess or fabricate results.
+- 403 → capability gate refused (`Cap.ContentInspirationView` not on the user's plan). Surface a plan-upgrade message; this is **not** a sign-in problem.
 - 429 → rate limited (retry with backoff).
 - 500 → cloud error (`rawError` may have detail).
 
