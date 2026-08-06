@@ -40,17 +40,41 @@ Load `content-inspiration` when the user wants to:
 - Extracting viral clips from a video file → use `ai-clipping`.
 - Detecting a creator's editing style → use `creator-styles`.
 
+## ⚡ Which tool for which URL?
+
+**This is the most important section.** Two systems exist — pick the right one:
+
+| Scenario | What to use | Why |
+|----------|------------|-----|
+| **Random YouTube URL** → transcript | `POST /api/bridge/inspiration/transcript` with `{source:"youtube", url:"..."}` | Works directly, extracts captions natively ✅ |
+| **Random YouTube URL** → metadata | Built-in `web_fetch` on the URL, or `POST /api/bridge/media/download` to also save | Simple and reliable |
+| **Random IG reel URL** → transcript | 1. Add creator: `POST /creators` → 2. Refresh: `POST /creators/refresh` → 3. Transcribe: `POST /transcribe` | IG requires social-browser cookies; tracked creator flow handles this |
+| **Random IG reel URL** → download | `POST /api/bridge/media/download` with `{url, source:"instagram"}` | Uses social-browser cookies automatically |
+| **Random X/Twitter URL** → transcript | `POST /api/bridge/inspiration/transcript` with `{source:"x", url:"...", videoUrl:"<direct_mp4>"}` — need the direct video URL | X needs CDN URL; get it from tracked items or search results |
+| **Tracked creator content** → transcript | `POST /transcribe` (IG) or `POST /transcript` (YT/X/Reddit) — items already have videoUrl from refresh | Best path for content you're monitoring |
+| **Any URL** → download to disk | `POST /api/bridge/media/download` | Uses yt-dlp + auto-cookies |
+| **General web research** | Built-in `web_search`, `web_fetch` tools | No bridge needed |
+
+### Key rules:
+1. **YouTube is frictionless** — just pass the URL to `/transcript`, done.
+2. **Instagram requires tracking** — add the creator first, refresh pulls via social browser, then transcribe works.
+3. **X/Reddit transcripts need `videoUrl`** — the direct CDN URL comes from search/feed results that already have it.
+4. **For downloads**, `/api/bridge/media/download` works for all platforms (uses yt-dlp + desktop cookies).
+
 ## Quick decision tree
 
 ```
 Need to search a topic across sources?           → POST /api/bridge/inspiration/search
 Need synced IG reels?                            → GET  /api/bridge/inspiration/feed
 Need a live pull for a specific creator?         → POST /creators, then POST /creators/refresh
-Need ongoing niche monitoring?                   → GET|POST /niches, GET|DELETE /niches/:slug, POST /niches/:slug/refresh
+Need older posts from a creator?                 → POST /creators/load-older (paginate back-catalog)
+Need stored items (no scraping)?                 → GET  /creators/items?source=&identifier=
+Need ongoing niche monitoring?                   → GET|POST /niches, POST /niches/:slug/refresh
 Need a transcript?
-  ├── Instagram by shortcode                     → POST /transcribe or /transcribe-bulk
-  ├── YouTube/X/Reddit/Instagram by URL          → POST /transcript, poll GET /transcript?key=...
-  └── Any local/remote media                     → POST /api/bridge/ai/transcribe/{short,long,speakers}
+  ├── YouTube URL (any, random)                  → POST /transcript {source:"youtube", url:"..."}  ✅ instant
+  ├── Instagram (tracked creator's reel)         → POST /transcribe {shortcode:"..."} or /transcribe-bulk
+  ├── X/Reddit (from search/feed with videoUrl)  → POST /transcript {source, url, videoUrl}
+  └── Any local/remote file                      → POST /api/bridge/ai/transcribe/{short,long,speakers}
 Need to save a great example permanently?        → POST /references {action:"pin"}
 Need to show the user an analysis result?        → POST /ai-output
 Need to check if IG/X are connected?             → GET  /connection-status
@@ -85,16 +109,20 @@ Need web or GitHub research?                     → use built-in web search/fet
 | `POST /api/bridge/inspiration/search` | Cross-platform fan-out search across Instagram cache, X, YouTube, Reddit, tech news |
 | `GET /api/bridge/inspiration/feed` | Browse synced Instagram reels by tracked creator |
 | `GET|POST /api/bridge/inspiration/creators` | List/add tracked creators |
-| `POST /api/bridge/inspiration/creators/refresh` | Live refresh one tracked creator |
+| `POST /api/bridge/inspiration/creators/refresh` | Live refresh one tracked creator (X, YouTube, Reddit; IG uses /refresh route) |
 | `POST /api/bridge/inspiration/creators/refresh-all` | Refresh all tracked creators |
+| `POST /api/bridge/inspiration/creators/load-older` | Paginate older posts from a creator's back-catalog |
+| `GET /api/bridge/inspiration/creators/items` | Get stored items for a creator (fast, no scraping) |
+| `POST /api/bridge/inspiration/creators/preview` | Preview a creator's profile + sample items before adding |
 | `DELETE /api/bridge/inspiration/creators/:identifier` | Remove a tracked creator |
 | `GET|POST /api/bridge/inspiration/niches` | List/create Pulse niches |
 | `GET /api/bridge/inspiration/niches/:slug` | Fetch one Pulse niche plus its stored items |
 | `POST /api/bridge/inspiration/niches/:slug/refresh` | Refresh a Pulse niche and persist items |
 | `DELETE /api/bridge/inspiration/niches/:slug` | Delete a Pulse niche |
-| `POST /api/bridge/inspiration/transcribe` | Transcribe one Instagram reel by shortcode |
+| `DELETE /api/bridge/inspiration/niches/:slug/items` | Clear cached items for a niche |
+| `POST /api/bridge/inspiration/transcribe` | Transcribe one Instagram reel by shortcode (must be from tracked creator) |
 | `POST /api/bridge/inspiration/transcribe-bulk` | Transcribe up to 10 Instagram reels |
-| `POST /api/bridge/inspiration/transcript` | Unified transcript request by URL |
+| `POST /api/bridge/inspiration/transcript` | Unified transcript request by URL (YouTube works directly; IG/X/Reddit need videoUrl) |
 | `GET /api/bridge/inspiration/transcript?key=...` | Poll async transcript status |
 | `GET|POST /api/bridge/inspiration/references` | List/pin/unpin/update reference items |
 | `GET /api/bridge/inspiration/export` | Export items as JSON/CSV |

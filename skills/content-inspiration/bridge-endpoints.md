@@ -658,10 +658,10 @@ These product capabilities are not in the verified desktop bridge mapping. Do no
 | `/api/content/inspiration/extension-results` | Ingestion endpoint (browser extension → Cosmos) | Extension only |
 | `/api/content/inspiration/transcribe/status` | Poll long-running IG transcription jobs (shortcode-based) | Web UI only — use `/transcript` (unified) instead when possible |
 | `/api/content/inspiration/creators/[username]` | Deep-dive on ONE tracked creator | Web UI only |
-| `/api/content/inspiration/creators/preview` | Preview a creator before adding | Web UI only |
-| `/api/content/inspiration/creators/load-older` | Backfill older items for a tracked creator | Web UI only |
-| `/api/content/inspiration/creators/items` | Flat item list across creators (with filters) | Web UI only |
-| `/api/content/inspiration/niches/[slug]/items` | DELETE cached items for a niche (clear cache) | Web UI only |
+| `/api/content/inspiration/creators/preview` | Preview a creator before adding | ✅ Bridge: `POST /api/bridge/inspiration/creators/preview` |
+| `/api/content/inspiration/creators/load-older` | Backfill older items for a tracked creator | ✅ Bridge: `POST /api/bridge/inspiration/creators/load-older` |
+| `/api/content/inspiration/creators/items` | Flat item list across creators (with filters) | ✅ Bridge: `GET /api/bridge/inspiration/creators/items` |
+| `/api/content/inspiration/niches/[slug]/items` | DELETE cached items for a niche (clear cache) | ✅ Bridge: `DELETE /api/bridge/inspiration/niches/:slug/items` |
 | `/api/content/inspiration/video-proxy` + `-two` | CORS-safe video streaming for the in-app player | Player only |
 
 If a workflow needs one of these, add and document a desktop bridge passthrough before relying on it from agent instructions.
