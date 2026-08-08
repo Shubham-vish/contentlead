@@ -588,7 +588,7 @@ When the user provides only a topic or brief — AI generates everything:
 
 1. **Phase 1**: Skip media analysis. Generate content plan from topic.
 2. **Phase 2**: Plan segments. Use `POST /api/bridge/ai/text/generate` for script. Estimate durations.
-3. **Phase 3**: Generate voiceover with `POST /api/bridge/voice/generate` (see `voice` skill). Generate background images with `POST /api/bridge/ai/image/generate`. Add motion-bg scenes.
+3. **Phase 3**: Generate voiceover with `POST /api/bridge/voice/generate` (see `cl-voice` skill). Generate background images with `POST /api/bridge/ai/image/generate`. Add motion-bg scenes.
 4. **Phase 4**: Add generated voiceover as audio. Add text from script as sequential reveals. Generate B-roll images with `POST /api/bridge/ai/image/generate`.
 5. **Phases 5–8**: Same as standard flow.
 

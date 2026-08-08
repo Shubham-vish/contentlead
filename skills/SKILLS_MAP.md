@@ -19,10 +19,10 @@ IDEA → RESEARCH → SCRIPT → PRODUCE (edit / voice / media) → CLIP → PUB
 
 | Skill | What it is | Who calls it |
 |-------|------------|--------------|
-| **`virality-scoring`** | The single 0–100 virality rubric (8 signals). Medium-agnostic — judges "is this viral?" for a clip, a written script, a hook line, a post idea, or a thumbnail. | `ai-clipping`, `script-evaluator`, `dialogue-story`, `content-style` |
-| **`contentlead`** | Master router for the ContentLead desktop video editor. Load first before any editor command; it explains the local HTTP API. | every skill that touches the editor |
+| **`cl-virality-scoring`** | The single 0–100 virality rubric (8 signals). Medium-agnostic — judges "is this viral?" for a clip, a written script, a hook line, a post idea, or a thumbnail. | `cl-ai-clipping`, `cl-script-evaluator`, `cl-dialogue-story`, `cl-content-style` |
+| **`cl-editor`** | Master router for the ContentLead desktop video editor. Load first before any editor command; it explains the local HTTP API. | every skill that touches the editor |
 
-**Rule:** if you need to score how viral something is, load `virality-scoring`. Do NOT write ad-hoc scoring heuristics anywhere else.
+**Rule:** if you need to score how viral something is, load `cl-virality-scoring`. Do NOT write ad-hoc scoring heuristics anywhere else.
 
 ---
 
@@ -32,24 +32,24 @@ These three chain together. They do **not** overlap — each owns a different qu
 
 | Skill | Owns the question | What it does |
 |-------|-------------------|--------------|
-| **`content-style`** | *Whose voice?* | Stores a creator's personal voice (extracted from their sample scripts, saved in Cosmos). **Remixes** any inspiration content into that voice. |
-| **`script-evaluator`** | *How good is the craft?* | Two modes — **write** a viral script from scratch, and **score/rewrite** an existing script. |
-| **`virality-scoring`** | *Will it pop?* | The shared 0–100 verdict both of the above call. |
+| **`cl-content-style`** | *Whose voice?* | Stores a creator's personal voice (extracted from their sample scripts, saved in Cosmos). **Remixes** any inspiration content into that voice. |
+| **`cl-script-evaluator`** | *How good is the craft?* | Two modes — **write** a viral script from scratch, and **score/rewrite** an existing script. |
+| **`cl-virality-scoring`** | *Will it pop?* | The shared 0–100 verdict both of the above call. |
 
 ### The scripting flow
 
 ```
-content-style (voice)  →  script-evaluator (craft polish)  →  virality-scoring (verdict)
+cl-content-style (voice)  →  cl-script-evaluator (craft polish)  →  cl-virality-scoring (verdict)
        │                                                            ▲
        └──────────────── scores its own remix output ──────────────┘
 ```
 
-- `content-style.remix` produces a draft in the user's voice → scores it with `virality-scoring` → if weak, iterates the hook once → hands the draft to `script-evaluator` (write/polish mode) for line-level craft.
-- `script-evaluator` writing a fresh script also calls `virality-scoring` at Step 1.
-- **`dialogue-story`** is the special case: two-character dialogue reels (Modi–Rahul format) for any topic. It also scores via `virality-scoring`.
+- `cl-content-style.remix` produces a draft in the user's voice → scores it with `cl-virality-scoring` → if weak, iterates the hook once → hands the draft to `cl-script-evaluator` (write/polish mode) for line-level craft.
+- `cl-script-evaluator` writing a fresh script also calls `cl-virality-scoring` at Step 1.
+- **`cl-dialogue-story`** is the special case: two-character dialogue reels (Modi–Rahul format) for any topic. It also scores via `cl-virality-scoring`.
 
 **One-paragraph brief for the scripting agent:**
-> We have a shared virality brain (`virality-scoring`) — never write your own scoring logic, load it. For scripting: `script-evaluator` both **writes** and **scores** scripts; `content-style` captures a specific creator's **voice** and **remixes** inspiration into it, then scores via `virality-scoring` and hands drafts to `script-evaluator` for polish. So the flow is **content-style (voice) → script-evaluator (craft) → virality-scoring (verdict)**. `dialogue-story` is the two-character-reel special case.
+> We have a shared virality brain (`cl-virality-scoring`) — never write your own scoring logic, load it. For scripting: `cl-script-evaluator` both **writes** and **scores** scripts; `cl-content-style` captures a specific creator's **voice** and **remixes** inspiration into it, then scores via `cl-virality-scoring` and hands drafts to `cl-script-evaluator` for polish. So the flow is **cl-content-style (voice) → cl-script-evaluator (craft) → cl-virality-scoring (verdict)**. `cl-dialogue-story` is the two-character-reel special case.
 
 ---
 
@@ -57,8 +57,8 @@ content-style (voice)  →  script-evaluator (craft polish)  →  virality-scori
 
 | Skill | Use it to |
 |-------|-----------|
-| **`content-inspiration`** | Research trends; scrape/analyze competitor content across IG, YouTube, X, Reddit; transcribe/download source videos. Feeds ideas + transcripts into scripting. |
-| **`ad-intelligence`** | Search & analyze competitor ads from the Meta Ad Library; track brands; save ads to folders. |
+| **`cl-content-inspiration`** | Research trends; scrape/analyze competitor content across IG, YouTube, X, Reddit; transcribe/download source videos. Feeds ideas + transcripts into scripting. |
+| **`cl-ad-intelligence`** | Search & analyze competitor ads from the Meta Ad Library; track brands; save ads to folders. |
 
 ---
 
@@ -66,13 +66,13 @@ content-style (voice)  →  script-evaluator (craft polish)  →  virality-scori
 
 | Skill | Use it to |
 |-------|-----------|
-| **`content-direction`** | Creative strategy, storyboarding, narrative arcs, SFX/audio-layering plan, track management. The "director" layer. |
-| **`ai-media`** | AI image search / generation / compose / vision analysis; text generation. Sources visuals. |
-| **`voice`** | Clone a voice from an audio sample + text-to-speech generation. |
-| **`audio`** | Local audio processing — vocal/music stem separation, cleanup. |
-| **`dialogue-broll`** | Add word-timed B-roll images/scenes that pop in as concepts are spoken (any clip). Reuses word-level transcript + `ai-media`. |
-| **`creator-styles`** | Browse / inspect / subset / compose the SkillTown visual style templates (10 creator styles). The *visual* look — distinct from `content-style` (which is the *voice*). |
-| **`remotion`** | Author custom Remotion scenes (animations, effects, charts, transitions) to add to the editor timeline. |
+| **`cl-content-direction`** | Creative strategy, storyboarding, narrative arcs, SFX/audio-layering plan, track management. The "director" layer. |
+| **`cl-ai-media`** | AI image search / generation / compose / vision analysis; text generation. Sources visuals. |
+| **`cl-voice`** | Clone a voice from an audio sample + text-to-speech generation. |
+| **`cl-audio`** | Local audio processing — vocal/music stem separation, cleanup. |
+| **`cl-dialogue-broll`** | Add word-timed B-roll images/scenes that pop in as concepts are spoken (any clip). Reuses word-level transcript + `cl-ai-media`. |
+| **`cl-creator-styles`** | Browse / inspect / subset / compose the SkillTown visual style templates (10 creator styles). The *visual* look — distinct from `cl-content-style` (which is the *voice*). |
+| **`cl-remotion`** | Author custom Remotion scenes (animations, effects, charts, transitions) to add to the editor timeline. |
 
 ---
 
@@ -80,7 +80,7 @@ content-style (voice)  →  script-evaluator (craft polish)  →  virality-scori
 
 | Skill | Use it to |
 |-------|-----------|
-| **`ai-clipping`** | Turn a long video (podcast/interview) into viral vertical clips: transcribe → score with `virality-scoring` → extract → reframe 9:16 → caption → render. |
+| **`cl-ai-clipping`** | Turn a long video (podcast/interview) into viral vertical clips: transcribe → score with `cl-virality-scoring` → extract → reframe 9:16 → caption → render. |
 
 ---
 
@@ -88,7 +88,7 @@ content-style (voice)  →  script-evaluator (craft polish)  →  virality-scori
 
 | Skill | Use it to |
 |-------|-----------|
-| **`content-publishing`** | End-to-end publish: create content, set metadata, upload video, configure channels, set CTA, post to Instagram / YouTube / LinkedIn, poll status. |
+| **`cl-content-publishing`** | End-to-end publish: create content, set metadata, upload video, configure channels, set CTA, post to Instagram / YouTube / LinkedIn, poll status. |
 
 ---
 
@@ -99,7 +99,7 @@ content-style (voice)  →  script-evaluator (craft polish)  →  virality-scori
 | **`overview.md`** | All editor capabilities by category + how the local HTTP API works. Load first for editor control. |
 | **`getting-started.md`** | Quick-start walkthrough. |
 | **`orchestration-e2e.md`** | Full end-to-end orchestration example across skills. |
-| **`testing`** | Agent-run testing of the ContentLead desktop editor. |
+| **`cl-testing`** | Agent-run testing of the ContentLead desktop editor. |
 
 ---
 
@@ -107,17 +107,17 @@ content-style (voice)  →  script-evaluator (craft polish)  →  virality-scori
 
 | I want to… | Load |
 |------------|------|
-| Score how viral anything is | `virality-scoring` |
-| Write / rate a script | `script-evaluator` (+ `virality-scoring`) |
-| Write in a specific creator's voice / remix a reel | `content-style` |
-| Make a two-character dialogue reel | `dialogue-story` |
-| Research trends / competitors | `content-inspiration`, `ad-intelligence` |
-| Talk to the editor at all | `contentlead` (first), then `overview.md` |
-| Add images / generate visuals | `ai-media`, `dialogue-broll` |
-| Clone a voice / TTS | `voice` |
-| Split stems / clean audio | `audio` |
-| Apply a visual style template | `creator-styles` |
-| Build a custom animated scene | `remotion` |
-| Cut a long video into clips | `ai-clipping` |
-| Publish to IG / YT / LinkedIn | `content-publishing` |
-| Plan the creative / storyboard | `content-direction` |
+| Score how viral anything is | `cl-virality-scoring` |
+| Write / rate a script | `cl-script-evaluator` (+ `cl-virality-scoring`) |
+| Write in a specific creator's voice / remix a reel | `cl-content-style` |
+| Make a two-character dialogue reel | `cl-dialogue-story` |
+| Research trends / competitors | `cl-content-inspiration`, `cl-ad-intelligence` |
+| Talk to the editor at all | `cl-editor` (first), then `overview.md` |
+| Add images / generate visuals | `cl-ai-media`, `cl-dialogue-broll` |
+| Clone a voice / TTS | `cl-voice` |
+| Split stems / clean audio | `cl-audio` |
+| Apply a visual style template | `cl-creator-styles` |
+| Build a custom animated scene | `cl-remotion` |
+| Cut a long video into clips | `cl-ai-clipping` |
+| Publish to IG / YT / LinkedIn | `cl-content-publishing` |
+| Plan the creative / storyboard | `cl-content-direction` |

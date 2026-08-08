@@ -1,0 +1,15 @@
+# cl-dialogue-story — private, machine-specific artifacts. Never commit these.
+
+# Personal overlay: cloned voice IDs, character art paths, default background clip
+config.local.json
+
+# Tuned viral prompts (competitive IP) — public ships prompts.example.mjs only
+prompts.local.mjs
+
+# Character art (likenesses / copyrighted) — supplied per-user, kept private
+assets/characters/
+
+# Working scripts accumulate personal generated asset URLs + machine paths.
+# Only the public template (example.dialogue.json) is tracked.
+scripts/*.json
+!scripts/example.dialogue.json

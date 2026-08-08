@@ -1,0 +1,81 @@
+---
+name: cl-editor
+description: Control the ContentLead video editor from any AI agent. This is the master router skill. Load this first to discover capabilities, then load specific sub-skills for detailed API instructions. Use this for editing video, adding scenes/text/media, managing tracks, and exporting. For Remotion scene creation, load the `cl-remotion` skill.
+---
+
+# ContentLead Editor — AI Master Router
+
+ContentLead is a desktop video editor (Electron + Next.js) with a local HTTP API that lets AI agents control the entire editing workflow.
+
+**This is a router document.** Do not guess command parameters from this file. Use the skill table below to load the specific, detailed skill document for the task you are trying to accomplish.
+
+## Mandatory Startup Protocol
+
+Every session must execute these steps before any editing commands.
+
+1. **Read API info:** `cat ~/.skilltown-desktop/api.json` (extract port and token)
+2. **Health check:** `curl -s http://127.0.0.1:$PORT/api/health -H "Authorization: <token>"`
+3. **Diagnostics:** `curl -s "http://127.0.0.1:$PORT/api/diagnostics?full=true" -H "Authorization: <token>"`
+4. **Open Content:** 
+   - List: `curl -s http://127.0.0.1:$PORT/api/content/list`
+   - Open: `curl -s -X POST http://127.0.0.1:$PORT/api/navigate -d '{"url":"/content/<id>","waitForReady":true,"autoRestore":true}'`
+   - Multi-tab: `curl -s -X POST http://127.0.0.1:$PORT/api/tabs/<tabId>/navigate -d '{"url":"/content/<id>?view=editor","waitForReady":true,"autoRestore":true}'`
+5. **Verify Canvas:** Check dimensions with `query.getCanvasSize` before adding items.
+
+## ⚠️ Error Monitoring — Built Into Every Command
+
+Every `/api/execute` response includes `editorHealth` and `warnings[]` automatically. If `editorHealth.newConsoleErrors > 0` or `hasNewErrors: true`, the `warnings[]` array contains the actual error messages — no extra API call needed. Only use `GET /api/console-errors` or `GET /api/diagnostics?full=true` when you need historical context or deeper inspection. Load the `infrastructure` skill for full error monitoring docs.
+
+## ⚠️ CRITICAL VISIBILITY RULE: Track Z-Order
+
+**Track 0 is the FRONT layer.** Higher track numbers (Track 1, 2, 3) are placed **BEHIND** Track 0.
+If you add text on Track 2 and a video on Track 0, the text will be **invisible** (hidden behind the video).
+**SOLUTION:** ALWAYS call `editor.reorderTracks` after adding items to automatically fix layer ordering.
+
+## 🛑 CRITICAL RULE: Frame 0 Must Be a Usable Poster
+
+Never build a scene whose frame 0 is black / blank / single-color. The rendered MP4's first frame is what Instagram, YouTube, and the ContentLead dashboard use as the default thumbnail — and an already-published Instagram Reel's cover **cannot** be changed via API. If your intro uses a delayed reveal, make the primary text/subject visible at frame 0 (animate scale/translate/glow, keep `opacity: 1`). See `rendering` skill → "The First Frame Must Be a Usable Thumbnail" for the poster-safe `skipReveal` pattern and the Custom Thumbnail flow (Option A: mid-frame extract, Option B: AI-generate) when you genuinely can't use frame 0.
+
+
+## Skill Routing Table
+
+**⚠️ CRITICAL:** Load the relevant skill file BEFORE attempting to use commands in that category. The detailed docs contain mandatory rules (like track z-order, parameter names, and timing formats) that you will fail without.
+
+| Task | Skill to Load | Key Commands |
+|------|---------------|--------------|
+| Text & Typography (manual) | `text-and-captions` | `editor.addText`, `editor.editItem` |
+| Video & Chroma-key | `video` | `editor.addVideo`, `editor.addVideoSegments`, `editor.setClipState` |
+| Images & Static Media | `images` | `editor.addImage`, `editor.replaceMedia`, `media.validate` |
+| Audio, Gain, EQ, Noise | `audio-gain-eq` | `editor.addAudio`, `editor.setAudioGain`, `audio.setEq`, `audio.reduceNoise` |
+| **Voice cloning & TTS / voiceover** | `cl-voice` | `POST /api/bridge/voice/{generate,clone,upload,upload-and-clone,delete}`, `GET /api/bridge/voice/voices` |
+| Position, Crop, Resize | `canvas-and-positioning` | `editor.positionItem`, `editor.resize`, `editor.cropItem` |
+| Trim/Split/Cut on timeline | `item-editing` | `editor.splitItem`, `editor.cutItem`, `editor.trimItem`, `editor.moveItem` |
+| Tracks, Z-order, Linking | `track-management` | `editor.reorderTracks`, `editor.linkTracks`, `editor.renameTrack` |
+| Bulk / Batch operations | `bulk-operations` | `bulk.styleByType`, `bulk.shiftAll`, `POST /api/batch` |
+| Transcripts, Auto-Captions | `transcription-and-editing` | `content.applyCaptions`, `query.getTranscriptionStatus` |
+| Animations, Transitions, VFX | `animations-and-effects` | `editor.setAnimation`, `editor.addTransitionBetween`, `editor.addKeyframe` |
+| Full E2E Pipeline & Scenes | `storystudio-pipeline` | (Workflow guide, pipeline states) |
+| My Scenes (per-user saved library) | `my-scenes` | `scene.saveToMyScenes`, `scene.listMyScenes`, `scene.getMyScene`, `scene.addMyScene`, `scene.updateMyScene`, `scene.deleteMyScene` |
+| Project save/load, Export | `project-and-export` | `editor.save`, `editor.export`, `project.getFullState` |
+| Read timeline/editor state | `queries-and-state` | `query.getTimelineItems`, `query.getTrackInfo`, `query.getEditorState` |
+| Debugging, Logs, Arch | `infrastructure` | `GET /api/diagnostics`, `GET /api/console-errors` |
+| Testing / QA | `cl-testing` | Agent-run contract, state, visual, and workflow tests |
+| Content metadata & bridge | `content-bridge` | `content.getDetails`, `content.updateMetadata`, `content.applyImage` |
+| Multi-tab collaboration | `multi-tab` | `GET /api/tabs`, `POST /api/tabs/new`, `tabId` on `/api/execute` |
+| **AI Viral Clipping** | `cl-ai-clipping` | Transcribe → score virality → extract clips → reframe 9:16 → render |
+| **Script Evaluation & Writing** | `cl-script-evaluator` | Score scripts 0-100, rewrite hooks, write viral scripts from scratch |
+| **Dialogue-Story Reels (2-char, Modi–Rahul style)** | `cl-dialogue-story` | Full viral pipeline: script→TTS voices→word-timed Latin captions→per-dialogue AI images→hook title + IG caption→Remotion compose. `orchestrator/run.mjs` |
+| **Dialogue-driven B-roll (relevant images timed to words)** | `cl-dialogue-broll` | Per-segment: AI decides #images + query → search/generate → pick best → word-timestamp align + gaps → place on timeline. Ports TlEditingSolution image logic; works on ANY clip |
+| **Podcast Layouts (2p/1p/share/9:16)** | `podcast-layouts` | `layout.list`, `layout.apply`, `layout.getActive`, `layout.tagRole` |
+| **Masks & Animated Reveals** | `masking-and-reveal` | `mask.get`, `mask.set`, `mask.clear`, `reveal.listPresets`, `reveal.apply`, `reveal.clear` |
+| **Brand Kits** | `brand-kits` | `brand.listKits`, `brand.apply`, `brand.applyColor`, `brand.applyFont`, `brand.addAssetToCanvas` |
+| **Background Removal (AI matting)** | `background-removal` | `editor.removeBackground`, `editor.restoreBackground`, `editor.bulkRemoveBackground`, `media.removeBackground`, `query.getBackgroundRemovalStatus` |
+
+## Disambiguation: Which Text/Cut command do I use?
+
+- **Titles / Lower Thirds:** Use `editor.addText` (`text-and-captions`).
+- **Subtitles (Auto-generated):** Use `content.applyCaptions` (`transcription-and-editing`).
+- **Karaoke/Word-level manual captions:** Use `editor.addCaption` (`text-and-captions`).
+- **Fixing typos in auto-captions:** Use `editor.editCaptionWord` (`transcription-and-editing`).
+- **Trimming media BEFORE adding:** Pass `trim: {from, to}` to `editor.addVideo` (`video`).
+- **Cutting/splitting clips ALREADY on timeline:** Use `editor.splitItem` / `editor.cutItem` (`item-editing`).
