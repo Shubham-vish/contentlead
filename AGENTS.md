@@ -495,9 +495,9 @@ curl "http://127.0.0.1:$PORT/api/skills?q=animation" -H "Authorization: Bearer $
 | **Transcribe video + Hinglish captions** | `transcription-and-editing` (Firebase polling + Latin transliteration) |
 | Read state, timeline, transcript | `queries-and-state` |
 | Save/load .skilltown project files | `project-files` |
-| **🎯 AI viral clipping pipeline** | **`ai-clipping`** — transcribe → score virality → extract clips → reframe → render |
-| **🎨 Creator style catalog** | **`creator-styles`** — browse 10 creator styles, preview `/styles/{styleId}`, inspect templates, apply role/order/type subsets, and compose multiple styles |
+| **🎯 AI viral clipping pipeline** | **`ai-clipping`** — transcribe → score virality → extract clips → reframe → render || **🎨 Creator style catalog** | **`creator-styles`** — browse 10 creator styles, preview `/styles/{styleId}`, inspect templates, apply role/order/type subsets, and compose multiple styles |
 | **📝 Script evaluation & writing** | **`script-evaluator`** — score scripts 0-100, rewrite hooks, write viral scripts |
+| **🧠 Virality scoring (shared brain)** | **`virality-scoring`** — the medium-agnostic 0-100 rubric (8 signals + content-type profiles) used by `ai-clipping`, `script-evaluator`, and `dialogue-story`. Load to judge "is this viral?" for a clip, script, hook, or idea |
 
 ## Architecture
 

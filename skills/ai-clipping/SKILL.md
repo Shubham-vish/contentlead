@@ -1,6 +1,6 @@
 ---
 name: ai-clipping
-description: Extract viral short-form clips from long-form video. AI-powered transcript analysis, virality scoring, vertical reframing, and batch clip creation — all orchestrated through existing editor APIs.
+description: Extract viral short-form clips from long-form video. AI-powered transcript analysis, virality scoring (via the shared `virality-scoring` skill), vertical reframing, and batch clip creation — all orchestrated through existing editor APIs.
 tags: clipping, viral, shorts, reels, tiktok, transcript, highlights, reframe, vertical, 9:16, batch
 ---
 
@@ -348,31 +348,24 @@ High-retention short-form look: white words, bright **green** active word with a
 
 This is where you — the AI agent — apply your intelligence. No API call needed.
 
-### 2.1 Content Type Detection
+### 2.1 Score with the shared virality brain
 
-First, classify the content. Read the first ~3000 chars of transcript and determine:
+**The scoring rubric lives in the standalone `virality-scoring` skill — load it and apply it here.**
+Do NOT restate the framework; it is the single source of truth for the 8 signals, content-type
+detection, content-type scoring profiles, score thresholds, and the quality checklist.
 
 ```
-Content Type: podcast | interview | tutorial | lecture | commentary | debate | vlog | other
-Content Density: low (filler/chit-chat) | medium | high (dense info/stories)
+Load: skills/virality-scoring/SKILL.md
+Apply: Steps 1-5 (detect type → score 8 signals → composite 0-100 → adapt per type → checklist)
 ```
 
-This affects how you score — a high-density interview has different viral patterns than a casual vlog.
+For clips specifically:
+- **Content type** is usually `podcast` / `interview` / `commentary` / `debate` (see the profiles in `virality-scoring`).
+- **Read the first ~3000 chars** of transcript to classify type + density before scoring.
+- Then produce clip candidates using the clip-specific rules below (duration, boundaries, overlap).
 
-### 2.2 Virality Scoring Framework
-
-Score each potential clip 0-100 using these 8 signals (ranked by impact):
-
-| # | Signal | What to Look For | Weight |
-|---|--------|-------------------|--------|
-| 1 | **HOOK MOMENTS** | "The secret is...", "Nobody talks about...", "I was completely wrong about..." — statements creating immediate curiosity | Highest |
-| 2 | **EMOTIONAL PEAKS** | Genuine surprise, laughter, anger, vulnerability, excitement; raw unscripted reactions | High |
-| 3 | **OPINION BOMBS** | Strong, polarizing, or counter-intuitive statements that trigger agree/disagree | High |
-| 4 | **REVELATION MOMENTS** | Surprising facts, stats, or confessions that reframe thinking | High |
-| 5 | **CONFLICT/TENSION** | Disagreement, pushback, or confrontation | Medium |
-| 6 | **QUOTABLE ONE-LINERS** | A sentence that works as a standalone quote card | Medium |
-| 7 | **STORY PEAKS** | The climax or twist of an anecdote; the payoff moment | Medium |
-| 8 | **PRACTICAL VALUE** | A concrete tip, hack, or insight viewers can immediately apply | Medium |
+> Everything in 2.2-2.6 below is **clip-specific mechanics** — how to turn a virality score into a
+> cut. The *scoring itself* comes from the `virality-scoring` skill.
 
 ### 2.3 Clip Selection Rules
 
@@ -421,14 +414,9 @@ Score each chunk independently, then deduplicate across all chunks:
 
 ### 2.6 Adapt Scoring to Content Type
 
-| Content Type | Prioritize | De-prioritize |
-|---|---|---|
-| **Podcast** | Opinion bombs, quotable lines, story peaks | Tutorial steps |
-| **Interview** | Revelation moments, emotional peaks, conflict | Introductions, pleasantries |
-| **Tutorial** | Practical value, "aha" moments | Setup/prerequisites |
-| **Lecture** | Counter-intuitive insights, memorable analogies | Routine explanations |
-| **Commentary** | Hot takes, prediction moments, reaction peaks | Recaps |
-| **Debate** | Clash moments, strongest rebuttals, concessions | Procedural segments |
+Content-type re-weighting (podcast/interview/tutorial/lecture/commentary/debate/story) is
+defined in the **`virality-scoring` skill, Step 4 — Content-Type Scoring Profiles**. Apply
+those multipliers when scoring clip candidates. Do not maintain a separate copy here.
 
 ---
 

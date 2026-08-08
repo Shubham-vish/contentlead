@@ -86,10 +86,39 @@ Possible errors: `token_invalid`, `token_expired`, `permissions_revoked`. If unh
 |------------|----------|-------------|
 | `contentId` | ✅ | Reads account and configured Instagram channel data from Content doc. Tracks in dashboard. |
 | `accountId` | | Optional account override |
+| `videoUrl` | | Optional video URL override (falls back to content's video URLs) |
+| `caption` | | Optional caption override |
+| `trial_reel` | | **Boolean.** If `true`, publishes as a Meta **Trial Reel** — served only to non-followers, not shown on the profile grid, comment/like counts only visible to you. Use for A/B testing content. See "🛑 MANDATORY: Trial Reels — always confirm" below. |
+| `trial_graduation_strategy` | | Only meaningful when `trial_reel: true`. **Default `"manual"`** — you decide later whether to graduate the reel to a regular post. Do NOT auto-graduate without user consent. |
 
 > **⚠️ Always use `contentId`.** Direct account/video workflows can publish but are not dashboard-tracked, so they are intentionally not documented for agent use.
 >
 > **Note:** `POST /api/bridge/instagram/publish` publishes whatever `channels.instagram.post_type` is set to (`reel`, `image`, `story`, `carousel`).
+
+> ### 🛑 MANDATORY: Trial Reels — always confirm, never guess
+> The word **"trial"** is heavily overloaded. Before publishing, you MUST disambiguate:
+>
+> - **Meta Trial Reels feature** (`trial_reel: true`) — Instagram's real product feature. The reel is served only to non-followers, does NOT appear on the profile grid, and metrics are private to the creator until they "graduate" it. Use for testing content before showing it to your audience.
+> - **Trial/dev handle** — a separate throwaway Instagram account (e.g. `shubh.v2026`) that a user posts to for dry-runs. This is just an account choice, not a Meta feature.
+>
+> **If the user says "trial reel" / "trial post" / "trial mode" without more context, STOP and ask which they mean.** Do not silently pick one interpretation. Losing a real reel out to real followers when the user asked for a trial is a hard failure — this exact mistake has been made in the past.
+>
+> **When `trial_reel: true` is used:**
+> - Always set `trial_graduation_strategy: "manual"` unless the user explicitly asks for something else. Never auto-graduate.
+> - You cannot convert an already-published regular reel into a trial reel. To fix a wrong-mode publish, the user must delete the live reel manually in the IG app, then republish with `trial_reel: true` — the CTA draft (keyed by `contentId`) auto-syncs to the new `media_id`, so no CTA rework is needed.
+> - Confirm `trial_reel: true` in the pre-publish preview (see next callout), alongside account/timing/post-type.
+
+> ### 🛑 MANDATORY: Confirm before publishing or scheduling
+> Publishing/scheduling touches real followers. **Before calling `POST /api/bridge/instagram/publish` OR `POST /api/bridge/instagram/publish/schedule`**, get explicit user approval on all four, unless the user has stated each verbatim in this session:
+>
+> 1. **Timing** — Post now, or schedule? If schedule, get the exact `wallTime` + timezone.
+> 2. **Target account** — Which handle (real vs trial/dev), and the specific `accountId`. Do not default silently to the "main" account.
+> 3. **Post type** — `reel` vs `feed` vs `image` vs `story` vs `carousel`.
+> 4. **Trial reel or regular reel?** — Set `trial_reel: true/false` explicitly. If unclear, STOP and ask. See the Trial Reels callout above.
+>
+> Present a single grouped preview of the resolved values (account, post type, timing, caption preview) and get one-line approval before firing. `just post it` / `schedule it` is not enough — always echo back the resolved target so the user can catch a wrong-account or wrong-slot mistake before it lands.
+>
+> The CTA (`update_cta`) has its own separate confirmation rule; see the "🛑 MANDATORY: Confirm CTA content with the user" callout in this file.
 
 Prerequisites:
 - For `post_type:"reel"`: Content has video (`videoUrl`, `videoSasUrl`, or `downloadableSasUrl` set through content update/render upload)
@@ -286,6 +315,8 @@ curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H 
 | `timeZone` | | Defaults to `Asia/Kolkata` |
 | `caption` | | Optional caption override |
 | `hashtags` | | Optional hashtag list |
+| `trial_reel` | | **Boolean.** Same semantics as immediate publish — served only to non-followers, hidden from grid. See "🛑 MANDATORY: Trial Reels" callout in the Publish section above. If user says "trial", ALWAYS ask which meaning before scheduling. |
+| `trial_graduation_strategy` | | Only meaningful with `trial_reel: true`. **Default `"manual"`.** Never auto-graduate without explicit user consent. |
 
 **Slot constraints (enforced server-side):** `wallTime` must be a minimum lead time in the future AND snapped to a fixed slot boundary. Both are server-configured minute values that **can change**, so do not hard-code them — if your time violates either rule, the request is rejected with a message that states the exact required lead time and slot size. Read that message, round your time up to the next slot boundary, add the minimum lead, and retry.
 
@@ -293,6 +324,8 @@ curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H 
 > Scheduling does **not** create CTA/DM automation. When the slot fires, the background worker only *promotes* a **pre-existing draft CTA** — the one keyed by `contentId` in the `ContentLeadCTA` container — onto the live Instagram `media_id`. **If no draft exists at publish time, the reel goes live with no automation, and this flow cannot attach it retroactively** (you would have to configure it manually on the live post using its real `media_id`).
 >
 > **Therefore, before calling `publish/schedule`, first call `POST /api/bridge/instagram/automation` with `action:"update_cta"`, `contentId`, and `containerName:"ContentLeadCTA"`** (see the CTA & DM Automation section below, and Workflow 3 in `workflows.md`). This is the single most common reason a scheduled reel ends up with "No automation set up."
+>
+> **🛑 Do not invent the CTA copy or links.** If the user hasn't given you the DM text, destination URLs, button labels, and public reply lines verbatim, present a grouped preview and get explicit confirmation before firing `update_cta`. Fabricated URLs (e.g. guessing a `/guide` landing page that doesn't exist) will send real followers to broken pages. See the "🛑 MANDATORY: Confirm CTA content with the user" callout under `update_cta` below.
 
 ### `PATCH /api/bridge/instagram/publish/schedule` — Reschedule
 
@@ -370,6 +403,34 @@ Three actions are supported.
 Each rule: `{ "triggerKeywords": ["free", "link"], "dmTemplate": "Here's your link: ...", "commentReplyTemplate": "Check DMs!", "enabled": true }`.
 
 #### Action: `update_cta` (most common)
+
+> ### 🛑 MANDATORY: Confirm CTA content with the user before writing it
+> The CTA is what real followers see and click on. **The AI must NOT invent the DM copy, destination URLs, or button labels on its own** unless the user explicitly provided all of them. If ANY of the following are not supplied verbatim by the user, STOP and ask before calling `update_cta`:
+>
+> - **Trigger keywords** (`contains`) — words followers must comment to activate the DM
+> - **DM message text** (`messageBody`) — the exact text the user will read in their DM
+> - **Every button** (`buttons[]`) — both `label` (max 20 chars, shown as CTA text) and `url` (real destination)
+> - **Comment auto-replies** (`commentReplies`) — public replies visible on the post
+> - **Follow-gate copy** (`followReply` + `followButtonText`) if `enableFollowGate: true`
+>
+> **How to confirm** — present a single grouped preview and ask the user to approve or edit each field before you send the API call. Example:
+>
+> ```
+> I'm about to set this comment-DM automation. Please confirm or edit:
+>
+>   • Trigger keywords: ["sfx", "guide"]
+>   • DM message: "Here's your SFX pack: https://…"
+>   • Button 1: "Get the SFX Guide" → https://…
+>   • Button 2: "Follow @ailead.ai"   → https://instagram.com/ailead.ai
+>   • Public replies: "Sent! Check DMs 📩" · "…"
+>   • Follow-gate: ON → "Follow @ailead.ai first, then comment again"
+>
+> Approve, or tell me what to change?
+> ```
+>
+> **Do not use `ask_user` for each field individually** — one grouped confirmation is enough. **Never guess URLs** (e.g., a "guide" landing page) — if the user hasn't said the URL exists, ask; do not fabricate `contentlead.in/whatever-guide` or similar. If the user says "just use my usual CTA", still show the resolved values and ask them to confirm before firing.
+>
+> This rule applies to both the immediate publish path (`POST /api/bridge/instagram/publish`) AND the scheduled path (`POST /api/bridge/instagram/publish/schedule`).
 
 | Body field | Required | Description |
 |------------|----------|-------------|

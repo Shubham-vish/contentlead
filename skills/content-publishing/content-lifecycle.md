@@ -162,7 +162,12 @@ For videos rendered by SkillTown Desktop, prefer `POST /api/render` with a `cont
 }
 ```
 
-When upload succeeds, the render job extracts a frame-1 thumbnail, uploads both MP4 and thumbnail, updates `Content.videoUrl`, `Content.videoSasUrl`, `Content.downloadableSasUrl`, `Content.sasExpiresAt`, and `Content.thumbnail`, and returns `cloudVideoUrl`, `thumbnailUrl`, and `contentUpdated: true`. If cloud upload fails, the local render still succeeds and the response includes the failure reason. `GET /api/render/:jobId` includes the same upload fields once upload completes.
+When upload succeeds, the render job extracts a **frame-0** thumbnail, uploads both MP4 and thumbnail, updates `Content.videoUrl`, `Content.videoSasUrl`, `Content.downloadableSasUrl`, `Content.sasExpiresAt`, and `Content.thumbnail`, and returns `cloudVideoUrl`, `thumbnailUrl`, and `contentUpdated: true`. If cloud upload fails, the local render still succeeds and the response includes the failure reason. `GET /api/render/:jobId` includes the same upload fields once upload completes.
+
+> **🛑 Because the thumbnail is frame 0 of the rendered video, and because Instagram Reels also uses that same first frame as its default cover:**
+> - **Frame 0 MUST be a usable poster** — no black/blank/single-color openings unless you also provide a custom thumbnail. See `contentlead/rendering.md` → "The First Frame Must Be a Usable Thumbnail" for the poster-safe scene pattern.
+> - **When frame 0 genuinely can't be a good cover** (delayed reveal, blackout intro, etc.), upload a custom thumbnail via **`POST /api/bridge/content/upload-url`** (Option A: mid-video ffmpeg extract; Option B: AI-generated image via `/api/bridge/ai/image/generate`). Full recipes in `contentlead/rendering.md` → "Custom Thumbnails".
+> - **Already-published Instagram Reels' covers cannot be changed via API.** If a wrong-cover reel is already live, the user must edit the cover in the IG app manually, OR delete + republish (the CTA draft auto-syncs to the new `media_id`).
 
 ---
 

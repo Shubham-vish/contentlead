@@ -132,6 +132,39 @@ There is **one shared draft CTA** per content: a `media_trigger` doc in the **`C
 - **If it does not exist when the post goes live, there is NO automation, and it cannot be attached retroactively through the publish flow.**
 - This is the #1 reason a published/scheduled reel shows "No automation set up." See `instagram.md` (Scheduling + CTA sections) and `youtube.md`.
 
+> **🛑 MANDATORY user confirmation before writing a CTA.** The DM copy, destination URLs, button labels, and public reply lines are visible to real followers — do NOT invent them. Unless the user has already given you every field verbatim, present a grouped preview of the resolved values (`contains`, `messageBody`, each `button.label`+`button.url`, `commentReplies`, and `followReply`/`followButtonText` if follow-gate is on) and get explicit approval before calling `update_cta`. Never guess URLs (e.g. `example.com/guide`) — if the user hasn't confirmed the link exists, ask. Applies to both immediate publish and scheduled publish. Full rule: `instagram.md` → "🛑 MANDATORY: Confirm CTA content with the user".
+
+### 🛑 MANDATORY: Confirm timing & post mode before publishing
+
+**Before you call `POST /api/bridge/instagram/publish` or `POST /api/bridge/instagram/publish/schedule`, get explicit user confirmation on all three of these** — unless the user has clearly stated them in this session:
+
+1. **Publish now vs schedule** — "Do you want this posted now, or scheduled?" If schedule, get the exact `wallTime` + timezone.
+2. **Trial vs real account** — some workspaces have a trial/dev handle (e.g. `shubh.v2026`, `tradinglead.in`) used for dry-runs. Confirm the target Instagram username and its `accountId`. Do not default to the "main" account just because it looks like the primary one.
+3. **Reel vs feed vs story vs carousel** (the configured `post_type`) — confirm this matches what the user expects, especially if a previously configured channel already has a different `post_type` set.
+4. **Trial reel or regular reel?** — Set `trial_reel: true/false` explicitly on the publish call.
+
+**⚠️ The word "trial" is heavily overloaded.** Users saying "trial reel" / "trial post" / "trial mode" may mean:
+- **Meta Trial Reels feature** (`trial_reel: true`) — served only to non-followers, hidden from grid, private metrics
+- **Trial/dev account** — a throwaway Instagram handle (`shubh.v2026`, etc.) used for testing
+
+**If not clear from context, STOP and ask which one.** Do not silently assume. `POST /api/bridge/instagram/publish` and `/publish/schedule` both accept `trial_reel` (bool) and `trial_graduation_strategy` (default `"manual"`, never auto-graduate without user consent). See `instagram.md` → "🛑 MANDATORY: Trial Reels — always confirm, never guess". You cannot convert a live regular reel to trial after publish; user must delete + republish.
+
+**How to confirm** — one grouped preview, single question. Example:
+
+```
+About to publish:
+  • Account:    @ailead.ai  (ig_direct_24c74…)
+  • Post type:  Reel
+  • Mode:       Trial Reel  (served only to non-followers, hidden from grid)
+  • Timing:     Schedule for 2026-08-07 17:45 IST
+  • Caption:    "16 Essential SFX every UI designer…"
+  • CTA:        (already confirmed above)
+
+Approve, or tell me what to change?
+```
+
+**When the user says "just post it" or "schedule it"** without specifying account/timing/type/trial-mode, still surface the resolved values (which account you're about to hit, which slot you're about to book, trial or regular) and get one-line approval before firing. Never assume a real-account, immediate-publish, regular-reel default silently.
+
 ### Instagram post types
 
 Set `channels.instagram.post_type` with `/api/bridge/content/configure-publish`. Supported values: `reel`, `feed`, `story`, `image`, `carousel`.

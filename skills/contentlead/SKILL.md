@@ -32,6 +32,10 @@ Every `/api/execute` response includes `editorHealth` and `warnings[]` automatic
 If you add text on Track 2 and a video on Track 0, the text will be **invisible** (hidden behind the video).
 **SOLUTION:** ALWAYS call `editor.reorderTracks` after adding items to automatically fix layer ordering.
 
+## 🛑 CRITICAL RULE: Frame 0 Must Be a Usable Poster
+
+Never build a scene whose frame 0 is black / blank / single-color. The rendered MP4's first frame is what Instagram, YouTube, and the ContentLead dashboard use as the default thumbnail — and an already-published Instagram Reel's cover **cannot** be changed via API. If your intro uses a delayed reveal, make the primary text/subject visible at frame 0 (animate scale/translate/glow, keep `opacity: 1`). See `rendering` skill → "The First Frame Must Be a Usable Thumbnail" for the poster-safe `skipReveal` pattern and the Custom Thumbnail flow (Option A: mid-frame extract, Option B: AI-generate) when you genuinely can't use frame 0.
+
 
 ## Skill Routing Table
 
@@ -65,6 +69,7 @@ If you add text on Track 2 and a video on Track 0, the text will be **invisible*
 | **Podcast Layouts (2p/1p/share/9:16)** | `podcast-layouts` | `layout.list`, `layout.apply`, `layout.getActive`, `layout.tagRole` |
 | **Masks & Animated Reveals** | `masking-and-reveal` | `mask.get`, `mask.set`, `mask.clear`, `reveal.listPresets`, `reveal.apply`, `reveal.clear` |
 | **Brand Kits** | `brand-kits` | `brand.listKits`, `brand.apply`, `brand.applyColor`, `brand.applyFont`, `brand.addAssetToCanvas` |
+| **Background Removal (AI matting)** | `background-removal` | `editor.removeBackground`, `editor.restoreBackground`, `editor.bulkRemoveBackground`, `media.removeBackground`, `query.getBackgroundRemovalStatus` |
 
 ## Disambiguation: Which Text/Cut command do I use?
 

@@ -93,3 +93,12 @@ curl "http://127.0.0.1:$PORT/api/bridge/inspiration/connection-status"   -H "Aut
 ```
 
 If Instagram/X are not connected or cookies are invalid, send the user through the desktop app's Connect flow, then retry. Search responses may return `errorCode:"AUTH_MISSING_COOKIES"`, `needsConnect:true`, or `needsCookieRefresh:true`; surface those as connection actions rather than hard failures.
+
+---
+
+## After downloading — audio processing
+
+Once you have `original.mp4` locally, the `audio/SKILL` recipes cover:
+
+- **Stem separation** — split into vocals + instrumental (or 4 stems) with Demucs, all offline. See `audio/SKILL.md` recipe 2 for the exact download-then-separate flow.
+- **Transcription** — send the audio to `/api/bridge/ai/transcribe` (Whisper). See `ai-media/SKILL.md`.

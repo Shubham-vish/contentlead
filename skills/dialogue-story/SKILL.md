@@ -36,6 +36,9 @@ via ContentLead's bridges. The upgrade: Remotion characters animate with real sp
 subtitles become styled karaoke captions, images get transitions, and the whole thing
 stays editable on the timeline afterward. **Same virality logic, strictly richer output.**
 
+> **Virality scoring:** clip/segment selection uses the shared **`virality-scoring`** skill
+> (8-signal 0-100 rubric). Load it when deciding which dialogue moments to keep or lead with.
+
 ## Do we need the code, or are docs enough?
 
 **Both.** Docs alone would let the AI drift run-to-run and you'd lose predictability.

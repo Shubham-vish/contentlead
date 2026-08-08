@@ -108,16 +108,36 @@ Defaults applied by the bridge: `provider:"tavily"`, `max_results:5`,
 
 ### Generate an image (Gemini) → download → add to timeline
 
+**Response shape** (verified live, Gemini provider):
+
+```json
+{
+  "status": "success",
+  "operation": "generate",
+  "prompt": "...",
+  "provider": "gemini",
+  "azure_url": "https://<storage>.blob.core.windows.net/.../image.png?<sas>",
+  "request_id": "...",
+  "operation_id": "..."
+}
+```
+
+**⚠️ Read the URL from `azure_url`.** There is no `image_url` or `url` field on `image/generate` responses (those names only exist on `image/compose` and as inputs to `image/analyze`). Always verify `status == "success"` before using the URL — the bridge can silently return nulls on cold-start / provider hiccups; retry once, then fail loudly.
+
 ```bash
 # 1. Generate — bridge defaults operation:"generate", provider:"gemini",
-#    store_in_azure:true, so you get a durable Azure URL back.
-URL=$(curl -sX POST "$API/api/bridge/ai/image/generate" \
+#    store_in_azure:true, so you get a durable Azure SAS URL back.
+RESP=$(curl -sX POST "$API/api/bridge/ai/image/generate" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"prompt":"Futuristic AI workspace, holographic screens, purple neon",
-       "aspect_ratio":"9:16","style":"cinematic digital art"}' \
-  | jq -r '.image_url // .azure_url // .url')
+       "aspect_ratio":"9:16","style":"cinematic digital art"}')
 
-# 2. Download locally (SAS URL — may expire)
+URL=$(echo "$RESP" | jq -r '.azure_url')
+if [ "$(echo "$RESP" | jq -r '.status')" != "success" ] || [ -z "$URL" ] || [ "$URL" = "null" ]; then
+  echo "AI image gen failed:"; echo "$RESP" | jq .; exit 1
+fi
+
+# 2. Download locally (pre-signed SAS URL — no auth needed, may expire)
 IMG=$(mktemp -t aibg).png
 curl -sfL "$URL" -o "$IMG"
 
@@ -132,13 +152,15 @@ curl -sX POST "$API/api/execute" \
 
 ### Compose from reference images
 
+Response shape mirrors `image/generate` — read the URL from **`azure_url`**.
+
 ```bash
 curl -sX POST "$API/api/bridge/ai/image/compose" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"prompt":"Put the product on a marble kitchen counter, morning light",
        "reference_images":["https://…/product.png","https://…/kitchen.jpg"],
        "aspect_ratio":"1:1"}' \
-  | jq -r '.image_url'
+  | jq -r '.azure_url'
 ```
 
 `reference_images` is a **real JSON array** (no stringification).

@@ -1,12 +1,17 @@
 ---
 name: script-evaluator
-description: Evaluate scripts for viral potential, write viral scripts from scratch, and improve existing scripts. Uses the same 8-signal virality framework as AI clipping, applied to written content before it's ever filmed.
+description: Evaluate scripts for viral potential, write viral scripts from scratch, and improve existing scripts. Applies the shared `virality-scoring` brain (8-signal framework) to written content BEFORE it's ever filmed.
 tags: script, writing, evaluation, viral, hooks, copywriting, content-strategy, scoring, rewrite
 ---
 
 # Script Evaluator — Write & Score Viral Scripts
 
-> Evaluate any script for viral potential, or write one from scratch. Same virality brain used in AI clipping, applied BEFORE filming.
+> Evaluate any script for viral potential, or write one from scratch. Uses the shared
+> **`virality-scoring`** brain (the same rubric behind AI clipping), applied BEFORE filming.
+>
+> **Scoring rubric = `virality-scoring` skill.** This skill is the *script medium adapter*:
+> it adds script-specific modes (evaluate / write / rewrite), templates, and hook rewriting
+> on top of that shared rubric. Load `virality-scoring/SKILL.md` for the scoring framework.
 
 ## Two Modes
 
@@ -21,18 +26,16 @@ tags: script, writing, evaluation, viral, hooks, copywriting, content-strategy, 
 
 ### Step 1 — Score the Script (0-100)
 
-Apply these 8 criteria to the full script. Each contributes to a composite score:
+Apply the **`virality-scoring` skill** (Steps 1-5): detect content type, score the 8 signals,
+compute the composite 0-100, adapt weights per content type, run the quality checklist. The
+8 signals and their baseline weights (Hook 25% · Emotional 20% · Opinion 15% · Revelation 12%
+· Tension 8% · Quotability 7% · Story Arc 7% · Practical 6%) are defined there — do not
+maintain a second copy.
 
-| # | Signal | Weight | What to Check |
-|---|--------|--------|---------------|
-| 1 | **Hook Strength** | 25% | Do the first 1-2 sentences create immediate curiosity? Would someone stop scrolling? |
-| 2 | **Emotional Resonance** | 20% | Does the script trigger a feeling? Surprise, anger, laughter, inspiration? |
-| 3 | **Opinion Strength** | 15% | Does it take a clear stance? Is there something to agree/disagree with? |
-| 4 | **Revelation Value** | 12% | Does the viewer learn something surprising? Is there a "wait, really?" moment? |
-| 5 | **Tension/Conflict** | 8% | Is there a problem, challenge, or opposing viewpoint that creates tension? |
-| 6 | **Quotability** | 7% | Is there at least one line someone would screenshot and share? |
-| 7 | **Story Arc** | 7% | Does it have a clear beginning → build → payoff structure? |
-| 8 | **Practical Takeaway** | 6% | Does the viewer leave with something actionable? |
+For a whole script (vs a clip), map the signals to written structure:
+- **Hook Strength** → the first 1-2 sentences (the on-screen/spoken opener)
+- **Emotional Resonance** → does the script build to a felt beat?
+- **Opinion / Revelation / Tension / Quotability / Story Arc / Practical** → as in the rubric
 
 ### Step 2 — Identify Weaknesses
 
