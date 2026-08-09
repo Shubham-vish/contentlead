@@ -462,6 +462,25 @@ curl "http://127.0.0.1:$PORT/api/skills?q=animation" -H "Authorization: Bearer $
 1. **Always start** with `overview` — it lists all commands briefly
 2. **Load specific skills** based on your task:
 
+> ⚠️ **HARD RULE — no freestyling on covered topics.** If your task hits any row in this
+> table, you MUST load the linked skill BEFORE touching the API. Do not implement a
+> recipe from memory when a documented one exists. Reason: rewriting a recipe that
+> already exists wastes tokens, produces subtly wrong output (script mismatches, missing
+> cleanup rules, wrong endpoint choice), and hides the canonical fix. Historical failure:
+> a Hinglish transcription was re-implemented via raw Whisper because
+> `transcription-and-editing` wasn't consulted — took 3 model runs to reach the same
+> Latin-script recipe that skill already documents in Approach 1.
+>
+> **Trigger keywords → mandatory skill load:**
+>
+> | If you see these words in the task | Load this skill FIRST |
+> |---|---|
+> | transcribe, transcript, Latin/Hinglish captions, jump-cut, silence removal | `transcription-and-editing` (also hoisted as `cl-editor-transcription-and-editing`) |
+> | caption, karaoke, text overlay, title, lower-third, safe margin | `text-and-captions` (also hoisted as `cl-editor-text-and-captions`) |
+> | animation, keyframe, fadeIn, spring, effect, glow, glitch | `animations-and-effects` (also hoisted as `cl-editor-animations-and-effects`) |
+> | track, z-order, reorder, layer visibility, moveTrack, front/back layer | `track-management` (also hoisted as `cl-editor-track-management`) |
+> | desktop bridge, /api/bridge/, AI media, publishing, hub | `desktop-bridge-routes` (also hoisted as `cl-editor-desktop-bridge-routes`) |
+
 | Task | Skill to load |
 |------|---------------|
 | First time connecting | `getting-started` |

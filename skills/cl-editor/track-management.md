@@ -1,3 +1,9 @@
+---
+name: track-management
+description: Organize the ContentLead editor timeline into tracks — z-order, layer visibility, track linking, muting, locking, renaming, reordering. Covers the critical rule that track 0 is the FRONT layer, editor.reorderTracks usage, and the smart-track-reuse mechanic that merges non-overlapping items automatically.
+tags: track, tracks, z-order, layer, reorder, moveTrack, reuse, lock, mute, rename, link
+---
+
 # Track Management & Z-Order
 
 Commands for organizing the timeline into tracks, controlling layer visibility, and track linking.

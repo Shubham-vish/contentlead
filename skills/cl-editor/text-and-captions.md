@@ -1,3 +1,9 @@
+---
+name: text-and-captions
+description: Add text overlays, titles, lower thirds, and karaoke-style captions to the ContentLead editor timeline. Prefer Remotion scenes for stylized text; use editor.addText / editor.addCaption for flat overlays. Covers per-word colored captions, safe margins, positioning, karaoke timing, and integration with the scene pipeline.
+tags: text, caption, captions, karaoke, title, lower-third, subtitle, style, remotion, safe-margin, position
+---
+
 # Text and Captions
 
 Use these commands to manually add text overlays, titles, lower thirds, and manual karaoke-style captions to the timeline.
