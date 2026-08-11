@@ -125,6 +125,70 @@ Use this to check whether video is attached, channels are configured, or a platf
 
 ---
 
+### Preflight validation
+
+Run this before enabling or calling publish. It aggregates known failure modes into one red/yellow/green report.
+
+Preflight status is surfaced automatically in the Content Studio platform cards; agents can hit the endpoint directly as documented above.
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/content_xxx/publish/preflight" \
+  -H "Authorization: ******" -H "Content-Type: application/json" \
+  -d '{"platforms":["instagram","youtube"]}'
+```
+
+Body is optional. Omit `platforms` to validate every channel whose `channels.<platform>.to_publish`/`enabled` flag is on. Response:
+
+```json
+{
+  "ok": false,
+  "contentId": "content_xxx",
+  "runAt": "2026-08-12T00:00:00.000Z",
+  "checks": [{ "id": "yt.shorts.duration_over_60s", "severity": "error", "...": "..." }],
+  "perPlatform": {
+    "youtube": { "ok": false, "errorCount": 1, "warningCount": 0 }
+  }
+}
+```
+
+Check IDs:
+
+| ID | Detects |
+|---|---|
+| `content.video.missing` | No publishable video URL exists. |
+| `content.video.sas_expired` | `sasExpiresAt` is in the past. |
+| `content.video.sas_soon_expiring` | SAS URL expires within 24h. |
+| `content.video.duration_unknown` | No stored/probed duration is available. |
+| `content.thumbnail.frame_0_black` | Best-effort: render-extracted frame-0 thumbnail appears near-black. |
+| `ig.account.missing` | Instagram enabled with no selected account. |
+| `ig.account.disconnected` | Selected Instagram handle/account is not connected. |
+| `ig.account.token_expired` | Selected Instagram token is expired. |
+| `ig.trial_reel.follower_gate` | Meta Trial Reel selected but account has under 1,000 followers. |
+| `ig.trial_reel.no_graduation` | Trial Reel has no graduation strategy. |
+| `ig.caption.missing` | Instagram caption is empty. |
+| `ig.cta.missing_but_scheduled` | Scheduled Instagram publish has no `ContentLeadCTA` draft for `media_<contentId>`. |
+| `ig.reel.video_too_long` | Instagram reel duration is over 90s. |
+| `ig.post_type.mismatch` | Instagram `post_type: reel` has non-video `media_items`. |
+| `yt.channel.missing` | YouTube enabled with no selected channel. |
+| `yt.channel.token_expired` | Selected YouTube token is expired. |
+| `yt.title.missing` | Effective YouTube title is empty. |
+| `yt.title.too_long` | Effective YouTube title is over 100 chars. |
+| `yt.description.too_long` | Effective YouTube description is over 5,000 chars. |
+| `yt.shorts.duration_over_60s` | YouTube Short is over 60s. |
+| `yt.publishAt.too_soon` | Scheduled YouTube publish is less than 10 minutes away. |
+| `yt.privacy.mismatch_with_schedule` | YouTube schedule is set but privacy is not private. |
+| `li.account.missing` | LinkedIn enabled with no selected account. |
+| `li.text.missing` | LinkedIn post text is empty. |
+| `li.warning.no_content_awareness` | Reminder that LinkedIn publish does not auto-update the Content record. |
+
+Worked example:
+
+1. Run preflight for the intended platforms.
+2. If `ok:false`, fix every `severity:"error"` first (for example regenerate expired SAS URLs, shorten a YouTube Short to ≤60s, connect the selected account, or set the missing CTA draft).
+3. Re-run preflight until `ok:true`, review warnings, then call the publish endpoint.
+
+---
+
 ### `PUT /api/bridge/content/:id` — Update content metadata
 
 Updates top-level metadata on a Content document. Only provided fields are changed.
@@ -238,6 +302,36 @@ curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H 
 
 ---
 
+## Publish attempts, retry & reset
+
+Each publish call with a `contentId` appends a sanitized attempt entry to `Content.publishAttempts` (latest 50 kept). Use this before retrying a stuck/failed publish so you know what actually fired.
+
+| Endpoint | Method | What it does |
+|----------|--------|--------------|
+| `/api/bridge/content/:id/publish/attempts` | GET | Lists append-only attempts across Instagram, YouTube, LinkedIn, X |
+| `/api/bridge/content/:id/publish/retry/:attemptId` | POST | Replays the failed/cancelled attempt using its sanitized request snapshot and links the new attempt via `retryOf` |
+| `/api/bridge/content/:id/publish/reset/:platform` | POST | Force-clears stuck `channels.<platform>` publish state fields and logs a cancelled attempt |
+
+Worked example — publish failed, diagnose, retry:
+
+```bash
+# 1) Inspect attempt history
+curl "http://127.0.0.1:$PORT/api/bridge/content/content_xxx/publish/attempts" \
+  -H "Authorization: ******"
+
+# 2) If the latest Instagram attempt is failed/cancelled, retry it
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/content_xxx/publish/retry/attempt_uuid" \
+  -H "Authorization: ******"
+
+# 3) If the channel is stuck in a blocking state, reset first, then publish/retry
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/content_xxx/publish/reset/instagram" \
+  -H "Authorization: ******"
+```
+
+Retry is refused for `succeeded`, `started`, or `in_progress` attempts to avoid double-firing. Reset is a nuclear option: use only when the Content channel state is clearly stale or blocking a fresh publish.
+
+---
+
 ## Content Document Schema
 
 ```text
@@ -266,6 +360,8 @@ Content {
     youtube: { ... }
     linkedin: { ... }
   }
+
+  publishAttempts       // Append-only publish attempt history, capped at 50
 }
 ```
 
