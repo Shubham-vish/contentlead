@@ -16,9 +16,42 @@ YouTube publishing is synchronous: the response comes after the upload completes
 | `tags` | | from Content | Override tags array |
 | `privacyStatus` | | from Content | Override: `public`, `private`, `unlisted` |
 | `thumbnailUrl` | | from Content | Override thumbnail URL |
+| `publishAt` | | — | Schedule publish (ISO 8601 UTC, e.g. `"2026-08-11T14:00:00.000Z"`). Uses YouTube's native `videos.insert` scheduling — privacy is forced to `private` until fire time. Must be ≥10 min in the future. |
+| `wallTime` + `timeZone` | | — | Agent-friendly alternative to `publishAt` (same shape Instagram uses). Bridge converts to UTC ISO and forwards. E.g. `wallTime:"2026-08-11T19:30", timeZone:"Asia/Kolkata"`. |
 
 ```bash
-curl -X POST "http://127.0.0.1:$PORT/api/bridge/youtube/publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","channelId":"UCxxx","title":"5 AI Tools for 2025","description":"In this video...","tags":["AI","tools"],"privacyStatus":"public","thumbnailUrl":"https://.../thumb.jpg"}'
+# Publish immediately
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/youtube/publish" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"contentId":"content_xxx","channelId":"UCxxx","metadata":{"title":"5 AI Tools for 2025","privacyStatus":"public"}}'
+
+# Schedule via wallTime + timeZone (same shape as Instagram scheduling)
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/youtube/publish" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"contentId":"content_xxx","channelId":"UCxxx","wallTime":"2026-08-11T19:30","timeZone":"Asia/Kolkata"}'
+
+# Schedule via UTC publishAt directly
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/youtube/publish" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"contentId":"content_xxx","channelId":"UCxxx","publishAt":"2026-08-11T14:00:00.000Z"}'
+```
+
+**Scheduled publish behaviour:**
+- Video uploads **now** (1–5 min like an immediate publish).
+- YouTube marks it `private` and shows it under **Studio → Content → Scheduled** with your target time.
+- Google flips it to `public` at `publishAt` — no external cron/poller needed on our side.
+- Response is enriched with `scheduled: true, publishAt: "<UTC ISO>"` so agents can distinguish.
+- Bridge validation errors: `publishAt_too_soon` (<10min lead), `invalid_walltime` (bad tz), `invalid_publishAt` (bad ISO).
+
+### Symmetry with Instagram scheduling
+
+For AI-agent workflows, both platforms now accept the same scheduling payload shape (`wallTime` + `timeZone`), so a fan-out publish is uniform:
+
+```jsonc
+// Instagram:  POST /api/bridge/instagram/publish/schedule
+// YouTube:    POST /api/bridge/youtube/publish
+// Same fields, different endpoints:
+{ "contentId": "content_xxx", "wallTime": "2026-08-11T19:30", "timeZone": "Asia/Kolkata" }
 ```
 
 ### Video URL Resolution

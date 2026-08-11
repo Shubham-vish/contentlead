@@ -1,6 +1,6 @@
 # Content Lifecycle — Create, Read, Update, Upload
 
-The SkillTown Desktop local HTTP API is the documented interface for content lifecycle work. Read `~/.skilltown-desktop/api.json` fresh before each call and use `Authorization: Bearer $TOKEN`.
+The SkillTown Desktop local HTTP API is the documented interface for content lifecycle work. Read `~/.skilltown-desktop/api.json` fresh before each call and use the `Authorization` header.
 
 ## Endpoints
 
@@ -28,6 +28,57 @@ To set dashboard/platform titles immediately after creation:
 ```bash
 curl -X PUT "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"displayTitle":"5 AI Tools You Need in 2025","contentTitle":"5 AI Tools You Need in 2025","status":"draft"}'
 ```
+
+---
+
+### `POST /api/bridge/content/:id/duplicate` — Duplicate a Content record
+
+Creates an independent Content record from an existing one. The duplicate keeps the same video, editor timeline, transcripts, B-roll selections, thumbnail, and channel configuration, while publish state and live CTA IDs are reset so the new record can be configured/published separately.
+
+| Body field | Type | Description |
+|------------|------|-------------|
+| `suffix` | string | Optional title suffix for the duplicate |
+| `copyChannels` | bool | Copy channel configuration into the duplicate |
+| `copyCta` | bool | Clone the shared CTA draft, with live/published IDs reset |
+| `copyTimeline` | bool | Clone the linked VideoEditing timeline/design |
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/content_source_xxx/duplicate"   -H "Authorization: ******" -H "Content-Type: application/json"   -d '{"suffix":"Hindi version","copyChannels":true,"copyCta":true,"copyTimeline":true}'
+```
+
+**Returns:**
+
+```json
+{
+  "id": "content_new_xxx",
+  "editingId": "editing_xxx",
+  "groupId": "content_source_xxx",
+  "duplicatedFromContentId": "content_source_xxx",
+  "editorUrl": "/content/content_new_xxx?view=editor",
+  "videoEditingCloned": true,
+  "ctaCloned": true,
+  "assetWarnings": []
+}
+```
+
+**`groupId` provenance:** the original Content doc has `groupId === id`. Duplicates inherit the original's `groupId`, so a single Cosmos query such as `WHERE c.groupId = @gid` returns the whole family: original + every variant.
+
+**Asset edge cases:** `assetWarnings` lists non-persistent design URLs such as `blob:` or `localhost:` that are still inside the cloned timeline. If warnings appear, render/save the source first so the duplicate receives durable cloud asset URLs.
+
+**Recommended agent workflow:** when the user says "make me a Hindi version of this reel":
+
+1. Duplicate the source Content with `POST /api/bridge/content/:id/duplicate`.
+2. Open the returned `editorUrl`.
+3. Make the language/timeline edits in the editor.
+4. Configure/publish the duplicate as its own Content record.
+
+For older workspaces, run the one-time idempotent migration:
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/backfill-groupids"   -H "Authorization: ******"
+```
+
+It sets `groupId = id` on this user's pre-grouping Content docs and returns `{ "patched": number }`.
 
 ---
 

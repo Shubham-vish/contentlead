@@ -43,10 +43,12 @@ curl "http://127.0.0.1:$PORT/api/bridge/content?limit=5"   -H "Authorization: Be
 | Understand local HTTP auth, event stream, and endpoint tables | `bridge-mode.md` |
 | Create a content record and open an editor tab | `contentlead/infrastructure.md` → `POST /api/content/create` |
 | Create, list, get, update content, upload video/thumbnail | `content-lifecycle.md` |
+| Duplicate a Content record + its timeline (produces an independent copy) | `content-lifecycle.md` |
 | Configure channel settings (captions, tags, scheduling, toggles) | `channel-configuration.md` |
 | Publish to Instagram, set up CTA/DM automation, poll status | `instagram.md` |
 | Publish to YouTube, CTA auto-comments | `youtube.md` |
 | Post to LinkedIn | `linkedin.md` |
+| Read / create / update saved account combinations (cross-platform presets) | `combinations.md` |
 | Debug SAS expiry, video requirements, rate limits | `platform-rules.md` |
 | Run end-to-end flows (create → publish all platforms) | `workflows.md` |
 
@@ -54,11 +56,13 @@ curl "http://127.0.0.1:$PORT/api/bridge/content?limit=5"   -H "Authorization: Be
 
 ## Endpoints at a Glance
 
-### Content Lifecycle (6 endpoints) → `content-lifecycle.md`
+### Content Lifecycle (8 endpoints) → `content-lifecycle.md`
 
 | Endpoint | What it does |
 |---------|-------------|
 | `POST /api/content/create` | Create a new Content document and optionally wait for the editor tab |
+| `POST /api/bridge/content/:id/duplicate` | Clone a Content record + linked VideoEditing timeline + CTA draft. Preserves group provenance via groupId. |
+| `POST /api/bridge/content/backfill-groupids` | One-time backfill for pre-grouping content — idempotent. |
 | `GET /api/bridge/content` | Browse/filter content with pagination |
 | `GET /api/bridge/content/:id` | Get full content with all metadata + channels |
 | `PUT /api/bridge/content/:id` | Update title, description, caption, video URLs, thumbnail, status |
@@ -84,7 +88,7 @@ curl "http://127.0.0.1:$PORT/api/bridge/content?limit=5"   -H "Authorization: Be
 
 | Endpoint | What it does |
 |---------|-------------|
-| `POST /api/bridge/youtube/publish` | Upload video from Content and auto-post CTA comment |
+| `POST /api/bridge/youtube/publish` | Upload video from Content and auto-post CTA comment. Accepts `publishAt` (ISO UTC) or `wallTime`+`timeZone` for **native scheduled publish** — Google flips privacy at fire time, no external cron needed. |
 
 ### LinkedIn (2 endpoints) → `linkedin.md`
 
@@ -92,6 +96,17 @@ curl "http://127.0.0.1:$PORT/api/bridge/content?limit=5"   -H "Authorization: Be
 |---------|-------------|
 | `GET /api/bridge/accounts` | Get connected accounts, including LinkedIn accounts |
 | `POST /api/bridge/publish/linkedin` | Create a LinkedIn post (not content-aware) |
+
+### Account Combinations (4 endpoints) → `combinations.md`
+
+Cross-platform presets ("AI lineup", "trading content", etc.) so users don't reselect the same accounts every reel. UI convenience today — agents resolve a combo client-side and fan out per-platform publish calls.
+
+| Endpoint | What it does |
+|---------|-------------|
+| `GET /api/bridge/content/combinations` | List saved combinations + connected accounts per platform |
+| `POST /api/bridge/content/combinations` | Create a saved combination `{name, description?, enabled?, accounts:{instagram?,youtube?,linkedin?,x?}}` |
+| `PATCH /api/bridge/content/combinations` | Update a combination `{id, ...changes}` |
+| `DELETE /api/bridge/content/combinations?id=` | Delete a combination |
 
 ---
 
@@ -174,9 +189,15 @@ Set `channels.instagram.post_type` with `/api/bridge/content/configure-publish`.
 - Media URLs must be public HTTPS URLs. Carousel requires 2–10 items. Stories do not use captions.
 - Publish with `POST /api/bridge/instagram/publish`; it publishes whatever the configured `post_type` is.
 
-### Scheduling is Instagram-only
+### Scheduling
 
-Only Instagram reels have a scheduler (`.../publish/schedule`, published by a background worker). YouTube and LinkedIn publish immediately — to time them, run the publish call yourself at the desired moment.
+Both **Instagram** and **YouTube** support native scheduling, but through different mechanics:
+
+- **Instagram** — dedicated `POST /api/bridge/instagram/publish/schedule` endpoint. A background worker in the desktop app claims the slot and publishes at fire time. Takes `wallTime` + `timeZone`.
+- **YouTube** — the same `POST /api/bridge/youtube/publish` endpoint accepts `publishAt` (UTC ISO) or `wallTime` + `timeZone`. Google's own system flips the video from `private` to `public` at the target time; the desktop app doesn't need to be running at fire time.
+- **LinkedIn** — no scheduling. Post immediately via `POST /api/bridge/publish/linkedin`; to time it, run the call yourself at the desired moment.
+
+For AI-agent workflows, both IG and YT accept the same `{ contentId, wallTime, timeZone }` shape, so a fan-out schedule is one payload template across two endpoints.
 
 ---
 

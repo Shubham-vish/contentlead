@@ -120,25 +120,48 @@ curl -X PUT "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Author
 
 ---
 
-## Workflow 3: Schedule a Reel for Later (Instagram only)
+## Workflow 3: Schedule for Later (Instagram or YouTube)
 
-> **Scheduling exists only for Instagram reels.** YouTube and LinkedIn have no scheduler — they publish immediately (Workflow 1, Steps 7–8). To "schedule" those, run the publish call yourself at the desired time.
+> **Scheduling: Instagram + YouTube both supported.** Instagram uses its own scheduler endpoint (`publish/schedule`) — a desktop background worker fires at the slot. YouTube accepts `publishAt` or `wallTime` + `timeZone` on the regular publish endpoint — Google flips privacy at fire time, no external cron needed. LinkedIn still has no scheduler — run the call yourself at the target time.
+
+Both platforms accept the same `{ contentId, wallTime, timeZone }` payload shape, so a fan-out schedule is one payload template.
 
 ### Step 1 (REQUIRED for comment automation): set the CTA draft FIRST
 
-A scheduled reel's automation is created **only** by promoting a pre-existing draft CTA when the slot fires. If you skip this, the reel publishes with **no** comment/DM automation, and it cannot be attached retroactively through this flow. So set the CTA before scheduling — run **Workflow 1, Step 5** (the `update_cta` call with `containerName:"ContentLeadCTA"`) for this `contentId` now. Skip this step only if the reel deliberately needs no automation.
+A scheduled reel's automation is created **only** by promoting a pre-existing draft CTA when the slot fires. If you skip this, the reel publishes with **no** comment/DM automation, and it cannot be attached retroactively through this flow. So set the CTA before scheduling — run **Workflow 1, Step 5** (the `update_cta` call with `containerName:"ContentLeadCTA"`) for this `contentId` now. Skip this step only if the reel deliberately needs no automation. YouTube reads the same shared CTA draft and posts a pinned comment automatically at fire time.
 
-### Step 2: Schedule the reel
+### Step 2a: Schedule an Instagram reel
 
 Use the dedicated schedule endpoint. `wallTime` must satisfy the server's minimum-lead and slot-boundary rules; if it is rejected, the error states the exact required lead time and slot size — round up to the next slot and retry. Do not hard-code specific minute values, as they can change.
 
 ```bash
-curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/publish/schedule"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","selectedAccount":"ig_abc123","wallTime":"2026-08-05T14:00","timeZone":"Asia/Kolkata","caption":"Coming soon! 🎬","hashtags":["AI","tools"]}'
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/publish/schedule" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"contentId":"content_xxx","selectedAccount":"ig_abc123","wallTime":"2026-08-05T14:00","timeZone":"Asia/Kolkata","caption":"Coming soon! 🎬","hashtags":["AI","tools"]}'
 ```
+
+### Step 2b: Schedule a YouTube video
+
+Same publish endpoint as immediate publishing — just add `publishAt` (ISO UTC) or `wallTime` + `timeZone`. The video uploads **now** (1–5 min), and YouTube marks it `private` until the scheduled fire time; then it flips to `public` automatically.
+
+```bash
+# Same shape as Instagram scheduling (wallTime + timeZone)
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/youtube/publish" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"contentId":"content_xxx","channelId":"UCxxx","wallTime":"2026-08-05T14:00","timeZone":"Asia/Kolkata"}'
+
+# Or with an explicit UTC ISO publishAt
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/youtube/publish" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"contentId":"content_xxx","channelId":"UCxxx","publishAt":"2026-08-05T08:30:00.000Z"}'
+```
+
+Validation errors surfaced by the bridge: `publishAt_too_soon` (<10 min lead), `invalid_walltime` (bad tz or format), `invalid_publishAt` (not a valid ISO). Response includes `scheduled: true, publishAt: "<UTC ISO>"` so agents can distinguish a scheduled upload from an immediate one.
 
 ### Step 3: Manage / track the schedule
 
-Use `PATCH /api/bridge/instagram/publish/schedule` to reschedule and `DELETE /api/bridge/instagram/publish/schedule` to cancel (both reject once publishing has started). Track progress with `GET /api/bridge/instagram/publish/scheduled-status?contentId=content_xxx` and watch `publish_state` advance `scheduled → claimed → creating_container → container_processing → container_ready → publishing → published` (see the lifecycle table in `instagram.md`). When it reaches `published`, `media_id` and `published_url` are set, and — if you did Step 1 — the CTA is now live on the real post.
+- **Instagram** — `PATCH /api/bridge/instagram/publish/schedule` to reschedule; `DELETE /api/bridge/instagram/publish/schedule` to cancel (both reject once publishing has started). Track progress with `GET /api/bridge/instagram/publish/scheduled-status?contentId=content_xxx` and watch `publish_state` advance `scheduled → claimed → creating_container → container_processing → container_ready → publishing → published`. When it reaches `published`, `media_id` and `published_url` are set, and — if you did Step 1 — the CTA is now live on the real post.
+- **YouTube** — no dedicated reschedule/cancel endpoint. To reschedule, call `POST /api/bridge/youtube/publish` again with a new `publishAt` on the same `contentId`. To cancel a scheduled publish, edit the video in YouTube Studio (change privacy off "Scheduled") — the API doesn't expose a native cancel path yet.
 
 ---
 
@@ -178,6 +201,6 @@ curl -X POST "http://127.0.0.1:$PORT/api/bridge/instagram/publish"   -H "Authori
 | Publishing for the first time? | Workflow 1 (full pipeline) |
 | Just uploading a local render? | `POST /api/render` with `contentId` + `uploadToCloud:true` |
 | Uploading an external video binary? | Workflow 2 (SAS URL upload) |
-| Setting up Instagram for future publish? | Workflow 3 (schedule endpoint) |
+| Setting up Instagram or YouTube for future publish? | Workflow 3 (schedule endpoint) |
 | Not sure if content is ready? | Workflow 4 (readiness check) |
 | Content exists, just need to publish? | Workflow 5 (find & publish) |
