@@ -21,6 +21,7 @@ IDEA → RESEARCH → SCRIPT → PRODUCE (edit / voice / media) → CLIP → PUB
 |-------|------------|--------------|
 | **`cl-virality-scoring`** | The single 0–100 virality rubric (8 signals). Medium-agnostic — judges "is this viral?" for a clip, a written script, a hook line, a post idea, or a thumbnail. | `cl-ai-clipping`, `cl-script-evaluator`, `cl-dialogue-story`, `cl-content-style` |
 | **`cl-editor`** | Master router for the ContentLead desktop video editor. Load first before any editor command; it explains the local HTTP API. | every skill that touches the editor |
+| **`cl-board`** | Master router for the ContentLead Whiteboard (Boards). Same desktop bridge as `cl-editor` but a different command surface — diagrams, mind maps, flowcharts, slide decks, sticky-note brainstorms. Do NOT use for video editing. | any skill that needs to draw or arrange on a canvas |
 
 **Rule:** if you need to score how viral something is, load `cl-virality-scoring`. Do NOT write ad-hoc scoring heuristics anywhere else.
 
@@ -113,6 +114,7 @@ cl-content-style (voice)  →  cl-script-evaluator (craft polish)  →  cl-viral
 | Make a two-character dialogue reel | `cl-dialogue-story` |
 | Research trends / competitors | `cl-content-inspiration`, `cl-ad-intelligence` |
 | Talk to the editor at all | `cl-editor` (first), then `overview.md` |
+| Draw on a whiteboard / build a diagram, mind map, or slide deck | `cl-board` |
 | Add images / generate visuals | `cl-ai-media`, `cl-dialogue-broll` |
 | Clone a voice / TTS | `cl-voice` |
 | Split stems / clean audio | `cl-audio` |
