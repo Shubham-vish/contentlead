@@ -457,7 +457,7 @@ tests:
           equals: success
 
   - id: state.keyframe-scale
-    name: Animate scale with keyframes
+    name: Animate scale with keyframes (state + effective-details assertions)
     category: state
     tags: [state, keyframe, scale]
     setup:
@@ -488,6 +488,108 @@ tests:
       response:
         - path: status
           equals: success
+      state:
+        # Assert the scale track is present, enabled, and has both keyframes
+        # with the expected frame + value. This catches the class of bugs
+        # where addKeyframe returns success but nothing actually landed in
+        # the store (the current suite's only assertion was status:success,
+        # which is why the shipped scale-keyframe regression slipped through).
+        - query:
+            type: query.getKeyframes
+            params:
+              itemId: "{{steps.add-text.result.itemId}}"
+          checks:
+            - path: result.hasKeyframes
+              equals: true
+            - path: result.tracks
+              type: array
+            - path: result.tracks[0].property
+              equals: scale
+            - path: result.tracks[0].enabled
+              equals: true
+            - path: result.tracks[0].keyframes[0].frame
+              equals: 0
+            - path: result.tracks[0].keyframes[0].value
+              equals: 0.5
+            - path: result.tracks[0].keyframes[1].frame
+              equals: 45
+            - path: result.tracks[0].keyframes[1].value
+              equals: 1.5
+
+  - id: state.keyframe-scale-effective-details
+    name: Scale keyframe compounds with base transform (frame-0 vs frame-45)
+    category: state
+    tags: [state, keyframe, scale, effective-details]
+    setup:
+      # Add an image with a known base scale so we exercise the compounding
+      # code path in applyKeyframesToDetails. Text items may not carry a base
+      # transform — an image scaled to the canvas does.
+      - id: add-image
+        kind: command
+        type: editor.addImage
+        # 1x1 transparent PNG data URL — no HTTP, no CORS, no filesystem.
+        params:
+          src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+          from: 0
+          durationMs: 3000
+          width: 500
+          height: 500
+      - id: set-base-transform
+        kind: command
+        type: editor.editItem
+        params:
+          itemId: "{{steps.add-image.result.itemId}}"
+          details:
+            transform: "scale(1.23164, 1.23164)"
+      - id: kf0
+        kind: command
+        type: editor.addKeyframe
+        params:
+          itemId: "{{steps.add-image.result.itemId}}"
+          property: scale
+          value: 1
+          frame: 0
+          easing: linear
+      - id: kf1
+        kind: command
+        type: editor.addKeyframe
+        params:
+          itemId: "{{steps.add-image.result.itemId}}"
+          property: scale
+          value: 1.4
+          frame: 45
+          easing: linear
+    execute:
+      # Sample the effective transform at the tail keyframe. This is the
+      # deterministic proof that keyframes actually reach the render layer.
+      type: query.getEffectiveDetails
+      params:
+        itemId: "{{steps.add-image.result.itemId}}"
+        frame: 45
+    assert:
+      response:
+        - path: status
+          equals: success
+        - path: result.hasKeyframes
+          equals: true
+        - path: result.keyframedValues.scale
+          equals: 1.4
+        # Base scale 1.23164 × keyframed 1.4 = 1.7243... — must be a scale()
+        # transform that is STRICTLY LARGER than the base.
+        - path: result.effectiveDetails.transform
+          contains: "scale("
+      state:
+        - query:
+            type: query.getEffectiveDetails
+            params:
+              itemId: "{{steps.add-image.result.itemId}}"
+              frame: 0
+          checks:
+            # At frame 0 the effective scale MUST equal the base (1.23164 × 1)
+            # If a regression re-adds `transform:none` in KEYFRAME_CONTAINER_OVERRIDES,
+            # the interpolation still succeeds here but the visual test below fails.
+            - path: result.effectiveDetails.transform
+              contains: "scale(1.23164)"
 
   - id: state.keyframe-remove
     name: Remove a keyframe

@@ -602,3 +602,179 @@ tests:
       - Crop failed
       - Video appears letterboxed or distorted
       - Canvas is still landscape
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  KEYFRAME VISUAL REGRESSION
+  # ═══════════════════════════════════════════════════════════════════
+
+  - id: visual.keyframe-scale-video-grows
+    name: "VISUAL: Scale keyframes on a video actually grow the visible frame"
+    category: visual
+    tags: [visual, keyframe, scale, regression]
+    judge: llm
+    steps:
+      - action: reset canvas to landscape 1920x1080
+        command:
+          type: editor.resize
+          params: { width: 1920, height: 1080 }
+      # Add a solid-colored image (not a video, to avoid asset dependency)
+      # sized 500x500 with a KNOWN non-identity base transform. This mirrors
+      # the shipping scenario: images/videos scaled to fit the canvas carry a
+      # non-1.0 scale in details.transform, and keyframed scale multiplies it.
+      - action: add centered image with base scale
+        command:
+          type: editor.addImage
+          params:
+            # 4x4 solid red PNG data URL — always renders, no CORS.
+            src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAF0lEQVQIW2P8z8DwHwiYGBhAAAoAAP//AwoBAY6HuqUAAAAASUVORK5CYII="
+            from: 0
+            durationMs: 4000
+            width: 500
+            height: 500
+      - action: force a known base transform on the image
+        command:
+          type: editor.editItem
+          params:
+            itemId: "{{previous.result.itemId}}"
+            details:
+              transform: "scale(1.23164, 1.23164)"
+              left: 710
+              top: 290
+      - action: add scale keyframe at frame 0 (value=1.0)
+        command:
+          type: editor.addKeyframe
+          params:
+            itemId: "{{previous_step.itemId}}"
+            property: scale
+            value: 1.0
+            frame: 0
+            easing: linear
+      - action: add scale keyframe at frame 45 (value=2.0)
+        command:
+          type: editor.addKeyframe
+          params:
+            itemId: "{{previous_step.itemId}}"
+            property: scale
+            value: 2.0
+            frame: 45
+            easing: linear
+      - action: seek to frame 0 (scale ~= base)
+        command:
+          type: editor.seekTo
+          params: { timeMs: 0 }
+      - action: capture screenshot at frame 0
+        command:
+          type: query.capturePreviewFrame
+          params: { format: png }
+          save_as: kf_frame0.png
+      - action: seek to frame 45 (scale = 2 × base = 2.463)
+        command:
+          type: editor.seekTo
+          params: { timeMs: 1500 }
+      - action: capture screenshot at frame 45
+        command:
+          type: query.capturePreviewFrame
+          params: { format: png }
+          save_as: kf_frame45.png
+      # Deterministic effective-details check so PASS is verifiable even if
+      # the two PNGs look ambiguous to the judge.
+      - action: query effective details at frame 45
+        command:
+          type: query.getEffectiveDetails
+          params:
+            itemId: "{{previous_step.itemId}}"
+            frame: 45
+    criteria: |
+      PASS if ALL of:
+      - kf_frame0.png shows a small red square roughly centered on the canvas
+      - kf_frame45.png shows a red square that is VISIBLY LARGER than in kf_frame0.png
+        (comparable center, but occupying more pixel area — width/height ~1.6× larger)
+      - query.getEffectiveDetails at frame 45 returned a scale() value with a
+        numeric magnitude > 2.4 (specifically 2.0 × 1.23164 ≈ 2.463) in
+        result.effectiveDetails.transform
+      FAIL if any of:
+      - The two screenshots are visually IDENTICAL (this is the historical
+        regression — scale keyframes appeared to apply in state but the
+        render layer stripped the outer container transform)
+      - The frame-45 red square is SMALLER than or equal to the frame-0 square
+      - query.getEffectiveDetails returns hasKeyframes:false or does not include
+        a scale() term in effectiveDetails.transform
+    notes: |
+      Root cause of the historical bug: base-sequence.tsx contained
+      KEYFRAME_CONTAINER_OVERRIDES = { ..., transform: "none" } which stripped
+      the keyframed transform on the outer <AbsoluteFill> — and BoxAnim's inner
+      div always overwrites its own transform with scale(1), so the keyframe
+      never reached the DOM. Fixed by removing `transform: "none"` from the
+      overrides object; opacity/filter/rotate MUST stay to avoid double-application.
+
+  - id: visual.keyframe-opacity-fades
+    name: "VISUAL: Opacity keyframes fade the item in over time"
+    category: visual
+    tags: [visual, keyframe, opacity, regression]
+    judge: llm
+    steps:
+      - action: reset canvas
+        command:
+          type: editor.resize
+          params: { width: 1920, height: 1080 }
+      - action: add solid centered image
+        command:
+          type: editor.addImage
+          params:
+            src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAF0lEQVQIW2P8z8DwHwiYGBhAAAoAAP//AwoBAY6HuqUAAAAASUVORK5CYII="
+            from: 0
+            durationMs: 3000
+            width: 800
+            height: 500
+      - action: add opacity keyframe at frame 0 (value 0 = invisible)
+        command:
+          type: editor.addKeyframe
+          params:
+            itemId: "{{previous.result.itemId}}"
+            property: opacity
+            value: 0
+            frame: 0
+            easing: linear
+      - action: add opacity keyframe at frame 45 (value 100 = fully visible)
+        command:
+          type: editor.addKeyframe
+          params:
+            itemId: "{{previous_step.itemId}}"
+            property: opacity
+            value: 100
+            frame: 45
+            easing: linear
+      - action: seek to frame 0
+        command:
+          type: editor.seekTo
+          params: { timeMs: 0 }
+      - action: capture at frame 0
+        command:
+          type: query.capturePreviewFrame
+          params: { format: png }
+          save_as: op_frame0.png
+      - action: seek to frame 45
+        command:
+          type: editor.seekTo
+          params: { timeMs: 1500 }
+      - action: capture at frame 45
+        command:
+          type: query.capturePreviewFrame
+          params: { format: png }
+          save_as: op_frame45.png
+      - action: verify effective opacity at frame 45
+        command:
+          type: query.getEffectiveDetails
+          params:
+            itemId: "{{previous_step.itemId}}"
+            frame: 45
+    criteria: |
+      PASS if:
+      - op_frame0.png shows a blank canvas (image is transparent / invisible)
+      - op_frame45.png shows the red image clearly visible
+      - query.getEffectiveDetails.result.effectiveDetails.opacity is close to 100
+        at frame 45 (allow 95-100 for interpolation rounding)
+      FAIL if:
+      - Image is visible in both frames (opacity keyframe did nothing)
+      - Image is invisible in both frames (opacity got stuck at 0)
+      - Effective opacity at frame 45 is not near 100
