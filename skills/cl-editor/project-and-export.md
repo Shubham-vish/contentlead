@@ -209,6 +209,17 @@ Example:
 
 ## `editor.export`
 
+> ### ⚠️ DO NOT USE FOR PROGRAMMATIC RENDERS
+>
+> `editor.export` is a **thin wrapper around the UI Export button** (same `useDownloadState` store). It kicks off a render but **returns `jobId: null`** — the store's jobId is populated asynchronously and the handler reads it too early. You have no way to poll progress or discover the output path.
+>
+> **For any programmatic render, use the `rendering` skill instead:**
+> - `POST /api/render` with `renderType: "design"` → returns real `jobId`
+> - `GET /api/render/{jobId}` → progress + final `outputPath`
+> - Output always at `~/Movies/SkillTown/{jobId}.mp4`
+>
+> `editor.export` should only be used when you literally want to simulate the user clicking Export (e.g. QA/UI tests). Everywhere else, `/api/render` is the correct API.
+
 | Param | Type | Default | Description |
 |---|---|---|---|
 | `format` | `string` | `"mp4"` | Export format |

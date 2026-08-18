@@ -93,6 +93,14 @@ cl-content-style (voice)  →  cl-script-evaluator (craft polish)  →  cl-viral
 
 ---
 
+## 💸 Offers (sales pages, checkout, thank-you, email)
+
+| Skill | Use it to |
+|-------|-----------|
+| **`cl-offers`** | Build and edit ContentLead Offer Studio surfaces — offer sales page, checkout, thank-you, buyer emails. Sections + templates + themes + coupons + custom actions all via `/api/offer-studio/commands/*`. |
+
+---
+
 ## 🛠️ Ops / Entry docs
 
 | Doc / Skill | Purpose |

@@ -87,10 +87,44 @@ Check the status of a running transcription/auto-caption job.
 ```
 
 ### `query.capturePreviewFrame`
-Capture the current canvas as a PNG data URL.
+Capture the current canvas as a PNG data URL. **Does NOT seek or wait** — captures whatever is currently on screen. If you need a frame at a specific time, use `query.previewFrameAt` (below) instead.
 ```json
 { "type": "query.capturePreviewFrame", "params": {} }
 ```
+
+### `query.previewFrameAt` ⭐ (recommended for time-specific verification)
+
+**Atomic seek + wait-for-stabilization + composite capture.** This is the correct way to verify what the timeline shows at a given time — it replaces the buggy `editor.seekTo` → sleep → `/api/screenshot` sequence.
+
+**Why:** `editor.seekTo` dispatches a seek to the Remotion Player, but each underlying `<video>` element still needs 100–500 ms to buffer the requested source-time. A capture taken immediately returns the PREVIOUS frame (often source-t=0). `query.previewFrameAt` pauses, seeks, then polls every `<video>` element until `currentTime` is stable across two consecutive polls (Δ < 50 ms) AND `readyState >= 2` — only then does it composite.
+
+```json
+{ "type": "query.previewFrameAt", "params": {
+    "timeMs": 15000,
+    "waitTimeoutMs": 3000,
+    "pollIntervalMs": 50
+}}
+```
+
+**Returns:**
+```json
+{
+  "imageBase64": "data:image/png;base64,...",
+  "width": 1080, "height": 1920,
+  "timeMs": 15000,
+  "stabilized": true,
+  "waitedMs": 187,
+  "videoTimings": [
+    {"itemId":"video_abc","expectedSourceT":4.32,"actualSourceT":4.32,"delta":0.001,"readyState":4}
+  ]
+}
+```
+
+- `stabilized: false` → timed out waiting; frame may be slightly stale. Increase `waitTimeoutMs` or accept the stale frame.
+- `videoTimings[].delta` > 0.1 s → this video didn't hit the target source-time in time; consider bumping `waitTimeoutMs`.
+- Cross-origin `<canvas>` layers are silently skipped (browser security).
+
+**Use cases:** verify a caption is visible at a specific time; confirm B-roll appears where you scheduled it; check whether frame 0 of a scene is a usable poster before rendering.
 
 ## Additional Queries
 

@@ -59,6 +59,8 @@ curl -X POST http://127.0.0.1:$PORT/api/render \
 
 Renders a DesignCombo IDesign JSON (the editor's native format).
 
+**⚠️ Body shape — pass the design FLAT under `data` (NOT nested under `data.design`):**
+
 ```bash
 curl -X POST http://127.0.0.1:$PORT/api/render \
   -H "Authorization: Bearer $TOKEN" \
@@ -66,12 +68,27 @@ curl -X POST http://127.0.0.1:$PORT/api/render \
   -d '{
     "renderType": "design",
     "data": {
-      "design": { ...IDesign JSON... },
+      "size": {"width": 1080, "height": 1920},
+      "tracks": [...],
+      "trackItemIds": [...],
+      "trackItemsMap": {...},
       "fps": 30,
-      "width": 1920,
-      "height": 1080
+      "width": 1080,
+      "height": 1920
     }
   }'
+```
+
+Get the design with `project.getFullState` and pass **`result.project.design` directly** as `data` — do NOT wrap it in `{design: ...}`. The validator rejects nested shapes with `wrong_data_shape` error.
+
+**Correct one-liner:**
+```bash
+DESIGN=$(curl -s -X POST http://127.0.0.1:$PORT/api/execute \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"tabId":"'$TAB'","type":"project.getFullState","params":{}}' | jq -c '.result.project.design')
+curl -X POST http://127.0.0.1:$PORT/api/render \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d "$(echo "$DESIGN" | jq -c '{renderType:"design", data:(. + {fps:30, width:.size.width, height:.size.height}), preset:"instagram_reel"}')"
 ```
 
 ### 3. Template Render (`renderType: "template"`)
@@ -118,6 +135,41 @@ curl -X POST http://127.0.0.1:$PORT/api/render \
     "outputFormat": "mp4",
     "quality": 90
   }'
+```
+
+### Presets
+
+Use `preset: "<name>"` to bundle resolution + codec + CRF + fps in one field. Override individual values via `options: {...}`.
+
+| Preset | Width×Height | FPS | Codec | CRF | Approx Bitrate | Use case |
+|--------|--------------|-----|-------|-----|----------------|----------|
+| `preview` | 854×480 | 24 | h264 | 28 | ~1.5 Mbps | Quick preview |
+| `draft` | 1280×720 | 30 | h264 | 23 | ~3 Mbps | Review |
+| `final` | 1920×1080 | 30 | h264 | 18 | ~8 Mbps | 16:9 landscape final |
+| **`instagram_reel`** | **1080×1920** | 30 | h264 High | 18 | ~8–10 Mbps | **Instagram Reels / YT Shorts / TikTok — default for vertical viral content** |
+| `instagram_reel_hq` | 1080×1920 | **60** | h264 High | 16 | ~14 Mbps | High-motion reels (dance, sport, gaming) — smoother but ~2× render time |
+| `4k` | 3840×2160 | 30 | h264 | 18 | ~40 Mbps | 4K master |
+
+**Instagram Reels spec rationale:**
+- IG target upload: 1080×1920 @ 30 fps, H.264 High profile, AAC 128 kbps stereo 48 kHz, ≤90 s
+- IG re-encodes every upload; sending ~8–10 Mbps at CRF 18 minimizes IG's compression damage
+- 60 fps only helps high-motion content — IG plays 30/60 at the same rate but 60 preserves detail during fast motion
+
+Example — vertical reel render:
+```bash
+curl -X POST http://127.0.0.1:$PORT/api/render \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "renderType": "design",
+    "data": { ...design flat under data... },
+    "preset": "instagram_reel"
+  }'
+```
+
+Override individual preset values:
+```json
+{ "preset": "instagram_reel", "options": { "crf": 16, "fps": 60 } }
 ```
 
 ---

@@ -57,7 +57,9 @@ Add a manual karaoke-style caption track using word-level timing arrays.
 ```json
 { "type": "editor.addCaption", "params": {
   "from": 0,
-  "durationMs": 5000,
+  "to": 5000,
+  "text": "Hello world",
+  "trackName": "AI Captions",
   "details": {
     "words": [
       {"word": "Hello", "start": 0, "end": 500},
@@ -67,7 +69,22 @@ Add a manual karaoke-style caption track using word-level timing arrays.
   "autoReorder": true
 }}
 ```
-*Note: `words` timings are in milliseconds, relative to the clip start (0).*
+
+**⚠️ Gotchas that WILL bite you:**
+
+1. **`animation` defaults to `letterKaraoke/scaleAnimationLetterEffectSoft`.** This animation renders **per word** — if `words[]` is empty (or ends up empty), the caption RENDERS BLANK even though it appears in the timeline. Symptoms: caption item visible in the UI list, `details.text` set, but the exported MP4 shows nothing at that time.
+   - **Fix:** always pass either `text` (handler auto-splits into `words[]`) OR an explicit `words[]` array. Don't pass `words: []`.
+   - **Alternative:** pass `animation: "none"` (or null) to disable karaoke — the whole caption text will render as one block using `color`.
+
+2. **`words[]` timings are ABSOLUTE ms**, not relative-to-clip. If your caption `from: 45000`, `to: 46000`, then `words[0].start` should be 45000, not 0. (The `Note: relative to clip start (0)` in older docs was wrong.)
+
+3. **`top` on `addCaption` may be silently overridden by default template positioning.** If your caption doesn't land where expected, follow up with `editor.editItem { itemId, details: {top: "1700px", left: "40px", width: 1000} }`.
+
+4. **`activeColor` defaults to purple `#BC4AEF`** (the animated word highlight). Override for brand consistency: `activeColor: "#FDCB58"` (gold).
+
+5. **Font mismatch:** the handler auto-loads Montserrat regardless of `fontFamily`. To use a different font, pass BOTH `fontFamily: "Inter"` AND `fontUrl: "<inter-woff2-url>"` explicitly.
+
+6. **Best practice: pass `trackName: "AI Captions"`** on the FIRST call and `trackId: <returned-track-id>` on subsequent ones — this prevents track fragmentation across many chunks.
 
 ### `editor.editItem` (for styling Text)
 Update the style of an existing text item.

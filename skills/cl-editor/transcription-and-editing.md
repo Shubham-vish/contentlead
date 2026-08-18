@@ -28,6 +28,46 @@ End-to-end workflow for editing talking-head or screen-share videos: transcribe 
 
 ## Phase 1: Transcription
 
+### ⚠️ When `editor.autoCaption` fails: `transcription_service_down`
+
+The command uses the upstream `mcp.prepwithai.in` service. If that host is down (nginx 502/503/504), you'll see:
+```json
+{"status":"failed","error":"command_failed","message":"Transcription service (mcp.prepwithai.in) is unreachable — the upstream returned 502. This is NOT a bug in the desktop app. Retry in ~1 minute, OR fall back to local Whisper: ..."}
+```
+The desktop already **retries once after 5s** internally — if it still fails, the upstream is genuinely down. Fall back to local Whisper (recipe below).
+
+**Health check the upstream first if you suspect it:**
+```bash
+curl -sI https://mcp.prepwithai.in/mcp/ | head -1
+# HTTP/2 200 → healthy, HTTP/2 502/503 → down
+```
+
+### Local Whisper fallback (works offline, no MCP dependency)
+
+Use `medium` model or larger. `small` **hallucinates repetition loops on Hindi** — do NOT use it for long-form. Best-quality invocation:
+
+```bash
+# 1. Extract mono 16 kHz audio for the segment (widen by ±300 ms to avoid
+#    clipping edge words — Whisper needs breathing room).
+ffmpeg -y -ss $((FROM_S - 1)) -i "$SRC" -t $((DUR_S + 2)) \
+       -ac 1 -ar 16000 -c:a pcm_s16le /tmp/seg.wav
+
+# 2. Transcribe with anti-hallucination flags.
+whisper /tmp/seg.wav \
+  --model medium \
+  --language hi \
+  --word_timestamps True \
+  --condition_on_previous_text False \
+  --temperature 0 \
+  --output_format json \
+  --output_dir /tmp
+# → /tmp/seg.json has result["segments"][i]["words"] = [{word,start,end}]
+```
+
+For repetition-loop symptoms ("प्राइज प्राइज प्राइज…"): re-run with a NARROWER window (5–8 s max) and `--no_speech_threshold 0.8`.
+
+Then apply the transcript manually via `editor.addCaption` (per-chunk with `text` + `words[]`, see `text-and-captions.md`).
+
 ### Option 0 (recommended): One-shot `editor.autoCaption`
 
 The fastest path. A single command that resolves the clip's source, extracts audio,

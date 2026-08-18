@@ -13,14 +13,30 @@ ContentLead is a desktop video editor (Electron + Next.js) with a local HTTP API
 
 Every session must execute these steps before any editing commands.
 
-1. **Read API info:** `cat ~/.skilltown-desktop/api.json` (extract port and token)
-2. **Health check:** `curl -s http://127.0.0.1:$PORT/api/health -H "Authorization: <token>"`
-3. **Diagnostics:** `curl -s "http://127.0.0.1:$PORT/api/diagnostics?full=true" -H "Authorization: <token>"`
-4. **Open Content:** 
+1. **Read API info:** `cat ~/.skilltown-desktop/api.json` (extract port and token — port changes on every app restart!)
+2. **Health check:** `curl -s http://127.0.0.1:$PORT/api/health -H "Authorization: Bearer $TOKEN"` (note: `Bearer ` prefix REQUIRED)
+3. **Diagnostics:** `curl -s "http://127.0.0.1:$PORT/api/diagnostics?full=true" -H "Authorization: Bearer $TOKEN"`
+4. **⚠️ Check tabs FIRST:** `curl -s http://127.0.0.1:$PORT/api/tabs -H "Authorization: Bearer $TOKEN"` — if MORE THAN ONE tab is open, EVERY `/api/execute` call MUST include an explicit `"tabId": "..."` in the body OR you will silently target the wrong session (someone else's editor). Either close unused tabs (`POST /api/tabs/<id>/close`) or pin the target tab and always include it. Load `multi-tab` skill for details.
+5. **Open Content:** 
    - List: `curl -s http://127.0.0.1:$PORT/api/content/list`
    - Open: `curl -s -X POST http://127.0.0.1:$PORT/api/navigate -d '{"url":"/content/<id>","waitForReady":true,"autoRestore":true}'`
    - Multi-tab: `curl -s -X POST http://127.0.0.1:$PORT/api/tabs/<tabId>/navigate -d '{"url":"/content/<id>?view=editor","waitForReady":true,"autoRestore":true}'`
-5. **Verify Canvas:** Check dimensions with `query.getCanvasSize` before adding items.
+6. **Verify Canvas:** Check dimensions with `query.getCanvasSize` before adding items.
+7. **Load `overview` master index** when this router table lacks the row you need — it lists every sub-skill on disk with a one-line summary.
+
+## ⚠️ TRACK INTENT IS NOW REQUIRED on `editor.addImage` / `editor.addVideo` / `editor.addAudio` / `editor.addVideoSegments`
+
+To prevent track fragmentation (one item per new track), these commands now REJECT calls that don't explicitly declare track intent. Pass one of:
+
+- `"trackId": "<existing-track-id>"` — append to a specific track
+- `"trackName": "AI B-Roll"` — create a NEW track with this name (item goes into it)
+- `"trackId": "__auto__"` — legacy auto-placement (only when you truly don't care)
+
+Error shape when missing:
+```json
+{"status":"failed","error":"trackId_or_trackName_required","result":{"hint":"...","compatibleTracks":[...],"itemType":"video"}}
+```
+Read `compatibleTracks` from the error result to pick an existing track ID.
 
 ## ⚠️ Error Monitoring — Built Into Every Command
 
@@ -35,6 +51,20 @@ If you add text on Track 2 and a video on Track 0, the text will be **invisible*
 ## 🛑 CRITICAL RULE: Frame 0 Must Be a Usable Poster
 
 Never build a scene whose frame 0 is black / blank / single-color. The rendered MP4's first frame is what Instagram, YouTube, and the ContentLead dashboard use as the default thumbnail — and an already-published Instagram Reel's cover **cannot** be changed via API. If your intro uses a delayed reveal, make the primary text/subject visible at frame 0 (animate scale/translate/glow, keep `opacity: 1`). See `rendering` skill → "The First Frame Must Be a Usable Thumbnail" for the poster-safe `skipReveal` pattern and the Custom Thumbnail flow (Option A: mid-frame extract, Option B: AI-generate) when you genuinely can't use frame 0.
+
+## 🎯 Verification: use `query.previewFrameAt`, NEVER `editor.seek` + `/api/screenshot`
+
+**The seek+screenshot race is real.** `editor.seekTo` dispatches a seek to the Remotion player, but the underlying HTMLVideoElement takes 100–500 ms to buffer the requested source-time. A screenshot taken immediately after seek captures the video at its PREVIOUS position (often source-t=0), silently producing wrong "verification" frames.
+
+**Use `query.previewFrameAt`** — atomic seek + wait-for-stabilization + composite capture:
+```json
+{ "type": "query.previewFrameAt",
+  "params": { "timeMs": 15000, "waitTimeoutMs": 3000 }
+}
+```
+Returns `{imageBase64, width, height, timeMs, stabilized, videoTimings[], ...}`. Waits for every visible `<video>` to hit `readyState >= 2` AND currentTime-stability (two polls within 50 ms) before compositing. `stabilized: false` in the response = the wait timed out; frame may be slightly stale.
+
+Legacy `query.capturePreviewFrame` still exists but does NOT wait — only use when you're certain the frame is already stable.
 
 
 ## Skill Routing Table
@@ -51,12 +81,14 @@ Never build a scene whose frame 0 is black / blank / single-color. The rendered 
 | Position, Crop, Resize | `canvas-and-positioning` | `editor.positionItem`, `editor.resize`, `editor.cropItem` |
 | Trim/Split/Cut on timeline | `item-editing` | `editor.splitItem`, `editor.cutItem`, `editor.trimItem`, `editor.moveItem` |
 | Tracks, Z-order, Linking | `track-management` | `editor.reorderTracks`, `editor.linkTracks`, `editor.renameTrack` |
+| **Preventing track fragmentation** (multiple `add*` in a row) | `track-fragmentation-prevention` | Patterns A/B for consolidating captions/audio/scenes onto single tracks |
 | Bulk / Batch operations | `bulk-operations` | `bulk.styleByType`, `bulk.shiftAll`, `POST /api/batch` |
 | Transcripts, Auto-Captions | `transcription-and-editing` | `content.applyCaptions`, `query.getTranscriptionStatus` |
 | Animations, Transitions, VFX | `animations-and-effects` | `editor.setAnimation`, `editor.addTransitionBetween`, `editor.addKeyframe` |
 | Full E2E Pipeline & Scenes | `storystudio-pipeline` | (Workflow guide, pipeline states) |
 | My Scenes (per-user saved library) | `my-scenes` | `scene.saveToMyScenes`, `scene.listMyScenes`, `scene.getMyScene`, `scene.addMyScene`, `scene.updateMyScene`, `scene.deleteMyScene` |
-| Project save/load, Export | `project-and-export` | `editor.save`, `editor.export`, `project.getFullState` |
+| Project save/load, Snapshots | `project-and-export` | `editor.save`, `editor.createSnapshot`, `editor.restoreSnapshot`, `project.saveAutosave`, `project.getFullState`, `project.loadFullState` |
+| **🎬 Local video rendering (mp4 output, jobId, progress, cancel)** | `rendering` | `POST /api/render` (renderType `"design"`/`"custom"`/`"template"`), `GET /api/render/{jobId}` (progress + `outputPath`), `GET /api/render/jobs`, `POST /api/render/{jobId}/cancel`, `render.validate`, `render.verifyOutput`. **Output → `~/Movies/SkillTown/{jobId}.mp4`**. ⚠️ Do **NOT** use `editor.export` for programmatic renders — it returns `jobId: null` (see `project-and-export.md`). |
 | Read timeline/editor state | `queries-and-state` | `query.getTimelineItems`, `query.getTrackInfo`, `query.getEditorState` |
 | Debugging, Logs, Arch | `infrastructure` | `GET /api/diagnostics`, `GET /api/console-errors` |
 | Testing / QA | `cl-testing` | Agent-run contract, state, visual, and workflow tests |
