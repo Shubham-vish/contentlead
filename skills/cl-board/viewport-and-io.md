@@ -2,7 +2,18 @@
 
 Everything that is NOT object CRUD: camera control, selection, theme, canvas background, and persistence.
 
-## Viewport
+## Viewport — two independent axes
+
+There are **two** zoom systems on a board page, do not confuse them:
+
+| System | Controls what | Where | How to change |
+|---|---|---|---|
+| **Page zoom** | The whole browser page (topbar, panels, canvas as a whole) | Topbar pill `−  100%  +` (`PageZoomControl.tsx`) | Cmd/Ctrl + `0` / `=` / `-` (bound by the topbar control, not the canvas), or click the pill. Persisted to `localStorage["board-page-zoom"]`, applied via `document.documentElement.style.zoom`. |
+| **Board (canvas) zoom** | The board camera — how much world you see | Bottom-right canvas toolbar (`−  N%  +  ⊞`), trackpad pinch, Ctrl+scroll | `board.setViewport`, `board.zoomToFit`, `board.panBy` |
+
+**Bridge commands operate on board zoom only.** The topbar page-zoom is a browser-UI concern; there's no bridge command for it (agents shouldn't be scaling the user's whole page).
+
+## Board camera
 
 The board uses a simple 2D world-space camera: `{x, y, zoom}`.
 
