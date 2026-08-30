@@ -1,6 +1,6 @@
 ---
 name: cl-ad-intelligence
-description: Search, analyze, and manage competitor ads from Meta Ad Library. Track brands, save ads to folders, extract video/images, and run heuristic creative analysis (hook detection, CTA, emotional triggers, scoring). USE FOR: competitor ads, ad library, ad creative analysis, track brands, save ads, ad folders, Meta ads, Facebook ads, Instagram ads.
+description: "Search, analyze, and manage competitor ads from Meta Ad Library. Track brands, save ads to folders, extract video/images, and run heuristic creative analysis (hook detection, CTA, emotional triggers, scoring). USE FOR: competitor ads, ad library, ad creative analysis, track brands, save ads, ad folders, Meta ads, Facebook ads, Instagram ads."
 ---
 
 # Ad Intelligence — AI Agent Skill
