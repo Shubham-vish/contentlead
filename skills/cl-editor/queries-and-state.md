@@ -9,6 +9,25 @@ Use these read-only commands to inspect the timeline, check item properties, and
 
 ## Core Queries
 
+### `query.getEffectSpans`
+
+Get the canonical Effect Span projection across effects-store, clip-FX, camera,
+and reveal sources. Returned `startFrame` is inclusive and `endFrame` is
+exclusive; both are **absolute project frames**.
+
+```json
+{ "type": "query.getEffectSpans", "params": {
+  "itemId": "video_broll",
+  "source": "effects-store"
+}}
+```
+
+Optional filters: `itemId` (`trackItemId` alias), `source`, and exact `spanId`.
+Returns `{spans, count}`. Use the returned `span.id` with
+`editor.updateEffectSpan`, `editor.deleteEffectSpan`,
+`editor.toggleEffectSpan`, or `editor.duplicateEffectSpan`. See
+`animations-and-effects` for the mutation matrix and verified examples.
+
 ### `query.getTimelineItems` (Recommended)
 Get a clean list of all items currently on the timeline.
 ```json

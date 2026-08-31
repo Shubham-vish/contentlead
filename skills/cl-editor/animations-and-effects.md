@@ -1,7 +1,7 @@
 ---
 name: animations-and-effects
-description: Enter/exit/loop animations, keyframe property animation, and visual effects
-tags: animation, effect, keyframe, fadeIn, fadeOut, slide, scale, blur, brightness, contrast, grayscale, sepia, loop, pulse, glitch, spin
+description: Enter/exit/loop animations, keyframes, visual effects, and canonical Effect Span commands
+tags: animation, effect, effect-span, fx-lane, keyframe, fadeIn, fadeOut, slide, scale, blur, brightness, contrast, grayscale, sepia, camera, reveal, loop, pulse, glitch, spin
 ---
 
 # Animations and Effects
@@ -144,8 +144,12 @@ Apply a visual effect to an item.
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `itemId` | `string` | required | Target timeline item |
-| `effect_type` | `string` | required | `blur`, `brightness`, `contrast`, `grayscale`, or `sepia` |
+| `trackItemId` / `itemId` | `string` | required | Target timeline item |
+| `type` | `string` | required | Effect type from the editor effect library |
+| `startFrame` | `number` | `0` | Item-relative frame where the effect starts |
+| `endFrame` | `number` | `-1` | Item-relative end frame; `-1` means clip end |
+| `parameters` | `object` | type defaults | Effect-specific controls |
+| `fadeInFrames` / `fadeOutFrames` | `number` | `0` | Effect intensity ramps |
 
 Example:
 
@@ -154,10 +158,45 @@ Example:
   "type": "editor.addEffect",
   "params": {
     "itemId": "video_broll",
-    "effect_type": "grayscale"
+    "type": "grayscale"
   }
 }
 ```
+
+### True zoom motion blur
+
+`zoom-motion-blur` uses one decoded image/video source and multi-sample canvas
+compositing. It does not clone video or audio elements. Balanced quality is six
+samples; increase samples only when the extra render cost is justified.
+
+```json
+{
+  "type": "editor.addEffect",
+  "params": {
+    "itemId": "video_broll",
+    "type": "zoom-motion-blur",
+    "startFrame": 0,
+    "endFrame": 18,
+    "parameters": {
+      "motionBlurDirection": "in",
+      "motionBlurAmount": 0.28,
+      "motionBlurDurationFrames": 18,
+      "shutterAngle": 220,
+      "samples": 6,
+      "focusX": 0.5,
+      "focusY": 0.5
+    }
+  }
+}
+```
+
+Use `motionBlurDirection: "out"` for Zoom Out Motion Blur. Parameters are
+validated and clamped: amount `0.01-1`, motion duration `1-120` frames,
+shutter `0-360`, samples `2-16`, focus coordinates `0-1`. In the UI, select an image/video and open
+**Effects → Zoom In Motion Blur** or **Zoom Out Motion Blur**.
+
+The old `blur-motion` preset remains available as **Speed Blur** for backwards
+compatibility. It is Gaussian blur, not radial zoom motion blur.
 
 ## `editor.removeEffect`
 
@@ -175,10 +214,228 @@ Example:
   "type": "editor.removeEffect",
   "params": {
     "itemId": "video_broll",
-    "effect_type": "grayscale"
+    "type": "grayscale"
   }
 }
 ```
+
+## Effect Spans: one timeline view over every effect system
+
+Effect Spans are a **projected canonical view**, not another persisted effect
+store. They resolve the editor's existing effect sources into bars with stable
+IDs and absolute project-frame ranges:
+
+| `sourceRef.source` | Native owner | Properties inspector | Range editing |
+|---|---|---|---|
+| `effects-store` | Visual Effects store | Exact effect expanded in **Effects** | Move + trim |
+| `clip-fx` | Legacy fade fields and `details.fx` envelopes | **AnimationSection**, focused through `activeFxEffect` | Edge trim; no move. Legacy continuous zoom cannot be trimmed; two-edge zoom can |
+| `camera-rig` | Item camera-effect store | **3D Camera** controls | No move/trim |
+| `camera-focus` | Camera focus point | **Zoom to Spot** controls | Move + trim |
+| `reveal-mask` | `details.mask` plus mask keyframe tracks | **Reveal** controls | Query/select only; range mutation is not yet supported |
+
+Every span has:
+
+- `id`: `esv:<source>:<parentItemId>:<nativeKey>`
+- `parentItemId`, `kind`, `category`, `stage`, `label`, `enabled`
+- `startFrame` inclusive and `endFrame` exclusive
+- `sourceRef`, source-specific `parameters`, and advisory `capabilities`
+
+### Absolute-frame contract
+
+`editor.addEffect.startFrame/endFrame` are item-relative. Effect Span
+`startFrame/endFrame` are always **absolute project frames**. Query first, then
+send absolute frames back to `editor.updateEffectSpan`. Do not convert them to
+milliseconds or subtract the parent clip start.
+
+At 30 fps, a clip from 2–6 seconds occupies project frames `[60, 180)`. A span
+from frame 75 through 104 is represented as:
+
+```json
+{"startFrame":75,"endFrame":105}
+```
+
+### `query.getEffectSpans`
+
+Returns `{spans, count}`. All filters are optional.
+
+| Param | Type | Description |
+|---|---|---|
+| `itemId` | string | Only spans owned by this timeline item (`trackItemId` alias accepted) |
+| `source` | string | `effects-store`, `clip-fx`, `camera-rig`, `camera-focus`, or `reveal-mask` |
+| `spanId` | string | One exact canonical span ID |
+
+Verified examples:
+
+```json
+{"type":"query.getEffectSpans","params":{"itemId":"video_broll"}}
+```
+
+```json
+{"type":"query.getEffectSpans","params":{"itemId":"video_broll","source":"camera-focus"}}
+```
+
+Always use the returned `span.id`; do not invent native effect or focus-point
+IDs.
+
+### `editor.updateEffectSpan`
+
+Moves or trims a supported span using an absolute, end-exclusive range:
+
+```json
+{
+  "type": "editor.updateEffectSpan",
+  "params": {
+    "spanId": "esv:effects-store:video_broll:eff_ab12",
+    "range": {"startFrame": 75, "endFrame": 105}
+  }
+}
+```
+
+The verified flat form is also accepted:
+
+```json
+{
+  "type": "editor.updateEffectSpan",
+  "params": {
+    "spanId": "esv:camera-focus:video_broll:focus_1",
+    "startFrame": 90,
+    "endFrame": 126
+  }
+}
+```
+
+The handler uses the project's current FPS. Do not pass `fps` unless replaying
+a range against a deliberately different frame basis. The range must have
+positive duration and is clamped to the owning clip. Unsupported range edits
+return `status: "failed"` with `result.code: "UNSUPPORTED"`.
+
+### `editor.toggleEffectSpan`
+
+```json
+{
+  "type": "editor.toggleEffectSpan",
+  "params": {
+    "spanId": "esv:clip-fx:video_broll:blur",
+    "enabled": false
+  }
+}
+```
+
+Toggle is supported for all five sources. Clip-FX and reveal values are retained
+under the source-owned disabled payload and reappear on enable; this is not a
+destructive delete. Camera focus toggles its disabled flag, and camera-rig
+toggles the rig gate. `enabled` must be a JSON boolean.
+
+### `editor.deleteEffectSpan`
+
+```json
+{
+  "type": "editor.deleteEffectSpan",
+  "params": {
+    "spanId": "esv:reveal-mask:image_hero:mask",
+    "itemId": "image_hero"
+  }
+}
+```
+
+Delete is supported for all five sources:
+
+- effects-store removes the native effect;
+- clip-FX removes both active and retained-disabled envelopes;
+- camera-focus removes that focus point;
+- reveal removes `details.mask`, retained disabled mask data, and mask
+  keyframe tracks;
+- camera-rig clears the item's entire camera-effect record, including its focus
+  points. Use camera-rig delete only when that broader removal is intended.
+
+`itemId` is optional but recommended as a guard against targeting a stale ID.
+
+### `editor.duplicateEffectSpan`
+
+```json
+{
+  "type": "editor.duplicateEffectSpan",
+  "params": {
+    "spanId": "esv:effects-store:video_broll:eff_ab12"
+  }
+}
+```
+
+Duplicate is supported only for `effects-store` spans. It returns
+`{changed, newSpanId, sourceSpanId}`. A bounded effect is placed immediately
+after its source only when the duplicate fits inside the parent item. A
+full-clip effect (`endFrame: -1`) receives a fresh native ID while retaining
+the same full-clip range. One-instance sources return
+`{changed:false, unsupported:true, reason}` rather than creating ambiguous
+duplicates.
+
+### Mutation result and error rules
+
+- Missing/unknown span: `status: "failed"` with a descriptive error.
+- Invalid range: `result.code: "INVALID_RANGE"`.
+- Unsupported lossless operation: `result.code: "UNSUPPORTED"`.
+- Duplicate may succeed at the command level with `changed:false` and an
+  `unsupported` reason; inspect the result, not only `status`.
+- Mutations participate in supplemental undo/redo and update the native source;
+  never persist or edit the projected span object directly.
+
+### Inspector routing
+
+Selecting an FX bar selects its parent clip in the normal editor selection,
+keeps that clip in `activeIds`, opens Properties, then selects the span. This is
+why clip-FX controls continue to target the correct clip. If the native source
+is deleted or otherwise disappears, span selection clears and the normal clip
+inspector returns. The Effect Span header shows the parent breadcrumb, source
+color/category, enabled state, absolute range and duration, plus only the
+actions supported by the mutation adapter.
+
+### Split, clone, trim, move, and delete persistence
+
+Effect Spans are re-projected after timeline lifecycle operations:
+
+- **Split:** effects crossing the cut are partitioned; the right clip receives
+  fresh effects-store IDs. Absolute keyframe tracks are clipped with boundary
+  samples. Camera focus/keyframes are clipped and rebased. Clip-FX details are
+  copied and their in/out ramps are clamped to half of each new clip.
+- **Clone/paste:** effects-store entries receive fresh IDs; absolute keyframes
+  shift by the clone's display offset; camera state is deep-cloned. Item-owned
+  clip-FX and reveal details clone with the item.
+- **Trim:** out-of-range effects/keyframes/focus points are clipped or removed.
+  Item-relative camera/effect timing is rebased; clip-FX ramps are clamped.
+- **Move:** item-relative effects/camera timing stays relative to the clip;
+  absolute generic keyframes shift with the clip.
+- **Delete item:** effects-store, keyframe, and camera supplemental entries are
+  removed with the item. Supplemental snapshots keep undo/redo in sync with
+  timeline state.
+
+### Export behavior
+
+Fast browser export supports only simple single-layer effect-map filters:
+`grayscale`, `sepia`, `invert`, `hue-rotate`, `saturate`, `contrast`, `blur`,
+and `brightness`. Active clip-FX/fades, reveal masks, camera effects,
+transitions, zoom motion blur, film grain, glow, motion effects, and other
+unsupported surfaces make the project ineligible for fast export. Export then
+falls back automatically to the standard local/cloud renderer; it must never
+silently omit an effect.
+
+### Current limitations
+
+- The span model is projected from legacy/native owners; it is not a standalone
+  persisted track type.
+- `camera-rig` has no range edit. `reveal-mask` range updates are not yet
+  implemented even though its keyframe-derived bar is visible.
+- Clip-FX cannot move independently. Edge envelopes and two-edge zoom can trim;
+  legacy continuous zoom cannot. Because a clip-FX envelope affects its whole
+  owner, its queried bar remains whole-clip; a range update maps the requested
+  inset to `inMs`/`outMs` rather than persisting a separate span range.
+- Disabling an otherwise-empty camera rig can make it non-meaningful and remove
+  it from the projection. The inspector then falls back to the parent clip;
+  recreate/re-enable the rig through the camera controls, not a stale span ID.
+- Keyframe sub-rows visualize and seek to camera/reveal keyframes; they do not
+  provide direct diamond dragging/editing.
+- Track locks block FX drag, resize, and timeline-key deletion.
+- Span IDs may change on split/clone because new native effect IDs are allocated;
+  query again after structural timeline edits.
 
 ## Common Patterns / Recipes
 
@@ -300,7 +557,7 @@ Example:
     "type": "editor.addEffect",
     "params": {
       "itemId": "video_broll",
-      "effect_type": "contrast"
+      "type": "contrast"
     }
   }
 ]
