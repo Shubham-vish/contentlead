@@ -6,6 +6,8 @@ tags: ai-video, veo, omni, nanobanana, generate, text-to-video, image-to-video, 
 
 # cl-ai-generate — In-App AI Media Generation (Veo / Omni / NanoBanana)
 
+> **⚙️ Is the ContentLead app running?** These calls need `~/.skilltown-desktop/api.json`. If it is missing, the desktop app is not running — start it, then wait ~30s for the file: **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`. Full OS-aware detect/start/poll (Linux + dev too): see `cl-editor/infrastructure.md` → "Ensure the ContentLead desktop app is running". Only ask the user if it still does not come up.
+
 > **Owns the question:** *"How do I generate a NEW video/image inside ContentLead from an agent — Veo/Omni/NanoBanana — and land it on the timeline, via commands (not the panel UI)?"*
 > **Delegates to:** `cl-editor` (startup protocol, `/api/execute`, track intent), `track-management` (track z-order), `audio-gain-eq`/`item-editing` (post-gen cleanup like `editor.removeSilence`), `rendering` (final MP4). For **out-of-app** direct-gcloud Veo/Omni generation see `my-veo-reel-gen` / `my-omni-video-gen` — this skill is the **in-editor command surface** instead.
 

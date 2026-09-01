@@ -29,6 +29,8 @@ The user must be:
 
 You do NOT read `~/.skilltown-desktop/api.json` for this skill — there is no local port. Commands target the user's session directly.
 
+> **⚙️ If you run via the desktop bridge** (session cookies come from the app) **and it isn't running,** start it first — **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"` (see `cl-editor/infrastructure.md`). If you call `contentlead.in` directly with the user's browser session, no app start is needed — just ensure they're signed in.
+
 **First discovery call:**
 ```bash
 POST /api/storefront/commands/storefront.getState   { "params": {} }

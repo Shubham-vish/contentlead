@@ -6,6 +6,8 @@ tags: dialogue, story, storytelling, viral, reel, short, modi, rahul, two-charac
 
 # Dialogue-Story Pipeline — Viral Two-Character Storytelling Reels
 
+> **⚙️ Is the ContentLead app running?** These calls need `~/.skilltown-desktop/api.json`. If it is missing, the desktop app is not running — start it, then wait ~30s for the file: **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`. Full OS-aware detect/start/poll (Linux + dev too): see `cl-editor/infrastructure.md` → "Ensure the ContentLead desktop app is running". Only ask the user if it still does not come up.
+
 Turn a **tiny dialogue script** into a finished vertical reel — with character voices,
 word-level subtitles in correct Latin script, AI-chosen context images timed to the
 exact words spoken, a hook-title overlay, and a ready-to-post Instagram caption +

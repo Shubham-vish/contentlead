@@ -5,6 +5,8 @@ description: Control the ContentLead video editor from any AI agent. This is the
 
 # ContentLead Editor — AI Master Router
 
+> **⚙️ Is the app running?** If `~/.skilltown-desktop/api.json` is missing, start the desktop app before any bridge call — **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`, then wait ~30s for the file. Full OS-aware detect/start/poll (Linux + dev): see `infrastructure.md` → "Ensure the ContentLead desktop app is running".
+
 ContentLead is a desktop video editor (Electron + Next.js) with a local HTTP API that lets AI agents control the entire editing workflow.
 
 **This is a router document.** Do not guess command parameters from this file. Use the skill table below to load the specific, detailed skill document for the task you are trying to accomplish.

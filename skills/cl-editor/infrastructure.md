@@ -8,6 +8,50 @@ tags: debug, media, import, analyze, screenshot, project, create, duplicate, ui,
 
 Endpoints for debugging, media management, project lifecycle, and UI automation that don't fit neatly into the editing workflow.
 
+## 🟢 Ensure the ContentLead desktop app is running (do this FIRST)
+
+Every bridge call needs `~/.skilltown-desktop/api.json`. **If that file is MISSING, the app is not running** — start it and wait for the file to appear, instead of stalling on the user.
+
+**Step 1 — detect.** If `~/.skilltown-desktop/api.json` exists, the app is up; use it. If not, continue.
+
+**Step 2 — start it. Pick the ONE line for YOUR operating system — never run a macOS command on Windows (or vice-versa).** Detect the OS first (bash: `uname`; the agent already knows its platform).
+
+```bash
+# ── macOS (packaged app) ──────────────────────────────────────────────
+open -a "ContentLead"
+
+# ── Linux (packaged AppImage/deb) ─────────────────────────────────────
+contentlead >/dev/null 2>&1 &        # or launch the installed .desktop entry
+```
+
+```powershell
+# ── Windows (packaged app) — PowerShell. Per-user NSIS install. ────────
+Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"
+# If the user changed the install dir, fall back to the Start-menu shortcut:
+Start-Process "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\ContentLead.lnk"
+```
+
+```bash
+# ── Dev / localhost (any OS, from the repo) ───────────────────────────
+cd SkillTown-Desktop && npm start           # electron .  (uses cloud web app)
+# full stack (local Next.js + Electron):  npm run dev:with-server
+```
+
+**Step 3 — wait for readiness (port + token regenerate on every launch).**
+
+```bash
+# bash (macOS/Linux) — poll up to ~30s
+for i in $(seq 1 30); do [ -f ~/.skilltown-desktop/api.json ] && break; sleep 1; done
+```
+```powershell
+# PowerShell (Windows)
+1..30 | ForEach-Object { if (Test-Path "$env:USERPROFILE\.skilltown-desktop\api.json") { break }; Start-Sleep 1 }
+```
+
+**Step 4 — fallback.** If `api.json` still doesn't appear after ~30s, the app may not be installed, or the user isn't signed in — only THEN ask the user to launch/sign in.
+
+> App identity: display name **`ContentLead`** (bundle `com.contentlead.editor`, macOS `/Applications/ContentLead.app`). This is the same app every `cl-*` bridge skill talks to.
+
 ## ⚠️ App/API Port Regenerates on Restart
 
 Every time the Electron app restarts (hot reload, crash, manual restart, code changes), the API port + token regenerate in `~/.skilltown-desktop/api.json`. Never hardcode these — always read fresh each call:

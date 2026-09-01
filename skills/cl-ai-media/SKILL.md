@@ -6,6 +6,8 @@ tags: ai, media, image, generate, analyze, vision, text, transcribe, speakers, d
 
 # AI Media Generation & Analysis (via Desktop AI Bridge)
 
+> **⚙️ Is the ContentLead app running?** These calls need `~/.skilltown-desktop/api.json`. If it is missing, the desktop app is not running — start it, then wait ~30s for the file: **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`. Full OS-aware detect/start/poll (Linux + dev too): see `cl-editor/infrastructure.md` → "Ensure the ContentLead desktop app is running". Only ask the user if it still does not come up.
+
 Every capability in this skill is a **plain HTTP POST** to the local SkillTown
 Desktop app under `/api/bridge/ai/*`. There is **no separate tool-proxy server** and **no
 JSON-RPC framing** — just one bearer token and one real JSON body.
@@ -48,7 +50,7 @@ eval "$(node -e '
 curl -sf "$API/api/health" -H "Authorization: Bearer $TOKEN" | jq '{status, cloud}'
 ```
 
-If `~/.skilltown-desktop/api.json` doesn't exist, the desktop app isn't running — ask the user to launch it.
+If `~/.skilltown-desktop/api.json` doesn't exist, the desktop app isn't running — start it (see the "Is the ContentLead app running?" note at the top: macOS `open -a "ContentLead"`, Windows `Start-Process`), then re-read the config. Only ask the user if it still doesn't come up.
 
 **Every** call below uses `Authorization: Bearer $TOKEN` (the plain token
 without `Bearer` is rejected on bridge routes).

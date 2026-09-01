@@ -6,6 +6,8 @@ tags: voice, tts, text-to-speech, clone, cloning, voiceover, narration, speech, 
 
 # Voice Cloning & Text-to-Speech (via Desktop Bridge)
 
+> **⚙️ Is the ContentLead app running?** These calls need `~/.skilltown-desktop/api.json`. If it is missing, the desktop app is not running — start it, then wait ~30s for the file: **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`. Full OS-aware detect/start/poll (Linux + dev too): see `cl-editor/infrastructure.md` → "Ensure the ContentLead desktop app is running". Only ask the user if it still does not come up.
+
 Clone a voice, synthesize narration, and add it to the timeline — all through the
 local SkillTown Desktop **voice bridge**. Every call is a single HTTP request with
 one bearer token. The bridge forwards to the SkillTown `/api/ai/*` proxy, which
@@ -35,7 +37,7 @@ print('cloud.authenticated =', d.get('cloud',{}).get('authenticated'))"
 ```
 
 If `~/.skilltown-desktop/api.json` doesn't exist, the desktop app isn't running —
-ask the user to launch it.
+start it (see the "Is the ContentLead app running?" note at the top: macOS `open -a "ContentLead"`, Windows `Start-Process`), then re-read the config. Only ask the user if it still doesn't come up.
 
 ## 1. Endpoint reference
 

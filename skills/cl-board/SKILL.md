@@ -5,6 +5,8 @@ description: Control the ContentLead Whiteboard (Boards) from any AI terminal. S
 
 # ContentLead Boards — AI Bridge
 
+> **⚙️ Is the ContentLead app running?** These calls need `~/.skilltown-desktop/api.json`. If it is missing, the desktop app is not running — start it, then wait ~30s for the file: **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`. Full OS-aware detect/start/poll (Linux + dev too): see `cl-editor/infrastructure.md` → "Ensure the ContentLead desktop app is running". Only ask the user if it still does not come up.
+
 Companion skill to `cl-editor`. Same discovery file (`~/.skilltown-desktop/api.json`), same `POST /api/execute` endpoint, same auth token. The difference is the **tab** you target and the **command namespace**.
 
 ## When to load this vs cl-editor
