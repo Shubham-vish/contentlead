@@ -1,6 +1,6 @@
 ---
 name: cl-offers
-description: Build, edit, and manage ContentLead Offer Studio surfaces (offer sales pages, checkout pages, thank-you pages, and email templates) from any AI agent. Use for creating offers, adding/removing/rearranging sections, editing copy, swapping templates, applying page presets, wiring buyer actions (call CTA, validate phone/email, apply coupon), configuring checkout (base price, GST, bonuses, upsells, order bumps), managing coupons, and applying theme presets. Covers all four surfaces via a single command surface exposed at `/api/offer-studio/commands/<name>`.
+description: Build, edit, brand, and manage ContentLead Offer Studio surfaces (offer sales pages, checkout, thank-you, buyer emails) end-to-end from any AI agent. Use for creating paid offers AND free lead-magnets, adding/removing/rearranging sections, editing copy, swapping templates, applying page presets, wiring buyer actions (CTA, validate phone/email, apply coupon, submit lead), configuring checkout (price, GST, bonuses, upsells, order bumps), fully BRANDING the checkout + thank-you pages (colors, fonts, copy, custom CSS, style presets, default phone country), managing coupons, products/deliverables, media generation, and theme presets. Covers all four surfaces via one endpoint `/api/offer-studio/commands/<name>`.
 ---
 
 # ContentLead Offers — AI Agent Skill
@@ -25,14 +25,14 @@ POST /api/offer-studio/commands/offer.list
 
 Pick a target `offerName` before touching any of the surface commands below.
 
-## Command surface — one endpoint, ~55 commands
+## Command surface — one endpoint, ~78 commands
 
-Every command is called the same way:
+Every command is called the same way. `offerName` may sit at the top level OR inside `params` (both work; the server reads `body.params ?? {}`):
 
 ```bash
 POST /api/offer-studio/commands/<commandName>
 Content-Type: application/json
-{ "params": { ... } }
+{ "offerName": "weekend-course", "params": { ... } }
 ```
 
 Or via the higher-level AI runner (which asks the model to plan and then dispatches):
@@ -41,6 +41,8 @@ Or via the higher-level AI runner (which asks the model to plan and then dispatc
 POST /api/offer-studio/ai
 { "prompt": "Add a testimonials section to the offer 'weekend-course' and swap the hero template" }
 ```
+
+Every command self-describes — `GET /api/offer-studio/commands/<name>` (or the manifest at `lib/offer-studio/commands/manifest.ts`) returns `summary`, `description`, `paramsSchema`, and `examples`. When unsure of a param name, read the manifest rather than guessing.
 
 ## The four surfaces
 
@@ -133,6 +135,81 @@ POST /api/offer-studio/commands/offer.builder.setPageSettings
 
 Modes: `page` (dedicated route), `drawer` (right-side slide-in), `dialog` (center modal), `inline` (in-flow on offer page).
 
+## Checkout & thank-you BRANDING (make it look custom)
+
+The checkout and thank-you pages are fully brandable — colors, typography, copy, backgrounds, and even raw CSS — without writing a new page. This is how you make a checkout that looks bespoke while keeping the proven, secure payment flow.
+
+### `offer.checkout.setStyle` — brand the checkout
+
+`{ offerName, style: { ...only the keys you want to change } }`. Merge semantics: unspecified keys are left untouched. Undo restores the previous style. Colors are hex.
+
+| Group | Fields |
+|---|---|
+| **Palette** | `accentColor`, `bgColor`, `cardBgColor`, `cardTextColor`, `pageTitleColor` |
+| **Buttons** | `buttonStyle` (`solid`\|`gradient`), `buttonGradientTo`, `buttonRadius` (`rounded`\|`pill`\|`square`) |
+| **Cards** | `cardStyle` (`dark` default \| `light` honours `cardBgColor`), `cardBorderRadius` (`none`→`2xl`), `cardShadow` (`none`\|`sm`\|`lg`\|`2xl`) |
+| **Background** | `backgroundStyle` (`solid`\|`gradient`\|`animated`), `bgGradientFrom/Via/To`, `bgGradientAngle` (0-360) |
+| **Typography** | `fontScale` (0.6–1.6 global multiplier), `theme` (`dark` default \| `light` remaps bar/footer/notices) |
+| **Header copy** | `headerTitle`, `headerSubtitle` |
+| **Button copy** | `payButtonText`, `buttonText` (step-one continue), `buttonSubtext` |
+| **Notice** | `noticeText`, `noticeEnabled`, `noticeStyle` (`warning`\|`info`\|`success`\|`minimal`) |
+| **Coupon** | `showCouponField` |
+| **Trust / badges** | `securityBadgesEnabled`, `badgeText1`, `badgeText2`, `guaranteeEnabled`, `guaranteeText`, `guaranteeSubtext`, `trustHeaderTitle`, `trustHeaderSubtitle`, `showTrustFooter`, `footerText`, `showPoweredBy` |
+| **Phone default** | `defaultPhoneCountry` — ISO2 code (e.g. `IN`) sets the default phone dial code |
+| **Escape hatch** | `customCss` — owner CSS injected **scoped under `#st-checkout-root` via `@scope`**. Style any element. Caveat: a stray `}` can break out of the scope block, so keep rules well-formed; `</style>`/`</script>` are stripped. |
+
+```bash
+POST /api/offer-studio/commands/offer.checkout.setStyle
+{ "params": { "offerName": "glow-ritual", "style": {
+    "accentColor": "#b8860b", "cardStyle": "light", "cardBgColor": "#fffdf7",
+    "backgroundStyle": "animated", "bgGradientFrom": "#fff7ed", "bgGradientTo": "#fde6c8",
+    "payButtonText": "Secure your seat", "defaultPhoneCountry": "IN", "showCouponField": false
+}}}
+```
+
+### `offer.thankyou.setStyle` — brand the post-payment page
+
+`{ offerName, style: { ... } }`. Merges into `Checkout.thankYouConfig`.
+
+| Group | Fields |
+|---|---|
+| **Copy** | `headline`, `subheadline` |
+| **Background** | `bgColor`, `backgroundStyle` (`solid`\|`gradient`\|`animated`), `bgGradientFrom/Via/To`, `bgGradientAngle` |
+| **Typography** | `fontScale` (0.6–1.6), `theme` (`dark`\|`light`) |
+| **Next steps** | `whatsappLink`, `contactEmail`, `instagramHandle`, `exploreUrl`, `exploreLabel` |
+| **Escape hatch** | `customCss` — scoped under `#st-thankyou-root` via `@scope` |
+
+### `offer.style.applyPreset` / `offer.style.listPresets` — one-shot brand kits
+
+`offer.style.applyPreset { offerName, presetId }` styles **both** checkout + thank-you together in one call (undo restores prior checkout style). `offer.style.listPresets` is auth-free and returns the gallery.
+
+| presetId | Look |
+|---|---|
+| `luxe-cream` | Warm cream page, animated glow, white cards, rose-gold accents — premium & soft |
+| `midnight-neon` | Deep dark, subtle shifting gradient, electric-violet accents — bold & modern |
+| `minimal-mono` | Clean solid-white, light cards, near-black accent, flat shadows — understated |
+| `sunset-glow` | Peach→coral animated gradient, light cards, punchy orange — energetic & friendly |
+| `ocean-calm` | Blue→teal gradient, light cards, calm teal accent — trustworthy & fresh |
+| `royal-gold` | Rich navy dark, warm gold accents, deep shadows — luxe & authoritative |
+
+**Fast path to a great-looking checkout:** `offer.style.applyPreset` first, then override 1–3 fields with `offer.checkout.setStyle` (e.g. swap `payButtonText`, set `defaultPhoneCountry`).
+
+### ✅ What the proven checkout CAN vs CANNOT do
+
+The checkout uses one hardened, secure payment component. You brand it richly, but you do **not** re-architect it.
+
+| ✅ CAN customize | ❌ CANNOT (by design) |
+|---|---|
+| All colors, backgrounds, gradients, fonts (`fontScale`), light/dark themes | Add **new input fields** to the form — it is a fixed name / phone / email set (GST no., company, address are not supported) |
+| Every piece of copy (headers, buttons, notice, guarantee, badges, footer) | Radically re-architect the fixed layout (two-column / single-page card structure is fixed) |
+| Toggles: coupon field, security badges, guarantee, trust footer, powered-by, notice | Replace the Razorpay payment flow or move payment to an arbitrary AI-authored button (payment is shell-owned & hidden for security) |
+| Pricing: base price, GST, bonuses, upsells, order bump, urgency, success message | — |
+| Default phone country code | — |
+| Arbitrary CSS via `customCss` (scoped) to restyle any element | — |
+
+If a request needs a **new input field** or a **fundamentally different checkout layout**, say so plainly — that is a product change, not a styling command.
+
+
 ### Coupons
 
 | Command | Params |
@@ -141,6 +218,37 @@ Modes: `page` (dedicated route), `drawer` (right-side slide-in), `dialog` (cente
 | `offer.coupon.update` | `{ offerName, code, patch }` |
 | `offer.coupon.delete` | `{ offerName, code }` |
 | `offer.coupon.expire` | `{ offerName, code }` |
+
+### Free lead-magnets — digital capture (`offer.digital.*`)
+
+An offer is either a **paid product** or a **free lead-magnet**. For free offers there is **no checkout** — the buyer submits an on-page capture form (the `submitLead` action) and you deliver instantly. Configure this surface with:
+
+| Command | Params | Notes |
+|---|---|---|
+| `offer.digital.getConfig` | `{ offerName }` | Read current delivery / lead-capture config |
+| `offer.digital.setMode` | `{ offerName, mode }` | `"paid"` product or `"free"` lead magnet |
+| `offer.digital.setCapture` | `{ offerName, ... }` | Free lead-capture copy + consent text |
+| `offer.digital.setFormFields` | `{ offerName, fields }` | Replace the entire capture form |
+| `offer.digital.addFormField` | `{ offerName, field }` | Add (or replace) one field |
+| `offer.digital.removeFormField` | `{ offerName, key }` | Remove a field by key |
+| `offer.digital.generateForm` | `{ offerName, prompt }` | AI-generate the capture form from a description |
+| `offer.digital.setNurture` | `{ offerName, ... }` | Set/clear the post-delivery nurture CTA |
+| `offer.digital.preflight` | `{ offerName }` | Check the offer is ready to launch |
+
+> For a free offer, add the **"Lead Magnet — Capture Form"** section to the **offer** surface (not checkout) — the capture form lives on the sales page, and checkout stays paid-only. Unlike the checkout form, this capture form's fields ARE fully configurable via the `offer.digital.*` commands above.
+
+### Products & deliverables (`offer.product.*`)
+
+The catalog behind offers — what actually gets delivered.
+
+| Command | Params |
+|---|---|
+| `offer.product.list` / `offer.product.get` | `{ }` / `{ productId }` |
+| `offer.product.create` / `offer.product.update` | `{ ... }` / `{ productId, patch }` |
+| `offer.product.remove` / `offer.product.restore` | `{ productId }` |
+| `offer.product.addDeliverable` / `offer.product.removeDeliverable` | `{ productId, ... }` |
+| `offer.product.attachToOffer` / `offer.product.detachFromOffer` | `{ offerName, productId }` |
+| `offer.product.listForOffer` | `{ offerName }` |
 
 ### Theme
 
@@ -158,6 +266,7 @@ Modes: `page` (dedicated route), `drawer` (right-side slide-in), `dialog` (cente
 |---|---|
 | `offer.email.sendTest` | `{ offerName, templateId, to }` |
 | `offer.media.upload` | `{ offerName, filePath }` |
+| `offer.media.generateImage` | `{ offerName, prompt, ... }` — AI-generate an image asset for the offer |
 | `offer.media.list` | `{ offerName }` |
 | `offer.media.delete` | `{ offerName, mediaId }` |
 
@@ -168,6 +277,51 @@ Modes: `page` (dedicated route), `drawer` (right-side slide-in), `dialog` (cente
 | `offer.generatePage` | `{ offerName, surface, brief }` | End-to-end page generation from a written brief |
 | `offer.rewriteCopy` | `{ offerName, surface, sectionId, tone }` | Rewrite one section in a target tone |
 | `offer.suggestPricing` | `{ offerName, context }` | Suggest a base price / bonuses given competitor context |
+
+## Section template library (inspiration / starting points)
+
+`offer.builder.listTemplates { surface }` returns the live catalog. The bundled sections you compose pages from (grouped):
+
+- **Hero** — Centered CTA, Countdown Urgency
+- **Content** — Features Icon Grid, Course Curriculum, Comparison Table, feature blurbs
+- **Conversion** — Pricing Three Tiers, FAQ Accordion, CTA Final Push, **Lead Magnet — Capture Form**
+- **Social proof** — Testimonials Cards, Logo Bar
+- **Structure** — Bonus Stack, Minimal Footer
+
+Prefer `offer.builder.applyPagePreset` (whole-page kit) to assemble fast, then `offer.builder.rewriteWithAI` / `updateCode` to tailor each section. Use `offer.builder.listPresets { surface }` to see the full-page kits.
+
+## End-to-end recipes
+
+### A. Ship a polished PAID offer
+```
+1. offer.create { name: "founder-sprint", title: "Founder Sprint" }
+2. offer.digital.setMode { offerName, mode: "paid" }
+3. offer.builder.applyPagePreset { offerName, surface: "offer", presetId: "long-form" }
+4. offer.theme.applyPreset { offerName, presetId: "apollo" }          # sales-page theme
+5. offer.checkout.setBasePrice { offerName, amount: 4999, currency: "INR" }
+6. offer.checkout.setGstRate { offerName, rate: 0.18 }
+7. offer.checkout.addBonus { offerName, name: "Notion templates", value: 1999 }
+8. offer.checkout.addUpsell { offerName, name: "1:1 review call", price: 2999 }
+9. offer.style.applyPreset { offerName, presetId: "royal-gold" }      # brands checkout + thank-you
+10. offer.checkout.setStyle { offerName, style: { payButtonText: "Join the sprint", defaultPhoneCountry: "IN" } }
+11. offer.thankyou.setStyle { offerName, style: { headline: "You're in 🎉", whatsappLink: "https://chat.whatsapp.com/..." } }
+12. offer.builder.setPageSettings { offerName, surface: "checkout", patch: { presentationMode: "drawer" } }
+13. Verify each surface live (see "Where users see the result").
+```
+
+### B. Ship a FREE lead-magnet
+```
+1. offer.create { name: "swipe-file", title: "50 Hook Swipe File" }
+2. offer.digital.setMode { offerName, mode: "free" }
+3. offer.builder.applyPagePreset { offerName, surface: "offer", presetId: "minimalist" }
+4. offer.builder.add { offerName, surface: "offer", template: "Lead Magnet — Capture Form", position: 2 }
+5. offer.digital.generateForm { offerName, prompt: "Name + email + 'what do you struggle with?' dropdown" }
+   # or: offer.digital.setFormFields / addFormField for precise control
+6. offer.digital.setCapture { offerName, ... }        # headline + consent copy
+7. offer.digital.setNurture { offerName, ... }        # post-delivery CTA (e.g. book a call)
+8. offer.theme.applyPreset { offerName, presetId: "ivy" }
+9. offer.digital.preflight { offerName }              # confirm it's launch-ready
+```
 
 ## Typical flows
 

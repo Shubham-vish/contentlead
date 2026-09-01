@@ -94,6 +94,7 @@ Legacy `query.capturePreviewFrame` still exists but does NOT wait — only use w
 | Testing / QA | `cl-testing` | Agent-run contract, state, visual, and workflow tests |
 | Content metadata & bridge | `content-bridge` | `content.getDetails`, `content.updateMetadata`, `content.applyImage` |
 | Multi-tab collaboration | `multi-tab` | `GET /api/tabs`, `POST /api/tabs/new`, `tabId` on `/api/execute` |
+| **AI Media Generation (Veo / Omni / NanoBanana)** | `cl-ai-generate` | `aiVideo.generate`, `aiVideo.getJobStatus`, `aiVideo.addCandidateToTimeline`, `aiVideo.listCandidates`, `aiVideo.approve`/`reject` — generate NEW video/stills in-editor (text/image→video, start/end frame, reference images, BYOK quota) |
 | **AI Viral Clipping** | `cl-ai-clipping` | Transcribe → score virality → extract clips → reframe 9:16 → render |
 | **Script Evaluation & Writing** | `cl-script-evaluator` | Score scripts 0-100, rewrite hooks, write viral scripts from scratch |
 | **Dialogue-Story Reels (2-char, Modi–Rahul style)** | `cl-dialogue-story` | Full viral pipeline: script→TTS voices→word-timed Latin captions→per-dialogue AI images→hook title + IG caption→Remotion compose. `orchestrator/run.mjs` |

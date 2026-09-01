@@ -129,6 +129,13 @@ Need web or GitHub research?                     → use built-in web search/fet
 | `POST /api/bridge/inspiration/items/update` | Update transcript/notes/tags/AI metadata |
 | `POST /api/bridge/inspiration/ai-output` | Push rich findings into the UI panel |
 | `GET /api/bridge/inspiration/connection-status` | Check source connection/cookie state |
+| `GET /api/bridge/inspiration/watchlists` | List all watchlists for current user |
+| `POST /api/bridge/inspiration/watchlists` | Create a new watchlist |
+| `GET /api/bridge/inspiration/watchlists/:id` | Get one watchlist by ID |
+| `PUT /api/bridge/inspiration/watchlists/:id` | Update watchlist metadata (name, color, emoji) |
+| `DELETE /api/bridge/inspiration/watchlists/:id` | Delete a watchlist |
+| `POST /api/bridge/inspiration/watchlists/:id/members` | Add creator keys to a watchlist |
+| `DELETE /api/bridge/inspiration/watchlists/:id/members` | Remove creator keys from a watchlist |
 | `POST /api/bridge/media/download` | Download YouTube/IG/TikTok/X/Reddit/CDN media to local mp4/m4a |
 | `POST /api/bridge/ai/transcribe/{short,long,speakers}` | General AI transcription for local/remote media |
 
@@ -205,3 +212,122 @@ curl -X POST "http://127.0.0.1:$PORT/api/bridge/media/download"   -H "Authorizat
 - Search broadly, then filter by engagement and recency.
 - Save findings and references so the user can revisit them.
 - Combine platforms: web/news trend + YouTube performance + X discussion = stronger validation.
+
+## Watchlists (TradingView-style creator groups)
+
+Organize tracked creators into named lists — like TradingView watchlists. Selecting a watchlist filters the entire Inspiration view (creator list + grid) to show only its members.
+
+### Limits
+
+- **20 watchlists** per user
+- **200 creator keys** per watchlist
+- **40 characters** max watchlist name
+
+### Data model
+
+Watchlists are stored in Cosmos DB (`ContentInspirationCreators` container, `type: "watchlist"`, partitioned by `/userId`).
+
+```ts
+interface Watchlist {
+  id: string;
+  userId: string;
+  type: "watchlist";
+  name: string;
+  color?: string;       // hex, e.g. "#7c3aed"
+  emoji?: string;       // e.g. "🔥"
+  creatorKeys: string[]; // e.g. ["instagram:nike", "youtube:mkbhd"]
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+### Bridge routes (all proxied from SkillTown-Desktop)
+
+**List all watchlists:**
+```bash
+curl -s "http://127.0.0.1:$PORT/api/bridge/inspiration/watchlists" \
+  -H "Authorization: $TOKEN"
+# → { watchlists: Watchlist[] }
+```
+
+**Create a watchlist:**
+```bash
+curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/watchlists" \
+  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -d '{"name": "Top Brands", "color": "#7c3aed", "emoji": "🏢", "creatorKeys": ["instagram:nike"]}'
+# → { watchlist: Watchlist }
+```
+
+**Update watchlist metadata:**
+```bash
+curl -s -X PUT "http://127.0.0.1:$PORT/api/bridge/inspiration/watchlists/:id" \
+  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -d '{"name": "Renamed List", "color": "#ef4444"}'
+# → { watchlist: Watchlist }
+```
+
+**Delete a watchlist:**
+```bash
+curl -s -X DELETE "http://127.0.0.1:$PORT/api/bridge/inspiration/watchlists/:id" \
+  -H "Authorization: $TOKEN"
+# → { deleted: true }
+```
+
+**Add members (creator keys):**
+```bash
+curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/watchlists/:id/members" \
+  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -d '{"creatorKeys": ["instagram:adidas", "youtube:veritasium"]}'
+# → { watchlist: Watchlist }
+```
+
+**Remove members:**
+```bash
+curl -s -X DELETE "http://127.0.0.1:$PORT/api/bridge/inspiration/watchlists/:id/members" \
+  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -d '{"creatorKeys": ["instagram:adidas"]}'
+# → { watchlist: Watchlist }
+```
+
+### Zustand store (`watchlistStore.ts`)
+
+The UI uses a Zustand store for client-side watchlist state:
+
+| Action | Description |
+|--------|-------------|
+| `fetchWatchlists()` | Load all watchlists from API |
+| `createWatchlist(name, color?, emoji?)` | Create and select new watchlist |
+| `updateWatchlist(id, updates)` | Rename, change color/emoji |
+| `deleteWatchlist(id)` | Delete; falls back to "All" |
+| `selectWatchlist(id \| null)` | Set active filter (`null` = "All") |
+| `watchlistAddMembers(id, keys[])` | Add creator keys |
+| `watchlistRemoveMembers(id, keys[])` | Remove creator keys |
+| `useWatchlistFilter()` | Hook returning `{ activeId, creatorKeys: Set }` for filtering |
+
+### Firebase persistence
+
+The last-selected watchlist ID is persisted via `useFirebaseConfig(ConfigPath.INSPIRATION_SELECTED_WATCHLIST)` so it restores on reload.
+
+### Key matching
+
+Creator keys may appear in different formats across the system. All filter points use tolerant 3-way matching:
+1. Exact `c.key` (e.g. `instagram:username`)
+2. Bare `c.identifier` (e.g. `username`)
+3. Reconstructed `${source}:${identifier}`
+
+### AI workflow examples
+
+**Create a watchlist and populate it:**
+```
+1. POST /api/bridge/inspiration/watchlists  → {"name": "AI Creators"}
+2. POST /api/bridge/inspiration/watchlists/:id/members → {"creatorKeys": ["instagram:openai", "youtube:3blue1brown"]}
+```
+
+**Analyze only creators in a specific watchlist:**
+```
+1. GET /api/bridge/inspiration/watchlists → find watchlist by name
+2. Read watchlist.creatorKeys
+3. For each key, GET /api/bridge/inspiration/creators/items?identifier=<key>
+4. Transcribe + analyze their content
+5. Push findings via /api/bridge/inspiration/ai-output
+```
