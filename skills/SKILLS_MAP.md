@@ -69,6 +69,7 @@ cl-content-style (voice)  →  cl-script-evaluator (craft polish)  →  cl-viral
 |-------|-----------|
 | **`cl-content-direction`** | Creative strategy, storyboarding, narrative arcs, SFX/audio-layering plan, track management. The "director" layer. |
 | **`cl-ai-media`** | AI image search / generation / compose / vision analysis; text generation. Sources visuals. |
+| **`cl-ai-generate`** | Generate NEW footage/stills *inside the editor* via `aiVideo.*` commands — Veo 3.1 video, Gemini Omni, NanoBanana images, with start/end frames, reference images, and bring-your-own-key Google Cloud quota. The *in-app* generation command surface (vs. `my-veo-reel-gen`/`my-omni-video-gen` which shell out to gcloud). |
 | **`cl-voice`** | Clone a voice from an audio sample + text-to-speech generation. |
 | **`cl-audio`** | Local audio processing — vocal/music stem separation, cleanup. |
 | **`cl-dialogue-broll`** | Add word-timed B-roll images/scenes that pop in as concepts are spoken (any clip). Reuses word-level transcript + `cl-ai-media`. |
@@ -97,7 +98,8 @@ cl-content-style (voice)  →  cl-script-evaluator (craft polish)  →  cl-viral
 
 | Skill | Use it to |
 |-------|-----------|
-| **`cl-offers`** | Build and edit ContentLead Offer Studio surfaces — offer sales page, checkout, thank-you, buyer emails. Sections + templates + themes + coupons + custom actions all via `/api/offer-studio/commands/*`. |
+| **`cl-offers`** | Build and edit ContentLead Offer Studio surfaces — paid offers AND free lead-magnets: offer sales page, checkout, thank-you, buyer emails. Sections + templates + page presets + themes + coupons + products + custom actions, PLUS full checkout/thank-you branding (colors, fonts, copy, custom CSS, 6 style presets, default phone country) and lead-capture forms — all via `/api/offer-studio/commands/*`. |
+| **`cl-creator-biopage`** | Build, theme, and publish a creator's personalized public bio page at `contentlead.in/<handle>` (link-in-bio / storefront) — typed allowlisted sections + starter kits + theme vibes + AI generate-from-profile + draft/publish, all via `/api/storefront/commands/*`. Sibling to `cl-offers`; `shopOffers` surfaces the creator's offers. |
 
 ---
 
