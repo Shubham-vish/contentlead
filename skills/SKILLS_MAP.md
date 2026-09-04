@@ -100,6 +100,7 @@ cl-content-style (voice)  →  cl-script-evaluator (craft polish)  →  cl-viral
 |-------|-----------|
 | **`cl-offers`** | Build and edit ContentLead Offer Studio surfaces — paid offers AND free lead-magnets: offer sales page, checkout, thank-you, buyer emails. Sections + templates + page presets + themes + coupons + products + custom actions, PLUS full checkout/thank-you branding (colors, fonts, copy, custom CSS, 6 style presets, default phone country) and lead-capture forms — all via `/api/offer-studio/commands/*`. |
 | **`cl-creator-biopage`** | Build, theme, and publish a creator's personalized public bio page at `contentlead.in/<handle>` (link-in-bio / storefront) — typed allowlisted sections + starter kits + theme vibes + AI generate-from-profile + draft/publish, all via `/api/storefront/commands/*`. Sibling to `cl-offers`; `shopOffers` surfaces the creator's offers. |
+| **`cl-creator-hub`** | Build and manage a creator's documentation / knowledge-base Hub at `contentlead.in/hub/<handle>` — create/organize/publish nested FOLDERS + markdown DOCS, list the tree, read a doc, move/delete, and AI-generate a doc from a topic, all via `/api/hub/commands/*`. Sibling to `cl-creator-biopage` (bio page) and `cl-offers` (sales pages); owns the docs hub, not the bio page or checkout. |
 
 ---
 

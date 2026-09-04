@@ -179,7 +179,7 @@ These endpoints are available on the Electron API server (in addition to `POST /
 | `/api/bridge/context/search` | GET | Search context items (query: `?q=&type=&tags=&limit=`) |
 | `/api/bridge/context/edit` | POST | Edit a context item — body `{id, text, ...}` |
 | `/api/bridge/context/manage` | POST | Create/move/delete items or folders — body `{action|operations}` |
-| `/api/bridge/hub/:handle/*` | GET/POST | **Creator Hub** — manage articles, folders, publish/edit in a user's hub. Load `hub` skill for full docs. |
+| `/api/bridge/hub/:handle/*` | GET/POST | **Creator Hub** — manage articles, folders, publish/edit in a user's hub. Load `cl-creator-hub` skill for full docs. |
 | ~~`/api/project/create`~~ | ~~POST~~ | **REMOVED** — was local-only, caused "Content Not Found" confusion. Use `/api/content/create` instead |
 | `/api/project/save` | POST | Save current project to a specific file path (advanced). **Prefer `editor.save` for normal saves** |
 | `/api/project/save-autosave` | POST | Save to local autosave file only (no cloud sync). Use as fallback if `editor.save` fails |
@@ -508,7 +508,7 @@ curl "http://127.0.0.1:$PORT/api/skills?q=animation" -H "Authorization: Bearer $
 | **🎯 End-to-end video creation** | **`orchestration-e2e`** — master 8-phase pipeline |
 | AI B-roll pipeline (5 steps) | `storystudio-pipeline` |
 | Apply/remove images & captions | `content-bridge` |
-| **📚 Creator Hub** (articles, folders, publish) | **`hub`** — manage knowledge hub content via bridge API |
+| **📚 Creator Hub** (articles, folders, publish) | **`cl-creator-hub`** — manage knowledge hub content (docs + folders) via `/api/hub/commands/*` (web) or the `/api/bridge/hub/*` bridge (desktop) |
 | Save, export, resize, tracks | `project-and-export` |
 | **AI image generation, vision, transcription** | `ai-media/SKILL` |
 | **Transcribe video + Hinglish captions** | `transcription-and-editing` (Firebase polling + Latin transliteration) |

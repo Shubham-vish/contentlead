@@ -446,6 +446,131 @@ If neither `region` nor `ids` is provided, exports the bbox of ALL objects (with
 ]}}
 ```
 
+## Mindmap / collapsible trees
+
+Boards has first-class support for Xmind-style collapsible mindmaps. Nodes tagged with `metadata.mindmapKind ∈ {"root","branch","leaf"}` participate in the mindmap flow: the "+" affordance button, Tab-key add-child, branch-color inheritance on connectors, and per-node collapse pill.
+
+**4 commands cover the whole feature:**
+
+| command | what it does |
+|---|---|
+| `board.addMindmapChild` | Add a child under a mindmap parent. Same geometry, styling, and connector color inheritance as clicking "+" or hitting Tab in the UI. |
+| `board.mindmap.layout` | Re-flow an existing subtree — BFS through descendants, stack each parent's children evenly to the right (or left). |
+| `board.toggleCollapse` | Flip one node's collapsed state. Its children hide/reappear. |
+| `board.collapseAllDescendants` | Force `mode: "collapse"` or `mode: "expand"` on a whole subtree in one call. |
+
+### Starting a tree from scratch
+
+The root node is a plain `text` object with the mindmap sentinel in its metadata. `board.addNode` supports it directly:
+
+```jsonc
+{"type":"board.addNode","params":{
+  "renderAs": "text",
+  "id": "root",
+  "x": 500, "y": 400,
+  "width": 200, "height": 60,
+  "text": "AI Content Stack",
+  "fontSize": 22, "fontWeight": 700,
+  "metadata": { "mindmapKind": "root" }
+}}
+```
+
+Then everything downstream is `board.addMindmapChild`:
+
+```jsonc
+{"type":"board.batch","params":{"actions":[
+  {"type":"board.addMindmapChild","params":{"parentId":"root",           "text":"Ideation"}},
+  {"type":"board.addMindmapChild","params":{"parentId":"root",           "text":"Production"}},
+  {"type":"board.addMindmapChild","params":{"parentId":"$ACTION_0_RESULT","text":"Trend scanning"}},
+  {"type":"board.addMindmapChild","params":{"parentId":"$ACTION_0_RESULT","text":"Hook writing"}},
+  {"type":"board.addMindmapChild","params":{"parentId":"$ACTION_1_RESULT","text":"Filming"}},
+  {"type":"board.addMindmapChild","params":{"parentId":"$ACTION_1_RESULT","text":"Editing"}}
+]}}
+```
+
+`$ACTION_N_RESULT` resolves to the `objectId` returned by that batch step — the standard `board.batch` reference machinery works with mindmap actions.
+
+### `board.addMindmapChild`
+
+| param | default | description |
+|---|---|---|
+| `parentId` | — | Required. Must resolve to an object with `metadata.mindmapKind ∈ {root,branch,leaf}`. Rejects plain shapes/text with a helpful error. |
+| `text` | `"Untitled"` | Node label. `label` is accepted as an alias. |
+| `direction` | `"right"` | `"right"` or `"left"`. Left flips the connector anchors so the line comes off the parent's left face. |
+| `height` | `44` | Child height in px. Width matches the parent. |
+| `horizontalGap` | auto | Gap between parent and child edges. Auto-adjusts if the parent's "+" affordance has been dragged outward. |
+
+**Returns** `{ objectId, connectorId, x, y, width, height }`. Use `objectId` in downstream batch actions.
+
+**Behavior notes:**
+- If the parent is collapsed (`collapsed:true` or `childrenCollapsed:true`), the parent is auto-unfolded so the new child is visible — mirrors the interactive flow.
+- Connector inherits `strokeColor` / `style` / `endArrow` from the parent's own incoming connector (branch-color propagation).
+- Children stack vertically — a second child is placed below the first, third below the second, using the same spacing math as `positionForNewChild` in `mindmapLayout.ts`.
+
+### `board.mindmap.layout`
+
+Reflow an existing subtree. Useful after `board.batch`-adding a bunch of nodes at arbitrary coords, or after users drag things around.
+
+| param | default | description |
+|---|---|---|
+| `rootId` | — | Required. Root of the subtree to reflow. `rootId` itself is never moved. |
+| `direction` | `"right"` | `"right"` or `"left"` — which side to lay children on. |
+| `horizontalGap` | `208` | Distance between parent-right and child-left edges. |
+| `verticalGap` | `24` | Distance between stacked siblings. |
+
+**Returns** `{ rootId, moved, movedIds }`. `moved` counts descendants whose coords actually changed — nodes already in the right spot are left alone (keeps the undo entry small).
+
+```jsonc
+// After batching a bunch of nodes at random coords, snap them into a clean tree
+{"type":"board.mindmap.layout","params":{"rootId":"root"}}
+```
+
+The layout is a BFS: place direct children of the root first, then recurse into each child's own descendants. Sibling order is stable — nodes already stacked top-to-bottom keep that order after reflow.
+
+### `board.toggleCollapse` and `board.collapseAllDescendants`
+
+Both act on a single node id — the *node* is what's collapsed, not the whole subtree.
+
+```jsonc
+// Toggle one node — hide/show its direct children
+{"type":"board.toggleCollapse","params":{"objectId":"branch1"}}
+// → { objectId: "branch1", collapsed: true }
+
+// Force-collapse an entire subtree from a given node down
+{"type":"board.collapseAllDescendants","params":{"objectId":"root","mode":"collapse"}}
+// → { objectId: "root", affectedIds: ["root","branch1","branch2","branch1.a"] }
+
+// Same command with mode:"expand" fully unfolds
+{"type":"board.collapseAllDescendants","params":{"objectId":"root","mode":"expand"}}
+```
+
+`affectedIds` in the response is the exact set of nodes whose collapsed state changed — safe to log or highlight for the user.
+
+### End-to-end recipe
+
+Build a 3-level tree, collapse two branches, screenshot the result, then unfold everything:
+
+```jsonc
+{"type":"board.batch","params":{"actions":[
+  {"type":"board.addNode","params":{
+    "renderAs":"text","id":"root","x":500,"y":400,"width":220,"height":60,
+    "text":"Product","fontSize":22,"fontWeight":700,
+    "metadata":{"mindmapKind":"root"}
+  }},
+  {"type":"board.addMindmapChild","params":{"parentId":"root","text":"Onboarding"}},
+  {"type":"board.addMindmapChild","params":{"parentId":"root","text":"Growth"}},
+  {"type":"board.addMindmapChild","params":{"parentId":"root","text":"Retention"}},
+  {"type":"board.addMindmapChild","params":{"parentId":"$ACTION_1_RESULT","text":"Sign-up"}},
+  {"type":"board.addMindmapChild","params":{"parentId":"$ACTION_1_RESULT","text":"First-day success"}},
+  {"type":"board.addMindmapChild","params":{"parentId":"$ACTION_2_RESULT","text":"Virality loops"}},
+  {"type":"board.addMindmapChild","params":{"parentId":"$ACTION_2_RESULT","text":"Paid channels"}},
+  {"type":"board.mindmap.layout","params":{"rootId":"root"}},
+  {"type":"board.collapseAllDescendants","params":{"objectId":"$ACTION_2_RESULT","mode":"collapse"}}
+]}}
+```
+
+Then `board.screenshot` on the whole tree. Fully expand for a second shot with `board.collapseAllDescendants { objectId: "root", mode: "expand" }`.
+
 ## What actions DON'T support (yet)
 
 ### Wanted commands — reference
@@ -463,7 +588,7 @@ Full ranked gap analysis lives in session `plan.md` (or copy it to `~/.copilot/s
 - **Setting connector waypoints.** The executor picks anchors automatically.
 - **Applying animation presets in bulk.** You can pass `animationStyle` per node, but there's no "animate everything selected" command.
 - **Uploading images from local paths.** For remote URLs use `board.addImage`; for a raw file you already have on disk, see `viewport-and-io.md` for the `/api/boards/upload` endpoint.
-- **Auto-layout of a whole tree/graph.** `board.align` + `board.distribute` are the primitives; you still choose the coords.
+- **Auto-layout of a whole tree/graph.** ~~Solved for mindmap-shaped trees — see `board.mindmap.layout` below.~~ For arbitrary DAGs, `board.align` + `board.distribute` are still the primitives.
 - **Image search from providers other than Pexels.** `board.query.searchImages` is Pexels-only; use a general web-image tool for Google/Unsplash then feed the resulting URL to `board.addImage`.
 
 ## `board.defineStyle` — register a session-scoped style token
