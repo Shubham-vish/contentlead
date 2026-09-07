@@ -104,6 +104,14 @@ cl-content-style (voice)  →  cl-script-evaluator (craft polish)  →  cl-viral
 
 ---
 
+## 🌐 Creator Apps (static app hosting)
+
+| Skill | Use it to |
+|-------|-----------|
+| **`cl-apps`** | Upload, host and manage a creator's **Creator Apps** — static sites / SPAs served at `contentlead.in/apps/<slug>`. Owns the whole catalogue: upload/replace a local folder or `.zip` (`/api/bridge/apps/upload-local`), list/inspect, rename + set slug + set entry file, publish/unpublish, get public URL, get an owner-only styled draft **preview**, create/revoke an unlisted **share link**, and delete — all via the desktop bridge `apps.*` command bus. NOT the desktop video editor (`cl-editor`), NOT sales pages (`cl-offers`), NOT the bio page (`cl-creator-biopage`), NOT the docs hub (`cl-creator-hub`). |
+
+---
+
 ## 🛠️ Ops / Entry docs
 
 | Doc / Skill | Purpose |
