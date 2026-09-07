@@ -34,8 +34,23 @@ https://contentlead.in/apps/<slug>
 | **DRAFT** (default after upload) | Owner only | `apps.getPreviewUrl` → styled owner-only preview link |
 | **DRAFT + share link** | Anyone with the unlisted URL | `apps.createShareLink` → capability URL; `apps.revokeShareLink` kills it |
 | **PUBLISHED** | Everyone at `/apps/<slug>` | `apps.publish` (→ `apps.unpublish` returns it to DRAFT) |
+| **Require sign-in** (any published/shared app) | Only signed-in SkillTown viewers | `apps.setRequireLogin { requireLogin: true }` — gates the app's **pages** (not sub-resources); owner always bypasses; captures viewer name/email/phone in analytics |
 
 Identity is **always** the signed-in session user. Every command is owner-scoped server-side — **never** pass an `ownerUserId`.
+
+### Analytics
+
+Every published/shared app records **page views** (top-level HTML navigations only; sub-resources and bots are excluded). The owner sees per-app metrics — total & unique viewers, a daily trend, and breakdowns by page/device/country/referrer — plus, for **require-sign-in** apps, the **identified viewers** (name/email/phone) who opened it. Surfaced in the `/apps` dashboard via each card's **Analytics** action.
+
+Read it through the **desktop bridge** (owner-scoped by the signed-in session, `?days=7|30|90`, default 30):
+
+| Bridge endpoint | Returns |
+|---|---|
+| `GET /api/bridge/apps/insights?days=30` | Cross-app overview → `{ range, apps:[{id,title,views,uniqueViewers,identifiedViewers,lastViewAt}], totals }` |
+| `GET /api/bridge/apps/<appId>/analytics?days=30` | One app → `{ range, totals:{views,uniqueViewers,identifiedViewers,botViews,loggedInViews}, byDay, byPath, byDevice, byCountry, byReferrer }` |
+| `GET /api/bridge/apps/<appId>/viewers?days=30&limit=100` | Identified viewers → `{ requireLogin, viewers:[{userId,name,email,phone,views,firstSeen,lastSeen}], total, anonymousUniques }` |
+
+`uniqueViewers` counts **distinct** viewers over the whole range (a daily-returning viewer counts once). These proxy the owner-only web routes `GET /api/apps/<appId>/analytics`, `/viewers`, and `GET /api/apps/insights`.
 
 ## 2. Connect through the desktop bridge
 
@@ -130,6 +145,7 @@ Responses are `{ "ok": true, "data": {...} }` on success or `{ "ok": false, "err
 | `apps.setEntryPath` | `{ appId, entryPath }` | `{ app }` — must be an HTML file that belongs to the app |
 | `apps.publish` | `{ appId }` | `{ app }` — status → `PUBLISHED`, live at `/apps/<slug>` |
 | `apps.unpublish` | `{ appId }` | `{ app }` — status → `DRAFT` |
+| `apps.setRequireLogin` | `{ appId, requireLogin }` | `{ app }` — when `true`, viewers must sign in to open the app's pages (owner then sees who viewed it in analytics) |
 | `apps.getPublicUrl` | `{ appId }` | `{ url: "https://contentlead.in/apps/<slug>" }` |
 | `apps.getPreviewUrl` | `{ appId }` | `{ previewUrl }` — styled **owner-only** preview of a DRAFT |
 | `apps.createShareLink` | `{ appId }` | `{ shareUrl, shareId }` — unlisted "anyone with the link" URL |
