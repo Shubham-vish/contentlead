@@ -1,6 +1,6 @@
 ---
 name: cl-apps
-description: Upload, host and manage a creator's Creator Apps — static websites/SPAs served publicly at contentlead.in/apps/<slug> — from any AI agent through the ContentLead desktop bridge. Owns the WHOLE catalogue lifecycle: upload/replace a local folder or .zip, list/inspect apps, rename + set slug + set entry file, publish/unpublish, get the public URL, get an owner-only styled preview of a draft, create/revoke an unlisted "anyone with the link" share URL, and delete. NOT the video editor (that is cl-editor), NOT sales pages (cl-offers), NOT the bio page (cl-creator-biopage), NOT the docs hub (cl-creator-hub).
+description: "Upload, host and manage a creator's Creator Apps — static websites/SPAs served publicly at contentlead.in/apps/<slug> — from any AI agent through the ContentLead desktop bridge. Owns the WHOLE catalogue lifecycle: upload/replace a local folder or .zip, list/inspect apps, rename + set slug + set entry file, publish/unpublish, get the public URL, get an owner-only styled preview of a draft, create/revoke an unlisted 'anyone with the link' share URL, and delete. NOT the video editor (that is cl-editor), NOT sales pages (cl-offers), NOT the bio page (cl-creator-biopage), NOT the docs hub (cl-creator-hub)."
 tags: contentlead, creator-apps, app-hosting, static-apps, static-site, spa, html, upload, zip, folder, publish, preview, share-link, command-bus, desktop-bridge, apps.list, apps.upload
 ---
 
