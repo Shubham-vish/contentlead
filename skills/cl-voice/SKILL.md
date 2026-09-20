@@ -115,10 +115,80 @@ curl -sX POST "$API/api/execute" -H "$AUTH" -H "Content-Type: application/json" 
 
 **UI verification:** `GET /api/bridge/voice/history` must contain the returned
 `history_id` with its text, voice name, URL and duration. The same record appears
-under AI Generate → Voice → All history. `GET /api/bridge/voice/voices?voice_type=voice_cloning`
+under AI Generate → Voice → **History**, directly below **Latest generation** (both stay visible, no history tabs). `GET /api/bridge/voice/voices?voice_type=voice_cloning`
 must contain the cloned ID/name shown under Clone voice. Listing and history are
 read-only; generation, cloning and uncached preview consume credits. Do not use
 paid operations as speculative health checks.
+
+## 3a. Replace a video's voice in the editor sidebar
+
+Video context menu **Replace voice...**, **Properties > Audio > Replace Voice**,
+and a generated video's Replace voice action all open **AI > Voice** in the
+right sidebar. This reuses Voice Lab's voice picker, generation controls and
+history; it is not a separate modal or a second voice library.
+
+- **Generate:** reuse the original transcript, choose a voice and explicitly
+  generate WAV. This consumes generation allowance and saves to normal history.
+- **Saved speech:** browse/search the paginated history and choose **Use this audio**.
+- **Upload:** choose a local audio/video recording or a timeline audio/video clip.
+
+Saved/uploaded speech must contain the same words and language. **Get transcript
+text...** opens the original script; **Copy text** contains no timestamps.
+Missing transcripts are transcribed only on explicit request, potentially
+uploading the source and using plan allowance.
+
+Under **Timing controls**, change the maximum stretch or add manual sync points
+for drift around a word (for example after 4–5s). Match that word's onset in
+the original and unaligned replacement, using seconds relative to each selected
+window. Adding points switches from automatic acoustic matching to uniform
+speed between point pairs. Start/end are implicit. Review with **Original /
+Replaced**, **Loop from/to**, or **Last 3 seconds**, then explicitly Apply.
+Changing timing settings needs only another local preview, not paid generation.
+**Back to Voice** / **Resume voice replacement** preserves the session draft.
+
+API: first `GET /api/timing-align/capabilities`. Manual points require
+`supportsSyncPoints:true` and
+`syncPointCoordinates:"selection-relative-milliseconds"`; otherwise update and
+restart desktop. `POST /api/timing-align/run` accepts normal reference/new
+sources and source-ms ranges, `outputVideo:true`, `verify:true`, `maxStretch`
+(1–4), and optional `syncPoints`, e.g.
+`[{"referenceTimeMs":4500,"newTimeMs":3500}]`. Maximum twelve strictly increasing
+interior pairs. Poll `/api/timing-align/progress/:jobId`; use
+`result.outputVideoUrl` only after a successful video result and explicit user
+review. The picture is stream-copied; selected audio is replaced, not isolated
+from music. Both selected speech windows must be 0.1–60s.
+
+**Limits:** manual points are not automatic phonetic alignment. Extreme segment
+ratios fail rather than silently moving points. Neither acoustic scores nor
+lower stretch limits guarantee lip-sync or artifact-free audio. The previously
+approved clip-specific native-speed-ending assembly is not this generic API.
+
+**Sync choices and local retries:** the sidebar now offers Rhythm match,
+Even pace, Speech-span fit, and Manual word points. Choose a mode, explicitly
+create a preview, then compare; **Restore previous preview** recovers the prior
+version. `alignmentMode` accepts `acoustic|uniform|speech-span|manual`; gate on
+the desktop's `alignmentModes` capability. Speech-span uses audible energy
+bounds, not recognized words; music/noise can affect it.
+
+Comparison defaults to **side-by-side**, with a **Single view** toggle and
+themed play/pause, seek and mute controls. **Fix ending** selects the last three
+seconds and 1.15x pace. **Retry selected part** changes only the loop selection;
+use **Finish sooner** for a delayed ending (below 1x would make it slower).
+**Starts late / Starts early** shift earlier/later, adjustable in 50ms steps.
+No paid speech is generated. **Undo last correction** restores the prior WAV.
+Undo before comparing another correction to the same baseline.
+
+Section API: require `supportsSectionRepair:true` and
+`repairCoordinates:"selection-relative-milliseconds"`. Send the previous
+preview's `outputPath` as `newPath`, the original reference/range, and e.g.
+`repair:{"fromMs":5000,"toMs":8000,"speed":1.15,"offsetMs":0}`. Do not send
+`newRangeMs`, sync points, or `alignmentMode` for this operation. Base:
+duration-matching mono 48kHz PCM16 preview WAV. Speed 0.8–1.5; offset ±1000ms.
+Outside-selection PCM is preserved; joins occur inside the selection.
+Speech that would be shifted/cut outside the selection causes a visible error,
+not silent truncation. Result must confirm `unchangedOutsideRepair:true`.
+MP4 audio remains AAC-reencoded. Older running desktop services need a full
+desktop restart; refreshing the web page is not sufficient.
 
 ## 3b. Remove silence / tighten dialogue — native timeline command (preferred) or offline Python
 

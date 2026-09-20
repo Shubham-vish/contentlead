@@ -2,6 +2,13 @@
 
 Commands for adding audio, mixing volume (dB and linear), applying EQ, and processing noise reduction.
 
+For picture-preserving voice replacement, load `cl-voice` section **3a**.
+**Replace voice...** opens the existing **AI > Voice** sidebar with Generate,
+Saved speech and Upload sources, preview/review/Apply, and optional manual sync
+points for late drift. Check `/api/timing-align/capabilities` before processing;
+manual points need an updated/restarted desktop. This is separate from adding
+a narration track or the audio-only **Match Timing** utility.
+
 ## ⚠️ Browser Audio Limits
 The browser can only mount **~5-6 Html5Audio tags simultaneously**. 
 Keep total audio items (music + SFX) to ≤ 5. Overlap is fine, but total distinct tracks/items must be small.

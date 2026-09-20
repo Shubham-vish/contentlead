@@ -156,7 +156,7 @@ On `completed`, the handler persists a candidate to content history and returns 
 { "type": "aiVideo.reject",  "params": { "candidateId": "<id>" } }
 ```
 
-Candidates persist on the content doc (`aiVideoGenerations`) and show in **Library · past generations**. Pending jobs use `aiVideoPendingJobs`; browser storage is only a fast-resume cache. Approve/reject requires an existing candidate. Library/review writes are separate from timeline edits and are not timeline undo operations.
+Candidates persist on the content doc (`aiVideoGenerations`). Video and Image show **Latest generation**, then **History** directly below it, without history tabs. This history is project-specific, not account-wide. Pending jobs use `aiVideoPendingJobs`; browser storage is only a fast-resume cache. Approve/reject requires an existing candidate. Library/review writes are separate from timeline edits and are not timeline undo operations.
 
 ---
 
