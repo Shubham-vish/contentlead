@@ -10,6 +10,13 @@ tags: clipping, viral, shorts, reels, tiktok, transcript, highlights, reframe, v
 
 ## How It Works
 
+For the saved episode shortlist, bounded provider discovery, reviewed boundaries,
+retry-safe draft batches, podcast director and delivery workflow, load
+`cl-production` after `cl-editor`. It documents the `production.*`, `podcast.*`
+and reviewed tightening commands. That workflow is distinct from the manual
+agent-scoring pipeline below: `production.discoverWindow` uses a configured paid
+provider and requires explicit AI consent. Neither workflow implies publishing.
+
 **You (the AI agent) ARE the intelligence layer.** No separate LLM API call needed. You read the transcript, score virality with your own reasoning, then use existing editor commands to create the clips.
 
 ```

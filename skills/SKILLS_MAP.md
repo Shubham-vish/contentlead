@@ -21,7 +21,8 @@ IDEA → RESEARCH → SCRIPT → PRODUCE (edit / voice / media) → CLIP → PUB
 |-------|------------|--------------|
 | **`cl-virality-scoring`** | The single 0–100 virality rubric (8 signals). Medium-agnostic — judges "is this viral?" for a clip, a written script, a hook line, a post idea, or a thumbnail. | `cl-ai-clipping`, `cl-script-evaluator`, `cl-dialogue-story`, `cl-content-style` |
 | **`cl-editor`** | Master router for the ContentLead desktop video editor. Load first before any editor command; it explains the local HTTP API. | every skill that touches the editor |
-| **`cl-board`** | Master router for the ContentLead Whiteboard (Boards). Same desktop bridge as `cl-editor` but a different command surface — diagrams, mind maps, flowcharts, slide decks, sticky-note brainstorms. Do NOT use for video editing. | any skill that needs to draw or arrange on a canvas |
+| **`cl-production`** | Reviewed episode clipping, discovery, podcast camera/director/sync, tightening, derived drafts, finishing recipes and delivery through desktop commands. | `cl-ai-clipping`, `cl-editor`, podcast production agents |
+| **`cl-board`** | ContentLead Boards via the Desktop bridge: diagrams, staged mindmap reveal and whole-branch controls, connector routing/patterns/markers, search-and-reveal, screenshots, saving, command discovery, and library web API reference. Do NOT use for video editing. | any skill that needs to draw or arrange on a canvas |
 
 **Rule:** if you need to score how viral something is, load `cl-virality-scoring`. Do NOT write ad-hoc scoring heuristics anywhere else.
 
@@ -69,8 +70,8 @@ cl-content-style (voice)  →  cl-script-evaluator (craft polish)  →  cl-viral
 |-------|-----------|
 | **`cl-content-direction`** | Creative strategy, storyboarding, narrative arcs, SFX/audio-layering plan, track management. The "director" layer. |
 | **`cl-ai-media`** | AI image search / generation / compose / vision analysis; text generation. Sources visuals. |
-| **`cl-ai-generate`** | Generate NEW footage/stills *inside the editor* via `aiVideo.*` commands — Veo 3.1 video, Gemini Omni, NanoBanana images, with start/end frames, reference images, and bring-your-own-key Google Cloud quota. The *in-app* generation command surface (vs. `my-veo-reel-gen`/`my-omni-video-gen` which shell out to gcloud). |
-| **`cl-voice`** | Clone a voice from an audio sample + text-to-speech generation. |
+| **`cl-ai-generate`** | Generate video/images through discoverable `aiVideo.*` commands; pending jobs and candidates appear in AI Generate. Poll with jobId + progressId, then add to an explicitly targeted track and save. Veo, Omni, NanoBanana and BYOK. |
+| **`cl-voice`** | Desktop Voice Lab bridge: speech saved to UI history; owned clones with names, previews and rename/delete; read saved generations and add audio with measured duration + explicit track intent. |
 | **`cl-audio`** | Local audio processing — vocal/music stem separation, cleanup. |
 | **`cl-dialogue-broll`** | Add word-timed B-roll images/scenes that pop in as concepts are spoken (any clip). Reuses word-level transcript + `cl-ai-media`. |
 | **`cl-creator-styles`** | Browse / inspect / subset / compose the SkillTown visual style templates (10 creator styles). The *visual* look — distinct from `cl-content-style` (which is the *voice*). |

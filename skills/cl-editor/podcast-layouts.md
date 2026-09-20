@@ -5,6 +5,12 @@ description: Apply pre-built podcast layouts (2-person split, single-speaker foc
 
 # Podcast Layouts
 
+For guided silent camera copies, reference-audio routing, speaker-directed shots
+and manual source synchronization, load `cl-production`. Use its
+`podcast.previewCameraSetup`/`applyCameraSetup`, `previewDirector`/`applyDirector`
+and `previewSync`/`applySync` pairs rather than rebuilding those workflows from
+raw clone/move commands. This document still owns direct `layout.*` operations.
+
 The ContentLead editor ships with a curated library of **podcast layouts** — pre-built cell arrangements that place Speaker A / Speaker B / Screen clips into visually balanced compositions. Applying a layout splits the selected clips at the range boundaries, rewrites the interior segments into the chosen cells (position + size + crop), stamps `details.layoutTag`, and fades out any role the layout hides.
 
 Everything you do here is a thin wrapper around `applyLayoutToRange`, the same engine the sidebar Layouts panel uses. Undo/redo works exactly like a manual edit.

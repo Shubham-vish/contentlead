@@ -17,6 +17,9 @@ Change the source range of an existing item. **Also syncs `display.to`** so the 
 ```
 
 Returns `{trim: {...}, display: {...}}` — new display range for verification.
+Source times are milliseconds: `from` must be non-negative and `to` must be
+strictly greater than `from`. Missing/null, non-finite, reversed, and empty
+ranges fail without changing the item or adding an undo entry.
 
 ### `editor.moveItem`
 Slide an item left or right on the timeline (changes `display.from` and `display.to` by the same offset).
@@ -128,13 +131,14 @@ Empty `updates.details: {}` is a valid no-op success (idempotent). If you get "N
 # On current builds, just calling editor.trimItem does both.
 ```
 
-### `editor.moveItem` with `from: null` silently corrupts
-Passing `from: null` (or omitting it) does NOT preserve the current value — it resets to 0. Always pass BOTH `from` and `to` as concrete numbers:
+### `editor.moveItem` requires both endpoints
+Passing `null` or omitting either endpoint fails without changing the item.
+Always pass BOTH `from` and `to` as concrete numbers; an explicit zero is valid:
 ```json
 // CORRECT
 { "type": "editor.moveItem", "params": { "itemId": "X", "from": 5000, "to": 8000 } }
 
-// WRONG — corrupts item position to from=0
+// WRONG — rejected because from is missing
 { "type": "editor.moveItem", "params": { "itemId": "X", "to": 8000 } }
 ```
 

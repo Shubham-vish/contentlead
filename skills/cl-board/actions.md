@@ -1,6 +1,6 @@
 # cl-board — Actions (Mutations)
 
-All commands here push undo history (one entry per command; `board.batch` pushes one entry for the whole batch).
+Object mutations use undo history; `board.batch` groups executor mutations into one entry. Queries, style-token registration, exports and checkpoints have their own semantics below.
 
 ## Object types (`renderAs`)
 
@@ -102,7 +102,7 @@ Use this to annotate diagrams: draw circles around important nodes, underline ti
 // → { "action": "board.editNode", "objectId": "obj_abc123" }
 ```
 
-Only the fields you pass are changed. Position updates via `editNode` do NOT re-route attached connectors — use `board.moveNode` instead if the object has connectors.
+Only the fields you pass are changed. Attached connector geometry is derived from object positions during rendering; both `editNode` position patches and `board.moveNode` move their attachments.
 
 ## `board.moveNode` — move + re-route connectors
 
@@ -110,7 +110,7 @@ Only the fields you pass are changed. Position updates via `editNode` do NOT re-
 {"type":"board.moveNode","params":{"id":"obj_abc123","x":800,"y":400}}
 ```
 
-Same as `editNode` for `x`/`y` but also re-computes connector anchor points for every connector touching this node. Use whenever you're moving a node that has arrows going in or out.
+Moves the object; attached connectors follow through shared geometry resolution. Also accepts relative `dx` / `dy`.
 
 ## `board.deleteNodes` — remove objects
 
@@ -128,11 +128,13 @@ Silently skips IDs that don't exist. Also removes any connectors that referenced
   "fromId": "obj_1",       // required — source object ID
   "toId": "obj_2",         // required — target object ID
   "label": "yes",          // optional edge label
-  "style": "arrow",        // optional: "arrow" | "line" | "dashed"
+  "style": "curved",       // routing: straight | elbow | curved | organic
+  "strokeStyle": "solid", // pattern: solid | dashed | dotted
   "startArrow": "none",    // optional: "none" | "arrow" | "circle" | "diamond"
   "endArrow": "arrow",
-  "color": "#94a3b8",
-  "strokeWidth": 2
+  "strokeColor": "#94a3b8",
+  "strokeWidth": 2,
+  "arrowSize": 1          // marker scale; independent of routing/pattern
 }}
 // → { "action":"board.addConnector", "objectId": "obj_conn_x" }
 ```
@@ -142,6 +144,15 @@ The connector will pick the best anchor points on both nodes automatically. If y
 ## `board.editConnector`
 
 Same as `editNode` but for connector objects.
+
+```jsonc
+{"type":"board.editConnector","params":{
+  "id":"obj_conn_x","style":"elbow","strokeStyle":"dotted",
+  "startArrow":"circle","endArrow":"diamond","arrowSize":2,"strokeColor":"#8b5cf6"
+}}
+```
+
+Do not use `style:"arrow"` or `"line"`: these are not routing styles and are rejected. Legacy `style:"dashed"` / `"dotted"` / `"solid"` normalize to elbow routing plus that pattern; legacy `endArrow:"triangle"` becomes `"arrow"`. New recipes must use the canonical fields above. Delete a connector with `board.deleteNodes {"ids":["obj_conn_x"]}`.
 
 ## `board.groupObjects` / `board.ungroupObjects`
 
@@ -158,7 +169,7 @@ Sets a shared `groupId` on the objects. They now move / select as one unit.
 {"type":"board.lockObjects","params":{"ids":["obj_1"]}}
 ```
 
-Toggles the `locked` flag. Locked objects can't be edited from the UI (or by other agents) without an explicit unlock.
+Toggles the `locked` flag used by the UI. This is not an authorization boundary: direct agent mutations do not uniformly enforce UI locks. Inspect `locked` and respect it before editing.
 
 ## `board.bringToFront` / `board.sendToBack`
 
@@ -288,8 +299,8 @@ Run many actions with one undo entry. Use `$ACTION_N_RESULT` to reference the ID
 
 ```jsonc
 {"type":"board.batch","params":{"actions":[
-  {"type":"board.addNode","params":{"type":"sticky","x":0,   "y":0,  "text":"Idea A"}},
-  {"type":"board.addNode","params":{"type":"sticky","x":300, "y":0,  "text":"Idea B"}},
+  {"type":"board.addNode","params":{"renderAs":"sticky","x":0,   "y":0,  "text":"Idea A"}},
+  {"type":"board.addNode","params":{"renderAs":"sticky","x":300, "y":0,  "text":"Idea B"}},
   {"type":"board.addConnector","params":{
     "fromId":"$ACTION_0_RESULT",
     "toId":  "$ACTION_1_RESULT",
@@ -302,9 +313,11 @@ Run many actions with one undo entry. Use `$ACTION_N_RESULT` to reference the ID
 Rules:
 
 - References resolve to `.result.objectId` of the referenced action.
-- If any action fails, the batch continues but the failed action reports `status:"failed"` in its result. The batch itself is `success` unless **every** action failed.
+- If any action fails, later actions still run. Inspect `result.failed` and every `result.results[].status`; the outer response can be `success` even when all actions failed. There is no automatic rollback.
 - One undo entry covers the entire batch. `board.undo` reverses all of it in one shot.
 - Max reasonable size is ~100 actions before latency starts to matter.
+
+Only executor actions are accepted inside `board.batch`: object CRUD, connectors, mindmap creation/layout/folding, group/lock/z-order, slides/decks, duplicate/align/distribute/transforms. Queries, save/reload, screenshot, reveal, style registration, section layout, viewport and history commands must be sent separately.
 
 ## `board.deleteRegion` — bounded-box eraser
 
@@ -346,7 +359,7 @@ Typical "wipe a swim-lane" flow:
 {"type":"board.deleteAll","params":{}} // → { "deleted": 42 }
 ```
 
-`board.deleteAll` also pushes to the undo stack — you can restore the whole board with `board.undo`. Useful for "clear and rebuild" flows without asking the user to confirm.
+`board.deleteAll` also pushes to the undo stack. Use only when clearing the board is explicitly requested; never clear a user's board just to test commands.
 
 ## Checkpoints — named bookmarks over the undo stack
 
@@ -421,8 +434,8 @@ If neither `region` nor `ids` is provided, exports the bbox of ALL objects (with
 **Draw a two-node flowchart:**
 ```jsonc
 {"type":"board.batch","params":{"actions":[
-  {"type":"board.addNode","params":{"type":"shape","shapeType":"rectangle","x":100,"y":200,"text":"Start"}},
-  {"type":"board.addNode","params":{"type":"shape","shapeType":"rectangle","x":500,"y":200,"text":"End"}},
+  {"type":"board.addNode","params":{"renderAs":"shape","shapeType":"rectangle","x":100,"y":200,"text":"Start"}},
+  {"type":"board.addNode","params":{"renderAs":"shape","shapeType":"rectangle","x":500,"y":200,"text":"End"}},
   {"type":"board.addConnector","params":{"fromId":"$ACTION_0_RESULT","toId":"$ACTION_1_RESULT"}}
 ]}}
 ```
@@ -430,10 +443,10 @@ If neither `region` nor `ids` is provided, exports the bbox of ALL objects (with
 **Fill a 3×3 sticky grid:**
 ```jsonc
 {"type":"board.batch","params":{"actions":[
-  {"type":"board.addNode","params":{"type":"sticky","x":0,  "y":0,  "text":"1"}},
-  {"type":"board.addNode","params":{"type":"sticky","x":260,"y":0,  "text":"2"}},
-  {"type":"board.addNode","params":{"type":"sticky","x":520,"y":0,  "text":"3"}},
-  {"type":"board.addNode","params":{"type":"sticky","x":0,  "y":180,"text":"4"}},
+  {"type":"board.addNode","params":{"renderAs":"sticky","x":0,  "y":0,  "text":"1"}},
+  {"type":"board.addNode","params":{"renderAs":"sticky","x":260,"y":0,  "text":"2"}},
+  {"type":"board.addNode","params":{"renderAs":"sticky","x":520,"y":0,  "text":"3"}},
+  {"type":"board.addNode","params":{"renderAs":"sticky","x":0,  "y":180,"text":"4"}},
   ...
 ]}}
 ```
@@ -448,16 +461,31 @@ If neither `region` nor `ids` is provided, exports the bbox of ALL objects (with
 
 ## Mindmap / collapsible trees
 
-Boards has first-class support for Xmind-style collapsible mindmaps. Nodes tagged with `metadata.mindmapKind ∈ {"root","branch","leaf"}` participate in the mindmap flow: the "+" affordance button, Tab-key add-child, branch-color inheritance on connectors, and per-node collapse pill.
+Boards has first-class support for Xmind-style collapsible mindmaps. Nodes tagged with `metadata.mindmapKind ∈ {"root","branch","leaf"}` participate in the add-button flow, branch-color inheritance, and per-node staged folding. **Tab-to-add and Space-to-collapse are removed.** Enter adds a sibling only in a valid canvas context; Option/Alt-click applies whole-branch folding.
 
-**4 commands cover the whole feature:**
+Use explicit staged commands for parity with the UI:
 
 | command | what it does |
 |---|---|
-| `board.addMindmapChild` | Add a child under a mindmap parent. Same geometry, styling, and connector color inheritance as clicking "+" or hitting Tab in the UI. |
+| `board.addMindmapChild` | Add a child under a mindmap parent, using the UI's geometry, styling, and connector color inheritance. |
 | `board.mindmap.layout` | Re-flow an existing subtree — BFS through descendants, stack each parent's children evenly to the right (or left). |
-| `board.toggleCollapse` | Flip one node's collapsed state. Its children hide/reappear. |
-| `board.collapseAllDescendants` | Force `mode: "collapse"` or `mode: "expand"` on a whole subtree in one call. |
+| `board.mindmap.expand` | `scope:"step"`: chip → own text → child chips. `scope:"subtree"`: fully open every descendant. |
+| `board.mindmap.collapse` | `scope:"step"`: open → text only → chip. `scope:"subtree"`: hide the branch below the node while keeping its own text, matching Option-click. |
+| `board.toggleCollapse` | Compatibility toggle between a chip and its own text; use explicit commands for staged control. |
+| `board.collapseAllDescendants` | Compatibility command; see notes below. |
+| `board.revealObject` | Open the necessary ancestor path, select the result, and frame it; see `queries.md`. |
+
+```jsonc
+{"type":"board.mindmap.expand","params":{"objectId":"branch1"}}
+{"type":"board.mindmap.expand","params":{"objectId":"branch1","scope":"subtree"}}
+{"type":"board.mindmap.collapse","params":{"objectId":"branch1","scope":"step"}}
+{"type":"board.mindmap.collapse","params":{"objectId":"branch1","scope":"subtree"}}
+// → {objectId, affectedIds, collapsed, childrenCollapsed, stage:"pill"|"textOnly"|"open"}
+```
+
+Normal expansion never recursively opens descendants: the second step exposes direct children as chips, not their text. Leaves need only one expand step. Expanding an already-open node is a no-op; invalid IDs/scopes fail explicitly. Fold mutations can be batched and undone together.
+
+For the draggable add control and label placement, use `board.editNode` with `mindmapAddDx`, `mindmapAddDy`, and `mindmapTextPlacement:"above"|"on"|"below"`. Offsets are relative to the default button position; reset both to `0`. Recolor an existing branch by querying its connectors and editing `strokeColor` on the relevant IDs; new children inherit their parent's incoming connector styling. Hover rings and reachable minus controls are UI feedback, not separate commands.
 
 ### Starting a tree from scratch
 
@@ -529,10 +557,12 @@ The layout is a BFS: place direct children of the root first, then recurse into 
 
 ### `board.toggleCollapse` and `board.collapseAllDescendants`
 
-Both act on a single node id — the *node* is what's collapsed, not the whole subtree.
+These names remain for compatibility. `toggleCollapse` folds a readable node into a chip, or opens a chip's own text with children still hidden. It is not the normal two-step expand button; use `board.mindmap.expand` / `collapse` for that.
+
+`collapseAllDescendants` with `mode:"collapse"` retains its legacy root-and-parent-to-chips behavior. With `mode:"expand"` it now clears **both** fold flags on all descendants, including leaves. Use `board.mindmap.collapse` with `scope:"subtree"` when you want the current Option-click behavior that keeps the root text readable.
 
 ```jsonc
-// Toggle one node — hide/show its direct children
+// Compatibility chip/text toggle
 {"type":"board.toggleCollapse","params":{"objectId":"branch1"}}
 // → { objectId: "branch1", collapsed: true }
 
@@ -544,7 +574,7 @@ Both act on a single node id — the *node* is what's collapsed, not the whole s
 {"type":"board.collapseAllDescendants","params":{"objectId":"root","mode":"expand"}}
 ```
 
-`affectedIds` in the response is the exact set of nodes whose collapsed state changed — safe to log or highlight for the user.
+`affectedIds` contains nodes whose fold state changed, including changes to `childrenCollapsed`.
 
 ### End-to-end recipe
 
@@ -572,16 +602,6 @@ Build a 3-level tree, collapse two branches, screenshot the result, then unfold 
 Then `board.screenshot` on the whole tree. Fully expand for a second shot with `board.collapseAllDescendants { objectId: "root", mode: "expand" }`.
 
 ## What actions DON'T support (yet)
-
-### Wanted commands — reference
-
-Full ranked gap analysis lives in session `plan.md` (or copy it to `~/.copilot/skills/cl-board/wanted.md` when you formalize). Top 5 that would ship first:
-
-1. **`board.screenshot { region?, ids?, hidePanels?, maxWidth? }`** — one-shot region/object capture with panel hiding. Today: `setViewport` + `/api/screenshot` + base64 decode (see `viewport-and-io.md`), and every shot has the AI panel occluding ~40% of the canvas with no bridge way to hide it.
-2. **`board.togglePanels { ai?, rightSidebar?, layers?, toolbar? }`** — hide the AI Whiteboard Assistant / Image Properties / Layers side panels for a clean shot.
-3. ~~`board.deleteRegion`~~ ✅ **shipped** — see the `board.deleteRegion` section above. Uses exact bbox math and supports `dryRun`.
-4. ~~`board.query.canvasBounds`~~ ✅ **shipped** — see `queries.md`. Returns `{minX, minY, maxX, maxY, width, height, count, isEmpty}` with optional `excludeIds`, `typeFilter`, `includeConnectors`.
-5. **`board.defineStyle` / style tokens** — kill payload repetition (fillColor, textColor, fontSize, bold on every shape) and enforce coherence across a session.
 
 ### Other gaps (still-supported workarounds)
 

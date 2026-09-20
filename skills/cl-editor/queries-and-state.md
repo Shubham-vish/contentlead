@@ -115,32 +115,35 @@ Capture the current canvas as a PNG data URL. **Does NOT seek or wait** — capt
 
 **Atomic seek + wait-for-stabilization + composite capture.** This is the correct way to verify what the timeline shows at a given time — it replaces the buggy `editor.seekTo` → sleep → `/api/screenshot` sequence.
 
-**Why:** `editor.seekTo` dispatches a seek to the Remotion Player, but each underlying `<video>` element still needs 100–500 ms to buffer the requested source-time. A capture taken immediately returns the PREVIOUS frame (often source-t=0). `query.previewFrameAt` pauses, seeks, then polls every `<video>` element until `currentTime` is stable across two consecutive polls (Δ < 50 ms) AND `readyState >= 2` — only then does it composite.
+**Why:** A stationary video can still contain a stale frame, and an empty loading placeholder is not proof of readiness. `query.previewFrameAt` pauses, seeks to the nearest project frame, then requires active timeline media to exist. Native videos must finish seeking, have decoded data, and match their runtime source clocks (including trim/rate); native presentation callbacks are checked where available. Images must load successfully. Active compositor canvases must acknowledge the requested frame without stale-source fallback. Readiness must hold across two animation-frame paint opportunities.
 
 ```json
 { "type": "query.previewFrameAt", "params": {
     "timeMs": 15000,
-    "waitTimeoutMs": 3000,
-    "pollIntervalMs": 50
+    "waitTimeoutMs": 3000
 }}
 ```
 
 **Returns:**
 ```json
 {
-  "imageBase64": "data:image/png;base64,...",
+  "imageBase64": "<raw PNG base64, without data URL prefix>",
   "width": 1080, "height": 1920,
   "timeMs": 15000,
   "stabilized": true,
-  "waitedMs": 187,
+  "targetFrame": 450,
+  "stabilizationWaitedMs": 187,
+  "readinessBlockers": [],
+  "imageTimings": [],
   "videoTimings": [
-    {"itemId":"video_abc","expectedSourceT":4.32,"actualSourceT":4.32,"delta":0.001,"readyState":4}
+    {"src":"...","expectedTime":4.32,"currentTime":4.32,"presentedTime":4.32,"stable":true,"seeking":false,"readyState":4}
   ]
 }
 ```
 
-- `stabilized: false` → timed out waiting; frame may be slightly stale. Increase `waitTimeoutMs` or accept the stale frame.
-- `videoTimings[].delta` > 0.1 s → this video didn't hit the target source-time in time; consider bumping `waitTimeoutMs`.
+- `waitTimeoutMs` defaults to 3000; must be finite, positive, and at most 30000. There is no configurable polling interval.
+- `stabilized: false` → `captureSkipped: true`, with **no `imageBase64`**. Inspect `readinessBlockers` (missing media, image errors, unpresented videos, pending compositor, or capture deadline). A longer timeout will not repair failed URLs. The timeout budget covers readiness and asynchronous PNG encoding; an unready frame is not sent through GPU capture.
+- Videos whose source clocks cannot be verified (for example uninstrumented custom-scene videos) conservatively time out instead of claiming stability.
 - Cross-origin `<canvas>` layers are silently skipped (browser security).
 
 **Use cases:** verify a caption is visible at a specific time; confirm B-roll appears where you scheduled it; check whether frame 0 of a scene is a usable poster before rendering.

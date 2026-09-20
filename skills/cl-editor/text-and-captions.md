@@ -9,7 +9,8 @@ tags: text, caption, captions, karaoke, title, lower-third, subtitle, style, rem
 Use these commands to manually add text overlays, titles, lower thirds, and manual karaoke-style captions to the timeline.
 
 > **⭐ STYLE-FIRST RULE — prefer Remotion scenes for text.**
-> `editor.addText` / `editor.addCaption` produce **flat, plainly-styled** text. Whenever the
+> Plain `editor.addText` / `editor.addCaption` produce flat text. `editor.addText`
+> also supports editable text-scene presets through `sceneTemplate`. Whenever the
 > goal is a polished/branded/viral look (titles, hooks, kinetic captions, animated lower-thirds),
 > **use a Remotion scene instead** (`scene.addBundledScene`, `scene.addCustomScene`,
 > `scene.addLibraryScene`) — these give springs, per-word animation, gradients, strokes, glow
@@ -50,6 +51,11 @@ Add a manual text overlay (titles, lower thirds, callouts).
 
 **Positioning Note:** Newly added text centers automatically. To move it, use `editor.positionItem` (see `canvas-and-positioning`) or update `details.top` / `details.left` via `editor.editItem`.
 **Height Note:** Text rendered height is ~ `fontSize * 1.5`. Leave enough gap when stacking.
+
+**Editable animated text:** pass `sceneTemplate` (`heroStack`, `keywordCallout`,
+`wordReveal`, or `typewriter`), optional `sceneParams`, and `accentColor` at the
+top level or inside `details`. The item remains `type: "text"` and keeps normal
+text editing, timing, positioning, and animation controls.
 
 ### `editor.addCaption`
 Add a manual karaoke-style caption track using word-level timing arrays.

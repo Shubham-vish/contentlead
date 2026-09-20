@@ -1,12 +1,12 @@
 # cl-board — Queries
 
-All read-only inspection commands. None of these push undo history or mutate anything.
+The `board.query.*` commands are read-only. The separate `board.revealObject` command described below changes fold state, selection, and camera.
 
 Universal request shape (assumes `PORT`, `TOKEN`, `TAB_ID` are set per `SKILL.md` startup):
 
 ```bash
 curl -s -X POST http://127.0.0.1:$PORT/api/execute \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"tabId":"'$TAB_ID'","type":"<COMMAND>","params":<PARAMS>}'
 ```
 
@@ -29,15 +29,25 @@ curl -s -X POST http://127.0.0.1:$PORT/api/execute \
 
 Use this as your first call after connecting — it confirms the bridge is wired and tells you if there's unsaved work you might trample.
 
+## `board.query.commands` — renderer command discovery
+
+```jsonc
+{"type":"board.query.commands","params":{}}
+// → { "commands": ["board.query.info", "board.query.commands", "board.mindmap.expand", ...] }
+```
+
+This is the actual loaded renderer's list, unlike static Desktop catalog descriptions. If unavailable, the frontend may need updating. A tab marked ready can still be stale; require a successful response before edits.
+
 ## `board.query.objects` — list objects with filters
 
 ```jsonc
 {"type":"board.query.objects","params":{
   "type": "sticky" | "shape" | "text" | "connector" | "mermaid" | "image" | "frame" | "freehand" | "pdf_page" | "webview" | "video",  // optional filter
   "ids": ["obj_1", "obj_2"],  // optional filter — only return these
+  "query": "roadmap",          // optional full-text/type search, case-insensitive; includes folded nodes
   "region": {                  // optional — exact-bbox spatial filter (NOT the spatial grid — no over-return)
     "x": 0, "y": 8000, "width": 4200, "height": 200,
-    "mode": "intersects" | "contained"  // default "intersects"
+    "mode": "intersects" | "contained"  // default "contained"
   },
   "limit": 200                 // optional — default 500, hard-cap 500
 }}
@@ -52,9 +62,11 @@ Use this as your first call after connecting — it confirms the bridge is wired
 // }
 ```
 
-`region` uses **exact axis-aligned bbox math** (not the internal bucket-based spatial grid). `contained` requires the object's full bbox to sit inside the rectangle; `intersects` (default) returns anything overlapping, including edge touches. Pair with `type` to scope further (e.g. all `sticky` in a swim-lane).
+`region` uses stored axis-aligned object bounds, not rendered connector paths or collapsed-chip bounds. `contained` (default) requires the whole box inside the rectangle; `intersects` returns overlap including edge touches. Pair with `type` to scope further.
 
-The `objects` array is a **summary**, not the full object. For every field the object has (styling, animations, connector routing, etc.) use `board.query.object` on the specific ID.
+The `objects` array is a **summary**, not the full object. Summaries include `collapsed`, `childrenCollapsed`, `foldStage` (`pill|textOnly|open`), and `mindmapKind` when present. Connector summaries include routing, pattern, markers, color, and arrow size. Fold stage is local state, not a visibility flag: an open node may still be hidden by an ancestor. For every stored field use `board.query.object` with `verbose:true`.
+
+The `query` filter uses the same text fields as the UI Search panel and excludes freehand objects. Search itself never opens folds.
 
 ## `board.query.canvasBounds` — bbox of all content
 
@@ -84,12 +96,27 @@ Use this to place a new composition **below existing content** without collision
 ## `board.query.object` — full detail for one object
 
 ```jsonc
-{"type":"board.query.object","params":{"id":"obj_1"}}
+{"type":"board.query.object","params":{"id":"obj_1","verbose":true}}
 // →
 // { "object": { /* full CanvasObject as stored in Zustand */ } }
 ```
 
 Throws if the ID doesn't exist. Use `board.query.objects` first to know what's on the board.
+
+Without `verbose:true`, returns a summary with capped text bodies and redacted inline media payloads, not the full stored object.
+
+## `board.revealObject` — reveal and frame a search result
+
+```jsonc
+{"type":"board.query.objects","params":{"query":"Needle"}}
+// Choose one returned ID:
+{"type":"board.revealObject","params":{"id":"obj_1"}}
+// → { objectId, affectedIds, focused:true, bounds:{x,y,width,height} }
+```
+
+Uses the UI Search behavior: open the required ancestor path and result's text; keep newly exposed off-path siblings as chips. Selects and frames the object. Connectors use resolved path bounds, not their stored zero-sized box. Missing IDs fail. If the canvas has no measurable viewport, the object is revealed/selected but `focused:false` is returned and a warning is logged.
+
+Fold changes form one undo step; camera/selection are not undo-logged. Send this separately, not inside `board.batch`. Use `board.mindmap.expand` with `scope:"subtree"` only when you explicitly want the whole branch open.
 
 ## `board.query.selection` — what's selected
 
@@ -118,7 +145,7 @@ This is the payload the board's AI panel uses for `getPerMessageState`. Perfect 
 // → { "viewport": {"x": -450, "y": 120, "zoom": 0.85} }
 ```
 
-Coordinates are **world-space** — the viewport describes how the camera maps world → screen. `x` and `y` are the world coord that appears at the top-left of the visible canvas, `zoom` is the multiplier.
+Coordinates are **world-space translations**: `screenX = (worldX + viewport.x) * zoom` (and similarly for y). The visible top-left world coordinate is `{-viewport.x, -viewport.y}`.
 
 ## `board.query.objectAtPoint` — hit test one point
 
@@ -133,8 +160,7 @@ Coordinates are **world-space** — the viewport describes how the camera maps w
 
 **Find every sticky containing "TODO":**
 ```jsonc
-{"type":"board.query.objects","params":{"type":"sticky"}}
-// then filter in your agent: r.objects.filter(o => (o.text || '').includes('TODO'))
+{"type":"board.query.objects","params":{"type":"sticky","query":"TODO"}}
 ```
 
 **Find connectors leaving a specific node:**
@@ -154,7 +180,7 @@ Coordinates are **world-space** — the viewport describes how the camera maps w
 
 ## What queries DON'T give you
 
-- **Rendered pixel data.** There is no `board.query.thumbnail` — capture from the browser side if you need one.
+- **Rendered pixel data.** There is no `board.query.thumbnail`; use `board.screenshot` or the saved SVG preview web API documented in `viewport-and-io.md`.
 - **Undo/redo stack contents.** You can call `board.undo` blind, then `board.query.info` to see what changed.
 - **Blueprint AI state.** The AI chat's `useBoardAIStore` is intentionally not exposed — the bridge is a peer to that chat, not a way to drive it.
 

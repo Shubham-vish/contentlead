@@ -10,11 +10,15 @@ Use animations for entrance, exit, and looping motion. Use keyframes for fine-gr
 
 ## ⚠️ CRITICAL: Animation Caveats
 
-### Animations work in-session but DON'T persist
-Animations applied via `setAnimation` work correctly during the current editing session. However, they are **NOT saved** through the save/restore cycle. After loading a project, all animations reset to `none`. You must re-apply animations after every restore.
+### Animation persistence
+Animations live on each item's `animations` field and persist through
+`editor.loadDesign`, project save, and tab reload/restore. Do not blindly reapply
+them after loading. Inspect `project.getFullState` if validating an older project.
 
-### In + Out must be set separately (dispatch race condition)
-Setting both `animationIn` and `animationOut` in one call causes a race condition where `out` overwrites `in`. The handler dispatches them separately with a 40ms delay. If applying manually, always set one at a time with a gap.
+### In + Out can be set together
+One `editor.setAnimation` call may include both `animationIn` and `animationOut`;
+the handler sequences the updates. `duration` is milliseconds and uses project
+FPS, so 500ms becomes 30 frames at 60fps.
 
 ### Supported presets with actual property compositions
 The rewritten handler maps presets to keyframe compositions:
@@ -37,7 +41,7 @@ Assign one animation preset to an item for `in`, `out`, or `loop` behavior.
 | `itemId` | `string` | required | Target timeline item |
 | `animationIn` | `string` | — | Enter animation preset name (e.g., `fadeIn`, `slideInLeft`) |
 | `animationOut` | `string` | — | Exit animation preset name (e.g., `fadeOut`, `scaleOut`) |
-| `duration` | `number` | `500` | Animation duration in milliseconds |
+| `duration` | `number` | `500` | Positive finite duration in milliseconds, converted to frames at the project's FPS (minimum one frame) |
 
 > **Legacy format also accepted:** `{itemId, animationType: "in", type: "fadeIn"}` — but prefer the new format above.
 
@@ -73,7 +77,7 @@ Remove one animation type from an item.
 | Param | Type | Default | Description |
 |---|---|---|---|
 | `itemId` | `string` | required | Target timeline item |
-| `animationType` | `string` | omit to remove all | `in`, `out`, or omit to remove both |
+| `animationType` | `string` | omit to remove all | `in`, `out`, `loop`, or omit to remove all three |
 
 Example:
 

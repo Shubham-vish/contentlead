@@ -1,6 +1,6 @@
 ---
 name: cl-voice
-description: Voice cloning + text-to-speech for ContentLead. Clone a voice from a local or hosted audio sample, generate speech (voiceover/narration) from any cloned or preset voice, list/delete voices, then drop the audio onto the timeline. Routed through the local SkillTown Desktop voice bridge (/api/bridge/voice/*) using the signed-in user's cookies — no manual JWT or API secret needed.
+description: Voice cloning + text-to-speech for ContentLead. Generate speech into the UI history, clone/list/rename/preview/delete owned voices, read saved generations, then add audio to an explicitly targeted timeline track. Uses the SkillTown Desktop Voice Lab bridge with signed-in cookies; no manual provider credentials.
 tags: voice, tts, text-to-speech, clone, cloning, voiceover, narration, speech, audio, bridge, minimax
 ---
 
@@ -10,12 +10,14 @@ tags: voice, tts, text-to-speech, clone, cloning, voiceover, narration, speech, 
 
 Clone a voice, synthesize narration, and add it to the timeline — all through the
 local SkillTown Desktop **voice bridge**. Every call is a single HTTP request with
-one bearer token. The bridge forwards to the SkillTown `/api/ai/*` proxy, which
-authenticates from your Electron cookies and injects the backend secret
-server-side. **No hand-copied JWT, no RPC framing, no local secrets.**
+one bearer token. The bridge uses the same `/api/voice-lab/*` routes as the UI:
+capability checks, owned clone names/previews, and generation history all match.
+Provider credentials stay server-side. **No hand-copied JWT or RPC framing.**
 
-> These are the REAL, live-verified endpoints. The old `prepwithai_speech_*`
-> tool names are **not** the supported path — use `/api/bridge/voice/*` below.
+> Discover these endpoints through `/api/capabilities`. If history/rename/preview
+> is missing, the desktop process needs an updated build/restart. Skill availability
+> alone does not prove route availability. Never fall back to `/api/ai/*` for voice:
+> that bypasses UI persistence. `voice.generate` is not an `/api/execute` command.
 
 ## 0. Setup — one-time per shell
 
@@ -45,21 +47,28 @@ All routes require `Authorization: Bearer <token>`. Bodies are JSON.
 
 | Method | Path | Body / Query | Returns |
 |--------|------|--------------|---------|
-| `GET`  | `/api/bridge/voice/voices` | `?voice_type=all\|system\|voice_cloning` | `{ voices:[{voice_id, voice_name, voice_type, created_time, description}], count }` |
-| `POST` | `/api/bridge/voice/generate` | `{ text, voice_id, speed?, format? }` | `{ status, audio_url, format, duration_seconds }` |
+| `GET`  | `/api/bridge/voice/voices` | `?voice_type=all\|system\|voice_cloning` | `{ voices:[{voice_id, display_name?, voice_name?, preview_audio_url?, ...}], count }` |
+| `POST` | `/api/bridge/voice/generate` | `{ text, voice_id, voice_name?, speed?, format? }` | `{ audio_url, format, duration_seconds?, history_id }` |
 | `POST` | `/api/bridge/voice/upload` | `{ filePath }` (absolute local audio path) | `{ url, size_bytes, mime, file_name }` |
-| `POST` | `/api/bridge/voice/clone` | `{ audio_url, voice_id?, demo_text? }` | `{ status, voice_id, details }` |
-| `POST` | `/api/bridge/voice/upload-and-clone` | `{ filePath, voice_id?, demo_text? }` | `{ status, voice_id, upload_url, details }` |
+| `POST` | `/api/bridge/voice/clone` | `{ audio_url, voice_name?, display_name?, voice_id?, demo_text? }` | `{ voice_id, cloned_voice_id, display_name, details? }` |
+| `POST` | `/api/bridge/voice/upload-and-clone` | `{ filePath, voice_name?, display_name?, voice_id?, demo_text? }` | Clone result plus `{upload_url, upload}` |
+| `GET` | `/api/bridge/voice/history` | `?page=1&pageSize=20` (1-100) | `{ items, pagination:{page,pageSize,total,hasMore} }` |
+| `DELETE` | `/api/bridge/voice/history` | `?id=<history-id>` | `{ success:true }`; does not delete timeline items |
+| `POST` | `/api/bridge/voice/voices/:voice_id/rename` | `{ display_name:string\|null }` | `{ voice_id, display_name }` |
+| `POST` | `/api/bridge/voice/preview` | `{ voice_id, text?, fresh? }` | `{ audio_url, duration_seconds?, cached }`; uncached/custom previews cost credits |
 | `POST` | `/api/bridge/voice/delete` | `{ voice_id, voice_type? }` | `{ status, voice_id, created_time }` |
 | `DELETE` | `/api/bridge/voice/voices/:voice_id` | `?voice_type=voice_cloning` | `{ status, voice_id, created_time }` |
 
 Notes:
 - `voice_type` defaults: list → `all`; delete → `voice_cloning`.
-- `format` accepts `mp3` (default) / `wav` / etc.; `audio_format` is also accepted as an alias.
-- `speed` is a multiplier (`1.0` = normal).
+- `format`: `mp3` (default), `wav`, `flac`, `aac`; `audio_format` is an alias.
+- `speed`: server clamps to 0.5-2.0 (`1.0` = normal).
 - `text` must be **≤ 5000 characters** per generate call.
 - Cloning input accepts `.wav .mp3 .m4a .flac .aac .ogg/.opus` (mime auto-inferred).
 - `audio_url` for clone must be **publicly reachable** — upload local files first.
+- Supply `voice_name` when cloning so the UI shows a meaningful name rather than a raw provider ID.
+- Writes notify open same-origin Voice Lab panels; history/voice lists also refresh on focus. No timeline insertion happens automatically.
+- Check `history_id` / `cloned_voice_id` to confirm persistence. `persistence_error` explicitly identifies provider success with a failed library save. Preserve the successful output/voice ID and report the persistence failure; never blindly re-generate/re-clone.
 
 ## 2. List voices
 
@@ -83,21 +92,33 @@ Well-known preset voices: `English_expressive_narrator` (British male, audiobook
 OUT=$(curl -sX POST "$API/api/bridge/voice/generate" -H "$AUTH" \
   -H "Content-Type: application/json" \
   -d '{"text":"Welcome to ContentLead — your AI video editor.",
-       "voice_id":"English_expressive_narrator","speed":1.0,"format":"mp3"}')
+       "voice_id":"English_expressive_narrator","voice_name":"Narrator","speed":1.0,"format":"mp3"}')
 URL=$(echo "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['audio_url'])")
 
 # 2. Download into an allowed media dir (SAS URL — grab it now)
 OUTFILE=~/Downloads/voiceover.mp3
 curl -sfL "$URL" -o "$OUTFILE"
 
-# 3. Add to the timeline (editor command → /api/execute, NOT the voice bridge)
+# 3. Inspect actual duration (fallback when duration_seconds is absent/invalid).
+# Load cl-editor startup + audio-gain-eq before timeline editing.
+DURATION_MS=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$OUTFILE" \
+  | python3 -c 'import sys,math; s=float(sys.stdin.read()); assert math.isfinite(s) and s>0; print(round(s*1000))')
+# Set TAB_ID from GET /api/tabs; pick an existing audio track or create one explicitly.
 curl -sX POST "$API/api/execute" -H "$AUTH" -H "Content-Type: application/json" \
-  -d "$(python3 -c "import json,os;print(json.dumps({'type':'editor.addAudio','params':{'src':os.path.expanduser('$OUTFILE'),'name':'Voiceover','from':0,'volume':90}}))")"
+  -d "$(python3 -c "import json;print(json.dumps({'type':'editor.addAudio','tabId':'$TAB_ID','params':{'src':'$OUTFILE','name':'Voiceover','trackName':'Narration','from':0,'duration':int('$DURATION_MS'),'volume':90}}))")"
+# Verify item/timing from the response, then editor.save with the same tabId.
 ```
 
 > Media server allowed dirs include `~/Downloads`, `~/Movies`, `~/Documents`,
 > `~/Music`, `~/Codes`, etc. Save the mp3 there so the timeline can play it.
 > Voiceover/narration volume guideline: **80–100** (see `remotion/rules/sfx-and-audio`).
+
+**UI verification:** `GET /api/bridge/voice/history` must contain the returned
+`history_id` with its text, voice name, URL and duration. The same record appears
+under AI Generate → Voice → All history. `GET /api/bridge/voice/voices?voice_type=voice_cloning`
+must contain the cloned ID/name shown under Clone voice. Listing and history are
+read-only; generation, cloning and uncached preview consume credits. Do not use
+paid operations as speculative health checks.
 
 ## 3b. Remove silence / tighten dialogue — native timeline command (preferred) or offline Python
 

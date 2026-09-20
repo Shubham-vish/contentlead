@@ -17,7 +17,7 @@ There are **two** zoom systems on a board page, do not confuse them:
 
 The board uses a simple 2D world-space camera: `{x, y, zoom}`.
 
-- `x`, `y` — the WORLD coordinate that maps to the top-left of the visible canvas.
+- `x`, `y` — world-space translation before zoom. The visible top-left world coordinate is `{-x, -y}`.
 - `zoom` — multiplier. 1.0 = 100%.
 - Screen ↔ world: `worldX = (screenX / zoom) - viewport.x`.
 
@@ -34,7 +34,7 @@ The board uses a simple 2D world-space camera: `{x, y, zoom}`.
 {"type":"board.zoomToFit","params":{}}
 ```
 
-Frames every object on the canvas with a small margin. This is what the "1:1" button in the toolbar calls.
+Frames content with a small margin. This is fit-to-content, not a reset to 100% zoom.
 
 ### `board.panBy`
 
@@ -89,7 +89,7 @@ Any valid CSS color string. Use rgba if you want translucency over a theme fallb
 
 ## Persistence
 
-### `board.save` — canvas + title → SkillTown DB
+### `board.save` — canvas → SkillTown DB
 
 ```jsonc
 {"type":"board.save","params":{}}
@@ -101,13 +101,13 @@ Any valid CSS color string. Use rgba if you want translucency over a theme fallb
 // }
 ```
 
-Calls `PUT /api/boards/[boardId]` with the current `{title, canvasData}`. Before serializing it:
+Calls `PUT /api/boards/[boardId]` with `{canvasData: JSON.stringify(state)}`. Title is saved separately with `board.setTitle`. Before serializing it:
 
 1. Waits up to 4 seconds for any in-flight blob uploads to finish (so you don't persist blob URLs). If the timer expires, it saves anyway rather than blocking forever.
 2. Runs the payload through `stripDataUrls` — anything with a `data:` or `blob:` URL is dropped.
 3. Clears the `isDirty` flag on success.
 
-The board's own autosave hook fires every 10 seconds after a mutation, but it's still worth calling `board.save` explicitly at the end of a batch — it's the only way to guarantee cloud persistence before you tell a user "done."
+Call `board.save` explicitly at the end of a batch and inspect the response. A successful save does not guarantee pending local images were uploaded: stripped assets can be absent after reload. Concurrent-save revision protection and failed-upload recovery remain known limitations; avoid editing while saving and inspect important media.
 
 ### `board.setTitle`
 
@@ -126,6 +126,8 @@ Sends `{title}` only to `/api/boards/[boardId]`. Does NOT serialize the canvas �
 ```
 
 Discards local unsaved changes and reloads canvas state from `/api/boards/[boardId]`. Useful after another tab / user has edited the same board.
+
+Saved `canvasData` JSON strings and object responses are supported. Malformed JSON, invalid object collections, and invalid viewports fail before replacing the canvas; a response arriving after navigation to another board is rejected.
 
 ## Titles vs canvas — the fix that lives here
 
@@ -147,34 +149,64 @@ For agents: never rely on autosave for correctness. Call `board.save` yourself a
 ```bash
 # 1. Snapshot
 curl -s -X POST http://127.0.0.1:$PORT/api/execute \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"tabId":"'$TAB_ID'","type":"board.query.snapshot"}'
 
 # 2. ... do a bunch of `board.batch` calls ...
 
 # 3. Frame the new content
 curl -s -X POST http://127.0.0.1:$PORT/api/execute \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"tabId":"'$TAB_ID'","type":"board.zoomToFit"}'
 
 # 4. Persist
 curl -s -X POST http://127.0.0.1:$PORT/api/execute \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"tabId":"'$TAB_ID'","type":"board.save"}'
 
-# 5. Verify — reload from DB and check counts match
+# 5. Optional persistence check — ONLY after successful save, with no new edits.
+# Reload discards unsaved work. Compare expected fields/assets, not just counts.
 curl -s -X POST http://127.0.0.1:$PORT/api/execute \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"tabId":"'$TAB_ID'","type":"board.reload"}'
 ```
 
 **Center the camera on a specific object:**
 ```bash
-# 1. Look it up
-OBJ=$(curl -s -X POST ... -d '{"tabId":"'$TAB_ID'","type":"board.query.object","params":{"id":"obj_1"}}')
-# 2. Compute new viewport (world coord of object → put at center of screen)
-# 3. board.setViewport with {x: -(obj.x + obj.width/2 - screenW/2/zoom), y: similar}
+curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"tabId":"'$TAB_ID'","type":"board.revealObject","params":{"id":"obj_1"}}'
 ```
+
+## Boards library
+
+The library is separate from a loaded board's `board.*` commands. **Use Desktop's cookie-authenticated bridge** with the same bearer header as `/api/execute`; no manual web JWT or cookie extraction is needed:
+
+| Desktop endpoint | Contract |
+|---|---|
+| `GET /api/bridge/boards?q=roadmap&sort=title` | List/search/sort owned boards; returns `{boards,nextCursor}`. |
+| `GET /api/bridge/boards?cursor=<nextCursor>&sort=recent` | Next page; keep the same search and sort. |
+| `POST /api/bridge/boards` | JSON `{title,description?}`; returns the new board directly, including `id`. |
+| `GET /api/bridge/boards/<id>` | Read saved board; `canvasData` is normally a JSON string. |
+| `PUT /api/bridge/boards/<id>` | Update saved board metadata or serialized canvas. Prefer renderer `board.save` for an open board so media sanitization runs. |
+| `DELETE /api/bridge/boards/<id>` | Delete only an explicitly requested board or your own disposable test board. |
+
+After creation, open `POST /api/tabs/new {"url":"/board/<id>","activate":false,"waitForReady":true}`. Require successful `board.query.info` before editing. Pass `tabId` on every command, including **each command inside a Desktop `/api/batch`**; do not rely on its outer `tabId`.
+
+Underlying authenticated web APIs on the app origin:
+
+| API | Contract |
+|---|---|
+| `GET /api/boards?q=roadmap&sort=recent` | Owner-scoped title/description search. `sort`: `recent`, `oldest`, `title`. Returns `{boards,nextCursor}`; 50 cards per page. |
+| `GET /api/boards?cursor=<nextCursor>&sort=recent` | Next page; retain the same search/sort parameters. |
+| `POST /api/boards` | JSON `{title,description?}`; returns the new board with `id`. |
+| `GET /api/boards/<id>` | Load an owned board. |
+| `DELETE /api/boards/<id>` | Delete an owned board; only on explicit request. |
+| `GET /api/boards/<id>/thumbnail` | Owner-authenticated saved-content SVG; private caching with revision ETag. |
+
+Use the signed-in app session for direct web APIs. The Desktop discovery token only authenticates localhost Desktop routes; it is **not** a web API bearer token. Thumbnail generation currently has no `/api/bridge/boards/<id>/thumbnail` passthrough; use the authenticated web endpoint above.
+
+Blank previews reflect saved background/grid. Large boards use representative crops/sampling; complex media may be placeholders. Previews are not pixel-perfect screenshots. Tour placement, hover feedback, responsive headers, card retry and pagination rendering are UI behavior, not extra command names. Library cards remain private; publish is not proof of viewer access.
 
 **Bulk rename → save → confirm:**
 ```bash
@@ -189,6 +221,12 @@ curl -s -X POST ... -d '{"tabId":"'$TAB_ID'","type":"board.save"}'
 
 The board now ships **native screenshot commands** that (a) auto-hide overlay panels for a clean shot, (b) auto-frame the target world region with 10% padding, and (c) restore viewport + panel state on the way out. They call `html2canvas` under the hood on the `[data-board-canvas]` container, so mermaid diagrams, images, and shapes are all captured.
 
+**Foreground the board for capture:** record the active tab via `GET /api/tabs`, then `POST /api/tabs/<board-tab-id>/activate {}`. Background/minimized tabs can suspend animation frames and time out. Restore the previous tab afterward if it still exists and the user has not switched elsewhere. Do not immediately retry a timed-out capture: its renderer work can still be finishing.
+
+Screenshot and PNG export expand tiny overflow-visible SVG layers **only in the capture clone**, so branches, root leaders, freehand paths, and connector markers are not clipped away. Live canvas geometry is unchanged. This does not remove other html2canvas limitations: fixed corner controls may remain, and virtualized/offscreen media are not guaranteed complete.
+
+PNG export targets the dedicated canvas world layer rather than a transformed cursor/UI element, and crop offsets do not double-count camera pan. Validate actual image content, not just a successful response or PNG prefix.
+
 ### `board.togglePanels`
 
 Set the visibility of any subset of overlays; returns the *previous* state of every touched panel so a caller can restore.
@@ -196,14 +234,14 @@ Set the visibility of any subset of overlays; returns the *previous* state of ev
 ```bash
 # Hide everything except the toolbar (default of hideAll)
 curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
-  -H "Authorization: ******" -H "Content-Type: application/json" \
-  -d "{\"tabId\":\"$TAB\",\"type\":\"board.togglePanels\",\"params\":{\"hideAll\":true}}"
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d "{\"tabId\":\"$TAB_ID\",\"type\":\"board.togglePanels\",\"params\":{\"hideAll\":true}}"
 
 # Toggle individual panels
 # keys: ai | external | minimap | ruler | layers | toolbar   (each optional, boolean)
 curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
-  -H "Authorization: ******" -H "Content-Type: application/json" \
-  -d "{\"tabId\":\"$TAB\",\"type\":\"board.togglePanels\",\"params\":{\"minimap\":false,\"ruler\":true}}"
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d "{\"tabId\":\"$TAB_ID\",\"type\":\"board.togglePanels\",\"params\":{\"minimap\":false,\"ruler\":true}}"
 ```
 
 Response shape:
@@ -230,20 +268,20 @@ Neither `region` nor `ids`? The board's total object bounding box is used.
 ```bash
 # Screenshot everything on the board (jpeg, 1200px wide)
 curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
-  -H "Authorization: ******" -H "Content-Type: application/json" \
-  -d "{\"tabId\":\"$TAB\",\"type\":\"board.screenshot\",\"params\":{\"maxWidth\":1200,\"format\":\"jpeg\",\"quality\":0.85}}" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d "{\"tabId\":\"$TAB_ID\",\"type\":\"board.screenshot\",\"params\":{\"maxWidth\":1200,\"format\":\"jpeg\",\"quality\":0.85}}" \
   -o board.json
 
 # Screenshot a specific object (by id)
 curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
-  -H "Authorization: ******" -H "Content-Type: application/json" \
-  -d "{\"tabId\":\"$TAB\",\"type\":\"board.screenshot\",\"params\":{\"ids\":[\"obj_123\"],\"padding\":80}}" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d "{\"tabId\":\"$TAB_ID\",\"type\":\"board.screenshot\",\"params\":{\"ids\":[\"obj_123\"],\"padding\":80}}" \
   -o obj.json
 
 # Screenshot a world region
 curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
-  -H "Authorization: ******" -H "Content-Type: application/json" \
-  -d "{\"tabId\":\"$TAB\",\"type\":\"board.screenshot\",\"params\":{\"region\":{\"x\":0,\"y\":0,\"width\":2400,\"height\":1600}}}" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d "{\"tabId\":\"$TAB_ID\",\"type\":\"board.screenshot\",\"params\":{\"region\":{\"x\":0,\"y\":0,\"width\":2400,\"height\":1600}}}" \
   -o region.json
 ```
 
@@ -272,8 +310,8 @@ Runs several shots sequentially, panels hidden once at the start and restored on
 
 ```bash
 curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
-  -H "Authorization: ******" -H "Content-Type: application/json" \
-  -d '{"tabId":"'$TAB'","type":"board.screenshot.multi","params":{
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"tabId":"'$TAB_ID'","type":"board.screenshot.multi","params":{
         "shots":[
           {"ids":["obj_1"], "padding":40},
           {"ids":["obj_2"], "padding":40},
@@ -287,7 +325,7 @@ Response: `{ "shots": [ { imageBase64, world, zoom, screen }, ... ] }`.
 
 ### Footnote — fallback via `/api/screenshot`
 
-If the desktop app hasn't picked up the new build yet, or you need a raw window screenshot including panels, the generic desktop endpoint still works. Frame with `board.setViewport`, wait for the DOM to settle, then `GET /api/screenshot?mode=preview&tabId=$TAB`. Zoom picking: `zoom = min(Wscr / Wworld, Hscr / Hworld) * 0.9`. Preview area ≈ 1440×1000 CSS px depending on panel state. Downside: any open panel occludes part of the shot.
+If the desktop app hasn't picked up the new build yet, or you need a raw window screenshot including panels, the generic desktop endpoint still works. Frame with `board.setViewport`, wait for the DOM to settle, then `GET /api/screenshot?mode=preview&tabId=$TAB_ID`. Zoom picking: `zoom = min(Wscr / Wworld, Hscr / Hworld) * 0.9`. Preview area ≈ 1440×1000 CSS px depending on panel state. Downside: any open panel occludes part of the shot.
 
 ## Multi-tab safety net
 

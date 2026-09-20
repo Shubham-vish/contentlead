@@ -64,7 +64,7 @@ Never build a scene whose frame 0 is black / blank / single-color. The rendered 
   "params": { "timeMs": 15000, "waitTimeoutMs": 3000 }
 }
 ```
-Returns `{imageBase64, width, height, timeMs, stabilized, videoTimings[], ...}`. Waits for every visible `<video>` to hit `readyState >= 2` AND currentTime-stability (two polls within 50 ms) before compositing. `stabilized: false` in the response = the wait timed out; frame may be slightly stale.
+Returns `{imageBase64, width, height, timeMs, targetFrame, stabilized, videoTimings[], imageTimings[], readinessBlockers[], ...}` on verified capture. Checks active timeline media (including missing/loading placeholders), native source clocks and presented frames, image load/error state, and compositor frame acknowledgments. Readiness must hold across two paint opportunities. On timeout, returns `stabilized: false`, `captureSkipped: true`, and **no image**; inspect `readinessBlockers` rather than treating it as a successful visual check.
 
 Legacy `query.capturePreviewFrame` still exists but does NOT wait — only use when you're certain the frame is already stable.
 
@@ -79,7 +79,7 @@ Legacy `query.capturePreviewFrame` still exists but does NOT wait — only use w
 | Video & Chroma-key | `video` | `editor.addVideo`, `editor.addVideoSegments`, `editor.setClipState` |
 | Images & Static Media | `images` | `editor.addImage`, `editor.replaceMedia`, `media.validate` |
 | Audio, Gain, EQ, Noise | `audio-gain-eq` | `editor.addAudio`, `editor.setAudioGain`, `audio.setEq`, `audio.reduceNoise` |
-| **Voice cloning & TTS / voiceover** | `cl-voice` | `POST /api/bridge/voice/{generate,clone,upload,upload-and-clone,delete}`, `GET /api/bridge/voice/voices` |
+| **Voice cloning & TTS / voiceover** | `cl-voice` | `/api/bridge/voice/*`: generate into UI history, clone into the owned library, list/history, preview, rename, delete; then `editor.addAudio` with measured duration and track intent |
 | Position, Crop, Resize | `canvas-and-positioning` | `editor.positionItem`, `editor.resize`, `editor.cropItem` |
 | Trim/Split/Cut on timeline | `item-editing` | `editor.splitItem`, `editor.cutItem`, `editor.trimItem`, `editor.moveItem` |
 | Tracks, Z-order, Linking | `track-management` | `editor.reorderTracks`, `editor.linkTracks`, `editor.renameTrack` |
@@ -96,12 +96,13 @@ Legacy `query.capturePreviewFrame` still exists but does NOT wait — only use w
 | Testing / QA | `cl-testing` | Agent-run contract, state, visual, and workflow tests |
 | Content metadata & bridge | `content-bridge` | `content.getDetails`, `content.updateMetadata`, `content.applyImage` |
 | Multi-tab collaboration | `multi-tab` | `GET /api/tabs`, `POST /api/tabs/new`, `tabId` on `/api/execute` |
-| **AI Media Generation (Veo / Omni / NanoBanana)** | `cl-ai-generate` | `aiVideo.generate`, `aiVideo.getJobStatus`, `aiVideo.addCandidateToTimeline`, `aiVideo.listCandidates`, `aiVideo.approve`/`reject` — generate NEW video/stills in-editor (text/image→video, start/end frame, reference images, BYOK quota) |
+| **AI Media Generation (Veo / Omni / NanoBanana)** | `cl-ai-generate` | `aiVideo.generate` → UI pending job; `getJobStatus` with jobId + progressId → saved candidate; `listCandidates`, `addCandidateToTimeline`, `approve`/`reject`. Discover through `/api/capabilities`; library writes and timeline save are separate. |
 | **AI Viral Clipping** | `cl-ai-clipping` | Transcribe → score virality → extract clips → reframe 9:16 → render |
 | **Script Evaluation & Writing** | `cl-script-evaluator` | Score scripts 0-100, rewrite hooks, write viral scripts from scratch |
 | **Dialogue-Story Reels (2-char, Modi–Rahul style)** | `cl-dialogue-story` | Full viral pipeline: script→TTS voices→word-timed Latin captions→per-dialogue AI images→hook title + IG caption→Remotion compose. `orchestrator/run.mjs` |
 | **Dialogue-driven B-roll (relevant images timed to words)** | `cl-dialogue-broll` | Per-segment: AI decides #images + query → search/generate → pick best → word-timestamp align + gaps → place on timeline. Ports TlEditingSolution image logic; works on ANY clip |
 | **Podcast Layouts (2p/1p/share/9:16)** | `podcast-layouts` | `layout.list`, `layout.apply`, `layout.getActive`, `layout.tagRole` |
+| **Reviewed clipping / podcast production** | `cl-production` | `production.*` saved shortlist/discovery/drafts/recipes/delivery; `podcast.*` preview/apply setup, director and sync; `transcript.previewTightening` / `transcript.applyTightening` |
 | **Masks & Animated Reveals** | `masking-and-reveal` | `mask.get`, `mask.set`, `mask.clear`, `reveal.listPresets`, `reveal.apply`, `reveal.clear` |
 | **Brand Kits** | `brand-kits` | `brand.listKits`, `brand.apply`, `brand.applyColor`, `brand.applyFont`, `brand.addAssetToCanvas` |
 | **Background Removal (AI matting)** | `background-removal` | `editor.removeBackground`, `editor.restoreBackground`, `editor.bulkRemoveBackground`, `media.removeBackground`, `query.getBackgroundRemovalStatus` |

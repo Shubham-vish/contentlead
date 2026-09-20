@@ -123,10 +123,11 @@ Create a throwaway content item:
 ```bash
 curl -s -X POST "$BASE/api/content/create" \
   -H "$AUTH" -H "Content-Type: application/json" \
-  -d '{"title":"AI TEST — safe to delete","description":"Bridge/API test sandbox","waitForReady":true,"timeoutMs":60000}'
+  -d '{"title":"AI TEST — safe to delete","description":"Bridge/API test sandbox","navigate":false}'
 ```
 
-Save:
+Open the returned `contentId` with `POST /api/tabs/new {contentId}`, following
+`cl-editor/multi-tab.md`. Poll that specific tab until `editorReady:true`. Save:
 
 - `contentId`
 - `tabId`
@@ -193,9 +194,10 @@ Expected: empty item list / count 0.
 
 ### Fallback reset if editor state looks corrupted
 
-1. `POST /api/reload` with `waitForReady:true`
-2. Re-run `editor.loadDesign` empty reset
-3. If still unstable, create a fresh content item and continue there
+1. Re-navigate only the disposable test tab with `/api/tabs/<tabId>/navigate`.
+2. Verify that tab's content ID and readiness before resetting its design.
+3. If still unstable, create a fresh disposable content item or report the blocker.
+Never globally reload the app or reset a user project as a fallback.
 
 ---
 
@@ -687,10 +689,16 @@ It also works as the original HTTP endpoint `GET /api/media/reframe/presets`.
 These dispatch Redux actions (`HISTORY_UNDO`/`HISTORY_REDO`) and always return `{status: 'success'}` even if nothing was undone. The `loadDesign` reset between tests clears the undo stack, so undo/redo tests MUST create undo-able state in their setup steps first.
 
 ### Content creation needs login
-`POST /api/content/create` requires the user to be logged in via the frontend. If it returns `{"error": "Login required"}`, use the existing active tab instead and reset with `editor.loadDesign`.
+`POST /api/content/create` requires login on the selected frontend origin. If it
+returns `{"error": "Login required"}`, stop live mutation tests and request sign-in.
+Never fall back to clearing the active user project. Use `navigate:false` when
+creating content, then explicitly open the returned content ID in a disposable
+test tab. Localhost and cloud login/readiness are independent.
 
 ### After test run, restore the project
-Always call `POST /api/reload` with `{"waitForReady":true}` after the test suite finishes so the user's original project is restored from the database.
+Keep all tests in disposable content. Restore only the test tab's original URL
+if it was changed; do not globally reload the app or assume a database reload
+restores unsaved work. Verify the test tab is ready, or report that it is not.
 
 ---
 
