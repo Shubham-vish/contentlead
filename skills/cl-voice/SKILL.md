@@ -132,12 +132,62 @@ history; it is not a separate modal or a second voice library.
 - **Saved speech:** browse/search the paginated history and choose **Use this audio**.
 - **Upload:** choose a local audio/video recording or a timeline audio/video clip.
 
+**Use this audio** collapses the picker and focuses the chosen recording;
+**Change audio** reopens it. Selection does not generate or apply anything.
+The normal Voice generator's unfinished script and speed survive opening and
+backing out of replacement.
+
 Saved/uploaded speech must contain the same words and language. **Get transcript
 text...** opens the original script; **Copy text** contains no timestamps.
-Missing transcripts are transcribed only on explicit request, potentially
-uploading the source and using plan allowance.
+**Transcribe selected speech** runs only on explicit request. It extracts just
+the pinned source trim (0.1–60s) at original speed as 16kHz mono PCM WAV, uploads
+that audio, and fills the replacement script synchronously. Remote recordings
+may need downloading locally first. **Speech language** defaults to Hindi;
+choose Auto-detect for other languages. Hindi avoids Urdu-script misdetection
+on short Hindi phrases. Translation is off; review spelling before generating.
+The cloud call is `POST /api/ai/transcribe_short_video` (Azure OpenAI Whisper),
+not the full-source `/analyze_audio` flow. It creates no captions and does not
+overwrite full-source transcripts. Progress and cancellation are available;
+stale trim/draft results are discarded. Failed extraction never uploads the
+whole recording. An old desktop extractor requires updating/restarting.
+Saved transcript reuse excludes cut-through words and warns to trim at a pause.
+The local extraction IPC uses `outputFormat:"wav"`; this is not a new
+`/api/execute` command. Agents can call the existing
+`/api/bridge/ai/transcribe/short` on an already-hosted selected audio file.
 
-Under **Timing controls**, change the maximum stretch or add manual sync points
+**Simple word matching (Hindi):** new drafts default to **Match words & preview**.
+Use **Set up word matching** once to download the local engine/model (several GB).
+It matches original and replacement words and adjusts pauses at native voice
+speed, rather than stretching dialogue into a video tail. No paid regeneration
+or audio upload. Other languages are not supported by this first word matcher.
+An optional transcript must be Devanagari; otherwise the original is recognized
+locally. Uncertain/missing words or words that cannot fit naturally fail visibly.
+The final WAV's recognized starts must be within 80ms of their target; this is
+not a visual lip-sync score. Duration/spelling warnings still require listening.
+
+In **Fix a phrase**, click the first and last word, then **Resync selected words**.
+Use **A little earlier / A little later** for 40ms nudges, or **Undo last
+correction**. Resync resets selected timing; every retry uses raw speech, not
+another stretch of the current preview. Other phrases remain unchanged.
+If a correction touches a neighbour, include that word too. Repeated resets
+are idempotent; nudges accumulate only position (bounded to +/-400ms).
+
+API: discover `alignmentModes` containing `words`, `supportsWordRepair:true`,
+and `wordSync.status`. If needed, explicitly `POST /api/timing-align/word-setup`
+and poll capabilities until `wordSync.status:"ready"`. Full preview uses normal
+reference/new sources and ranges, `alignmentMode:"words"`, optional
+`wordTranscript`, `outputVideo:true`. To retry, keep the **same raw sources,
+ranges and transcript**, adding
+`wordRepair:{"baseJobId":"<current successful jobId>","firstWord":9,"lastWord":13,"nudgeMs":0}`.
+Indices are zero-based/inclusive; nudge is 0 (reset), -40, or 40. Do not send
+the processed preview as `newPath`. The server chooses the trusted base WAV;
+result must include `wordRepair` and `unchangedOutsideRepair:true`. Job history
+expires after 30 minutes/restart (100 retained jobs maximum); create a new full
+preview after expiry, not new paid speech. Output word coordinates are relative
+to the selected reference window. Audio and picture outside the normal selected
+source range follow the existing full-source-video contract.
+
+Under **Advanced timing**, change the maximum stretch or add manual sync points
 for drift around a word (for example after 4–5s). Match that word's onset in
 the original and unaligned replacement, using seconds relative to each selected
 window. Adding points switches from automatic acoustic matching to uniform
@@ -161,22 +211,39 @@ from music. Both selected speech windows must be 0.1–60s.
 **Limits:** manual points are not automatic phonetic alignment. Extreme segment
 ratios fail rather than silently moving points. Neither acoustic scores nor
 lower stretch limits guarantee lip-sync or artifact-free audio. The previously
-approved clip-specific native-speed-ending assembly is not this generic API.
+approved native-speed word-placement approach is now available through the
+separate Hindi `words` mode, not through the acoustic/manual algorithms.
 
-**Sync choices and local retries:** the sidebar now offers Rhythm match,
+**Advanced sync choices and local retries:** the sidebar offers Rhythm match,
 Even pace, Speech-span fit, and Manual word points. Choose a mode, explicitly
 create a preview, then compare; **Restore previous preview** recovers the prior
-version. `alignmentMode` accepts `acoustic|uniform|speech-span|manual`; gate on
+version. `alignmentMode` accepts `words|acoustic|uniform|speech-span|manual`; gate on
 the desktop's `alignmentModes` capability. Speech-span uses audible energy
 bounds, not recognized words; music/noise can affect it.
 
 Comparison defaults to **side-by-side**, with a **Single view** toggle and
-themed play/pause, seek and mute controls. **Fix ending** selects the last three
-seconds and 1.15x pace. **Retry selected part** changes only the loop selection;
+themed play/pause, seek and mute controls. Under **Advanced phrase timing**,
+**Select ending** selects the last three seconds at unchanged speed (it does not
+automatically fix anything). **Retry selected part** changes only the loop selection;
 use **Finish sooner** for a delayed ending (below 1x would make it slower).
 **Starts late / Starts early** shift earlier/later, adjustable in 50ms steps.
 No paid speech is generated. **Undo last correction** restores the prior WAV.
-Undo before comparing another correction to the same baseline.
+It can be repeated to step through the session's successful preview history.
+The history shows corrected ranges, pace and shift; the comparison can use the
+previous preview instead of the original recording. Only the played side moves
+and sounds. Undo before comparing another correction to the same baseline.
+For different phrases, retry each range in sequence using the latest preview;
+earlier non-overlapping repairs are retained. Overlapping advanced speed retries
+compound processing; word retries do not. Do not rerun the whole-preview alignment to preserve local fixes.
+History is session-only and clears on changing source/target or reloading.
+Finish corrections before Apply; another pass after Apply requires Restore.
+
+**Cuts:** normal split clips are processed individually using their own source
+windows, not as a multi-clip batch. Timeline audio selection respects the cut
+even without explicit trim metadata. The pinned summary shows source and
+timeline scope; repair times are relative to the source selection. Reopening
+a changed target offers an explicit draft refresh rather than applying an old
+snapshot. Nested/discontinuous edited excerpts remain unsupported.
 
 Section API: require `supportsSectionRepair:true` and
 `repairCoordinates:"selection-relative-milliseconds"`. Send the previous
@@ -187,8 +254,15 @@ duration-matching mono 48kHz PCM16 preview WAV. Speed 0.8–1.5; offset ±1000ms
 Outside-selection PCM is preserved; joins occur inside the selection.
 Speech that would be shifted/cut outside the selection causes a visible error,
 not silent truncation. Result must confirm `unchangedOutsideRepair:true`.
+Gross audible-to-silent loss after tempo processing raises
+`REPAIR_AUDIO_DEGRADED` if a boundary-padding retry cannot recover it. This
+energy heuristic does not guarantee phoneme preservation. Fractional source
+boundaries use a canonical 48kHz sample count for preview/repair compatibility.
 MP4 audio remains AAC-reencoded. Older running desktop services need a full
 desktop restart; refreshing the web page is not sufficient.
+Use **Check again** in the sidebar after updating/restarting to re-read service
+capabilities without discarding the draft. A healthy bridge alone does not prove
+that these timing features are available.
 
 ## 3b. Remove silence / tighten dialogue — native timeline command (preferred) or offline Python
 

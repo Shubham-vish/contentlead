@@ -71,7 +71,7 @@ cl-content-style (voice)  →  cl-script-evaluator (craft polish)  →  cl-viral
 | **`cl-content-direction`** | Creative strategy, storyboarding, narrative arcs, SFX/audio-layering plan, track management. The "director" layer. |
 | **`cl-ai-media`** | AI image search / generation / compose / vision analysis; text generation. Sources visuals. |
 | **`cl-ai-generate`** | Generate video/images through discoverable `aiVideo.*` commands; pending jobs and candidates appear in AI Generate. Poll with jobId + progressId, then add to an explicitly targeted track and save. Veo, Omni, NanoBanana and BYOK. |
-| **`cl-voice`** | Desktop Voice Lab bridge: speech saved to UI history; owned clones with names, previews and rename/delete; read saved generations and add audio with measured duration + explicit track intent. |
+| **`cl-voice`** | Desktop Voice Lab bridge: speech/history/clones; Replace Voice with selected-trim transcription, local Hindi word matching, one-time setup, selected-word resync/nudges/undo, and Advanced timing. Add audio with measured duration + explicit track intent. |
 | **`cl-audio`** | Local audio processing — vocal/music stem separation, cleanup. |
 | **`cl-dialogue-broll`** | Add word-timed B-roll images/scenes that pop in as concepts are spoken (any clip). Reuses word-level transcript + `cl-ai-media`. |
 | **`cl-creator-styles`** | Browse / inspect / subset / compose the SkillTown visual style templates (10 creator styles). The *visual* look — distinct from `cl-content-style` (which is the *voice*). |
