@@ -1,6 +1,7 @@
 ---
 name: cl-editor
 description: Control the ContentLead video editor from any AI agent. This is the master router skill. Load this first to discover capabilities, then load specific sub-skills for detailed API instructions. Use this for editing video, adding scenes/text/media, managing tracks, and exporting. For Remotion scene creation, load the `cl-remotion` skill.
+tags: video-editor, desktop-bridge, timeline, tracks, media, rendering
 ---
 
 # ContentLead Editor — AI Master Router

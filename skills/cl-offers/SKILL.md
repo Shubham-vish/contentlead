@@ -1,6 +1,7 @@
 ---
 name: cl-offers
 description: Build, edit, brand, and manage ContentLead Offer Studio surfaces (offer sales pages, checkout, thank-you, buyer emails) end-to-end from any AI agent. Use for creating paid offers AND free lead-magnets, adding/removing/rearranging sections, editing copy, swapping templates, applying page presets, wiring buyer actions (CTA, validate phone/email, apply coupon, submit lead), configuring checkout (price, GST, bonuses, upsells, order bumps), fully BRANDING the checkout + thank-you pages (colors, fonts, copy, custom CSS, style presets, default phone country), managing coupons, products/deliverables, media generation, and theme presets. Covers all four surfaces via one endpoint `/api/offer-studio/commands/<name>`.
+tags: offers, sales-pages, checkout, lead-magnets, coupons, offer-studio
 ---
 
 # ContentLead Offers — AI Agent Skill

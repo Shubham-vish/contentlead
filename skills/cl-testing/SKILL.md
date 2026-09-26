@@ -360,7 +360,7 @@ hard `assert` blocks, they have:
     - action: capture screenshot
       command:
         type: query.capturePreviewFrame
-        params: { format: png }
+        params: {}
   criteria: |
     PASS if:
     - Text "Hello" is visible on canvas

@@ -1,6 +1,7 @@
 ---
 name: cl-board
 description: Control the ContentLead Whiteboard (Boards) from any AI terminal. Same desktop bridge as cl-editor — different command surface. Use for building diagrams, mind maps, flowcharts, slide decks, sticky-note brainstorms, and anything else that belongs on a canvas rather than a video timeline. Do NOT use this for video editing (that is cl-editor).
+tags: whiteboard, boards, diagrams, mind-maps, flowcharts, slide-decks
 ---
 
 # ContentLead Boards — AI Bridge
