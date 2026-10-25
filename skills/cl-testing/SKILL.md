@@ -457,6 +457,13 @@ Pattern:
 
 ### Capture
 
+`GET /api/screenshot` works on **every page** (app ≥1.0.44): editor canvas when the tab has an editor (`mode=auto`, default), otherwise the whole page. Options:
+- `mode=preview` (editor canvas only) · `mode=page` (the web page) · `mode=window&windowId=` (other app windows — list via `GET /api/screenshot/targets`)
+- `tabId=` any tab, including background tabs · `fullPage=1` whole scrolling document (pages that scroll inside an inner panel, e.g. `/content`, capture the viewport)
+- `format=jpeg&jpegQuality=80`, `maxWidth=1400` · `save=1` → `{path}` under `~/.skilltown-desktop/screenshots/` (keeps last 200; `inline=1` also returns base64)
+
+Simplest: `curl -s "$BASE/api/screenshot?save=1&maxWidth=1600" -H "$AUTH"` then view the returned `path`. Base64 variant:
+
 ```bash
 ART="$HOME/.skilltown-desktop/test-artifacts/$RUN_ID"
 mkdir -p "$ART"

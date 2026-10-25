@@ -158,3 +158,8 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/media/download" \
 
 - Web search and GitHub access are intentionally CLI-native rather than desktop bridge routes.
 - If `GET /api/capabilities` does not list a bridge route for a niche service, treat it as unavailable and report the missing route instead of guessing.
+
+
+## Screenshots of any page (`GET /api/screenshot`, app ≥1.0.44)
+
+Not editor-only: `mode=auto` (default) returns the editor canvas when the tab has an editor, else the whole page (meetings, webinars, offers, boards, admin…). `mode=preview|page|window`, `tabId=` (background tabs OK), `windowId=` (from `GET /api/screenshot/targets`), `fullPage=1`, `format=png|jpeg`, `jpegQuality=`, `maxWidth=`, `save=1` (→ `{path}` in `~/.skilltown-desktop/screenshots/`, `inline=1` to also get base64). For video-frame verification still prefer `query.previewFrameAt`.

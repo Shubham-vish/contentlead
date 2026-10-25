@@ -105,11 +105,27 @@ cl-content-style (voice)  →  cl-script-evaluator (craft polish)  →  cl-viral
 
 ---
 
+## ☎️ Calls Studio
+
+| Skill | Use it to |
+|-------|-----------|
+| **`cl-calls`** | [Calls router](cl-calls/SKILL.md) with grouped workflows and [exact command schemas/examples](cl-calls/commands.md): recipients/context/imports, agents/tests, AI/recorded/manual campaigns, audio/script previews/personalization, results, analytics/settings/automation/retention/recovery. No inferred consent; manual Call next/skip, microphone/live voice and listening approval remain human UI handoffs. |
+
+---
+
 ## 🌐 Creator Apps (static app hosting)
 
 | Skill | Use it to |
 |-------|-----------|
 | **`cl-apps`** | Upload, host and manage a creator's **Creator Apps** — static sites / SPAs served at `contentlead.in/apps/<slug>`. Owns the whole catalogue: upload/replace a local folder or `.zip` (`/api/bridge/apps/upload-local`), list/inspect, rename + set slug + set entry file, publish/unpublish, get public URL, get an owner-only styled draft **preview**, create/revoke an unlisted **share link**, and delete — all via the desktop bridge `apps.*` command bus. NOT the desktop video editor (`cl-editor`), NOT sales pages (`cl-offers`), NOT the bio page (`cl-creator-biopage`), NOT the docs hub (`cl-creator-hub`). |
+
+---
+
+## 🎥 Meetings & Webinars (live, pre-recorded, repeat series)
+
+| Skill | Use it to |
+|-------|-----------|
+| **`cl-webinars`** | Run a creator's **meetings and webinars** end-to-end from an agent via the desktop bridge `webinar.*` command bus (`/api/bridge/webinars/commands/*` → `/api/sessions/commands/*`): create/schedule/update/cancel/duplicate, start/end, **pre-recorded (broadcast) webinars** (upload a local video with `/api/bridge/webinars/upload-video`, reuse a past recording, waiting-screen image + music), **test runs**, repeat series on picked dates, branded emails, registrations/invites, polls/Q&A/chat/CTA moderation, recordings/replay, attendance + funnel analytics. Commands reuse the exact web route handlers (same auth, quotas, rate limits). NOT the video editor (`cl-editor`), NOT podcast clipping (`cl-production`). |
 
 ---
 
@@ -137,6 +153,7 @@ cl-content-style (voice)  →  cl-script-evaluator (craft polish)  →  cl-viral
 | Draw on a whiteboard / build a diagram, mind map, or slide deck | `cl-board` |
 | Add images / generate visuals | `cl-ai-media`, `cl-dialogue-broll` |
 | Clone a voice / TTS | `cl-voice` |
+| Create / schedule / run a webinar or meeting, pre-recorded or live | `cl-webinars` |
 | Split stems / clean audio | `cl-audio` |
 | Apply a visual style template | `cl-creator-styles` |
 | Build a custom animated scene | `cl-remotion` |
