@@ -3,6 +3,126 @@
 Generated from `lib/crm/commandContracts.ts`. The live manifest is authoritative.
 Examples are synthetic schema fixtures, not permission, ownership, consent, or approval.
 
+## crm.customers.get
+
+Read platform customer accounts, bounded subscriptions, entitlement access and explicitly linked CRM contacts. Platform administrators only; no account or access changes.
+
+Side effect: **no**.
+
+### Params schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "scope": {
+      "const": "platform"
+    },
+    "by": {
+      "type": "string",
+      "enum": [
+        "userId",
+        "email",
+        "phone"
+      ]
+    },
+    "value": {
+      "type": "string",
+      "maxLength": 254,
+      "minLength": 1
+    }
+  },
+  "required": [
+    "scope",
+    "by",
+    "value"
+  ],
+  "additionalProperties": false
+}
+```
+
+### Example request
+
+```json
+{
+  "params": {
+    "scope": "platform",
+    "by": "email",
+    "value": "synthetic@example.test"
+  }
+}
+```
+## crm.payments.list
+
+Read cursor-paged Razorpay checkout payments filtered by customer, status and timestamps. Currency stays per row; no charging, refunds or cross-currency totals.
+
+Side effect: **no**.
+
+### Params schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "scope": {
+      "const": "platform"
+    },
+    "cursor": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 50
+    },
+    "customerUserId": {
+      "type": "string",
+      "maxLength": 191,
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "maxLength": 40,
+      "minLength": 1
+    },
+    "from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "to": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "scope"
+  ],
+  "additionalProperties": false
+}
+```
+
+### Example request
+
+```json
+{
+  "params": {
+    "scope": "platform",
+    "customerUserId": "synthetic-user",
+    "status": "paid",
+    "limit": 25
+  }
+}
+```
 ## crm.workspace.get
 
 Get CRM workspace counts, scope permissions, inbox eligibility, and source availability.
@@ -79,6 +199,14 @@ Side effect: **no**.
       "maxLength": 200,
       "default": ""
     },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "updated",
+        "created",
+        "name"
+      ]
+    },
     "status": {
       "type": "string",
       "enum": [
@@ -107,7 +235,9 @@ Side effect: **no**.
         "brand_outreach",
         "platform_user",
         "whatsapp_thread",
-        "tradingchat_thread"
+        "tradingchat_thread",
+        "deals_brand",
+        "deals_campaign"
       ]
     }
   },
@@ -452,7 +582,9 @@ Side effect: **no**.
         "brand_outreach",
         "platform_user",
         "whatsapp_thread",
-        "tradingchat_thread"
+        "tradingchat_thread",
+        "deals_brand",
+        "deals_campaign"
       ]
     },
     "parentId": {
@@ -519,7 +651,9 @@ Side effect: **no**.
               "brand_outreach",
               "platform_user",
               "whatsapp_thread",
-              "tradingchat_thread"
+              "tradingchat_thread",
+              "deals_brand",
+              "deals_campaign"
             ]
           },
           "sourceId": {
@@ -1136,7 +1270,7 @@ Side effect: **yes**.
 ```
 ## crm.opportunities.create
 
-Create a scoped opportunity linked to an existing scoped contact.
+Create a scoped opportunity linked to an existing scoped contact; won/lost stages require a closure reason.
 
 Side effect: **yes**.
 
@@ -1226,6 +1360,11 @@ Side effect: **yes**.
       ],
       "additionalProperties": false
     },
+    "closureReason": {
+      "type": "string",
+      "maxLength": 500,
+      "minLength": 3
+    },
     "acknowledged": {
       "const": true
     }
@@ -1258,7 +1397,7 @@ Side effect: **yes**.
 ```
 ## crm.opportunities.update
 
-Update a scoped opportunity using optimistic revision control.
+Update a scoped opportunity using optimistic revision control; won/lost moves require a closure reason.
 
 Side effect: **yes**.
 
@@ -1348,6 +1487,11 @@ Side effect: **yes**.
       "required": [],
       "additionalProperties": false
     },
+    "closureReason": {
+      "type": "string",
+      "maxLength": 500,
+      "minLength": 3
+    },
     "acknowledged": {
       "const": true
     }
@@ -1371,8 +1515,9 @@ Side effect: **yes**.
     "id": "00000000-0000-4000-8000-000000000002",
     "expectedRevision": 1,
     "data": {
-      "stage": "QUALIFIED"
-    }
+      "stage": "WON"
+    },
+    "closureReason": "Customer signed the annual plan."
   }
 }
 ```
@@ -1522,7 +1667,9 @@ Side effect: **yes**.
               "brand_outreach",
               "platform_user",
               "whatsapp_thread",
-              "tradingchat_thread"
+              "tradingchat_thread",
+              "deals_brand",
+              "deals_campaign"
             ]
           },
           "sourceId": {

@@ -1,7 +1,7 @@
 ---
 name: cl-crm
-description: Use the authenticated ContentLead Desktop CRM bridge for the exact 19 owner/platform CRM v1 commands: workspace, contacts, tasks, opportunities, notes, source browse/preview/apply/unlink. Explicit approval is required for writes. WhatsApp/TradingChat replies, Calls, billing, consent and account actions remain in their existing tools/UI.
-tags: crm, contacts, tasks, followups, opportunities, notes, sources, desktop bridge
+description: Use the authenticated ContentLead Desktop CRM bridge for the exact 21 owner/platform CRM v1 commands, including platform-admin read-only customers and payments. Explicit approval is required for CRM writes. Replies, Calls, charges, consent and account/access changes remain in existing tools/UI.
+tags: crm, contacts, tasks, followups, opportunities, notes, sources, customers, payments, deals, desktop bridge
 ---
 
 # ContentLead CRM — scoped relationship work, not channel automation
@@ -35,8 +35,8 @@ def crm(name, **params):
     return result["data"]
 ```
 
-The manifest must report namespace `crm`, version `1`, and exactly **19
-commands**: 8 reads and 11 writes. Use its exact JSON schemas. A source checkout,
+The manifest must report namespace `crm`, version `1`, and exactly **21
+commands**: 10 reads and 11 writes. Use its exact JSON schemas. A source checkout,
 skill listing, or packaged file is not proof the installed Desktop and website
 release support the handlers. Treat 404 as release mismatch, 503
 `MIGRATION_REQUIRED` as unapplied persistence, and report source, packaged,
@@ -49,13 +49,15 @@ installed, and deployed status separately.
 | Contact search/detail/create/update/archive; tasks/follow-ups | [contacts-tasks.md](contacts-tasks.md) |
 | Opportunities, stages, amounts, notes and activity | [opportunities-notes.md](opportunities-notes.md) |
 | Authorized source browse, preview, import/link and unlink | [sources.md](sources.md) |
+| Platform-admin customer/access summaries and checkout payment reads | [customers-payments.md](customers-payments.md) |
 | Scope, consent, revisions, errors, UI-only/excluded capabilities | [boundaries.md](boundaries.md) |
 | Every exact schema and a validated synthetic request | [commands.md](commands.md) |
 
 ## Non-negotiable safety
 
-- Identity comes only from the signed-in session. Never send owner/user/actor IDs
-  or `scopeKey`. Owner and platform are separate workspaces; platform requires
+- Identity comes only from the signed-in session. Never send owner/actor IDs
+  or `scopeKey`. A customer lookup value or `customerUserId` is a read filter,
+  never the executing identity. Owner and platform are separate workspaces; platform requires
   current ADMIN authority and is never an arbitrary owner selector.
 - Every write requires `acknowledged:true` **after explicit user approval**.
   This is an execution acknowledgement, not magic permission, consent, recording

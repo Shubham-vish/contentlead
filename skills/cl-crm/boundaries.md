@@ -5,6 +5,8 @@
 Workspace/count/source availability; contact list/detail/create/update/archive;
 task list/create/update; opportunity list/create/update/archive; activity list;
 private notes; authorized source list/preview/apply/unlink.
+Platform-admin `customers.get` and `payments.list` are strictly read-only;
+see [customers-payments.md](customers-payments.md) for their bounded coverage.
 
 ## Existing UI/tools remain authoritative
 
@@ -14,7 +16,7 @@ private notes; authorized source list/preview/apply/unlink.
   approval in Calls Studio / `cl-calls`.
 - Deals outreach/payouts, offers/orders/subscriptions, billing, account access,
   support account linking, consent and entitlements in their existing tools.
-- No CRM v1 message, call, broadcast, billing, automation-send or channel-reply
+- No CRM v1 message, call, broadcast, billing-mutation, automation-send or channel-reply
   alias exists. Never invent one.
 
 ## Scope and source truth

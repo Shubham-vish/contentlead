@@ -5,6 +5,10 @@
 Resolve the scoped contact first, then create/update/archive with explicit user
 approval. Allowed stages are `PROSPECT`, `QUALIFIED`, `PROPOSAL`, `WON`, `LOST`.
 
+- Create with stage `WON`/`LOST`, or update to either stage, requires a top-level
+  `closureReason` (3–500 trimmed characters). The reason is recorded as a private
+  closure activity; do not send it for other stages. Reopened opportunities do
+  not show the historical closure reason as their current reason.
 - Money uses integer `amountMinor` plus three-letter uppercase `currency`.
 - Reload one selected opportunity with
   `crm.opportunities.list {id,archived,limit:1}`, setting `archived` to match

@@ -28,3 +28,17 @@ subscription, order, support link, entitlement or consent record.
 Available v1 kinds are listed in [commands.md](commands.md). Platform user and
 support-thread sources are platform-only. Unavailable/deleted/revoked sources
 must remain visibly unavailable; a persisted edge is not continuing authority.
+
+## Deals references
+
+`deals_brand` and `deals_campaign` use the existing source-edge storage (no
+new database enum or migration). They require platform scope plus the existing
+current Deals-admin gate. Browse, preview and explicitly approve apply exactly
+as above; all platform applies require a reason.
+
+Links belong to the contact, so its opportunity cards show the same linked
+brands/campaigns with links to `/deals/admin/brands` or
+`/deals/admin/campaigns` (the corresponding admin lists, not entity detail pages).
+Names and links are reauthorized on refresh; revocation removes projections.
+This does not create or attach a specific collaboration, update a campaign,
+unlock contacts, reserve budget or move escrow/payout money.
