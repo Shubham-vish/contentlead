@@ -113,6 +113,14 @@ cl-content-style (voice)  →  cl-script-evaluator (craft polish)  →  cl-viral
 
 ---
 
+## 🤝 CRM
+
+| Skill | Use it to |
+|-------|-----------|
+| **`cl-crm`** | Use the scoped CRM v1 through the authenticated Desktop bridge: contacts, follow-up tasks, opportunities, notes/activity, and explicit source browse → preview → apply/unlink. Exact 19-command schemas/examples are in [commands.md](cl-crm/commands.md). Owner/platform isolation, revisions and approval are strict; channel replies, Calls, billing, consent and support customer actions remain in their existing tools/UI. |
+
+---
+
 ## 🌐 Creator Apps (static app hosting)
 
 | Skill | Use it to |
