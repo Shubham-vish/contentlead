@@ -61,6 +61,7 @@ cl-content-style (voice)  →  cl-script-evaluator (craft polish)  →  cl-viral
 |-------|-----------|
 | **`cl-content-inspiration`** | Research trends; scrape/analyze competitor content across IG, YouTube, X, Reddit; transcribe/download source videos. Feeds ideas + transcripts into scripting. |
 | **`cl-ad-intelligence`** | Search & analyze competitor ads from the Meta Ad Library; track brands; save ads to folders. |
+| **`cl-meta-ads`** | Owned Meta Ads read-only Insights, human-approved OAuth, account/dataset selection, sync/jobs, unified owner-scoped offer tracking and verified seller-ledger/delivery diagnostics. Optional typed custom interactions and central all/multi-offer event journal; [workflow](cl-meta-ads/events-and-custom.md). No campaign, budget, pause or spend commands. [Schemas and examples](cl-meta-ads/commands.md). |
 
 ---
 

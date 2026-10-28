@@ -1036,7 +1036,9 @@ Returns: {entity,items,nextCursor:string|null}; 400 invalid filters/range; inval
 | `entity` | required | "contacts" / "campaigns" / "assets" / "agents" / "attempts" / "recordings" / "automations" |
 | `search` | optional | string; maxLength=200; default="" |
 | `limit` | optional | integer; minimum=1; maximum=100; default=50 |
-| `cursor` | optional | string; minLength=1; maxLength=2048 OR null |
+| `cursor` | optional | string; minLength=1; maxLength=4096 OR null |
+| `sort` | optional | string; minLength=1; maxLength=40 |
+| `direction` | optional | "asc" / "desc" |
 | `filters` | optional | map<string, unknown>; default={} |
 
 Example request (synthetic; do not execute as authorization):

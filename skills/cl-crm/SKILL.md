@@ -1,6 +1,6 @@
 ---
 name: cl-crm
-description: Use the authenticated ContentLead Desktop CRM bridge for the exact 21 owner/platform CRM v1 commands, including platform-admin read-only customers and payments. Explicit approval is required for CRM writes. Replies, Calls, charges, consent and account/access changes remain in existing tools/UI.
+description: Use the authenticated ContentLead Desktop CRM bridge for the exact 23 owner/platform CRM commands, including owner customer relationships and platform-admin read-only customers and payments. Explicit approval is required for CRM writes. Replies, Calls, charges, consent and account/access changes remain in existing tools/UI.
 tags: crm, contacts, tasks, followups, opportunities, notes, sources, customers, payments, deals, desktop bridge
 ---
 
@@ -35,8 +35,8 @@ def crm(name, **params):
     return result["data"]
 ```
 
-The manifest must report namespace `crm`, version `1`, and exactly **21
-commands**: 10 reads and 11 writes. Use its exact JSON schemas. A source checkout,
+The manifest must report namespace `crm`, version `1`, and exactly **23
+commands**: 12 reads and 11 writes. Use its exact JSON schemas. A source checkout,
 skill listing, or packaged file is not proof the installed Desktop and website
 release support the handlers. Treat 404 as release mismatch, 503
 `MIGRATION_REQUIRED` as unapplied persistence, and report source, packaged,
@@ -49,7 +49,7 @@ installed, and deployed status separately.
 | Contact search/detail/create/update/archive; tasks/follow-ups | [contacts-tasks.md](contacts-tasks.md) |
 | Opportunities, stages, amounts, notes and activity | [opportunities-notes.md](opportunities-notes.md) |
 | Authorized source browse, preview, import/link and unlink | [sources.md](sources.md) |
-| Platform-admin customer/access summaries and checkout payment reads | [customers-payments.md](customers-payments.md) |
+| Owner customer relationships; separate platform-admin customer/access and payment reads | [customers-payments.md](customers-payments.md) |
 | Scope, consent, revisions, errors, UI-only/excluded capabilities | [boundaries.md](boundaries.md) |
 | Every exact schema and a validated synthetic request | [commands.md](commands.md) |
 

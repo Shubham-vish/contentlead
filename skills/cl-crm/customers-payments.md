@@ -1,6 +1,43 @@
-# Platform customer and payment reads
+# Owner relationships and separate platform reads
 
-Both commands require explicit `scope:"platform"` and a current platform ADMIN
+## My customers
+
+```python
+page = crm("crm.ownerCustomers.list", source="offer_order", limit=25)
+detail = crm("crm.ownerCustomers.get", id=page["items"][0]["id"])
+```
+
+These two read-only commands always use the signed-in owner's business. Scope
+defaults to `owner`; platform scope and caller-supplied actor/owner IDs are
+rejected. They do not require manual source imports. Sources are `offer_order`,
+`native_offer_order`, `offer_subscription`, `offer_lead`, `calling_contact`, and
+`crm_contact`. Native orders intentionally omit absent buyer snapshots rather
+than loading an unrelated global account profile.
+Distinct source relationships remain separate; matching email/phone never merges
+people or authorizes an account lookup. Pass the returned exact `id` to get;
+never guess a platform user ID.
+
+List filters: `search`, `source`, source-native `status`, owned `offerName`,
+`planId`, `campaignId`, and inclusive ISO `from`/`to`. Sort is `created` (newest),
+`createdAsc`, `name`, `nameDesc`, `status`, or `statusDesc`. Pagination limit is
+1–100, default 50. Use `nextCursor` unchanged with identical filters, limit and
+sort; reset it after changes. Filtering and sorting apply to the entire owner
+set, not just the current page. Plan filters exclude contacts without that plan.
+
+The list returns filtered `total` and `summary.relationships`, both covering all
+matching pages; filter options cover the owner's full authorized relationship set.
+Amounts are decimal strings in minor units, with explicit currency and
+`currencyExponent`; never sum unlike currencies. `paidVerified` describes stored
+historical payment evidence, not current access. Contact/lead status never proves
+payment. Detail includes only that source's owner-authorized offer financial
+records, buyer-provided contact fields, calling associations or CRM notes/tasks.
+It never includes global profiles, private chats, other creators' purchases,
+refund controls or account mutations. Source/storage errors are errors, not an
+empty successful list.
+
+## Platform customer and payment reads
+
+The following two commands require explicit `scope:"platform"` and a current platform ADMIN
 session, exactly like the CRM admin readers. Owner scope and DEALS_ADMIN alone
 are insufficient. Neither command mutates anything or accepts acknowledgement.
 

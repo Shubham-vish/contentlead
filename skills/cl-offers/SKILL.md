@@ -8,7 +8,9 @@ tags: offers, sales-pages, checkout, lead-magnets, coupons, offer-studio
 
 Control the ContentLead **Offer Studio** — the builder that ships full sales pages, checkout, thank-you, and buyer emails for any digital offer — from any AI agent.
 
-Unlike `cl-editor` (which talks to the desktop app), Offer Studio runs in the ContentLead web app at `contentlead.in`. Commands go to the user's authenticated session, not a local port.
+Offer Studio runs in the ContentLead web app at `contentlead.in`. Desktop agents
+use the local bridge, which forwards commands through the app's authenticated
+session; in-app agents may call the authenticated web route directly.
 
 ## 🚨 Startup protocol
 
@@ -16,7 +18,11 @@ The user must be:
 1. Signed in to `https://contentlead.in` in a browser, AND
 2. Have at least one offer created (or explicitly ask you to create one via `offer.create`).
 
-You do NOT read `~/.skilltown-desktop/api.json` for this skill. There is no local port. Commands target the user's session directly through the ContentLead app (agents integrated via the desktop bridge auto-pass session cookies).
+Desktop agents read fresh `~/.skilltown-desktop/api.json` without printing its
+token, check authenticated `/api/health` and `/api/app/auth`, then discover
+`GET /api/bridge/offer-studio/commands`. Use its local bearer and signed-in cookies;
+never collect provider keys. In-app calls use the existing authenticated web
+session directly. A mounted video editor is not required for Offer Studio.
 
 > **⚙️ If you run via the desktop bridge** (session cookies come from the app) **and it isn't running,** start it first — **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"` (see `cl-editor/infrastructure.md`). If instead you call `contentlead.in` directly with the user's browser session, no app start is needed — just ensure they're signed in.
 
@@ -28,7 +34,7 @@ POST /api/offer-studio/commands/offer.list
 
 Pick a target `offerName` before touching any of the surface commands below.
 
-## Command surface — one endpoint, ~78 commands
+## Command surface — discover the current manifest
 
 Every command is called the same way. `offerName` may sit at the top level OR inside `params` (both work; the server reads `body.params ?? {}`):
 
@@ -46,6 +52,36 @@ POST /api/offer-studio/ai
 ```
 
 Every command self-describes — `GET /api/offer-studio/commands/<name>` (or the manifest at `lib/offer-studio/commands/manifest.ts`) returns `summary`, `description`, `paramsSchema`, and `examples`. When unsure of a param name, read the manifest rather than guessing.
+
+## Unified offer tracking and owned Meta performance
+
+Use `cl-meta-ads` for the authenticated Desktop startup, human-approved OAuth,
+account/dataset selection, read-only Insights, and attribution limitations.
+The existing Desktop bridge transports offer commands at
+`/api/bridge/offer-studio/commands/<name>` using the current local bearer and the
+app's signed-in session. Discover its manifest first; do not collect keys.
+
+`offer.tracking.get`, `offer.tracking.update`, `offer.tracking.getLedger` and
+`offer.tracking.getDeliveryDiagnostics` use an immutable owned `offerId`, not
+the mutable offer slug. Exact generated schemas/examples: [tracking-commands.md](tracking-commands.md).
+Tracking updates never accept raw tokens or visitor consent. Business purchases
+come from verified server transitions, never a thank-you page view.
+Pixel/config readiness is not proof of live event receipt. No ad spend commands exist.
+Ledger totals cover recorded matching conversions only. Preserve its partial
+historical coverage, unknown instrumentation start and unperformed-backfill
+labels; never present recorded conversions as all historical revenue.
+Reporting OAuth grants do not establish CAPI readiness. Read separate
+`permissionReadiness.reports`/`.capi` flags; `report_only` and
+`credentialConfigured:false` require human permission setup before server
+delivery. Eligibility never substitutes for actual delivery verification.
+
+Optional custom success-action / section interaction configuration and central
+activity use the same canonical flow. See [tracking-workflows.md](tracking-workflows.md):
+`offer.tracking.events.list` and `offer.tracking.summaries.get` read all owned
+offers or up to 50 selected IDs; they never ingest/fake events. Custom CRUD uses
+`tracking.update`'s `events.custom` array: omitted preserves, array replaces,
+`[]` clears. Browser observations, Pixel attempts, Meta acceptance and business
+verification remain separate; correlated records are not extra revenue.
 
 ## The four surfaces
 
@@ -69,7 +105,7 @@ Every builder command takes `{ offerName, surface, ... }` and edits **only that 
 | `offer.list` | — | Returns every offer the user owns |
 | `offer.create` | `{ name, title?, template? }` | Creates a blank offer (auto-picks a starter kit if template is omitted) |
 | `offer.rename` | `{ offerName, newName }` | Renames slug; updates all links |
-| `offer.duplicate` | `{ offerName, newName? }` | Full clone incl. all four surfaces |
+| `offer.duplicate` | `{ offerName, slug? }` | Draft copy; tracking disabled and Pixel/account/dataset/credential references not inherited |
 
 ### Builder — sections (the daily-driver commands)
 

@@ -204,7 +204,10 @@ Side effect: **no**.
       "enum": [
         "updated",
         "created",
-        "name"
+        "name",
+        "updatedAsc",
+        "createdAsc",
+        "nameDesc"
       ]
     },
     "status": {
@@ -1789,6 +1792,142 @@ Side effect: **yes**.
     "contactId": "00000000-0000-4000-8000-000000000001",
     "linkId": "00000000-0000-4000-8000-000000000002",
     "expectedRevision": 1
+  }
+}
+```
+## crm.ownerCustomers.list
+
+List only the signed-in owner's offer buyers, free leads, calling contacts and CRM contacts. Filters and sorting cover all owner relationships; no imports, calls or account access changes.
+
+Side effect: **no**.
+
+### Params schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "search": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "offer_order",
+        "native_offer_order",
+        "offer_subscription",
+        "offer_lead",
+        "calling_contact",
+        "crm_contact"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32
+    },
+    "offerName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "planId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 191
+    },
+    "campaignId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 191
+    },
+    "from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "created",
+        "createdAsc",
+        "name",
+        "nameDesc",
+        "status",
+        "statusDesc"
+      ],
+      "default": "created"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 50
+    },
+    "cursor": {
+      "type": "string",
+      "maxLength": 2048
+    },
+    "scope": {
+      "const": "owner",
+      "default": "owner"
+    }
+  },
+  "required": [],
+  "additionalProperties": false
+}
+```
+
+### Example request
+
+```json
+{
+  "params": {
+    "source": "offer_order",
+    "search": "Synthetic",
+    "limit": 25
+  }
+}
+```
+## crm.ownerCustomers.get
+
+Read one exact owner-bound source relationship, its own offer financial records, calling associations or CRM notes. Never reads platform profiles or another creator's purchases.
+
+Side effect: **no**.
+
+### Params schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "maxLength": 191,
+      "pattern": "^(offer_order|native_offer_order|offer_subscription|offer_lead|calling_contact|crm_contact):[A-Za-z0-9_-]{1,150}$"
+    },
+    "scope": {
+      "const": "owner",
+      "default": "owner"
+    }
+  },
+  "required": [
+    "id"
+  ],
+  "additionalProperties": false
+}
+```
+
+### Example request
+
+```json
+{
+  "params": {
+    "id": "offer_order:synthetic-order"
   }
 }
 ```

@@ -195,6 +195,6 @@ GET /api/bridge/ads/media?url=<snapshot_url_of_top_ad>
 - **Always get config first** — `GET /api/bridge/ads/config` to verify API key is set
 - **Page IDs are more precise than keywords** — resolve brand → ID, then search by ID
 - **Video ads have richer analysis** — use `media_type=VIDEO` for richer insights
-- **Long-running ads are proven** — `durationDays > 30` = advertiser keeps spending = ad works
+- **Longevity is a heuristic only** — `durationDays > 30` suggests continued public activity, not proven spend, conversions, profitability or ROI. For the user's owned performance and verified offer ledger, use `cl-meta-ads`, not competitor-library observations.
 - **Save with tags** — makes retrieval easier later (`?tag=competitor`)
 - **Compare by platform** — `groupBy: "platform"` reveals FB vs IG strategy differences
