@@ -37,9 +37,18 @@ empty successful list.
 
 ## Platform customer and payment reads
 
-The following two commands require explicit `scope:"platform"` and a current platform ADMIN
+The customer/payment commands below require explicit `scope:"platform"` and a current platform ADMIN
 session, exactly like the CRM admin readers. Owner scope and DEALS_ADMIN alone
 are insufficient. Neither command mutates anything or accepts acknowledgement.
+
+`crm.customer.context` additionally reads existing platform CRM contacts, tasks,
+opportunities and notes for **exact persisted source edges**, using
+`{scope:"platform",sources:[{kind:"platform_user",sourceId:"<owned-context-id>"}]}`.
+Supported kinds are `platform_user`, `whatsapp_thread`, `tradingchat_thread`;
+1–12 bounded references. Each edge is reauthorized by the native domain service.
+It is a CRM context reader, not permission to read raw channel messages, link
+accounts, grant consent or change a subscription. An empty result is not proof
+that an unlinked person has no CRM history.
 
 ## Customers
 

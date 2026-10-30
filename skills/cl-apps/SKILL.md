@@ -24,7 +24,7 @@ https://contentlead.in/apps/<slug>
   - Max files per app: **800**
   - Max size per file: **25 MB**
   - Max total (decompressed) per app: **200 MB**
-  - Max `.zip` archive (or summed folder) size: **120 MB**
+  - Max compressed `.zip` archive: **120 MiB**; a folder upload uses the **200 MiB** total-file cap above (not the ZIP cap). All byte caps use 1024² bytes per MB in the UI.
 - **Junk auto-skipped:** `__MACOSX/`, `.DS_Store`, `Thumbs.db`. The bridge folder-walk additionally skips heavy dev dirs: `.git`, `node_modules`, `.next`, `.turbo`, `.cache`, `.vscode`, `.idea` — so you can point it at a project checkout and it uploads only the site.
 
 ### Lifecycle & visibility
@@ -135,7 +135,7 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/apps/commands/<commandName>" 
   -d '{"params":{ ... }}'
 ```
 
-Responses are `{ "ok": true, "data": {...} }` on success or `{ "ok": false, "error": "..." }` on failure. Owner-scoped — missing/non-owned apps return `App not found.`
+Command responses are `{ "ok": true, "command": "apps.list", "result": { "ok": true, "data": {...}, "message": "..." } }`. Read the table's return values from **`result.data`**, not top-level `data`. Failures have `ok:false`, `error` and optionally `validationErrors`; a command execution failure can instead carry `result.error`. Upload and analytics responses are plain REST JSON, not this envelope. Owner-scoped — missing/non-owned apps return `App not found.`
 
 | Command | Params | Returns |
 |---|---|---|
@@ -148,7 +148,7 @@ Responses are `{ "ok": true, "data": {...} }` on success or `{ "ok": false, "err
 | `apps.setRequireLogin` | `{ appId, requireLogin }` | `{ app }` — when `true`, viewers must sign in to open the app's pages (owner then sees who viewed it in analytics) |
 | `apps.getPublicUrl` | `{ appId }` | `{ url: "https://contentlead.in/apps/<slug>" }` |
 | `apps.getPreviewUrl` | `{ appId }` | `{ previewUrl }` — styled **owner-only** preview of a DRAFT |
-| `apps.createShareLink` | `{ appId }` | `{ shareUrl, shareId }` — unlisted "anyone with the link" URL |
+| `apps.createShareLink` | `{ appId }` | `{ shareUrl, shareId }` — unlisted URL; each call **rotates** the link, invalidating the previous one |
 | `apps.revokeShareLink` | `{ appId }` | revokes the share link |
 | `apps.delete` | `{ appId }` | `{ ok: true }` — removes metadata + best-effort blob cleanup (only when explicitly asked) |
 
@@ -194,3 +194,6 @@ Responses are `{ "ok": true, "data": {...} }` on success or `{ "ok": false, "err
 - For SPAs, ensure the entry is the built `index.html` and that asset paths are relative (so `/apps/<slug>/...` resolves).
 - Prefer **`appId` replace** over delete+recreate when iterating — it preserves the slug and any share link.
 - Only `apps.delete` when the user explicitly asks; it's destructive.
+- Confirm publication, unlisted sharing, or replacing a published app before exposing content. The bridge does not add a confirmation dialog.
+- Upload only the intended build output, not a checkout: the folder walker skips dev directories but does **not** make an allowlist of public files or exclude all credentials. Inspect the file set for `.env`, keys, source maps and personal data first. Require-login gates HTML navigation, not individual assets; unlisted links are bearer capabilities, not private storage.
+- On timeouts or uncertain responses, inspect `apps.list`/`apps.get` before retrying uploads or writes; there is no general idempotency key. In particular, never blindly retry `apps.createShareLink`.

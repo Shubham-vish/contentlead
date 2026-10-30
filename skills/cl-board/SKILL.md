@@ -6,7 +6,7 @@ tags: whiteboard, boards, diagrams, mind-maps, flowcharts, slide-decks
 
 # ContentLead Boards — AI Bridge
 
-> **⚙️ Is the ContentLead app running?** These calls need `~/.skilltown-desktop/api.json`. If it is missing, the desktop app is not running — start it, then wait ~30s for the file: **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`. Full OS-aware detect/start/poll (Linux + dev too): see `cl-editor/infrastructure.md` → "Ensure the ContentLead desktop app is running". Only ask the user if it still does not come up.
+> **Connection first:** discovery may be missing or stale; read it privately and require an authenticated, bounded loopback health response. Only launch the app when the task permits it. Never start/reload it, change origins or close another person's tabs during a source-only audit. See `cl-editor/infrastructure.md`.
 
 Companion skill to `cl-editor`. Same discovery file (`~/.skilltown-desktop/api.json`), same `POST /api/execute` endpoint, same auth token. The difference is the **tab** you target and the **command namespace**.
 
@@ -65,7 +65,25 @@ curl -s -X POST http://127.0.0.1:$PORT/api/tabs/new \
 
 The bridge lives in `app/board/[boardId]/context/BoardAgentBridge.tsx`. Readiness alone is not proof that commands respond: require a successful `board.query.info` before editing. On timeout, inspect the target tab and authentication; do not blindly repeat mutations or reload unsaved work.
 
+On updated renderers, include `params.expectedBoardId` equal to the returned
+`boardId` on every subsequent command, alongside the explicit `tabId`.
+`expectedContentId` is also accepted as a board-ID assertion; if both are sent,
+both must match. Invalid/stale assertions fail before handlers. Batch child
+assertions are all validated before its first mutation. These are assertions,
+not a way to select or load another board. Legacy calls without assertions stay
+compatible but do not protect against a tab navigating to a different board.
+Image insertion rechecks the board after its remote probe; saving checks again
+after waiting for uploads. Save/title responses include `boardId` and
+`liveBoardUpdated`: a completed old-board server write does not mark a newly
+mounted board clean or change its title. `liveBoardUpdated:false` is not
+permission to retry a successful server write.
+
 ## Command Namespaces
+
+Read `native-artifacts-and-spreadsheets.md` for source-defined SVG/PDF/editable
+PPTX artifacts, animated GIF progress/cancel and XLSX/XLS/CSV sheet-selection
+imports. Require the exact names from `board.query.commands` **and** the
+Desktop catalog; these additions are not proof an older app is updated.
 
 | Namespace | What it does | Undo-logged? |
 |---|---|---|
@@ -75,6 +93,7 @@ The bridge lives in `app/board/[boardId]/context/BoardAgentBridge.tsx`. Readines
 | `board.addNode`, `board.editNode`, `board.deleteNodes`, `board.moveNode` | Object CRUD via `BoardActionExecutor` | Yes |
 | `board.deleteRegion` | Bounded-box eraser with exact bbox math + `dryRun` | Yes |
 | `board.addImage` | Fetch remote image URL, auto-probe size, insert scaled | Yes |
+| `board.importPdf.prepare/start/status/retry/apply/cancel` | Shared native PDF jobs: explicit selected pages → bounded render/upload → reviewed durable placement | Apply only (one entry) |
 | `board.addConnector`, `board.editConnector` | Connectors between objects | Yes |
 | `board.addMindmapChild`, `board.mindmap.layout` | Create children with shared mindmap styling; reflow a subtree | Yes |
 | `board.mindmap.expand`, `board.mindmap.collapse` | UI-equivalent folding: `scope: "step"` (default) or `"subtree"` | Yes, when changed |
@@ -96,6 +115,9 @@ The bridge lives in `app/board/[boardId]/context/BoardAgentBridge.tsx`. Readines
 | `board.screenshot` | Capture a world region (or `ids` bbox) as base64 PNG/JPEG. Auto hides overlays, restores viewport & panels. | No |
 | `board.screenshot.multi` | Sequential capture of many regions with one hide/restore cycle. Returns `{ shots: [...] }`. | No |
 | `board.exportPng` | High-quality offscreen PNG render (`region` OR `ids`). Does NOT move viewport or mutate DOM state persistently. | No |
+| `board.exportSvg`, `board.exportPdf`, `board.exportPptx` | Native export-panel artifacts; inspect fidelity warnings, returned base64 and MIME | No |
+| `board.exportGif.start/status/cancel` | Native GIF job, progress and cooperative cancellation; completed status returns actual bytes | No |
+| `board.importSpreadsheet.prepare/apply/discard` | Bounded XLSX/XLS/CSV parsing, reviewed sheet manifest and shared native table placement | Apply only |
 | `board.checkpoint`, `board.restoreCheckpoint`, `board.query.checkpoints`, `board.deleteCheckpoint` | Named bookmarks over the undo stack. Restore = `undo()` loop until depth matches. | Special |
 | `board.defineStyle`, `board.deleteStyle`, `board.query.styles` | Session-scoped named style presets. Reference via `styleId` on any command. | No (session-scoped, not persisted) |
 | `board.addSection` | Titled frame that auto-lays out its children (stack / row / grid) — one atomic undo entry. | Yes |
@@ -118,6 +140,7 @@ Full parameter reference: `queries.md`, `actions.md`, `viewport-and-io.md` in th
 | Staged mindmap reveal, full-branch folding, moving the add button, branch styling | `actions` (section "Mindmap / collapsible trees") |
 | Search folded content and reveal a result | `queries` (`query` filter, then `board.revealObject`) |
 | Boards library list/search/sort/thumbnail APIs | `viewport-and-io` (section "Boards library") |
+| Import selected PDF pages, recover failed uploads, cancel or apply durable pages | `viewport-and-io` (section "PDF import — shared native jobs") |
 
 ## ⚠️ Multi-tab targeting
 
@@ -140,7 +163,9 @@ Updated Desktop health marks the video-only scene check `not_applicable` with re
 
 ## Verification pattern (use after every mutation)
 
-Board mutations are synchronous — the response you get back reflects the final state. But for peace of mind:
+Ordinary board mutations are synchronous. PDF `prepare`/`start`/`retry` return
+job snapshots instead: poll `board.importPdf.status`, then review/apply and save;
+command acceptance is not completed upload or persistence. For ordinary mutations:
 
 ```bash
 # 1. Save last snapshot version

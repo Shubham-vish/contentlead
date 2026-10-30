@@ -65,6 +65,8 @@ Notes:
 - `speed`: server clamps to 0.5-2.0 (`1.0` = normal).
 - `text` must be **≤ 5000 characters** per generate call.
 - Cloning input accepts `.wav .mp3 .m4a .flac .aac .ogg/.opus` (mime auto-inferred).
+- Local upload uses `/api/upload-blob`, whose server limit is **10 MiB** per file. Desktop `/upload` and `/upload-and-clone` reject larger files before reading/uploading bytes (`400 file_too_large`). Trim/compress the approved reference first.
+- Only clone the user's own voice or a voice they have permission to reproduce. Uploading sends the recording to hosted storage and cloning sends it to the provider; get approval before that disclosure, not just before deletion.
 - `audio_url` for clone must be **publicly reachable** — upload local files first.
 - Supply `voice_name` when cloning so the UI shows a meaningful name rather than a raw provider ID.
 - Writes notify open same-origin Voice Lab panels; history/voice lists also refresh on focus. No timeline insertion happens automatically.

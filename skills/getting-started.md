@@ -10,17 +10,25 @@ Use this skill first. It shows how to discover the local API, authenticate, insp
 
 ## Discovery
 
-SkillTown Desktop writes connection details to `~/.skilltown-desktop/api.json` on startup. Always read it fresh because the port and token change per session.
+SkillTown Desktop writes connection details to `~/.skilltown-desktop/api.json` on startup. Always read it fresh: the token regenerates on each API-server start, while the preferred port may be reused.
+
+Read discovery into variables without printing it or enabling shell tracing:
 
 ```bash
-cat ~/.skilltown-desktop/api.json
+API=$(cat ~/.skilltown-desktop/api.json)
+PORT=$(printf '%s' "$API" | python3 -c "import sys,json; print(json.load(sys.stdin)['port'])")
+TOKEN=$(printf '%s' "$API" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+curl --connect-timeout 2 --max-time 5 -sS "http://127.0.0.1:$PORT/api/health" \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
-Expected shape (v3):
+File existence is not liveness; on refusal/401 re-read it once, then report unavailable runtime. Only launch/reload/switch the app when the task allows it. Source-only audits use source and isolated mocks, not app/cloud requests.
+
+Expected shape (v4, synthetic values):
 
 ```json
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "port": 3847,
   "pid": 12345,
   "token": "64-char-hex-token",
@@ -30,6 +38,7 @@ Expected shape (v3):
   "mediaServerPort": 3848,
   "contentId": "current-project-id",
   "editorReady": true,
+  "tabs": [{"tabId":"tab-example","contentId":"current-project-id","active":true,"editorReady":true}],
   "startedAt": "2025-01-15T10:30:00.000Z"
 }
 ```
@@ -42,6 +51,9 @@ Expected shape (v3):
 - `GET /api/info` does **not** require auth.
 - All other endpoints require `Authorization: Bearer <token>`.
 - Commands are JSON bodies with top-level `type` and `params`.
+- Call `GET /api/tabs`, then include the intended top-level `tabId` in every editor command and supported project/diagnostic route. Multi-tab ambiguity is rejected with HTTP 409. Do not close other users' tabs.
+- `/api/capabilities` is the installed Desktop's static catalog, not proof the loaded renderer supports every command. `/api/skills` serves docs; local canonical files can be newer than installed handlers. See `cl-editor/infrastructure.md` for packaging/provenance and partial-discovery behavior.
+- `/api/bridge/*` forwards with the signed-in web session to server routes; local bearer auth and web login are separate. Domain manifests/schema validation belong to their web command surface, not the editor catalog.
 
 ## API Endpoints
 

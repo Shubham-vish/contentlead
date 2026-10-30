@@ -1,11 +1,17 @@
 # Queries and State Reading
 
+Before editing, use `query.getCapabilities` and `query.getProjectReadiness` with
+an explicit tab and `params.expectedContentId`. See
+[workflow-readiness.md](workflow-readiness.md) for the actual hydration/save
+contract, bounded observation, unsupported-command handling and durable handoff.
+
 Use these read-only commands to inspect the timeline, check item properties, and verify editor state.
 
 ## ⚠️ State vs Discovery
 - If you need to know **how to connect** or if the editor is ready, see `SKILL`.
 - If you need a **list of available commands**, use `SKILL`.
-- The commands below are for inspecting **the content inside the editor**.
+- Most commands below inspect **content inside the editor**; the two readiness
+  queries above additionally expose the actual renderer execution contract.
 
 ## Core Queries
 

@@ -10,6 +10,11 @@ tags: testing, qa, bridge, contract, state, visual, workflow, screenshots, diagn
 
 This skill turns the AI agent into the **test runner, assertion engine, and visual judge**.
 
+This is the live, disposable-content protocol. A source-only audit must instead
+use isolated mocked/unit/static checks and report live/visual/render coverage as
+unverified; do not start an app, create content or call paid providers when those
+actions are prohibited by the task.
+
 - No external LLM APIs
 - No vitest / jest / npm test runner
 - No generated harness required
@@ -433,11 +438,14 @@ Purpose: verify user-visible correctness that JSON alone cannot prove.
 
 Pattern:
 
-1. seek to target time
-2. capture screenshot
-3. decode PNG to file
-4. inspect image visually
-5. score pass/fail against a fixed rubric
+1. call `query.previewFrameAt` with target `timeMs` and explicit `tabId`
+2. require `stabilized:true` and an image; timeout/captureSkipped is not a pass
+3. decode the returned image to a file
+4. inspect it visually against the fixed rubric
+5. use `/api/screenshot?tabId=...` for page/panel UI, not timed video evidence
+
+Do not treat `editor.seekTo` followed immediately by a screenshot as verified
+video: the player can still show the previous source frame.
 
 ## Workflow tests
 

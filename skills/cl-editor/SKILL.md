@@ -6,33 +6,43 @@ tags: video-editor, desktop-bridge, timeline, tracks, media, rendering
 
 # ContentLead Editor — AI Master Router
 
-> **⚙️ Is the app running?** If `~/.skilltown-desktop/api.json` is missing, start the desktop app before any bridge call — **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`, then wait ~30s for the file. Full OS-aware detect/start/poll (Linux + dev): see `infrastructure.md` → "Ensure the ContentLead desktop app is running".
+> **Connection first:** a discovery file is not proof the app is running. Read it without printing its token, then make an authenticated, bounded loopback health request. If unavailable, report that state; only launch the app when the task permits it. Never start, reload, switch origins, or close somebody else's tabs during a source-only audit. See `infrastructure.md`.
 
 ContentLead is a desktop video editor (Electron + Next.js) with a local HTTP API that lets AI agents control the entire editing workflow.
 
 **This is a router document.** Do not guess command parameters from this file. Use the skill table below to load the specific, detailed skill document for the task you are trying to accomplish.
 
+For exact native freeze frames and mounted teleprompter transport, read
+`workflow-completion.md`. Mounted player/dashboard/studio controllers require
+matching Desktop non-timeline readiness support; source documentation alone
+does not establish installation. Do not send project restore/save to those tabs.
+
 ## Mandatory Startup Protocol
 
 Every session must execute these steps before any editing commands.
 
-1. **Read API info:** `cat ~/.skilltown-desktop/api.json` (extract port and token — port changes on every app restart!)
+1. **Read API info privately:** extract `port` and `token` from `~/.skilltown-desktop/api.json` into variables, without printing the file/token. Re-read after connection refusal or HTTP 401; discovery can be stale.
 2. **Health check:** `curl -s http://127.0.0.1:$PORT/api/health -H "Authorization: Bearer $TOKEN"` (note: `Bearer ` prefix REQUIRED)
-3. **Diagnostics:** `curl -s "http://127.0.0.1:$PORT/api/diagnostics?full=true" -H "Authorization: Bearer $TOKEN"`
-4. **⚠️ Check tabs FIRST:** `curl -s http://127.0.0.1:$PORT/api/tabs -H "Authorization: Bearer $TOKEN"` — if MORE THAN ONE tab is open, EVERY `/api/execute` call MUST include an explicit `"tabId": "..."` in the body OR you will silently target the wrong session (someone else's editor). Either close unused tabs (`POST /api/tabs/<id>/close`) or pin the target tab and always include it. Load `multi-tab` skill for details.
+3. **⚠️ Check tabs FIRST:** `GET /api/tabs` with the same authorization. Pin the intended `tabId` on commands and supported diagnostic/project endpoints. Ambiguous multi-tab command requests are rejected (HTTP 409), not silently sent to the active editor. Do not close other tabs to bypass targeting. Load `multi-tab.md`.
+4. **Diagnostics:** authenticated `GET /api/diagnostics?full=true&tabId=<target-tab-id>`. A tab with no mounted editor cannot pass editor diagnostics; use the relevant business command manifest instead if the task is not an editing task.
 5. **Open Content:** 
-   - List: `curl -s http://127.0.0.1:$PORT/api/content/list`
-   - Open: `curl -s -X POST http://127.0.0.1:$PORT/api/navigate -d '{"url":"/content/<id>","waitForReady":true,"autoRestore":true}'`
-   - Multi-tab: `curl -s -X POST http://127.0.0.1:$PORT/api/tabs/<tabId>/navigate -d '{"url":"/content/<id>?view=editor","waitForReady":true,"autoRestore":true}'`
+   - List: authenticated `GET /api/content/list`.
+   - Navigate only when requested, using `POST /api/tabs/<tabId>/navigate` with JSON `{url:"/content/<id>?view=editor",waitForReady:true,autoRestore:true}` and authorization/content-type headers.
+   - Editor readiness is not a universal project-hydration guarantee. Verify the addressed project's state before mutations; do not rely on a fixed sleep.
 6. **Verify Canvas:** Check dimensions with `query.getCanvasSize` before adding items.
 7. **Load `overview` master index** when this router table lacks the row you need — it lists every sub-skill on disk with a one-line summary.
+
+`GET /api/capabilities?tabId=<id>` keeps the installed snapshot separate from the live `renderer.capabilities`: authoritative command names/contract version, hydration, `readyForWrites` and save state. `renderer.source:"unverified-legacy-renderer"` means live support is unknown. Use `query.getCapabilities` / `query.getProjectReadiness` and `params.expectedContentId`; native Desktop commands such as `editor.autoCaption` are listed separately, not falsely inferred missing from the web inventory. `GET /api/skills` serves docs/provenance/helper locations, not handler installation. `/api/bridge/*` uses the logged-in web session and server schemas. For whole-product routing load `cl-desktop`.
+
+Packaged skills contain documentation/reference data only. Workflows referencing helper scripts such as `orchestrator/run.mjs` require a separate canonical helper checkout and its dependencies; `/api/skills` does not install these pipelines.
 
 ## ⚠️ TRACK INTENT IS NOW REQUIRED on `editor.addImage` / `editor.addVideo` / `editor.addAudio` / `editor.addVideoSegments`
 
 To prevent track fragmentation (one item per new track), these commands now REJECT calls that don't explicitly declare track intent. Pass one of:
 
 - `"trackId": "<existing-track-id>"` — append to a specific track
-- `"trackName": "AI B-Roll"` — create a NEW track with this name (item goes into it)
+- `"createNewTrack": true, "trackName": "AI B-Roll"` — force a NEW owned track (`trackName` optional)
+- `"trackName": "AI B-Roll"` alone — legacy auto-placement hint; may reuse a compatible track, not a fresh-track guarantee
 - `"trackId": "__auto__"` — legacy auto-placement (only when you truly don't care)
 
 Error shape when missing:
@@ -43,7 +53,7 @@ Read `compatibleTracks` from the error result to pick an existing track ID.
 
 ## ⚠️ Error Monitoring — Built Into Every Command
 
-Every `/api/execute` response includes `editorHealth` and `warnings[]` automatically. If `editorHealth.newConsoleErrors > 0` or `hasNewErrors: true`, the `warnings[]` array contains the actual error messages — no extra API call needed. Only use `GET /api/console-errors` or `GET /api/diagnostics?full=true` when you need historical context or deeper inspection. Load the `infrastructure` skill for full error monitoring docs.
+Completed `/api/execute` execution paths include `editorHealth`; `warnings[]` is optional and appears when issues are found. Auth/body/tab/preflight rejections may lack health fields: check HTTP status and JSON errors first. If `editorHealth.newConsoleErrors > 0` or `hasNewErrors: true`, inspect warnings and targeted diagnostics. Load `infrastructure.md` for details.
 
 ## ⚠️ CRITICAL VISIBILITY RULE: Track Z-Order
 
@@ -76,6 +86,8 @@ Legacy `query.capturePreviewFrame` still exists but does NOT wait — only use w
 
 | Task | Skill to Load | Key Commands |
 |------|---------------|--------------|
+| Project hydration, command support, safe batching and save receipts | `workflow-readiness` | `query.getCapabilities`, `query.getProjectReadiness`, `params.expectedContentId`, `editor.save` |
+| Native detach/nesting, chapter markers, master bus, voice replacement, saved layouts and teleprompter library | `workflow-completion` | `editor.detachAudio`, `editor.combineItems`, `editor.uncombineItems`, `query.getMarkers`, `audio.setMasterBus`, `editor.applyVoiceReplacement`, `layout.saveCurrent`; saved teleprompter server bridge |
 | Text & Typography (manual) | `text-and-captions` | `editor.addText`, `editor.editItem` |
 | Video & Chroma-key | `video` | `editor.addVideo`, `editor.addVideoSegments`, `editor.setClipState` |
 | Images & Static Media | `images` | `editor.addImage`, `editor.replaceMedia`, `media.validate` |
@@ -89,11 +101,12 @@ Legacy `query.capturePreviewFrame` still exists but does NOT wait — only use w
 | Transcripts, Auto-Captions | `transcription-and-editing` | `content.applyCaptions`, `query.getTranscriptionStatus` |
 | Animations, Transitions, VFX | `animations-and-effects` | `editor.setAnimation`, `editor.addTransitionBetween`, `editor.addKeyframe` |
 | Full E2E Pipeline & Scenes | `storystudio-pipeline` | (Workflow guide, pipeline states) |
-| My Scenes (per-user saved library) | `my-scenes` | `scene.saveToMyScenes`, `scene.listMyScenes`, `scene.getMyScene`, `scene.addMyScene`, `scene.updateMyScene`, `scene.deleteMyScene` |
+| Saved Scenes (per-user library) | `legacy-command-reference` → saved-scene contracts | `scene.saveToMyScenes`, `scene.listMyScenes`, `scene.getMyScene`, `scene.addMyScene`, `scene.updateMyScene`, `scene.deleteMyScene` |
 | Project save/load, Snapshots | `project-and-export` | `editor.save`, `editor.createSnapshot`, `editor.restoreSnapshot`, `project.saveAutosave`, `project.getFullState`, `project.loadFullState` |
 | **🎬 Local video rendering (mp4 output, jobId, progress, cancel)** | `rendering` | `POST /api/render` (renderType `"design"`/`"custom"`/`"template"`), `GET /api/render/{jobId}` (progress + `outputPath`), `GET /api/render/jobs`, `POST /api/render/{jobId}/cancel`, `render.validate`, `render.verifyOutput`. **Output → `~/Movies/SkillTown/{jobId}.mp4`**. ⚠️ Do **NOT** use `editor.export` for programmatic renders — it returns `jobId: null` (see `project-and-export.md`). |
 | Read timeline/editor state | `queries-and-state` | `query.getTimelineItems`, `query.getTrackInfo`, `query.getEditorState` |
 | Debugging, Logs, Arch | `infrastructure` | `GET /api/diagnostics`, `GET /api/console-errors` |
+| Legacy / advanced command contracts | `legacy-command-reference` | Source-verified params, saved-state effects and approval boundaries for advanced/legacy editor commands |
 | Testing / QA | `cl-testing` | Agent-run contract, state, visual, and workflow tests |
 | Content metadata & bridge | `content-bridge` | `content.getDetails`, `content.updateMetadata`, `content.applyImage` |
 | Multi-tab collaboration | `multi-tab` | `GET /api/tabs`, `POST /api/tabs/new`, `tabId` on `/api/execute` |

@@ -60,9 +60,38 @@ Attest requires actual human evidence for PROVIDER/PROVIDER_RESULTS stage;
 never fabricate evidence or treat AI output as operator confirmation.
 
 UNKNOWN resolution needs exact attempt version, real provider evidence and
-**`RESOLVE UNKNOWN CALL`**. Existing PROVIDER_SID syntax supports Twilio CA
-identifiers; **do not invent Plivo SID recovery support**. Resolution never
-redials; NO_CALL_CREATED requires actual supporting evidence.
+**`RESOLVE UNKNOWN CALL`**, plus `acknowledged:true` on the command.
+`resolution:"PROVIDER_SID"` accepts the actual **Plivo call UUID** or **Twilio
+CA+32hex SID** in `providerSid`. The server chooses the provider from the saved
+attempt configuration/agent runtime, never an agent-supplied carrier.
+Plivo **request UUIDs are not call UUIDs**. Inspect the provider account's actual
+call record and preserve its exact call ID; do not manufacture or reformat IDs.
+The read-only inspection verifies owner, reservation, version, account/caller,
+destination and UTC dispatch window, then the write rechecks the locked
+reservation and rejects already-used/ambiguous identifiers.
+Attachment increments version but deliberately **keeps UNKNOWN**; follow with
+`calls.call.reconcile {id,acknowledged:true}` to obtain the provider outcome.
+Neither operation redials. NO_CALL_CREATED still requires actual supporting
+evidence and cannot clear an already attached/parent call.
+
+For an uncertain operation, first read `calls.operations.state`, then the
+specific attempt/recording/job using `calls.query.detail` or the matching
+recording/session reader. Preserve the same request/plan identity. A failed
+proxy request is not proof the provider did nothing; do not invoke a destructive
+resume, processing retry or a fresh call merely to clear the error.
+
+Example (substitute only the inspected owned attempt/call/evidence):
+
+```json
+{"params":{"attemptId":"00000000-0000-4000-8000-000000000001","expectedVersion":3,"resolution":"PROVIDER_SID","providerSid":"00000000-0000-4000-8000-000000000123","evidence":"Actual provider account log reference, caller, recipient and UTC dispatch window verified.","confirmation":"RESOLVE UNKNOWN CALL","acknowledged":true}}
+```
+
+Invoke `POST /api/bridge/calls/commands/calls.operations.attempt.resolve`.
+The example is synthetic, not proof or permission to operate on a real call.
+On409, refresh the exact attempt and renew approval; never fall back to another
+provider or NO_CALL_CREATED. On uncertainty, inspect saved state before any
+new write. Source support requires updated website/backend deployment; no live
+provider recovery is implied by installed skills.
 
 ## Coverage boundaries
 

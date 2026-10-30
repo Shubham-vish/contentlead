@@ -303,7 +303,7 @@ curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H 
 
 ## Scheduling
 
-> **Scheduling is Instagram-reels only.** There is no YouTube or LinkedIn scheduler — those platforms publish immediately (see `youtube.md`, `linkedin.md`). A scheduled reel is published automatically by a background worker that polls on a fixed dispatch interval, so the actual post can land up to a few minutes after the requested slot.
+> **This scheduling endpoint is Instagram-reels only.** YouTube instead accepts native scheduling fields on its publish endpoint (see `youtube.md`); LinkedIn has no scheduler (see `linkedin.md`). A scheduled Instagram reel is published automatically by a background worker that polls on a fixed dispatch interval, so the actual post can land up to a few minutes after the requested slot.
 
 ### `POST /api/bridge/instagram/publish/schedule` — Schedule reel
 

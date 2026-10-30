@@ -4,7 +4,7 @@ Generated from the executable Zod registry by `node scripts/sync-calls-reference
 
 ## Transport, errors and examples
 
-Discover `GET /api/bridge/calls/commands` → `{ok:true,data:{version,commands,queryFilters,limits,humanOnly,excluded}}`. Live manifest is authoritative; this checked reference is a release snapshot, not proof of installed/deployed support.
+Discover `GET /api/bridge/calls/commands` → `{ok:true,data:{version,commands,queryFilters,querySorts,limits,humanOnly,excluded}}`. Live manifest is authoritative; this checked reference is a release snapshot, not proof of installed/deployed support.
 
 Every command below uses **POST** `/api/bridge/calls/commands/<exact-name>` with `{params:{...}}`. Desktop forwards to **POST** `/api/calls/commands/<exact-name>`, then the authorized user API shown per command. Responses: `{ok:true,data:<result below>}` or HTTP error `{ok:false,error}`; transport may return `{error,message}`. No identity/provider secrets in parameters. Outer JSON limit: 300000 bytes. Existing downstream serialized-input limits also apply: backend text test/reset 64000 characters, other backend actions 16000; personalization 200000; operations 64000. Shared previews obey their field/table bounds. Bridge timeout 180 seconds; paid text test backend budget 150 seconds.
 
@@ -994,16 +994,16 @@ Example request (synthetic; do not execute as authorization):
 
 Workflow: [results-operations](results-operations.md). User API: **POST** `/api/calls/operations`, action `attempt.resolve`. **Mutation; explicit ACK required.**
 
-Resolve UNKNOWN only with real provider evidence/version and typed confirmation. Provider SID recovery is existing Twilio CA syntax, NOT invented Plivo support.
+Attach an inspected Plivo call UUID or Twilio CA SID to UNKNOWN using the persisted provider, real evidence/version, ACK and typed confirmation. Plivo request UUIDs are not call UUIDs. Provider/account/destination/caller/time/reservation checks remain; no redial. NO_CALL_CREATED requires genuine no-call evidence.
 
-Returns: {resolved:true,redialed:false,status}; 409 stale/unsupported state.
+Returns: {resolved:true,redialed:false,status}; attaching an ID keeps UNKNOWN and increments version; separately reconcile its outcome. 409 stale/foreign/ambiguous/already-used ID.
 
 | Parameter | Presence | Type / default / limits |
 |---|---|---|
 | `attemptId` | required | string; pattern=^[A-Za-z0-9_-]{1,191}$ |
 | `expectedVersion` | required | integer; exclusiveMinimum=0 |
 | `resolution` | required | "NO_CALL_CREATED" / "PROVIDER_SID" |
-| `providerSid` | optional | string; pattern=^CA[0-9a-fA-F]{32}$ |
+| `providerSid` | optional | string; pattern=^CA[0-9a-fA-F]{32}$ OR string; format=uuid |
 | `evidence` | required | string; minLength=20; maxLength=4000 |
 | `confirmation` | required | "RESOLVE UNKNOWN CALL" |
 | `acknowledged` | required | true |
@@ -1411,4 +1411,18 @@ Example request (synthetic; do not execute as authorization):
 |---|---|---|
 | `enabled` | optional | boolean |
 | `campaignId` | optional | string; format=uuid |
+
+## Entity-specific list sorts
+
+`sort` is optional; omit both sort/direction for the legacy native order. When sorting, use one field below and optional `direction:"asc"|"desc"` (native default asc). Require `sortVersion:1` in the list response before claiming server-wide sorting; an older processing backend can return legacy unsorted rows. Preserve entity/search/filters/sort/direction across cursor pages. Never sort only a capped snapshot and claim a complete sorted audience.
+
+| Entity | Allowed sort fields |
+|---|---|
+| contacts | `createdAt`, `updatedAt`, `name`, `phone`, `email`, `consentPurpose` |
+| campaigns | `createdAt`, `updatedAt`, `name`, `mode`, `status`, `scheduledAt` |
+| assets | `createdAt`, `updatedAt`, `name`, `durationMs`, `approvedAt` |
+| agents | `createdAt`, `updatedAt`, `name`, `language`, `runtime`, `revision` |
+| attempts | `createdAt`, `updatedAt`, `contactName`, `mode`, `status`, `durationSeconds`, `scheduledAt` |
+| recordings | `createdAt`, `updatedAt`, `captureStatus`, `storageStatus`, `transcriptionStatus`, `analysisStatus`, `durationSeconds` |
+| automations | `createdAt`, `updatedAt`, `name`, `eventType`, `enabled`, `lastPolledAt` |
 

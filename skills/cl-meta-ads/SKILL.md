@@ -47,6 +47,12 @@ POST /api/bridge/offer-studio/commands/<offer.tracking.command>
 The bridge executes same-origin fetch with the app's authenticated cookies.
 Identity always comes from that session, never an owner/user field in the body.
 Use exact generated command names. No arbitrary Graph HTTP proxy exists.
+The Meta manifest is `{ok:true,data:{namespace:"metaAds",version:1,commands:[...]}}`
+with **10** commands. Command success is `{ok:true,data}`. The Offer manifest
+instead is `{commands:[...]}` and includes **six** tracking commands; tracking
+command success is also `{ok:true,data}`, unlike ordinary Offer builder commands'
+`result.data`. Preserve HTTP errors and inspect `ok`; do not unwrap all business
+namespaces with one assumed envelope.
 
 ## Workflow router
 

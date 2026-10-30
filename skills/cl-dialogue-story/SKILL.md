@@ -6,6 +6,18 @@ tags: dialogue, story, storytelling, viral, reel, short, modi, rahul, two-charac
 
 # Dialogue-Story Pipeline — Viral Two-Character Storytelling Reels
 
+> **Current execution gate:** Load `cl-editor/workflow-readiness.md` before using
+> this playbook. `--plan` is now offline and does not read discovery/private
+> overlays or write the script. Real execution requires **both** `--tab-id` and
+> `--content-id`, validated against the renderer's current readiness before API
+> stages and editor writes. Composition additionally requires advertised
+> `contracts.trackPlacement.createNewTrack:true`; it creates owned role tracks,
+> then reuses only their actual IDs and applies native layer priorities.
+> Documentation delivery does not install scripts, voices or private assets.
+> Preserve paid-action/local-proposal approval and actual save/render receipts.
+> Historical manual media snippets below are payload fragments: add explicit
+> track intent and follow the current readiness guide, not implicit routing.
+
 > **⚙️ Is the ContentLead app running?** These calls need `~/.skilltown-desktop/api.json`. If it is missing, the desktop app is not running — start it, then wait ~30s for the file: **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`. Full OS-aware detect/start/poll (Linux + dev too): see `cl-editor/infrastructure.md` → "Ensure the ContentLead desktop app is running". Only ask the user if it still does not come up.
 
 Turn a **tiny dialogue script** into a finished vertical reel — with character voices,
@@ -101,7 +113,7 @@ already exists** — delete a field to re-run only that stage.
 | 1.5 | Context images | # images + word-timed windows + Tavily search + best-pick | `POST /api/bridge/ai/image/search` + ported prompts | `images[]` |
 | 2.0 | Caption/title | IG caption+hashtags + short hook-title overlay | `POST /api/bridge/ai/text/generate` (ported prompts) | `title_data`, `captioned_data` |
 | 3.0 | Compose | Bg + characters (L/R springs) + karaoke subs + timed images + title | `editor.*` via `/api/execute` + Remotion | timeline |
-| 4.0 | Export | Render + return file/URL | `editor.export` | `final_video` |
+| handoff | Review/save/export (not run automatically by the helper) | Preview + current cloud receipt + verified render artifact | `cl-editor/workflow-readiness.md`, Desktop `/api/render` | verified output path |
 
 Full details, resumability logic, and exact command payloads: **`pipeline-stages.md`**.
 
@@ -224,17 +236,32 @@ curl -s "$API/api/health" -H "$AUTH" | node -e 'let s="";process.stdin.on("data"
 ## Run it
 
 ```bash
-# The bundled example is PRE-WIRED: real Modi/Rahul Minimax voice IDs + character PNGs
-# (copied to orchestrator/assets/characters/). The only thing to supply is a gameplay
-# background clip (set background_video to any .mp4 under ~/Codes|~/Downloads|~/Movies,
-# or leave it to skip the bg layer).
-node orchestrator/run.mjs orchestrator/scripts/example.dialogue.json
+# The public example has placeholders; supply your own authorized voices/assets.
+# Choose the existing intended tab/content explicitly. Obtain paid-action approval first.
+node orchestrator/run.mjs orchestrator/scripts/example.dialogue.json \
+  --tab-id <chosen-tab> --content-id <chosen-content>
 
 # Author your own: copy the example, edit dialogues + characters, then run it.
 # Re-run only one stage: delete its output field from the JSON and run again.
-# Dry-run planning (no side effects): add --plan
+# Fully offline generic stage plan: no discovery/token/private overlay, no script writes.
 node orchestrator/run.mjs orchestrator/scripts/example.dialogue.json --plan
+
+# Isolated mocks only; no packages/providers/Desktop required.
+node --test orchestrator/lib/workflow.test.mjs
 ```
+
+The helper does not choose a tab/track from discovery, start/navigate/reload an
+app, or retry paid/failed writes automatically. A new named role track is created
+on its first insertion; subsequent inserts use the exact returned item's owner
+track. Native `editor.editTrack` priorities and `editor.reorderTracks` retain
+title → captions → context images → characters → background layering.
+
+Composition is **non-atomic and not idempotent**. On a partial failure, it stops
+without marking composition complete. Inspect the addressed timeline before any
+retry; deleting a stage flag is not a safe replay/rollback. This pass verifies
+source/mock contracts, not actual voices, caption timing/quality, output pixels,
+cloud save/reopen or installed/deployed renderer compatibility. The helper stops
+after composition; review/save/render via `cl-editor/workflow-readiness.md`.
 
 The orchestrator prints each stage, skips completed ones, and stops on the first
 failure with the exact endpoint + payload it tried (so it's debuggable). It drives:

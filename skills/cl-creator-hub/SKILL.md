@@ -26,6 +26,14 @@ Like `cl-creator-biopage` and `cl-offers` (and unlike `cl-editor`, which talks t
 
 The Hub is a **knowledge base**: nested folders + markdown docs. It is NOT typed sections, NOT a bio page, NOT checkout.
 
+Other catch-all creator knowledge surfaces are separate:
+[`legacy-courses.md`](legacy-courses.md) covers the real `/teacher/courses`
+course/chapter/resource/legacy-offer UI via fixed Desktop HTTP routes;
+[`pastes.md`](pastes.md) covers immediate **public** text/code sharing at `/p/*`.
+Neither uses `hub.*` commands or inherits Hub draft/privacy semantics.
+[`context-store.md`](context-store.md) documents the already-existing private
+Context Store HTTP surface, including its non-transactional batch outcomes.
+
 ---
 
 ## 2. Prerequisites
@@ -34,7 +42,15 @@ The user must be **signed in to `https://contentlead.in`** (agents via the deskt
 
 - Identity is always the **signed-in session** — you cannot pass a `userId`.
 - A **handle is NOT required** to author docs. Docs are scoped to the user id, so you can create/organize them before a handle is claimed — they just aren't publicly reachable until a handle exists. `hub.getState` reports `handle`/`publicUrl` (or a hint to claim one at `/hub`).
-- To claim a handle (makes the hub public): `POST /api/user/handle { "handle": "<lowercase-handle>" }` (same endpoint the storefront skill uses).
+- For a brand-new creator, preferably claim the first public handle **before**
+  authoring: `POST /api/bridge/user/handle`
+  `{ "handle":"chosen_creator", "displayName":"Approved name", "approved":true }`
+  on Desktop with its normal bearer. This narrow bridge reuses the native
+  `/api/user/handle` owner/reserved-name/conflict logic without needing an
+  existing storefront context. Confirm the exact public handle first;3–50
+  letters/digits/`-`/`_`, optional displayName≤100.409 is not permission to bypass
+  reserved/claimed names. No cookies need be extracted. See `cl-creator-biopage`
+  startup for the full first-handle recipe, then re-read `hub.getState`.
 
 > **⚙️ Desktop bridge:** if session cookies come from the ContentLead app and it isn't running, start it first — **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`. If you call `contentlead.in` directly with the user's browser session, no app start is needed.
 
@@ -115,7 +131,7 @@ POST /api/hub/commands/hub.getState   { "params": {} }
 
 **A. Stand up a docs hub from scratch**
 ```
-1. hub.getState {}                                           # confirm handle (else POST /api/user/handle)
+1. hub.getState {}                                           # confirm handle (else POST /api/bridge/user/handle)
 2. hub.folder.create { "name":"Getting Started" }            # → folderId G
 3. hub.folder.create { "name":"Guides" }                     # → folderId Gu
 4. hub.doc.create { "title":"Welcome", "content":"# Welcome\n...", "folderId":"<G>", "isPublished":true }
@@ -149,6 +165,10 @@ hub.doc.publish { "id":"<id>" }
 - **Publish before it's public** — a freshly created/generated doc is a draft until published.
 - **No handle → no public URL** — authoring still works; `publicUrl`/`url` come back `null` until a handle is claimed.
 - **`hub.doc.generate` uses the LLM** (same transport as Offer/Storefront Studio) — it writes markdown and saves a **draft**; review with `hub.getDoc`, then `hub.doc.publish`.
+- The service resolves a creator scope from the session: primary `CreatorHandle.id`
+  when present, otherwise the session user id. Never supply either scope yourself.
+  Authoring before handle claim is supported, but do not assume old docs automatically
+  migrated after a handle is claimed; re-read state before publishing/linking them.
 
 ---
 
@@ -162,16 +182,31 @@ hub.doc.publish { "id":"<id>" }
 
 ---
 
-## 9b. Desktop editor bridge (alternate transport)
+## 9b. Desktop bridge (same command bus)
 
-The primary surface above is the **web command bus** (`/api/hub/commands/*`). The **desktop editor** manages the same hub content over its local bridge instead:
+Terminal agents read `port` and `token` fresh from `~/.skilltown-desktop/api.json`
+and use `http://127.0.0.1:$PORT` with `Authorization: Bearer $TOKEN`.
+The bridge attaches the signed-in session; do not extract browser cookies.
 
-- Bridge routes: `/api/bridge/hub/:handle/*` → proxied to the web MCP endpoints `/api/mcp/learn/*`.
-- Batch CRUD + publish: `POST /api/bridge/hub/:handle/manage` (actions `create_folder`, `rename_folder`, `delete_folder`, `create_article`, `update_article`, `delete_article`, `move_article`, `publish`, `unpublish`; supports `operations[]` batches with `$0`/`$1` id back-references).
-- Edit a doc: `POST /api/bridge/hub/:handle/edit`. Read: `GET .../articles`, `.../articles/:id`, `.../search`, `.../categories`, `.../folders/:id`.
-- Same ownership rule: server resolves `handle`→owner `userId`; callers only touch their own content (IDOR-safe).
+```bash
+# GET /api/bridge/hub/commands → the web /api/hub/commands/manifest
+curl -s "http://127.0.0.1:$PORT/api/bridge/hub/commands" \
+  -H "Authorization: Bearer $TOKEN"
+# POST /api/bridge/hub/commands/<name> → /api/hub/commands/<name>
+curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/hub/commands/hub.getState" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"params":{}}'
+```
 
-Use this transport only from the ContentLead desktop app; from the web app or a signed-in agent, prefer `/api/hub/commands/*` above.
+The envelope is unchanged: read **`result.data`**. There is no `:handle` path
+parameter or `operations[]` batch here. The old `/api/bridge/hub/:handle/*`
+and `/api/bridge/learn/*` routes were removed; do not use their `$0` references.
+The session resolves ownership, even when no public handle exists.
+
+Confirm publishing/deletion and paid generation before calling them; the command
+bus does not add approval dialogs. After an uncertain timeout, inspect
+`hub.getState`/`hub.listDocs` before retrying a create/generate/publish request.
+Dispatch telemetry is best-effort and must not hide a successful saved write.
 
 ---
 

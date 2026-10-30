@@ -19,8 +19,9 @@ The documented interface is the **SkillTown Desktop local HTTP API**. It writes 
 > **⚠️ CRITICAL: Always publish with `contentId`.**
 > Direct account/video publishing is not dashboard-tracked. The user will not see it in their ContentLead content list or publish status.
 
-> **⚠️ LinkedIn is NOT content-aware.** It does not read from or write to Content documents.
-> See `linkedin.md` for the workaround to maintain tracking.
+> **⚠️ LinkedIn does not fill post text or channel status from Content.**
+> Pass `contentId` to record publish attempts; after confirmed success, update the
+> channel status separately. See `linkedin.md`.
 
 ---
 
@@ -43,7 +44,7 @@ curl "http://127.0.0.1:$PORT/api/bridge/content?limit=5"   -H "Authorization: Be
 | When you need to... | Load |
 |---------------------|------|
 | Understand local HTTP auth, event stream, and endpoint tables | `bridge-mode.md` |
-| Create a content record and open an editor tab | `contentlead/infrastructure.md` → `POST /api/content/create` |
+| Create a content record and open an editor tab | `cl-editor/infrastructure.md` → `POST /api/content/create` |
 | Create, list, get, update content, upload video/thumbnail | `content-lifecycle.md` |
 | Duplicate a Content record + its timeline (produces an independent copy) | `content-lifecycle.md` |
 | Configure channel settings (captions, tags, scheduling, toggles) | `channel-configuration.md` |
@@ -51,6 +52,7 @@ curl "http://127.0.0.1:$PORT/api/bridge/content?limit=5"   -H "Authorization: Be
 | Publish to YouTube, CTA auto-comments | `youtube.md` |
 | Post to LinkedIn | `linkedin.md` |
 | Read / create / update saved account combinations (cross-platform presets) | `combinations.md` |
+| Read/update profile name, maintain/disconnect connected accounts, refresh tokens or webhook subscriptions; understand measurement limits | `account-maintenance.md` |
 | Debug SAS expiry, video requirements, rate limits | `platform-rules.md` |
 | Run end-to-end flows (create → publish all platforms) | `workflows.md` |
 
@@ -92,12 +94,15 @@ curl "http://127.0.0.1:$PORT/api/bridge/content?limit=5"   -H "Authorization: Be
 |---------|-------------|
 | `POST /api/bridge/youtube/publish` | Upload video from Content and auto-post CTA comment. Accepts `publishAt` (ISO UTC) or `wallTime`+`timeZone` for **native scheduled publish** — Google flips privacy at fire time, no external cron needed. |
 
-### LinkedIn (2 endpoints) → `linkedin.md`
+### LinkedIn owned workflow → `linkedin.md`
 
 | Endpoint | What it does |
 |---------|-------------|
 | `GET /api/bridge/accounts` | Get connected accounts, including LinkedIn accounts |
-| `POST /api/bridge/publish/linkedin` | Create a LinkedIn post (not content-aware) |
+| `GET /api/bridge/linkedin/posts` | List owned saved posts; `postUrn` selects one saved status (not a provider refresh) |
+| `POST /api/bridge/linkedin/posts/upload-image` | Approved local image → native owned-account upload → image URN |
+| `POST /api/bridge/publish/linkedin` | Approved tracked post; explicit `contentId`, account, text, post type, and visibility required |
+| `DELETE /api/bridge/linkedin/posts` | Approved exact owned-post deletion; reports provider/local partial outcomes |
 
 ### Account Combinations (4 endpoints) → `combinations.md`
 

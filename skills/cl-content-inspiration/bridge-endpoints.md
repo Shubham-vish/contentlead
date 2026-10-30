@@ -321,15 +321,21 @@ Push a finding to the UI's Findings rail (Brain icon).
 | `actions[].type` | `"select-items"` \| `"export"` \| `"copy"` \| `"save-reference"` \| `"custom"`. |
 | `sessionId` | Optional. Group multiple related findings under one collapsible header. |
 
-**Size limits:**
-- `markdown` / `html` / `json` — **100 KB** content max.
-- `fullpage` — **500 KB** content max.
+**Size limits:** Desktop caps `content` at **102400 characters for every
+format**, including `fullpage`. Native Next.js accepts a larger `fullpage`
+payload, but that is not the Desktop bridge contract.
 
 **Response:** `{ ok: true, id: "…" }`.
 
-⚠️ **Storage caveat:** findings live in-memory per Next.js instance (`Map<userId, AiFinding[]>`), capped at **50 per user** (older evicted). Fine in desktop single-instance mode. If the marketing site ever runs multi-instance, findings won't sync across pods.
+⚠️ **Storage caveat:** findings live in-memory per Next.js instance
+(`Map<userId, AiFinding[]>`), capped at **50 per user** (older evicted).
+Desktop forwards to the configured web origin; it does not make this durable
+or single-instance. Restarts/deployment or another instance can lose/hide them.
 
-There is currently **no GET side** for reading findings — the FindingsPanel polls Next.js directly, not via the bridge.
+On a Desktop advertising `GET /api/bridge/inspiration/ai-output`, read the
+latest 20 entries with optional `?since=<ISO timestamp>`. Its receipt explicitly
+includes `source:"instance-memory",durable:false`. No durable history or cursor
+is implied; see [`reel-inbox.md`](reel-inbox.md).
 
 ---
 

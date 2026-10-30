@@ -121,10 +121,16 @@ All families currently queue work in the backend. Keep **both IDs** and poll to 
 
 Poll every ~4 s until `job.status` is `completed` | `failed` | `cancelled`.
 On `completed`, the handler persists a candidate to content history and returns `{ job, candidateId }`. Use that `candidateId` for the next step.
+Poll in the original content tab: a supplied `contentId` must match that tab,
+and jobs reporting another content ID are rejected rather than imported into its
+library. Repeated polls retain the existing candidate ID and review decisions.
 
 - A generate failure with `result.retryable: true` means no slot was admitted: back off before resubmitting.
 - A timeout or pending-save warning does **not** prove generation failed. Poll the returned IDs / inspect the UI before retrying; blindly resubmitting can bill twice.
 - Quotas depend on the account, model and configured limits; do not promise a fixed free allowance.
+- The six editor commands do not include cancellation. For an explicitly requested
+  cancellation, use `cl-ai-video`'s separate authenticated
+  `aiVideo.jobs.cancel {progressId, jobId?}` command route, not `/api/execute`.
 
 ---
 

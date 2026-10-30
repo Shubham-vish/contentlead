@@ -8,6 +8,9 @@ tags: save, export, resize, track, mute, lock, hide, rename, undo, redo, load, d
 
 Use these commands to persist work, manage canvas size, control selection, and manage tracks.
 
+For hydration/content guards, actual renderer capabilities and the complete
+preview → save → render handoff, read `workflow-readiness.md` first.
+
 ## Common canvas sizes
 
 | Format | Width | Height | Aspect |
@@ -30,6 +33,17 @@ Example:
   "params": {}
 }
 ```
+
+This confirms the **server/cloud save**, not just local recovery. Inspect
+`status:"success"` and `result:{saved:true, contentId, stateScope:"saved-server"}`.
+A failed save does not clear the unsaved indicator. Local autosave is a separate
+fallback, not proof the server has the latest timeline.
+
+For a complete handoff also require `currentDesignSaved:true`,
+`newerChanges:false` and `activeContentChanged:false`. A successful submitted
+snapshot is not proof that edits arriving during save were persisted. On a
+content switch, the receipt retains the original content ID and does not clear
+or mirror the new project's state.
 
 ## Snapshots
 
@@ -269,6 +283,13 @@ Select one or more items.
 | Param | Type | Default | Description |
 |---|---|---|---|
 | `itemIds` | `array<string>` | required | Items to select |
+| `itemId` | `string` | optional alternative | Select one item when `itemIds` is omitted |
+
+IDs must exist in the addressed timeline; malformed or unknown selections fail
+without changing either store. Duplicate IDs are deduplicated; `itemIds:[]`
+explicitly clears selection. Success returns `result.activeIds`.
+Selection is not a group-drag transaction: moving one selected item does not
+promise the UI drag engine's snapping, vertical track moves or collision policy.
 
 Example:
 
@@ -376,20 +397,17 @@ Example:
 
 ## Common Patterns / Recipes
 
-### Save then export
+### Save then render
+
+Call `editor.save`, check success, then follow `rendering.md` to submit
+`POST /api/render` and retain its job ID. Do not use the UI-oriented
+`editor.export` command as a pollable programmatic render.
 
 ```json
 [
   {
     "type": "editor.save",
     "params": {}
-  },
-  {
-    "type": "editor.export",
-    "params": {
-      "format": "mp4",
-      "projectName": "final-cut"
-    }
   }
 ]
 ```

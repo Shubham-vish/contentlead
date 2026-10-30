@@ -21,7 +21,9 @@ Event status: `DRAFT → SCHEDULED → WARMING → LIVE → ENDED` (or `CANCELLE
 
 ## 2. Connect through the desktop bridge
 
-> **⚙️ Is the ContentLead app running?** Calls need `~/.skilltown-desktop/api.json`. If missing, start the app (macOS `open -a "ContentLead"` · Windows `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`), wait ~30 s, then retry. The user must be **signed in**.
+> Read fresh `~/.skilltown-desktop/api.json` and use the existing signed-in app.
+> If unavailable, report it; do not start, restart, switch origins or reload the
+> user's app merely to inspect source/skills. No mounted editor is needed.
 
 ```bash
 API=$(node -e 'const c=require(require("os").homedir()+"/.skilltown-desktop/api.json");process.stdout.write("http://127.0.0.1:"+c.port)')
@@ -34,6 +36,7 @@ H=(-H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json")
 | `GET  $API/api/bridge/webinars/commands` | `GET /api/sessions/commands/manifest` | Live manifest: every command, JSON-schema params, nullable fields, examples. **Read it first** — it beats this doc. |
 | `POST $API/api/bridge/webinars/commands/<name>` body `{"params":{…}}` | `POST /api/sessions/commands/<name>` | Run one command. |
 | `POST $API/api/bridge/webinars/upload-video` body `{"path":"/abs/file.mp4","title":"…"}` | create asset → block upload → finalize | Upload a **local video**, **image** (.jpg/.png/.webp ≤ 10 MB → landing `coverAssetId` / lobby image) or **audio** (.mp3/.m4a/.aac/.ogg/.wav ≤ 50 MB → lobby music) in one call (§4). Images need no duration; response has `kind`. |
+| `GET $API/api/bridge/webinars/report.csv?eventId=<id>&report=attendance\|funnel` | exact native event report with `format=csv` | **Only when advertised by installed capabilities:** separate authenticated binary CSV download, not a JSON command. Complete artifact ≤50 MiB, native staff authorization, no URL/owner override, no partial-success file. Older builds return404; never infer installation from this doc. |
 
 ```bash
 curl -s "${H[@]}" "$API/api/bridge/webinars/commands" | jq '.commands[] | {name,summary}'
@@ -48,12 +51,32 @@ curl -s "${H[@]}" -X POST "$API/api/bridge/webinars/commands/webinar.list" -d '{
 - **Not signed in:** `"Authentication required"` (401).
 - **Unknown command:** 404.
 - **Route failure:** the HTTP status **is** the route's own status (403 plan gate, 404, 409 conflict, 429 rate limit, 503, …), also in `result.status`, with `result.error`, `result.code` and `result.retryAfter` when the route sent `Retry-After`.
-- **CSV/ICS:** returned as `{ contentType, text, truncated, length }`, text capped at 200k chars. Any JSON result over 200k chars comes back as `{ truncated:true, length, preview }` — narrow the query (filters, `limit`, `cursor`).
+- **CSV/ICS:** complete files up to **1 MiB UTF-8** return
+  `{contentType,text,truncated:false,length}` inside `result.data`. Save `text`
+  to an explicitly chosen private local file without overwriting; do not print
+  participant data. Overflow cancels the read and returns HTTP413,
+  `result.code:"report_too_large"`, **never a successful partial file**.
+  Use the separately advertised `report.csv` binary route for larger exports
+  (≤50 MiB), or native UI download when that Desktop integration is absent.
+  Non-download JSON/text still uses the 200k-character preview cap; narrow
+  queries with filters/`limit`/`cursor` when `truncated:true`.
 - **Timeouts:** the bridge waits up to **120 s** per command. A **504** (`bridge_timeout`) does **not** mean it failed — the command may have run. Before retrying anything that creates or changes state (`create`, `duplicate`, `testRun.create`, `start`, `invites.create`, `emails.sendTest`, …) check `webinar.list` / `webinar.get` (or the matching `*.list`) to see if it already happened.
+- **Recovery checkpoint:** for an explicitly authorized start that returns202,
+  wait `retryAfter` seconds and read `webinar.readiness` plus `webinar.get`;
+  retry start only within that existing authorization. After upload
+  `finalize_failed`, inspect `webinar.video.list` and use the returned asset ID
+  with `webinar.video.finalize`—never upload the committed bytes again. Reports
+  beyond the bounded 1 MiB JSON command limit use the fixed binary route only
+  when the installed release advertises it. If absent, larger-export automation
+  is a release/integration gap, **not** a human-consent requirement. Binary
+  downloads reject >50 MiB with413, invalid/non-CSV/incomplete responses with502,
+  preserve native auth/role errors, and never retry or expose provider URLs.
+  Save only a completed successful CSV to an explicitly chosen private file
+  without overwriting; on interrupted transport discard any partial local file.
 
 > Needs a desktop build that has the `webinars` bridge rows and a web deploy that includes `/api/sessions/commands`. A 404 on `/api/bridge/webinars/*` means the desktop app is too old.
 
-## 3. Command reference (80)
+## 3. Command reference (83)
 
 `eventId` is required on every event-scoped command and omitted below. Always confirm params against the manifest.
 
@@ -61,7 +84,7 @@ curl -s "${H[@]}" -X POST "$API/api/bridge/webinars/commands/webinar.list" -d '{
 |---|---|---|
 | State | `webinar.list`, `webinar.get`, `webinar.readiness`, `webinar.notices`, `webinar.recap`, `webinar.ics` | `list` = my events with `myRole`, status, counts — start here for ids; many events → page with `{take: 20}` then `{take: 20, cursor: nextCursor}` |
 | Event | `webinar.create`, `webinar.update`, `webinar.cancel`, `webinar.duplicate` | `title` (req), `type` MEETING\|WEBINAR, `scheduledAt` ISO (null = draft), `timezone` IANA, `capacityMax`, `requireApproval`, `recordingEnabled`, `allowGuests`, `settings` (`durationMinutes`, `qaEnabled`, `pollsEnabled`, `reminders`, `landing`, replay keys …; shallow-merged — `reminders` / `landing` objects replace the saved ones whole). `cancel` is irreversible and e-mails registrants. |
-| Reminders & follow-ups | `webinar.update {settings:{reminders}}` | `beforeMinutes` ≤ 5 ints, each 5–20160 (absent = default 24h/1h/10m, `[]` = none); `followUps` ≤ 4 × `{audience: attended\|no_show, afterHours 1–720, subject?, body?}`. Editable after ENDED. |
+| Reminders & follow-ups | `webinar.update {settings:{reminders}}` | `beforeMinutes` ≤ 5 ints, each 5–20160 (absent = default 24h/1h/10m, `[]` = none); `followUps` ≤ 4 × `{id?, audience: attended\|no_show, afterHours 1–720, subject?, body?}`. Preserve saved `id` (`[a-z0-9]{1,12}`) when editing to avoid re-sending a completed follow-up. Editable after ENDED. |
 | Landing page | `webinar.update {settings:{landing}}` | `{coverAssetId?, trailerAssetId?` (READY library image / video)`, questions? (≤8: {id a-z0-9_-, label, type: text\|select, options?, required?}), showRegistrantCount?}` (shown once ≥ 10). Answers + UTM/referrer land on each registration. |
 | Go live | `webinar.start`, `webinar.end` | `start` → 200 live · **202 WARMING** → `result.pending:true` (poll `readiness` until `ready`, call `start` again) · 503/504 media unavailable/timeout. The LiveKit join token is stripped — agents never join the room (there is no `webinar.join`). ⚠️ `start` makes the room **LIVE even with nobody on stage**: for a live-presented event let the host press Start in the UI; only start pre-recorded webinars (or ones the host asked you to start while they are on stage). |
 | Self | `webinar.register`, `webinar.unregister` | the signed-in user; `register` also takes `answers {questionId: "…"}` (required questions → else 400) and `attribution {utmSource, utmMedium, utmCampaign, utmContent, utmTerm, referrer}` |
@@ -71,17 +94,17 @@ curl -s "${H[@]}" -X POST "$API/api/bridge/webinars/commands/webinar.list" -d '{
 | Video timeline | `webinar.broadcast.timeline.get`, `.set` | `set {timeline:[{id, atMs, kind: cta\|poll\|message, ctaId \| pollId \| text, hideAfterMs?}]}` replaces the whole list (≤100, `[]` clears); fires by **video position**, once each |
 | Test run | `webinar.testRun.create` | `startsInMinutes` ∈ 3, 5, 10, 30 → real auto-starting **"Test – <title>"** copy |
 | Repeat series | `webinar.series.get`, `.set`, `.stop`, `.getPublic`, `.pick` | `set {mode:"MANUAL", slots:[ISO…]}` or `{mode:"JUST_IN_TIME", intervalMinutes: 5\|10\|15\|20\|30\|60, minLeadMinutes, horizonDays}`; `stop` keeps existing runs; `pick {seriesId, slotAt}` |
-| Registrations | `webinar.registrations.list`, `.update`, `.bulk`, `webinar.attendees` | list filter `status` (ALL, REGISTERED, APPROVED, JOINED, DENIED, CANCELLED, WAITLISTED, REMOVED), `q`, `cursor`, `limit`; rows carry `answers`, `utm*`, `referrer`; `bulk {registrationIds (≤200), action: approve\|deny\|waitlist, reason, notify}` |
-| Invites | `webinar.invites.list`, `.create`, `.revoke` | `invites:[{email, role: COHOST\|PANELIST\|MODERATOR\|ATTENDEE}]`, `message`; revoke by `inviteId` |
+| Registrations | `webinar.registrations.list`, `.update`, `.bulk`, `webinar.attendees` | list filter `status` (ALL, REGISTERED, APPROVED, JOINED, DENIED, CANCELLED, WAITLISTED, REMOVED), `q`, `name`, `email`, `cursor`, `limit`1–200; `sort:registeredAt\|name\|email\|status`, `direction:asc\|desc` (defaults registeredAt/asc). Keep filters/sort fixed across `nextCursor` pages. Rows carry `answers`, `utm*`, `referrer`; `bulk {registrationIds (≤200), action: approve\|deny\|waitlist, reason, notify}` |
+| Invites | `webinar.invites.list`, `.create`, `.revoke`, `.accept` | create `invites:[{email, role: COHOST\|PANELIST\|MODERATOR\|ATTENDEE}]`, `message`; revoke by `inviteId`. **Accept is not event-scoped:** `{token,acknowledged:true}` using the private user-approved email-link token (16–256 chars). Native signed-in email must match; no role/account/event override or room join. Never log the token. |
 | Live room | `webinar.participants.moderate`, `webinar.hands.list/set/lowerAll`, `webinar.reactions.send` | moderate by LiveKit `identity` (from `attendees`): mute/remove(+ban)/promote/demote/unban |
 | Engagement | `webinar.polls.list/create/update`, `webinar.qa.list/ask/update`, `webinar.chat.list/send/moderate` | poll `question, options, openNow`; poll op open/close/vote; Q&A approve/answering/answered/dismiss; chat pin/unpin/slowMode (`seconds` 0–600)/attendeeChat |
 | CTA | `webinar.cta.get`, `.set`, `.clear`, `.update`, `.delete` | `offerName` (offers listed by `cta.get`) or `url` + `title`, `buttonText`; `draft:true` saves it hidden (→ `cta.id`) for the video timeline; `ctaId` shows a saved one again (`cta.get {offers:true}` → `saved[]`); `dismissible:false` = attendees get no ✕ (stays until hidden/timeline hides it). `update {ctaId, title?, body?, buttonText?, url?, offerName?, dismissible?}` edits a saved one in place (only sent fields change; a showing card updates live; ordinary edits don't reopen it for viewers who closed it, but switching to `dismissible:false` shows it to everyone again). `delete {ctaId}` removes a saved one for good (hidden if showing, dropped from the video timeline, clicks kept) — **confirm with the user first**. Polling `cta.get` during a live event? pass `lite:true` (skips click totals) |
-| E-mails | `webinar.emails.get`, `.set`, `.preview`, `.sendTest` | `settings.kinds.<kind>` overrides; preview/test by `kind`, `variant` — variant must fit the kind: `reminder_*`/`starting` → `member`\|`guest`, `recap_*` → `replay`\|`no_replay`, others `default` |
+| E-mails | `webinar.emails.get`, `.set`, `.preview`, `.sendTest` | `get` returns catalogue/defaults/all previews. `set` and read-only `preview` require **`settings`**, not kind/variant; preview renders all kinds/variants without saving. Only `sendTest` takes `kind`, `variant`, optional draft `settings` — variant must fit the kind: `reminder_*`/`starting` → `member`\|`guest`, `recap_*` → `replay`\|`no_replay`, others `default`. Use `{{event_title}}`-style placeholders from the catalogue. Test sends require explicit approval. |
 | Recording & replay | `webinar.recording.get/start/stop`, `webinar.recordings.list`, `webinar.replay.get/set` | replay.set needs ≥ 1 of `replayPublic`, `replayOfferName`, `replayCtaId`, `replayCtaAtMinute`, `replayExpiresAfterHours` (1–8760, window after the end; "ends soon" e-mail ~24 h before), `replayRegistrantsOnly`; `null` clears one (also accepted for `settings.replay*` in `update`). |
-| Analytics | `webinar.attendance`, `webinar.funnel`, `webinar.analytics.engagement`, `webinar.series.rollup` | `format:"csv"` returns CSV text; `engagement` = viewers per minute, peak, avg watch, retention; `series.rollup {seriesId}` = per-run registrants / attendees / rate / CTA clicks + totals |
-| Webhooks | `webinar.webhooks.list`, `.create`, `.update`, `.delete`, `.test`, `.rotate`, `.deliveries` | per user (all their events), ≤ 10; `create {url (public https), events: ["*"] or registration.created\|attendee.joined\|attendee.left\|cta.clicked\|event.started\|event.ended, description?}`; `update {id, url?, events?, description?, active?}`; `test/rotate/deliveries/delete {id}`. **The signing secret is returned only by `create` / `rotate` — hand it to the user once; every other command strips it** (`secretPreview` only). |
+| Analytics | `webinar.attendance`, `.attendance.page`, `webinar.funnel`, `webinar.analytics.engagement`, `webinar.series.rollup`, `.series.rollup.page` | `format:"csv"` returns bounded complete CSV; the two `.page` commands reuse the UI's native server-paged/sorted tables. Attendance: `{eventId,take?,skip?,sort?,direction?,name?,email?,role?}`. Series: `{seriesId,take?,skip?,sort?,direction?,title?,status?}`. `take`1–100(default50), `skip`≥0(default0); responses contain `rows,total,take,skip,totals`. |
+| Webhooks | `webinar.webhooks.list`, `.create`, `.update`, `.delete`, `.test`, `.rotate`, `.deliveries` | per user (all their events), ≤ 10; `create {url (public https), events: ["*"] or registration.created\|attendee.joined\|attendee.left\|cta.clicked\|event.started\|event.ended, description?}`; `update {id, url?, events?, description?, active?}`; `test/rotate/delete {id}`. `deliveries {id,take?,skip?,sort?,direction?,status?,eventType?}` returns `{deliveries,total,take,skip}`; take1–200(default50), status PENDING\|SENT\|FAILED, eventType substring≤200, sort createdAt\|eventType\|status\|lastStatus\|attempts (default createdAt/desc). **The signing secret is returned only by `create` / `rotate` — hand it to the user once; every other command strips it** (`secretPreview` only). |
 
-Intentionally **not** exposed: room join (LiveKit tokens), LiveKit webhook, VM queue, telemetry, guest join/register, invite accept, public CTA-click counting.
+Intentionally **not** exposed: room join (LiveKit tokens), LiveKit webhook, VM queue, telemetry, guest join/register and public CTA-click counting. Authenticated self-registration and approved invite acceptance are supported; never simulate another attendee or consent.
 
 ### Show the user what you built (open the page in the app)
 
@@ -167,7 +190,7 @@ Send bytes **only** to the SAS `uploadUrl`, never through SkillTown. Uploads are
 1. `webinar.create {title, type:"WEBINAR", scheduledAt, timezone, settings:{durationMinutes:60}}` → `evt`.
 2. Optional: `webinar.emails.preview` / `webinar.emails.sendTest`, `webinar.cta.set`, `webinar.polls.create {openNow:false}`.
 3. At showtime the **host** starts it from the UI (an agent-side `webinar.start` puts the room live with nobody on stage — only do it if the host asks while they are present).
-4. If `start` returns `pending:true` (202), poll `webinar.readiness` every `retryAfterMs` until ready, then call `start` again.
+4. If `start` returns `result.pending:true` (202), wait `result.retryAfter` **seconds**, poll `webinar.readiness` until ready, then call `start` again only within the already authorized live-start workflow.
 5. `webinar.end`.
 
 ### B. Pre-recorded webinar end to end
@@ -193,13 +216,38 @@ Send bytes **only** to the SAS `uploadUrl`, never through SkillTown. Uploads are
 1. With `requireApproval`, call `webinar.registrations.list {status:"REGISTERED"}`.
 2. Approve with `webinar.registrations.bulk {registrationIds, action:"approve", notify:true}`, but only after the user OKs e-mails.
 3. Add co-hosts with `webinar.invites.create {invites:[{email, role:"COHOST"}]}`.
+4. If the signed-in user received an invitation, obtain their explicit approval
+   of that exact invitation, then `webinar.invites.accept {token,acknowledged:true}`.
+   The token comes only from their private email link; never print it or accept
+   on someone else's behalf. Expired/revoked/wrong-email/full/banned/event-ended
+   denials remain native errors. Inspect `webinar.list` / `webinar.get` after
+   uncertainty; do not blindly replay acceptance. Joining/microphone stays human.
 
 ### E. After the event
 
 `webinar.recap` · `webinar.attendance {format:"csv"}` · `webinar.funnel` · `webinar.analytics.engagement` · `webinar.replay.set {replayPublic:true, replayOfferName}`.
 
+- Registration export is assembled from `webinar.registrations.list` pages,
+  not an invented `registrations.export` command: keep status/q/name/email/
+  sort/direction fixed, carry `nextCursor` until null, and include rows' answers
+  and attribution fields. Serialize with a proper CSV writer to an explicitly
+  chosen private file; escape spreadsheet-formula prefixes and never print PII.
+  Stop on a repeated cursor or unexpected truncated/error result instead of
+  claiming a complete report. The live registration set is not snapshot-locked.
 - Replay window, registrants only: `webinar.replay.set {eventId, replayExpiresAfterHours:72, replayRegistrantsOnly:true}` (`null` = forever / anyone).
 - Series performance: `webinar.series.get` → `series.id`, then `webinar.series.rollup {seriesId}`.
+- Large attendance/series tables: use `webinar.attendance.page` or
+  `webinar.series.rollup.page` and preserve filters/sort/direction. Starting at
+  `skip:0`, advance by the number of returned rows until `skip >= total`; if a
+  page is unexpectedly empty, stop and refresh rather than loop. Totals cover
+  the entire filter, not the current page. For stable historical reporting,
+  prefer ended events; offset pages are not a snapshot lock while data changes.
+- Attendance sorts: `name,email,role,firstJoinedAt,totalMs,sessions` (default
+  `firstJoinedAt`, ascending). Series sorts:
+  `title,scheduledAt,status,registrants,attendees,attendanceRate,ctaClicks`
+  (default `scheduledAt`, descending). String filters are substring matches,
+  at most200 characters. Role/status use the native manifest enums. Native
+  operator/attendance-feature guards still apply; filters never select an actor.
 
 ### F. Pre-recorded automation: offer at video minute 45
 
@@ -234,10 +282,21 @@ Send the **whole** `reminders` / `landing` object (it replaces the saved one); r
 1. `webinar.webhooks.create {url:"https://hooks.zapier.com/…", events:["registration.created","cta.clicked"]}` → give the user `secret` now (HMAC-SHA256 in `X-ContentLead-Signature`).
 2. `webinar.webhooks.test {id}` → `result {ok, status, durationMs}`; `webinar.webhooks.deliveries {id}` for the log.
 3. Pause with `update {id, active:false}`; lost secret → `rotate {id}` (old one stops at once).
+4. Diagnose older failures with `webinar.webhooks.deliveries
+   {id,status:"FAILED",take:100,skip:0,sort:"createdAt",direction:"desc"}`.
+   Advance `skip` by `deliveries.length` until `skip >= total`; keep filters and
+   sort fixed, stop on an unexpected empty page. Offset pages are not snapshots.
+   Reading logs never redelivers; `webhooks.test` is a new approved external send,
+   not a recovery command for an uncertain previous delivery.
 
 ## 6. Testing a setup: use the real flow, not a fake one
 
 There is no separate "test mode".
+
+The following is a **real, consequential integration test**, not a source-audit
+recipe. Obtain approval for the event, possible email/provider activity and
+quota use first. For command/schema changes, prefer isolated mocked tests;
+never create a live test run merely to claim audit coverage.
 
 1. To test, create a **real** event with **"Test"** in its title (prefix or suffix). `webinar.testRun.create` does exactly that ("Test – <title>"):
    - it auto-starts in 3, 5, 10 or 30 minutes;
@@ -272,7 +331,7 @@ Test runs **do** count toward plan quotas.
 | Underlying handlers | `SkillTown/app/api/sessions/**/route.ts` |
 | Broadcast / series / lobby / timeline logic | `SkillTown/lib/sessions/broadcast-*.ts` (`broadcast-timeline.ts`), `SkillTown/docs/sessions/ARCHITECTURE.md` |
 | Reminders / landing / replay settings, analytics, webhooks | `SkillTown/lib/sessions/{reminder-settings,landing-settings,replay-settings,attendance-analytics,outbound-webhooks}.ts` |
-| Desktop passthrough + upload | `SkillTown-Desktop/electron/api-server/bridge-routes.cjs` (`handleBridgeWebinarUploadVideo`), `webinar-upload.cjs`, `api-endpoints.cjs` |
+| Desktop passthrough + upload + bounded CSV | `SkillTown-Desktop/electron/api-server/bridge-routes.cjs` (`handleBridgeWebinarUploadVideo`), `webinar-upload.cjs`, `webinar-report-download.cjs` (requires central dispatch registration), `api-endpoints.cjs` |
 
 ## 9. Related skills
 

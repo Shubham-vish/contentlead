@@ -12,7 +12,7 @@ Apply the same `details` patch to every item of a specific type.
   "details": { "fontFamily": "Inter", "color": "#000000" }
 }}
 ```
-*Valid types: `text`, `caption`, `video`, `image`, `cl-audio`.*
+*Valid types: `text`, `caption`, `video`, `image`, `audio`.*
 
 ## Bulk Movement
 
@@ -39,17 +39,31 @@ Nuclear option. Clears the entire timeline, or a specific track.
 { "type": "editor.clearTimeline", "params": { "trackId": "track_abc" } }
 ```
 
-## Batch Execution (Transactions)
+## Renderer Batch Execution (Not a Transaction)
 
-When making multiple API calls, you can send them in one batch to the `POST /api/batch` endpoint.
+Send `batch.execute` through the usual explicitly tab-targeted `/api/execute`
+route. The canonical child list is `params.commands`:
 
 ```json
 {
-  "commands": [
-    { "type": "editor.addText", "params": { "text": "A" } },
-    { "type": "editor.addText", "params": { "text": "B" } }
-  ],
-  "transaction": true
+  "type": "batch.execute",
+  "params": {
+    "commands": [
+      { "type": "editor.addText", "params": { "text": "A" } },
+      { "type": "editor.addText", "params": { "text": "B" } }
+    ],
+    "expectedContentId": "chosen-content",
+    "stopOnError": true
+  }
 }
 ```
-If `transaction: true`, the editor will automatically `editor.undo` if any command in the batch fails.
+
+Accepts 1–50 children; rejects nested batches, unsupported names, malformed child
+params and conflicting content assertions before dispatching any child. Defaults
+to stopping after the first failed child; `stopOnError:false` explicitly continues.
+Receipts include `subResults`, `totalCommands`, `completedCommands`, `stoppedAt`
+and `atomic:false`. No automatic rollback, cancellation or safe replay is promised.
+
+Desktop HTTP `/api/batch` is a different transport contract; consult
+`desktop-bridge-routes.md`. Do not transfer a transport `transaction` flag to this
+renderer command. See `workflow-readiness.md` for content pinning and retry safety.

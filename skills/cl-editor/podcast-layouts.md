@@ -42,7 +42,9 @@ Pass `role: null` to clear a tag.
 ## Commands
 
 ### `layout.list` — inventory + current tag status
-No parameters. Returns:
+No parameters for built-ins. Optionally pass `includeUserLayouts:true` to also
+return the signed-in `userLayouts` library; authentication failures are errors,
+not an empty-library success. Returns:
 
 ```json
 {
@@ -77,6 +79,12 @@ Parameter resolution priority:
 3. **Current selection** — fallback; matches what the Layouts sidebar does.
 
 Errors when: no roles are tagged in the timeline, no valid range can be derived, or no tagged clips overlap the range.
+
+For a saved layout, pass `source:"user"` and its `layoutId`; omitted source
+means built-in. `layout.saveCurrent` (`name`, required `atMs`, optional
+`category`) captures the same role arrangement as the UI dialog.
+`layout.deleteUser` (`layoutId`) removes a saved-library entry, without timeline
+undo. See `workflow-completion.md` for bounds and state-scope details.
 
 ### `layout.getActive` — read the current layout tag
 ```json

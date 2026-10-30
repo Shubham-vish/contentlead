@@ -1,0 +1,5635 @@
+{
+  "namespace": "offer",
+  "source": "SkillTown/lib/offer-studio/commands/registry.ts + buyer.ts (commerce.ts)",
+  "sourceOnly": true,
+  "commands": [
+    {
+      "name": "offer.tracking.get",
+      "namespace": "offer.tracking",
+      "summary": "Read owner-scoped offer tracking and setup readiness",
+      "description": "Uses the authenticated owner and immutable offerId. Does not accept tokens, grant visitor consent, spend on ads, or claim Meta attribution equals first-party revenue.",
+      "category": "analytics",
+      "requires": {
+        "auth": true
+      },
+      "idempotent": true,
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 191
+          }
+        },
+        "required": [
+          "offerId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "{\"params\":{\"offerId\":\"offer_example\"}}"
+      ]
+    },
+    {
+      "name": "offer.tracking.update",
+      "namespace": "offer.tracking",
+      "summary": "Update offer tracking event mapping, consent requirement and assets",
+      "description": "Uses the authenticated owner and immutable offerId. Does not accept tokens, grant visitor consent, spend on ads, or claim Meta attribution equals first-party revenue. Read current config first. Omitted events.custom preserves saved definitions; a supplied array replaces all definitions, and [] removes them. Use returned customEventTargets; no raw JS, financial payload or reserved standard event names.",
+      "category": "analytics",
+      "requires": {
+        "auth": true
+      },
+      "idempotent": false,
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 191
+          },
+          "input": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "pixelId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{1,40}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "connectionId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 191
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "adAccountId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^act_\\d{1,40}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "datasetId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{1,40}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "events": {
+                "type": "object",
+                "properties": {
+                  "landing": {
+                    "anyOf": [
+                      {
+                        "const": "ViewContent"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "landingPageView": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "checkout": {
+                    "anyOf": [
+                      {
+                        "const": "InitiateCheckout"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "addPaymentInfo": {
+                    "anyOf": [
+                      {
+                        "const": "AddPaymentInfo"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null
+                  },
+                  "thankyou": {
+                    "type": "null"
+                  },
+                  "thankyouPageView": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "freelead": {
+                    "anyOf": [
+                      {
+                        "const": "Lead"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "purchase": {
+                    "anyOf": [
+                      {
+                        "const": "Purchase"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "custom": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9_-]{1,100}$"
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "eventName": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z][A-Za-z0-9_]{0,39}$"
+                        },
+                        "enabled": {
+                          "type": "boolean",
+                          "default": false
+                        },
+                        "surface": {
+                          "type": "string",
+                          "enum": [
+                            "offer",
+                            "checkout",
+                            "thankyou"
+                          ]
+                        },
+                        "trigger": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "const": "action"
+                                },
+                                "actionName": {
+                                  "type": "string",
+                                  "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,99}$"
+                                },
+                                "phase": {
+                                  "const": "success"
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "actionName",
+                                "phase"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "const": "click"
+                                },
+                                "sectionId": {
+                                  "type": "string",
+                                  "pattern": "^[A-Za-z0-9_-]{1,100}$"
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "sectionId"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "const": "section_view"
+                                },
+                                "sectionId": {
+                                  "type": "string",
+                                  "pattern": "^[A-Za-z0-9_-]{1,100}$"
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "sectionId"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "eventName",
+                        "surface",
+                        "trigger"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 20
+                  }
+                },
+                "required": [
+                  "landing",
+                  "checkout",
+                  "thankyou",
+                  "freelead",
+                  "purchase"
+                ],
+                "additionalProperties": false
+              },
+              "consentRequired": {
+                "const": true
+              }
+            },
+            "required": [
+              "enabled",
+              "pixelId",
+              "events",
+              "consentRequired"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "offerId",
+          "input"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "{\"params\":{\"offerId\":\"offer_example\",\"input\":{\"enabled\":false,\"pixelId\":null,\"consentRequired\":true,\"events\":{\"landing\":\"ViewContent\",\"landingPageView\":false,\"checkout\":\"InitiateCheckout\",\"addPaymentInfo\":null,\"thankyou\":null,\"thankyouPageView\":false,\"freelead\":\"Lead\",\"purchase\":\"Purchase\",\"custom\":[{\"id\":\"details-view\",\"eventName\":\"DetailsViewed\",\"enabled\":false,\"surface\":\"offer\",\"trigger\":{\"type\":\"section_view\",\"sectionId\":\"details\"}}]}}}}"
+      ]
+    },
+    {
+      "name": "offer.tracking.getLedger",
+      "namespace": "offer.tracking",
+      "summary": "Read the owner's first-party conversion ledger by currency",
+      "description": "Uses the authenticated owner and immutable offerId. Does not accept tokens, grant visitor consent, spend on ads, or claim Meta attribution equals first-party revenue. Totals cover recorded matching conversions only; historical coverage remains partial with unknown instrumentation start and no performed backfill. Never infer complete historical revenue from the first recorded row.",
+      "category": "analytics",
+      "requires": {
+        "auth": true
+      },
+      "idempotent": true,
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 191
+          },
+          "from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "to": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "productId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 191
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "{\"params\":{\"offerId\":\"offer_example\",\"productId\":\"product_example\",\"currency\":\"INR\",\"limit\":20}}"
+      ]
+    },
+    {
+      "name": "offer.tracking.getDeliveryDiagnostics",
+      "namespace": "offer.tracking",
+      "summary": "Read owner-scoped conversion delivery status without visitor PII",
+      "description": "Uses the authenticated owner and immutable offerId. Does not accept tokens, grant visitor consent, spend on ads, or claim Meta attribution equals first-party revenue.",
+      "category": "analytics",
+      "requires": {
+        "auth": true
+      },
+      "idempotent": true,
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 191
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "{\"params\":{\"offerId\":\"offer_example\",\"limit\":20}}"
+      ]
+    },
+    {
+      "name": "offer.tracking.events.list",
+      "namespace": "offer.tracking",
+      "summary": "Query the owner's central event journal across all or selected offers with cursor pagination",
+      "description": "Uses the authenticated owner and immutable offerId. Does not accept tokens, grant visitor consent, spend on ads, or claim Meta attribution equals first-party revenue. Omit offerIds for all owned offers; supplied IDs select only that owned subset. Browser observation/Pixel attempts, Meta acceptance and business verification are distinct. Correlated browser/server rows are not additional purchases or revenue.",
+      "category": "analytics",
+      "requires": {
+        "auth": true
+      },
+      "idempotent": true,
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 191
+            },
+            "minItems": 1,
+            "maxItems": 50
+          },
+          "from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "to": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "eventName": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_]{0,39}$"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "browser",
+              "server"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "browser_observed",
+              "pixel_dispatch_attempted",
+              "failed",
+              "verified",
+              "pending",
+              "processing",
+              "blocked",
+              "retry",
+              "delivered",
+              "dead",
+              "cancelled"
+            ]
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 50
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "{\"params\":{\"offerIds\":[\"offer_example\",\"offer_second\"],\"source\":\"browser\",\"limit\":20}}"
+      ]
+    },
+    {
+      "name": "offer.tracking.summaries.get",
+      "namespace": "offer.tracking",
+      "summary": "Read tracking summary cards for all or selected owned offers",
+      "description": "Uses the authenticated owner and immutable offerId. Does not accept tokens, grant visitor consent, spend on ads, or claim Meta attribution equals first-party revenue.",
+      "category": "analytics",
+      "requires": {
+        "auth": true
+      },
+      "idempotent": true,
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 191
+            },
+            "minItems": 1,
+            "maxItems": 50
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "{\"params\":{\"offerIds\":[\"offer_example\",\"offer_second\"]}}"
+      ]
+    },
+    {
+      "name": "offer.list",
+      "namespace": "offer",
+      "summary": "List offers owned by the current user.",
+      "description": "Returns the user's Offer Studio offers with checkout/status signals for slash menus and AI planning.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Optional status filter: draft, published, archived"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "show my offers",
+        "list draft offers",
+        "what offers do I have?"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "analytics",
+      "idempotent": true
+    },
+    {
+      "name": "offer.create",
+      "namespace": "offer",
+      "summary": "Create a new offer from a template and URL slug.",
+      "description": "Creates an Offer document with tasteful section stubs. Use before checkout, coupon, or email commands for a new funnel.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Human-readable offer title",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "slug": {
+            "type": "string",
+            "description": "Optional public slug. If omitted, generated from title.",
+            "minLength": 3,
+            "maxLength": 80
+          },
+          "template": {
+            "type": "string",
+            "description": "Template: workshop, course, saas, ebook, product, blank",
+            "enum": [
+              "workshop",
+              "course",
+              "saas",
+              "ebook",
+              "product",
+              "blank"
+            ],
+            "default": "workshop"
+          },
+          "status": {
+            "type": "string",
+            "description": "Initial status",
+            "enum": [
+              "draft",
+              "published"
+            ],
+            "default": "draft"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Create an AI trading workshop offer",
+        "New course offer called Prompt Mastery with slug prompt-mastery"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "create",
+      "idempotent": false
+    },
+    {
+      "name": "offer.rename",
+      "namespace": "offer",
+      "summary": "Rename an offer title and optionally its URL slug.",
+      "description": "Updates title/meta title. If slug changes, checkout/email/coupon scopes are moved to the new OfferName.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "title": {
+            "type": "string",
+            "description": "New display title"
+          },
+          "slug": {
+            "type": "string",
+            "description": "New URL slug"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Rename this offer to AI Trading Bootcamp",
+        "Change slug to ai-trading-bootcamp"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "create",
+      "idempotent": true,
+      "undoable": true
+    },
+    {
+      "name": "offer.duplicate",
+      "namespace": "offer",
+      "summary": "Duplicate an existing offer as a draft copy.",
+      "description": "Clones sections, theme and metadata as a draft. Tracking is disabled; credentials and account/dataset/Pixel references are never inherited. Checkout/coupons remain independent.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "slug": {
+            "type": "string",
+            "description": "Optional target slug"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Duplicate this offer",
+        "Make a copy called august-workshop"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "create",
+      "idempotent": false
+    },
+    {
+      "name": "offer.archive",
+      "namespace": "offer",
+      "summary": "Archive an offer.",
+      "description": "Sets the offer status to archived.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "archive this offer"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "publish",
+      "idempotent": true,
+      "undoable": true
+    },
+    {
+      "name": "offer.publish",
+      "namespace": "offer",
+      "summary": "Publish an offer.",
+      "description": "Sets the offer status to published.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "publish this offer"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "publish",
+      "idempotent": true,
+      "undoable": true
+    },
+    {
+      "name": "offer.unpublish",
+      "namespace": "offer",
+      "summary": "Unpublish an offer.",
+      "description": "Sets the offer status to draft.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "unpublish this offer"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "publish",
+      "idempotent": true,
+      "undoable": true
+    },
+    {
+      "name": "offer.checkout.setTitle",
+      "namespace": "offer.checkout",
+      "summary": "Set checkout page title.",
+      "description": "Updates Checkout.pageTitle. Creates checkout config if missing.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "title": {
+            "type": "string",
+            "description": "Checkout headline/title",
+            "minLength": 1,
+            "maxLength": 160
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Set checkout title to Join the AI Trading Workshop"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-checkout",
+      "idempotent": true,
+      "undoable": true
+    },
+    {
+      "name": "offer.checkout.setBilling",
+      "namespace": "offer.checkout",
+      "summary": "Choose one-time payment or recurring billing.",
+      "description": "Sets billing for new buyers only. Existing subscriptions keep their agreed price and cadence. Daily intervals must be at least seven days. Mandates are finite (at most ten years).",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "billing": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "one_time",
+                  "recurring"
+                ]
+              },
+              "period": {
+                "type": "string",
+                "enum": [
+                  "daily",
+                  "weekly",
+                  "monthly",
+                  "quarterly",
+                  "yearly"
+                ]
+              },
+              "interval": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "totalCycles": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "mode"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "billing"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Set monthly recurring billing for 12 payments",
+        "Make this a one-time purchase"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-checkout",
+      "idempotent": true,
+      "undoable": true
+    },
+    {
+      "name": "offer.checkout.setBasePrice",
+      "namespace": "offer.checkout",
+      "summary": "Set checkout base price in INR.",
+      "description": "Updates Checkout.basePrice. Use non-negative rupee amount before coupons or pricing suggestions.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "basePrice": {
+            "type": "number",
+            "description": "Base price in INR",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "basePrice"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "price this offer at ₹999",
+        "set base price to 4999"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-checkout",
+      "idempotent": true,
+      "undoable": true
+    },
+    {
+      "name": "offer.checkout.setStyle",
+      "namespace": "offer.checkout",
+      "summary": "Brand the checkout page (colors, copy, buttons, badges, default phone country).",
+      "description": "Merges fields into Checkout.checkoutStyle so the live checkout matches the offer brand. Only the keys you pass change; omit the rest. Use hex colors. Set defaultPhoneCountry to an ISO2 code (e.g. IN) to default the phone input.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "style": {
+            "type": "object",
+            "properties": {
+              "accentColor": {
+                "type": "string",
+                "description": "Hex color, e.g. #8b5cf6",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "bgColor": {
+                "type": "string",
+                "description": "Hex color, e.g. #8b5cf6",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "cardBgColor": {
+                "type": "string",
+                "description": "Hex color, e.g. #8b5cf6",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "cardTextColor": {
+                "type": "string",
+                "description": "Hex color, e.g. #8b5cf6",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "pageTitleColor": {
+                "type": "string",
+                "description": "Hex color, e.g. #8b5cf6",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "buttonStyle": {
+                "type": "string",
+                "description": "Button fill",
+                "enum": [
+                  "solid",
+                  "gradient"
+                ]
+              },
+              "buttonGradientTo": {
+                "type": "string",
+                "description": "Hex color, e.g. #8b5cf6",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "buttonRadius": {
+                "type": "string",
+                "description": "Button corner radius",
+                "enum": [
+                  "rounded",
+                  "pill",
+                  "square"
+                ]
+              },
+              "cardBorderRadius": {
+                "type": "string",
+                "description": "Card corner radius",
+                "enum": [
+                  "none",
+                  "sm",
+                  "md",
+                  "lg",
+                  "xl",
+                  "2xl"
+                ]
+              },
+              "cardShadow": {
+                "type": "string",
+                "description": "Card shadow depth",
+                "enum": [
+                  "none",
+                  "sm",
+                  "lg",
+                  "2xl"
+                ]
+              },
+              "headerTitle": {
+                "type": "string",
+                "description": "Checkout header title"
+              },
+              "headerSubtitle": {
+                "type": "string",
+                "description": "Checkout header subtitle"
+              },
+              "payButtonText": {
+                "type": "string",
+                "description": "Text on the final pay button"
+              },
+              "buttonText": {
+                "type": "string",
+                "description": "Text on the step-one continue button"
+              },
+              "buttonSubtext": {
+                "type": "string",
+                "description": "Small text under the continue button"
+              },
+              "noticeText": {
+                "type": "string",
+                "description": "Info notice shown above the form"
+              },
+              "noticeEnabled": {
+                "type": "boolean",
+                "description": "Show the info notice"
+              },
+              "noticeStyle": {
+                "type": "string",
+                "description": "Notice tone",
+                "enum": [
+                  "warning",
+                  "info",
+                  "success",
+                  "minimal"
+                ]
+              },
+              "showCouponField": {
+                "type": "boolean",
+                "description": "Show the coupon input"
+              },
+              "securityBadgesEnabled": {
+                "type": "boolean",
+                "description": "Show security badges"
+              },
+              "badgeText1": {
+                "type": "string",
+                "description": "Security badge line 1"
+              },
+              "badgeText2": {
+                "type": "string",
+                "description": "Security badge line 2"
+              },
+              "guaranteeEnabled": {
+                "type": "boolean",
+                "description": "Show the money-back guarantee block"
+              },
+              "guaranteeText": {
+                "type": "string",
+                "description": "Guarantee heading"
+              },
+              "guaranteeSubtext": {
+                "type": "string",
+                "description": "Guarantee subtext"
+              },
+              "trustHeaderTitle": {
+                "type": "string",
+                "description": "Trust panel title"
+              },
+              "trustHeaderSubtitle": {
+                "type": "string",
+                "description": "Trust panel subtitle"
+              },
+              "showTrustFooter": {
+                "type": "boolean",
+                "description": "Show the trust footer"
+              },
+              "footerText": {
+                "type": "string",
+                "description": "Footer text"
+              },
+              "showPoweredBy": {
+                "type": "boolean",
+                "description": "Show the 'powered by' line"
+              },
+              "defaultPhoneCountry": {
+                "type": "string",
+                "description": "Default ISO2 phone country, e.g. IN",
+                "pattern": "^[A-Za-z]{2}$"
+              },
+              "cardStyle": {
+                "type": "string",
+                "description": "Single-page card scheme: dark (default) or light (honours cardBgColor)",
+                "enum": [
+                  "dark",
+                  "light"
+                ]
+              },
+              "fontScale": {
+                "type": "number",
+                "description": "Global typography multiplier for the whole checkout (e.g. 0.85 shrinks, 1.2 enlarges); default 1",
+                "minimum": 0.6,
+                "maximum": 1.6
+              },
+              "backgroundStyle": {
+                "type": "string",
+                "description": "Page background treatment",
+                "enum": [
+                  "solid",
+                  "gradient",
+                  "animated"
+                ]
+              },
+              "bgGradientFrom": {
+                "type": "string",
+                "description": "Hex color, e.g. #8b5cf6",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "bgGradientVia": {
+                "type": "string",
+                "description": "Hex color, e.g. #8b5cf6",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "bgGradientTo": {
+                "type": "string",
+                "description": "Hex color, e.g. #8b5cf6",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "bgGradientAngle": {
+                "type": "number",
+                "description": "Gradient angle in degrees (default 135)",
+                "minimum": 0,
+                "maximum": 360
+              },
+              "customCss": {
+                "type": "string",
+                "description": "Owner CSS injected scoped under the checkout root (#st-checkout-root) via @scope — style any element to build any layout"
+              },
+              "theme": {
+                "type": "string",
+                "description": "Whole-page palette: dark (default) or light (remaps top bar, footer, notices to light)",
+                "enum": [
+                  "dark",
+                  "light"
+                ]
+              }
+            },
+            "required": [],
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "style"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "brand the checkout rose and gold with a 'Secure your seat' pay button",
+        "set the checkout default phone country to IN and hide the coupon field"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-checkout",
+      "idempotent": true
+    },
+    {
+      "name": "offer.thankyou.setStyle",
+      "namespace": "offer.thankyou",
+      "summary": "Brand the post-payment thank-you page (colors, background, copy, fonts, custom CSS).",
+      "description": "Merges fields into Checkout.thankYouConfig so the live thank-you page matches the offer brand. Only the keys you pass change; omit the rest. Use hex colors. customCss is injected scoped under #st-thankyou-root via @scope so you can style any element.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "style": {
+            "type": "object",
+            "properties": {
+              "headline": {
+                "type": "string",
+                "description": "Big success headline (defaults to 'Payment Successful!')"
+              },
+              "subheadline": {
+                "type": "string",
+                "description": "Sub text under the headline"
+              },
+              "bgColor": {
+                "type": "string",
+                "description": "Hex color, e.g. #8b5cf6",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "backgroundStyle": {
+                "type": "string",
+                "description": "Page background treatment",
+                "enum": [
+                  "solid",
+                  "gradient",
+                  "animated"
+                ]
+              },
+              "bgGradientFrom": {
+                "type": "string",
+                "description": "Hex color, e.g. #8b5cf6",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "bgGradientVia": {
+                "type": "string",
+                "description": "Hex color, e.g. #8b5cf6",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "bgGradientTo": {
+                "type": "string",
+                "description": "Hex color, e.g. #8b5cf6",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "bgGradientAngle": {
+                "type": "number",
+                "description": "Gradient angle in degrees (default 135)",
+                "minimum": 0,
+                "maximum": 360
+              },
+              "fontScale": {
+                "type": "number",
+                "description": "Global typography multiplier (0.85 shrinks, 1.2 enlarges); default 1",
+                "minimum": 0.6,
+                "maximum": 1.6
+              },
+              "theme": {
+                "type": "string",
+                "description": "Card palette: dark (default) or light (readable on a light background)",
+                "enum": [
+                  "dark",
+                  "light"
+                ]
+              },
+              "customCss": {
+                "type": "string",
+                "description": "Owner CSS injected scoped under the thank-you root (#st-thankyou-root) via @scope"
+              },
+              "whatsappLink": {
+                "type": "string",
+                "description": "WhatsApp support/community link"
+              },
+              "contactEmail": {
+                "type": "string",
+                "description": "Support contact email shown to the buyer"
+              },
+              "instagramHandle": {
+                "type": "string",
+                "description": "Instagram handle for follow CTA"
+              },
+              "exploreUrl": {
+                "type": "string",
+                "description": "URL for the 'explore more' button"
+              },
+              "exploreLabel": {
+                "type": "string",
+                "description": "Label for the 'explore more' button"
+              }
+            },
+            "required": [],
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "style"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "make the thank-you page cream with a gold headline 'Welcome to the Glow Ritual'",
+        "add our WhatsApp support link and contact email to the thank-you page"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-checkout",
+      "idempotent": true
+    },
+    {
+      "name": "offer.style.applyPreset",
+      "namespace": "offer.style",
+      "summary": "Apply a curated look (colors, background, fonts) to the checkout and/or thank-you page in one shot.",
+      "description": "Applies a named style preset to the checkout (checkoutStyle) and thank-you (thankYouConfig) surfaces. Preset ids: luxe-cream, midnight-neon, minimal-mono, sunset-glow, ocean-calm, royal-gold. Pass surfaces to limit scope (default both). Fields merge over existing style, so you can preset then fine-tune with setStyle.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "preset": {
+            "type": "string",
+            "description": "Preset id",
+            "enum": [
+              "luxe-cream",
+              "midnight-neon",
+              "minimal-mono",
+              "sunset-glow",
+              "ocean-calm",
+              "royal-gold"
+            ]
+          },
+          "surfaces": {
+            "type": "array",
+            "description": "Which surfaces to style (default both)",
+            "items": {
+              "type": "string",
+              "description": "surface",
+              "enum": [
+                "checkout",
+                "thankyou"
+              ]
+            }
+          }
+        },
+        "required": [
+          "preset"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "apply the luxe-cream preset to this offer",
+        "make the checkout midnight-neon"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-checkout",
+      "idempotent": true
+    },
+    {
+      "name": "offer.style.listPresets",
+      "namespace": "offer.style",
+      "summary": "List the available checkout/thank-you style presets.",
+      "description": "Returns the curated preset gallery (id, label, description) for offer.style.applyPreset.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "what checkout style presets are available?"
+      ],
+      "requires": {
+        "auth": false,
+        "offerName": false
+      },
+      "category": "edit-checkout",
+      "idempotent": true
+    },
+    {
+      "name": "offer.checkout.setGstRate",
+      "namespace": "offer.checkout",
+      "summary": "Set GST percentage used for checkout calculations.",
+      "description": "Persists Checkout.gstRate for future checkout calculators. Current preview defaults to 18% when absent.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "gstRate": {
+            "type": "number",
+            "description": "GST percentage",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "gstRate"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Set GST to 18 percent",
+        "Make GST zero for this offer"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-checkout",
+      "idempotent": true
+    },
+    {
+      "name": "offer.checkout.addBonus",
+      "namespace": "offer.checkout",
+      "summary": "Add or update a checkout bonus.",
+      "description": "Stores a bonus in Checkout.bonuses and mirrors the first bonus to bonusTitle/bonusDescription for the existing UI.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "title": {
+            "type": "string",
+            "description": "Bonus title",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "description": "Bonus description"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Add bonus: lifetime community access",
+        "Add a bonus called 30 prompt templates"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-checkout",
+      "idempotent": false
+    },
+    {
+      "name": "offer.checkout.removeBonus",
+      "namespace": "offer.checkout",
+      "summary": "Remove a checkout bonus by id or title.",
+      "description": "Removes from Checkout.bonuses and refreshes legacy bonusTitle/bonusDescription from the first remaining bonus.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "bonusId": {
+            "type": "string",
+            "description": "Bonus id"
+          },
+          "title": {
+            "type": "string",
+            "description": "Bonus title to match"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Remove the community bonus",
+        "Delete bonus id bonus_123"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-checkout",
+      "idempotent": true
+    },
+    {
+      "name": "offer.checkout.setSuccessMessage",
+      "namespace": "offer.checkout",
+      "summary": "Set thank-you success page copy.",
+      "description": "Updates thankYouConfig.thankYouHeading and thankYouMessage after payment.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "heading": {
+            "type": "string",
+            "description": "Optional success heading"
+          },
+          "message": {
+            "type": "string",
+            "description": "Success message",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Set success message to Welcome to the cohort — check your email"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-checkout",
+      "idempotent": true
+    },
+    {
+      "name": "offer.checkout.setUrgencyText",
+      "namespace": "offer.checkout",
+      "summary": "Set checkout notice/urgency text.",
+      "description": "Updates checkoutStyle.noticeText and enables the notice box.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "urgencyText": {
+            "type": "string",
+            "description": "Urgency or notice copy",
+            "minLength": 1
+          },
+          "style": {
+            "type": "string",
+            "description": "Notice style",
+            "enum": [
+              "warning",
+              "info",
+              "success",
+              "minimal"
+            ]
+          }
+        },
+        "required": [
+          "urgencyText"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Add urgency: Price goes up after midnight"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-checkout",
+      "idempotent": true
+    },
+    {
+      "name": "offer.checkout.addUpsell",
+      "namespace": "offer.checkout",
+      "summary": "Add an upsell to checkout.",
+      "description": "Creates a Checkout.upsells row and optionally selects it by default as an order bump.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "name": {
+            "type": "string",
+            "description": "Upsell name",
+            "minLength": 1
+          },
+          "price": {
+            "type": "number",
+            "description": "Upsell price",
+            "minimum": 0
+          },
+          "description": {
+            "type": "string",
+            "description": "Upsell description"
+          },
+          "isMandatory": {
+            "type": "boolean",
+            "description": "Whether buyer cannot remove it"
+          },
+          "courseId": {
+            "type": "string",
+            "description": "Linked course id"
+          },
+          "selectedByDefault": {
+            "type": "boolean",
+            "description": "Preselect as order bump"
+          }
+        },
+        "required": [
+          "name",
+          "price"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Add upsell: VIP Q&A for ₹499",
+        "Add order bump workbook at 199"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-checkout",
+      "idempotent": false
+    },
+    {
+      "name": "offer.checkout.removeUpsell",
+      "namespace": "offer.checkout",
+      "summary": "Remove an upsell from checkout.",
+      "description": "Removes a Checkout.upsells item by id or name and clears it from defaultUpsells.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "upsellId": {
+            "type": "string",
+            "description": "Upsell id"
+          },
+          "name": {
+            "type": "string",
+            "description": "Upsell name"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Remove VIP Q&A upsell",
+        "Delete upsell upsell_123"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-checkout",
+      "idempotent": true
+    },
+    {
+      "name": "offer.checkout.setOrderBump",
+      "namespace": "offer.checkout",
+      "summary": "Toggle an upsell as selected by default.",
+      "description": "Adds/removes an upsell id from Checkout.defaultUpsells to model an order bump.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "upsellId": {
+            "type": "string",
+            "description": "Upsell id"
+          },
+          "name": {
+            "type": "string",
+            "description": "Upsell name"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether selected by default"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Make the workbook an order bump",
+        "Turn off default VIP Q&A upsell"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-checkout",
+      "idempotent": true
+    },
+    {
+      "name": "offer.theme.applyPreset",
+      "namespace": "offer.theme",
+      "summary": "Apply a curated theme preset.",
+      "description": "Updates offer.theme colors from the same preset vocabulary as the theme editor.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "preset": {
+            "type": "string",
+            "description": "Preset id",
+            "enum": [
+              "modern-purple",
+              "minimal-black",
+              "warm-sunset",
+              "cool-blue",
+              "bold-emerald",
+              "soft-gray"
+            ]
+          }
+        },
+        "required": [
+          "preset"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Apply warm sunset theme",
+        "Make this offer minimal black"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-theme",
+      "idempotent": true,
+      "undoable": true
+    },
+    {
+      "name": "offer.theme.setColors",
+      "namespace": "offer.theme",
+      "summary": "Set offer theme colors.",
+      "description": "Updates primary, secondary, accent, background, and text colors on Offer.theme.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "primaryColor": {
+            "type": "string",
+            "description": "Hex color, e.g. #8b5cf6",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "secondaryColor": {
+            "type": "string",
+            "description": "Hex color, e.g. #8b5cf6",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "accentColor": {
+            "type": "string",
+            "description": "Hex color, e.g. #8b5cf6",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "bgColor": {
+            "type": "string",
+            "description": "Hex color, e.g. #8b5cf6",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "textColor": {
+            "type": "string",
+            "description": "Hex color, e.g. #8b5cf6",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Set primary to #7c3aed and accent to #f59e0b",
+        "Make the background #0f172a and text white"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-theme",
+      "idempotent": true,
+      "undoable": true
+    },
+    {
+      "name": "offer.theme.setFont",
+      "namespace": "offer.theme",
+      "summary": "Set offer font family and scale.",
+      "description": "Updates Offer.theme.fontFamily and optional fontScale.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "fontFamily": {
+            "type": "string",
+            "description": "Font family, e.g. Inter, Poppins, Space Grotesk",
+            "minLength": 1
+          },
+          "fontScale": {
+            "type": "string",
+            "description": "Font scale",
+            "enum": [
+              "small",
+              "medium",
+              "large"
+            ]
+          }
+        },
+        "required": [
+          "fontFamily"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Use Space Grotesk font",
+        "Make font scale large"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-theme",
+      "idempotent": true
+    },
+    {
+      "name": "offer.theme.setRadius",
+      "namespace": "offer.theme",
+      "summary": "Set offer corner radius style.",
+      "description": "Updates Offer.theme.radius.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "radius": {
+            "type": "string",
+            "description": "Radius",
+            "enum": [
+              "none",
+              "subtle",
+              "rounded",
+              "pill"
+            ]
+          }
+        },
+        "required": [
+          "radius"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Make corners pill shaped",
+        "Set radius to subtle"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-theme",
+      "idempotent": true
+    },
+    {
+      "name": "offer.theme.setMeta",
+      "namespace": "offer.theme",
+      "summary": "Set SEO and tracking metadata.",
+      "description": "Updates Offer.meta plus GA4 and Meta Pixel ids used by the theme editor.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "title": {
+            "type": "string",
+            "description": "SEO title"
+          },
+          "description": {
+            "type": "string",
+            "description": "SEO description"
+          },
+          "ogImage": {
+            "type": "string",
+            "description": "Open Graph image URL"
+          },
+          "ga4MeasurementId": {
+            "type": "string",
+            "description": "GA4 Measurement ID"
+          },
+          "metaPixelId": {
+            "type": "string",
+            "description": "Meta Pixel ID"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Set SEO description to Learn AI trading live",
+        "Set Meta pixel id 123456789"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "edit-theme",
+      "idempotent": true
+    },
+    {
+      "name": "offer.coupon.create",
+      "namespace": "offer.coupon",
+      "summary": "Create a coupon for an offer.",
+      "description": "Creates SQL coupon state and mirrors to Checkout.coupons for legacy offer-studio readers.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "code": {
+            "type": "string",
+            "description": "Coupon code, 3-20 uppercase letters/numbers.",
+            "minLength": 3,
+            "maxLength": 20,
+            "pattern": "^[A-Za-z0-9]+$"
+          },
+          "discountType": {
+            "type": "string",
+            "description": "Discount type",
+            "enum": [
+              "percent",
+              "flat"
+            ]
+          },
+          "discountValue": {
+            "type": "number",
+            "description": "Discount percent or flat INR amount",
+            "minimum": 1
+          },
+          "maxUses": {
+            "type": "integer",
+            "description": "0 means unlimited",
+            "minimum": 0,
+            "default": 0
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "ISO date/time or YYYY-MM-DD; omit for never."
+          }
+        },
+        "required": [
+          "code",
+          "discountType",
+          "discountValue"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Create SAVE20 coupon for 20% off",
+        "Add flat ₹500 off code LAUNCH500"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "coupons",
+      "idempotent": false
+    },
+    {
+      "name": "offer.coupon.update",
+      "namespace": "offer.coupon",
+      "summary": "Update a coupon's discount, expiry, max uses, or active flag.",
+      "description": "Updates SQL coupon state and mirrors changed fields to Checkout.coupons.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "code": {
+            "type": "string",
+            "description": "Coupon code, 3-20 uppercase letters/numbers.",
+            "minLength": 3,
+            "maxLength": 20,
+            "pattern": "^[A-Za-z0-9]+$"
+          },
+          "updates": {
+            "type": "object",
+            "properties": {
+              "discountType": {
+                "type": "string",
+                "description": "Discount type",
+                "enum": [
+                  "percent",
+                  "flat"
+                ]
+              },
+              "discountValue": {
+                "type": "number",
+                "description": "Discount percent or flat INR amount",
+                "minimum": 1
+              },
+              "maxUses": {
+                "type": "integer",
+                "description": "0 means unlimited",
+                "minimum": 0,
+                "default": 0
+              },
+              "expiresAt": {
+                "type": "string",
+                "description": "ISO date/time or YYYY-MM-DD; omit for never."
+              },
+              "active": {
+                "type": "boolean",
+                "description": "Whether coupon is active"
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "code",
+          "updates"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Change SAVE20 to 25% off",
+        "Pause coupon LAUNCH500"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "coupons",
+      "idempotent": true
+    },
+    {
+      "name": "offer.coupon.delete",
+      "namespace": "offer.coupon",
+      "summary": "Delete/deactivate a coupon.",
+      "description": "Soft-deletes SQL coupon state and removes the coupon from Checkout.coupons.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "code": {
+            "type": "string",
+            "description": "Coupon code, 3-20 uppercase letters/numbers.",
+            "minLength": 3,
+            "maxLength": 20,
+            "pattern": "^[A-Za-z0-9]+$"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Delete SAVE20 coupon",
+        "Remove launch code"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "coupons",
+      "idempotent": true
+    },
+    {
+      "name": "offer.coupon.expire",
+      "namespace": "offer.coupon",
+      "summary": "Expire a coupon immediately or at a specified date.",
+      "description": "Sets expiresAt/validTo for the coupon while keeping redemption history intact.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "code": {
+            "type": "string",
+            "description": "Coupon code, 3-20 uppercase letters/numbers.",
+            "minLength": 3,
+            "maxLength": 20,
+            "pattern": "^[A-Za-z0-9]+$"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "Expiry ISO date. Defaults to now."
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Expire SAVE20 now",
+        "Make EARLYBIRD expire tomorrow"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "coupons",
+      "idempotent": true
+    },
+    {
+      "name": "offer.email.setSubject",
+      "namespace": "offer.email",
+      "summary": "Set email subject line.",
+      "description": "Updates the purchase confirmation template subject for an offer.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "value": {
+            "type": "string",
+            "description": "Email subject line",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Set email subject line to Payment confirmed"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "emails",
+      "idempotent": true,
+      "undoable": true
+    },
+    {
+      "name": "offer.email.setBody",
+      "namespace": "offer.email",
+      "summary": "Set html email body.",
+      "description": "Updates the purchase confirmation template body for an offer.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "value": {
+            "type": "string",
+            "description": "HTML email body",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Set html email body to Payment confirmed"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "emails",
+      "idempotent": true,
+      "undoable": true
+    },
+    {
+      "name": "offer.email.setReplyTo",
+      "namespace": "offer.email",
+      "summary": "Set reply-to email address.",
+      "description": "Updates the purchase confirmation template replyTo for an offer.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "value": {
+            "type": "string",
+            "description": "Reply-to email address",
+            "minLength": 0
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Set reply-to email address to Payment confirmed"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "emails",
+      "idempotent": true,
+      "undoable": true
+    },
+    {
+      "name": "offer.email.sendTest",
+      "namespace": "offer.email",
+      "summary": "Send a test purchase email.",
+      "description": "Sends the current email template to a test recipient through the configured server email provider.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "to": {
+            "type": "string",
+            "description": "Recipient email",
+            "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+          }
+        },
+        "required": [
+          "to"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Send a test email to me@example.com"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "emails",
+      "idempotent": false
+    },
+    {
+      "name": "offer.media.upload",
+      "namespace": "offer.media",
+      "summary": "Upload an offer media image from a data URL.",
+      "description": "Accepts a base64 data URL and stores it in the current user's offer-media blob prefix.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "dataUrl": {
+            "type": "string",
+            "description": "data:image/...;base64,...",
+            "minLength": 20
+          },
+          "fileName": {
+            "type": "string",
+            "description": "Original file name",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "dataUrl",
+          "fileName"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Upload this generated hero image",
+        "Add logo.png to media library"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "media",
+      "idempotent": false
+    },
+    {
+      "name": "offer.media.list",
+      "namespace": "offer.media",
+      "summary": "List offer media library files.",
+      "description": "Lists images in the current user's offer-media blob prefix.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Optional content type filter like image/png"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Show my media library",
+        "List PNG images"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "media",
+      "idempotent": true
+    },
+    {
+      "name": "offer.media.delete",
+      "namespace": "offer.media",
+      "summary": "Delete an offer media image.",
+      "description": "Deletes a blob only if it belongs to the current user's offer-media prefix.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Media file name relative to your library"
+          },
+          "url": {
+            "type": "string",
+            "description": "Full media URL"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Delete old-hero.png",
+        "Remove this media URL"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "media",
+      "idempotent": true
+    },
+    {
+      "name": "offer.builder.list",
+      "namespace": "offer.builder",
+      "summary": "List Section Builder sections and page settings.",
+      "description": "Returns persisted sections plus page-level margins/gap from the offer document.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [
+          "offerName"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "show builder sections",
+        "list the landing page sections",
+        "what sections are on this offer?"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": true
+    },
+    {
+      "name": "offer.builder.listTemplates",
+      "namespace": "offer.builder",
+      "summary": "List Section Builder starter templates.",
+      "description": "Returns stable template ids for the selected surface: sales-page starter templates or curated checkout, thank-you and email templates.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "description": "Template category",
+            "enum": [
+              "hero",
+              "content",
+              "social-proof",
+              "conversion",
+              "structure"
+            ]
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "show section templates",
+        "list hero templates",
+        "what pricing sections can I use?"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "builder",
+      "idempotent": true
+    },
+    {
+      "name": "offer.builder.listPresets",
+      "namespace": "offer.builder",
+      "summary": "List curated Section Builder page presets.",
+      "description": "Returns workshop, course, coaching, and digital-product page presets made from real starter template ids.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "show page presets",
+        "what landing page presets are available?",
+        "list builder presets"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "builder",
+      "idempotent": true
+    },
+    {
+      "name": "offer.builder.add",
+      "namespace": "offer.builder",
+      "summary": "Add a new Section Builder section.",
+      "description": "Creates a section from a template id or a blank placeholder, compiles JSX, inserts at the requested index, and persists the offer.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "type": {
+            "type": "string",
+            "description": "Semantic section type",
+            "minLength": 1
+          },
+          "templateId": {
+            "type": "string",
+            "description": "Template id from offer.builder.listTemplates",
+            "minLength": 1
+          },
+          "position": {
+            "type": "integer",
+            "description": "0-based insertion index"
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [
+          "offerName",
+          "type"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "add a pricing section",
+        "insert a hero at the top",
+        "add the FAQ template"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": false
+    },
+    {
+      "name": "offer.builder.remove",
+      "namespace": "offer.builder",
+      "summary": "Remove a Section Builder section.",
+      "description": "Deletes one section by id, reorders remaining sections, and persists the offer.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          },
+          "sectionId": {
+            "type": "string",
+            "description": "Section id",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "offerName",
+          "sectionId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "delete the FAQ",
+        "remove this section",
+        "drop section section_123"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": true
+    },
+    {
+      "name": "offer.builder.move",
+      "namespace": "offer.builder",
+      "summary": "Move or reorder a Section Builder section.",
+      "description": "Moves a section up/down or to an explicit 0-based index, then saves normalized section order.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          },
+          "sectionId": {
+            "type": "string",
+            "description": "Section id",
+            "minLength": 1
+          },
+          "direction": {
+            "type": "string",
+            "description": "Move direction",
+            "enum": [
+              "up",
+              "down"
+            ]
+          },
+          "index": {
+            "type": "integer",
+            "description": "Explicit 0-based target index"
+          }
+        },
+        "required": [
+          "offerName",
+          "sectionId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "move the pricing section up",
+        "put FAQ at the end",
+        "move this section to index 2"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": false
+    },
+    {
+      "name": "offer.builder.duplicate",
+      "namespace": "offer.builder",
+      "summary": "Duplicate a Section Builder section.",
+      "description": "Clones section code/settings into a fresh section inserted after the original.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          },
+          "sectionId": {
+            "type": "string",
+            "description": "Section id",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "offerName",
+          "sectionId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "duplicate this section",
+        "copy the hero",
+        "make another testimonial block"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": false
+    },
+    {
+      "name": "offer.builder.rename",
+      "namespace": "offer.builder",
+      "summary": "Rename a Section Builder section.",
+      "description": "Updates the persisted section name without changing its JSX.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "sectionId": {
+            "type": "string",
+            "description": "Section id",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "New section name",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [
+          "offerName",
+          "sectionId",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "rename this to Hero",
+        "call the FAQ Questions",
+        "change section name to Bonuses"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": true
+    },
+    {
+      "name": "offer.builder.setSpacing",
+      "namespace": "offer.builder",
+      "summary": "Set per-section vertical spacing and text alignment.",
+      "description": "Updates marginTop, marginBottom, and/or textAlign for one section. Margins are clamped to the same 0-200px range as the REST route.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "sectionId": {
+            "type": "string",
+            "description": "Section id",
+            "minLength": 1
+          },
+          "marginTop": {
+            "type": "number",
+            "description": "Top margin in px"
+          },
+          "marginBottom": {
+            "type": "number",
+            "description": "Bottom margin in px"
+          },
+          "textAlign": {
+            "type": "string",
+            "enum": [
+              "left",
+              "center",
+              "right"
+            ],
+            "description": "Text alignment cascaded to the section wrapper"
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [
+          "offerName",
+          "sectionId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "add more space above this section",
+        "set hero bottom margin to 48",
+        "center-align the pricing section",
+        "remove spacing under FAQ"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": true
+    },
+    {
+      "name": "offer.builder.setHidden",
+      "namespace": "offer.builder",
+      "summary": "Show or hide a Section Builder section.",
+      "description": "Toggles the section hidden flag used by the simplified builder preview/public page.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          },
+          "sectionId": {
+            "type": "string",
+            "description": "Section id",
+            "minLength": 1
+          },
+          "hidden": {
+            "type": "boolean",
+            "description": "Whether the section is hidden"
+          }
+        },
+        "required": [
+          "offerName",
+          "sectionId",
+          "hidden"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "hide the FAQ",
+        "show this section again",
+        "make the pricing section invisible"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": true
+    },
+    {
+      "name": "offer.builder.setPageSettings",
+      "namespace": "offer.builder",
+      "summary": "Set Section Builder page-level spacing.",
+      "description": "Updates pageMarginTop, pageMarginBottom, sectionGap, (checkout) presentationMode, and (email) senderName/senderEmail/replyTo/subject/preheader on the offer document or surface.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          },
+          "pageMarginTop": {
+            "type": "number",
+            "description": "Top page margin in px"
+          },
+          "pageMarginBottom": {
+            "type": "number",
+            "description": "Bottom page margin in px"
+          },
+          "sectionGap": {
+            "type": "number",
+            "description": "Gap between sections in px"
+          },
+          "presentationMode": {
+            "type": "string",
+            "description": "Checkout presentation mode",
+            "enum": [
+              "page",
+              "drawer",
+              "dialog",
+              "inline"
+            ]
+          },
+          "senderName": {
+            "type": "string",
+            "description": "Email from-name shown in the inbox"
+          },
+          "senderEmail": {
+            "type": "string",
+            "description": "Email from-address"
+          },
+          "replyTo": {
+            "type": "string",
+            "description": "Email reply-to address"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Email subject line"
+          },
+          "preheader": {
+            "type": "string",
+            "description": "Email preheader (inbox preview snippet)"
+          }
+        },
+        "required": [
+          "offerName"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "set page top margin to 40",
+        "make section gap 24",
+        "remove page bottom padding",
+        "show checkout as a drawer",
+        "set email subject to 'Welcome!'"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": true
+    },
+    {
+      "name": "offer.builder.updateCode",
+      "namespace": "offer.builder",
+      "summary": "Replace a section's JSX code.",
+      "description": "Transpiles the supplied JSX/TSX and saves code plus compiledCode for the target section.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "sectionId": {
+            "type": "string",
+            "description": "Section id",
+            "minLength": 1
+          },
+          "code": {
+            "type": "string",
+            "description": "Full section JSX/TSX code",
+            "minLength": 1
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [
+          "offerName",
+          "sectionId",
+          "code"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "save this section code",
+        "replace the hero JSX",
+        "update the FAQ code"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": true
+    },
+    {
+      "name": "offer.builder.rewriteWithAI",
+      "namespace": "offer.builder",
+      "summary": "Rewrite a section's JSX with AI.",
+      "description": "Loads existing section code, asks the LLM for a replacement JSX expression, validates/transpiles with one retry, then persists code and compiledCode.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "sectionId": {
+            "type": "string",
+            "description": "Section id",
+            "minLength": 1
+          },
+          "prompt": {
+            "type": "string",
+            "description": "Rewrite instruction",
+            "minLength": 1
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [
+          "offerName",
+          "sectionId",
+          "prompt"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "make the hero more urgent",
+        "rewrite this FAQ to be clearer",
+        "make the pricing section more premium"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": false
+    },
+    {
+      "name": "offer.builder.swapTemplate",
+      "namespace": "offer.builder",
+      "summary": "Swap a section to another starter template.",
+      "description": "Looks up a real STARTER_TEMPLATES id, replaces code/compiledCode/type/name, and preserves id, order, margins, and hidden state.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          },
+          "sectionId": {
+            "type": "string",
+            "description": "Section id",
+            "minLength": 1
+          },
+          "templateId": {
+            "type": "string",
+            "description": "Template id from offer.builder.listTemplates",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "offerName",
+          "sectionId",
+          "templateId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "swap this section to a pricing template",
+        "use the countdown hero template",
+        "change this block to testimonials"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": true
+    },
+    {
+      "name": "offer.builder.generatePage",
+      "namespace": "offer.builder",
+      "summary": "Generate a full Section Builder page with AI.",
+      "description": "Asks AI for a JSON section outline, maps each outline item to the closest real starter template when possible, generates JSX only as fallback, then saves all sections in one update.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "prompt": {
+            "type": "string",
+            "description": "What the generated page should sell and to whom",
+            "minLength": 1
+          },
+          "style": {
+            "type": "string",
+            "description": "Optional style hint"
+          },
+          "mode": {
+            "type": "string",
+            "description": "Whether to replace or append sections",
+            "enum": [
+              "replace",
+              "append"
+            ],
+            "default": "replace"
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [
+          "offerName",
+          "prompt"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "generate a workshop page for my AI cohort",
+        "append a product launch page section set",
+        "make a premium landing page for this course"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": false
+    },
+    {
+      "name": "offer.builder.applyPagePreset",
+      "namespace": "offer.builder",
+      "summary": "Apply a curated Section Builder page preset.",
+      "description": "Expands a preset's real template ids into fresh compiled sections and saves them with replace/append semantics.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "presetId": {
+            "type": "string",
+            "description": "Preset id",
+            "minLength": 1
+          },
+          "mode": {
+            "type": "string",
+            "description": "Whether to replace or append sections",
+            "enum": [
+              "replace",
+              "append"
+            ],
+            "default": "replace"
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [
+          "offerName",
+          "presetId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "apply the workshop preset",
+        "replace page with the course preset",
+        "append the digital product preset"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": false
+    },
+    {
+      "name": "offer.builder.listActions",
+      "namespace": "offer.builder",
+      "summary": "List builtin + custom actions for this offer.",
+      "description": "Returns the 12 builtin action definitions plus any custom actions stored on the offer doc, optionally filtered to a surface.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [
+          "offerName"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "list actions",
+        "what actions can I use on the checkout page?",
+        "show custom actions"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": true
+    },
+    {
+      "name": "offer.builder.createAction",
+      "namespace": "offer.builder",
+      "summary": "Create a custom action.",
+      "description": "Adds a custom action to offer.customActions. Names must be unique among builtins and existing custom actions.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "name": {
+            "type": "string",
+            "description": "Kebab-case identifier used in useAction()",
+            "minLength": 1,
+            "pattern": "^[a-z][a-zA-Z0-9-]*$"
+          },
+          "label": {
+            "type": "string",
+            "description": "Human label",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "description": "Client or server",
+            "enum": [
+              "client",
+              "server"
+            ]
+          },
+          "scope": {
+            "type": "string",
+            "description": "Scope",
+            "enum": [
+              "section",
+              "offer",
+              "global"
+            ]
+          },
+          "params": {
+            "type": "array",
+            "description": "Param schema entries",
+            "items": {
+              "type": "object",
+              "description": "Param entry",
+              "additionalProperties": true
+            }
+          },
+          "body": {
+            "type": "string",
+            "description": "Client-side JS body"
+          },
+          "endpointUrl": {
+            "type": "string",
+            "description": "Server endpoint URL"
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [
+          "offerName",
+          "name",
+          "label",
+          "kind"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "create a custom action called book-slot",
+        "add a client action that shows a modal"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": false
+    },
+    {
+      "name": "offer.builder.updateAction",
+      "namespace": "offer.builder",
+      "summary": "Update a custom action.",
+      "description": "Patch fields on an existing custom action by id. Name renames are validated for uniqueness.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "actionId": {
+            "type": "string",
+            "description": "Custom action id",
+            "minLength": 1
+          },
+          "patch": {
+            "type": "object",
+            "description": "Partial patch",
+            "additionalProperties": true
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [
+          "offerName",
+          "actionId",
+          "patch"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "rename this action",
+        "change the endpoint URL of the book-slot action"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": false
+    },
+    {
+      "name": "offer.builder.deleteAction",
+      "namespace": "offer.builder",
+      "summary": "Delete a custom action.",
+      "description": "Removes a custom action by id. Existing attach bindings referencing it become no-ops at runtime.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "actionId": {
+            "type": "string",
+            "description": "Custom action id",
+            "minLength": 1
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [
+          "offerName",
+          "actionId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "delete the book-slot action"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": true
+    },
+    {
+      "name": "offer.builder.attachAction",
+      "namespace": "offer.builder",
+      "summary": "Attach an action to a specific element in a section.",
+      "description": "Writes an entry into section.actionBindings[attachId] which the sandbox reads at compile time to wire onClick/onSubmit handlers.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "sectionId": {
+            "type": "string",
+            "description": "Section id",
+            "minLength": 1
+          },
+          "attachId": {
+            "type": "string",
+            "description": "Stable element id",
+            "minLength": 1
+          },
+          "binding": {
+            "type": "object",
+            "description": "{ actionId, params, order }",
+            "additionalProperties": true
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [
+          "offerName",
+          "sectionId",
+          "attachId",
+          "binding"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "wire validateEmail to the email input",
+        "attach applyCoupon to the Apply button"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": false
+    },
+    {
+      "name": "offer.builder.detachAction",
+      "namespace": "offer.builder",
+      "summary": "Detach an action from an element.",
+      "description": "Removes one binding (by actionId) or clears all bindings for an element when actionId is omitted.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "sectionId": {
+            "type": "string",
+            "description": "Section id",
+            "minLength": 1
+          },
+          "attachId": {
+            "type": "string",
+            "description": "Stable element id",
+            "minLength": 1
+          },
+          "actionId": {
+            "type": "string",
+            "description": "Optional action id"
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [
+          "offerName",
+          "sectionId",
+          "attachId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "remove all actions from this button",
+        "detach validateEmail from the email input"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": true
+    },
+    {
+      "name": "offer.builder.generateAction",
+      "namespace": "offer.builder",
+      "summary": "AI-generate a custom action from a natural-language prompt.",
+      "description": "Uses AI to draft a CustomAction (client or server) from a prompt and stores it on the offer doc.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "prompt": {
+            "type": "string",
+            "description": "What should the action do?",
+            "minLength": 4
+          },
+          "surface": {
+            "type": "string",
+            "description": "Surface (offer|checkout|thankyou|email). Defaults to 'offer'.",
+            "enum": [
+              "offer",
+              "checkout",
+              "thankyou",
+              "email"
+            ],
+            "default": "offer"
+          }
+        },
+        "required": [
+          "offerName",
+          "prompt"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "create an action that opens WhatsApp with a prefilled message",
+        "make an action that copies the affiliate link to clipboard"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "builder",
+      "idempotent": false
+    },
+    {
+      "name": "offer.generatePage",
+      "namespace": "offer",
+      "summary": "Generate a full offer page section plan with AI.",
+      "description": "Uses AI to compose section stubs from pageTemplates, then writes Offer.sections.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "prompt": {
+            "type": "string",
+            "description": "What the page should sell and to whom",
+            "minLength": 10
+          },
+          "template": {
+            "type": "string",
+            "description": "Optional template hint"
+          }
+        },
+        "required": [
+          "prompt"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Generate a landing page for a 2-hour AI trading workshop",
+        "Make this page more premium and cohort-based"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "create",
+      "idempotent": false
+    },
+    {
+      "name": "offer.rewriteCopy",
+      "namespace": "offer",
+      "summary": "Rewrite offer copy with AI in a target tone.",
+      "description": "Rewrites title/meta/sections/email copy while preserving structure. Use for tone shifts, shorter hooks, or urgency.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "target": {
+            "type": "string",
+            "description": "Copy target",
+            "enum": [
+              "title",
+              "metaDescription",
+              "sections",
+              "emailSubject",
+              "emailBody"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "description": "Tone: premium, punchy, Hinglish, warm, urgent, etc.",
+            "minLength": 2
+          },
+          "prompt": {
+            "type": "string",
+            "description": "Additional rewrite instruction"
+          }
+        },
+        "required": [
+          "target",
+          "tone"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Rewrite the page copy to be more premium",
+        "Make email subject punchier"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "create",
+      "idempotent": false
+    },
+    {
+      "name": "offer.suggestPricing",
+      "namespace": "offer",
+      "summary": "Suggest pricing for an offer with AI.",
+      "description": "Returns category-aware INR price anchors and rationale. Does not mutate checkout unless paired with setBasePrice.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "category": {
+            "type": "string",
+            "description": "Offer category"
+          },
+          "audience": {
+            "type": "string",
+            "description": "Target audience"
+          },
+          "deliverables": {
+            "type": "string",
+            "description": "What buyer gets"
+          },
+          "targetRevenue": {
+            "type": "number",
+            "description": "Optional target revenue in INR"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Suggest pricing for a beginner trading workshop",
+        "What should I charge for this cohort?"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": false
+      },
+      "category": "analytics",
+      "idempotent": true
+    },
+    {
+      "name": "offer.digital.getConfig",
+      "namespace": "offer.digital",
+      "summary": "Read the digital delivery / lead-capture config.",
+      "description": "Returns the offer's digitalDelivery config: mode (paid|free), lead-capture form fields, capture copy (headline/subheadline/success), consent requirement, and the optional nurture CTA.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Show the lead capture settings",
+        "Is this offer free or paid?",
+        "What fields does the form ask for?"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "digital",
+      "idempotent": true
+    },
+    {
+      "name": "offer.digital.setMode",
+      "namespace": "offer.digital",
+      "summary": "Set the offer to a paid product or a free lead magnet.",
+      "description": "Sets digitalDelivery.mode. 'paid' sells the linked products via checkout; 'free' gates delivery behind a lead-capture form (name/email/phone etc.) with no payment, then delivers over email + WhatsApp + on-page.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "mode": {
+            "type": "string",
+            "description": "Delivery mode",
+            "enum": [
+              "paid",
+              "free"
+            ]
+          }
+        },
+        "required": [
+          "mode"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Make this a free lead magnet",
+        "Switch this offer to paid",
+        "Give this away for just an email"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "digital",
+      "idempotent": true,
+      "undoable": true
+    },
+    {
+      "name": "offer.digital.setCapture",
+      "namespace": "offer.digital",
+      "summary": "Set the free lead-capture copy and consent.",
+      "description": "Updates the free-mode capture form's headline, subheadline, on-submit success message, and whether a marketing-consent checkbox is required. Only provided fields change.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "headline": {
+            "type": "string",
+            "description": "Headline above the capture form"
+          },
+          "subheadline": {
+            "type": "string",
+            "description": "Sub-copy under the headline"
+          },
+          "successMessage": {
+            "type": "string",
+            "description": "Message shown on-page after a successful capture"
+          },
+          "requireConsent": {
+            "type": "boolean",
+            "description": "Require a marketing-consent checkbox before submit"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Set the capture headline to 'Get the free checklist'",
+        "Turn off the consent checkbox",
+        "Change the success message to 'Check your inbox'"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "digital",
+      "idempotent": true
+    },
+    {
+      "name": "offer.digital.setFormFields",
+      "namespace": "offer.digital",
+      "summary": "Replace the entire lead-capture form.",
+      "description": "Replaces digitalDelivery.formFields with the given ordered list. Each field has key, type (text|email|tel|number|textarea|select|radio|checkbox|date|consent), label, and optional placeholder/helpText/required/options/consentText. Keys must be unique; choice fields need options.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "fields": {
+            "type": "array",
+            "description": "The full ordered list of capture form fields",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "description": "Stable unique key used in the responses map, e.g. 'company'.",
+                  "minLength": 1,
+                  "maxLength": 60,
+                  "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Field input type",
+                  "enum": [
+                    "text",
+                    "email",
+                    "tel",
+                    "number",
+                    "textarea",
+                    "select",
+                    "radio",
+                    "checkbox",
+                    "date",
+                    "consent"
+                  ]
+                },
+                "label": {
+                  "type": "string",
+                  "description": "Field label shown to the user",
+                  "minLength": 1
+                },
+                "placeholder": {
+                  "type": "string",
+                  "description": "Placeholder text"
+                },
+                "helpText": {
+                  "type": "string",
+                  "description": "Helper text shown under the field"
+                },
+                "required": {
+                  "type": "boolean",
+                  "description": "Whether the field must be filled"
+                },
+                "options": {
+                  "type": "array",
+                  "description": "Choices for select/radio/checkbox fields",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "type": "string",
+                        "description": "Option label shown to the user"
+                      },
+                      "value": {
+                        "type": "string",
+                        "description": "Stored option value"
+                      }
+                    },
+                    "required": [
+                      "label",
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "consentText": {
+                  "type": "string",
+                  "description": "Opt-in text (consent type only)"
+                }
+              },
+              "required": [
+                "key",
+                "type",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "fields"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Set the form to name, email, and company",
+        "Ask only for email and WhatsApp number",
+        "Add a dropdown for team size"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "digital",
+      "idempotent": true,
+      "undoable": true
+    },
+    {
+      "name": "offer.digital.addFormField",
+      "namespace": "offer.digital",
+      "summary": "Add (or replace) one lead-capture field.",
+      "description": "Appends a field to the capture form, or replaces the existing field with the same key. Optionally insert at a 0-based position. Choice types (select/radio/checkbox) require options.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "key": {
+            "type": "string",
+            "description": "Stable unique field key, e.g. 'company'",
+            "minLength": 1,
+            "maxLength": 60,
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+          },
+          "type": {
+            "type": "string",
+            "description": "Field input type",
+            "enum": [
+              "text",
+              "email",
+              "tel",
+              "number",
+              "textarea",
+              "select",
+              "radio",
+              "checkbox",
+              "date",
+              "consent"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "description": "Field label",
+            "minLength": 1
+          },
+          "placeholder": {
+            "type": "string",
+            "description": "Placeholder text"
+          },
+          "helpText": {
+            "type": "string",
+            "description": "Helper text under the field"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether the field is required"
+          },
+          "options": {
+            "type": "array",
+            "description": "Choices for select/radio/checkbox",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "description": "Option label shown to the user"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "Stored option value"
+                }
+              },
+              "required": [
+                "label",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "consentText": {
+            "type": "string",
+            "description": "Opt-in text (consent type only)"
+          },
+          "position": {
+            "type": "integer",
+            "description": "0-based index to insert at; appends when omitted",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "key",
+          "type",
+          "label"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Add a required 'company' text field",
+        "Ask for city as an optional field",
+        "Insert a WhatsApp number field at the top"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "digital",
+      "idempotent": false
+    },
+    {
+      "name": "offer.digital.removeFormField",
+      "namespace": "offer.digital",
+      "summary": "Remove a lead-capture field by key.",
+      "description": "Removes the capture-form field with the given key. Fails if it would leave the form empty (a form must keep at least one field).",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "key": {
+            "type": "string",
+            "description": "Key of the field to remove",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Remove the phone field",
+        "Drop the company question"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "digital",
+      "idempotent": false,
+      "undoable": true
+    },
+    {
+      "name": "offer.digital.setNurture",
+      "namespace": "offer.digital",
+      "summary": "Set or clear the post-delivery nurture CTA.",
+      "description": "Sets an optional next-step CTA appended to the delivery email (e.g. a paid upgrade). Pass both label and url to set it, or clear:true (or empty label+url) to remove it.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "label": {
+            "type": "string",
+            "description": "CTA button label, e.g. 'Join the full course'"
+          },
+          "url": {
+            "type": "string",
+            "description": "CTA destination URL"
+          },
+          "clear": {
+            "type": "boolean",
+            "description": "Set true to remove the nurture CTA"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Add a 'Join the paid cohort' button linking to my checkout",
+        "Remove the nurture CTA"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "digital",
+      "idempotent": true,
+      "undoable": true
+    },
+    {
+      "name": "offer.digital.generateForm",
+      "namespace": "offer.digital",
+      "summary": "AI-generate the lead-capture form from a description.",
+      "description": "Given a natural-language description of what to collect, generates a validated capture-form field list and applies it. Keeps forms short and high-converting; always includes an email field.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "description": {
+            "type": "string",
+            "description": "What the form should collect, e.g. 'name, work email, company size dropdown, and consent'",
+            "minLength": 3
+          }
+        },
+        "required": [
+          "description"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "Generate a form asking for name, work email, and company size",
+        "Build a lead form for a fitness ebook"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "digital",
+      "idempotent": false
+    },
+    {
+      "name": "offer.product.list",
+      "namespace": "offer.product",
+      "summary": "List the creator's digital products.",
+      "description": "Returns the caller's reusable digital products (library), each with id, type, title, price (amountPaise), status, and deliverables. Use ids with offer.product.attachToOffer.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Optional status filter, e.g. 'active'"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "list my digital products",
+        "what products do I have"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "digital",
+      "idempotent": true
+    },
+    {
+      "name": "offer.product.get",
+      "namespace": "offer.product",
+      "summary": "Get one digital product by id.",
+      "description": "Fetches a single product the caller owns, including its full deliverable list.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "Product id",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "productId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "show product prod_123"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "digital",
+      "idempotent": true
+    },
+    {
+      "name": "offer.product.create",
+      "namespace": "offer.product",
+      "summary": "Create a digital product (optionally attach to the offer).",
+      "description": "Creates a reusable digital product. amountPaise is the price in paise (0 = free / lead-magnet eligible). type defaults from the deliverables/bundle (FILE_DOWNLOAD, EXTERNAL_LINK, or BUNDLE). File deliverables require the private blobPath returned by POST /api/digital-products/upload (Desktop: /api/bridge/offer-studio/product-upload), never public offer.media.upload images. capabilityId optionally grants an in-app capability on purchase. Set attachToOffer=true to link it to the current offer in one step.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Product title",
+            "minLength": 1,
+            "maxLength": 140
+          },
+          "type": {
+            "type": "string",
+            "description": "Product type (auto-inferred if omitted)",
+            "enum": [
+              "FILE_DOWNLOAD",
+              "EXTERNAL_LINK",
+              "BUNDLE"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "Short description"
+          },
+          "amountPaise": {
+            "type": "integer",
+            "description": "Price in paise (0 = free)",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string",
+            "description": "ISO currency code",
+            "default": "INR"
+          },
+          "capabilityId": {
+            "type": "string",
+            "description": "Capability id granted on purchase (optional)"
+          },
+          "deliverables": {
+            "type": "array",
+            "description": "Files/links the buyer or lead receives",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Stable deliverable id (auto-generated if omitted)"
+                },
+                "kind": {
+                  "type": "string",
+                  "description": "Deliverable kind",
+                  "enum": [
+                    "file",
+                    "url"
+                  ]
+                },
+                "label": {
+                  "type": "string",
+                  "description": "Human label shown on the delivery surface, e.g. 'Workbook PDF'"
+                },
+                "blobPath": {
+                  "type": "string",
+                  "description": "For kind=file: private blob path returned by POST /api/digital-products/upload (Desktop product-upload adapter)"
+                },
+                "fileName": {
+                  "type": "string",
+                  "description": "Original/display file name"
+                },
+                "url": {
+                  "type": "string",
+                  "description": "For kind=url: the external destination"
+                },
+                "sizeBytes": {
+                  "type": "integer",
+                  "description": "File size in bytes",
+                  "minimum": 0
+                },
+                "contentType": {
+                  "type": "string",
+                  "description": "MIME type of the file"
+                }
+              },
+              "required": [
+                "kind",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "bundleChildIds": {
+            "type": "array",
+            "description": "Child product ids (BUNDLE only)",
+            "items": {
+              "type": "string",
+              "description": "Product id"
+            }
+          },
+          "attachToOffer": {
+            "type": "boolean",
+            "description": "Also attach the new product to the current offer"
+          },
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "create a free ebook product with this uploaded pdf",
+        "create a ₹499 product called Notion Templates"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "digital",
+      "idempotent": false
+    },
+    {
+      "name": "offer.product.update",
+      "namespace": "offer.product",
+      "summary": "Update a digital product's fields.",
+      "description": "Patches an existing product (title, description, price, currency, type, status). bundleChildIds replaces an owned BUNDLE's child selection; children must be owned non-bundle products. Does not touch deliverables — use offer.product.addDeliverable / removeDeliverable for those.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "Product id",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "description": "New title",
+            "maxLength": 140
+          },
+          "type": {
+            "type": "string",
+            "description": "New type",
+            "enum": [
+              "FILE_DOWNLOAD",
+              "EXTERNAL_LINK",
+              "BUNDLE"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "New description"
+          },
+          "amountPaise": {
+            "type": "integer",
+            "description": "New price in paise",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string",
+            "description": "New currency code"
+          },
+          "status": {
+            "type": "string",
+            "description": "New status, e.g. 'active'"
+          },
+          "capabilityId": {
+            "type": "string",
+            "description": "Capability id granted on purchase (optional)"
+          },
+          "bundleChildIds": {
+            "type": "array",
+            "description": "Replace bundle child products with this ordered nonempty owned-product selection",
+            "items": {
+              "type": "string",
+              "description": "Owned non-bundle product id",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "productId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "rename product prod_1 to Pro Pack",
+        "set product prod_1 price to ₹999"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "digital",
+      "idempotent": false
+    },
+    {
+      "name": "offer.product.remove",
+      "namespace": "offer.product",
+      "summary": "Delete a digital product.",
+      "description": "Soft-deletes a product the caller owns (status='deleted'). The product is removed from the library and drops out of any offer's attached list. Existing links are left in place but ignored. Proceed only when the user explicitly asks to delete.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "Product id",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "productId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "delete product prod_1",
+        "remove the old ebook product"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "digital",
+      "idempotent": true
+    },
+    {
+      "name": "offer.product.restore",
+      "namespace": "offer.product",
+      "summary": "Restore a deleted digital product.",
+      "description": "Reactivates a product that was soft-deleted with offer.product.remove (status back to 'active'), returning it to the library.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "Product id",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "productId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "restore product prod_1",
+        "undo deleting that product"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "digital",
+      "idempotent": true
+    },
+    {
+      "name": "offer.product.addDeliverable",
+      "namespace": "offer.product",
+      "summary": "Attach a deliverable file or link to a product.",
+      "description": "Adds one deliverable the buyer/lead receives. kind=file needs a private blobPath from POST /api/digital-products/upload (Desktop /api/bridge/offer-studio/product-upload), never public offer.media.upload images; kind=url needs an http(s) url. This wires the actual downloadable/redirect asset onto a digital product.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "Product id",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "description": "Deliverable kind",
+            "enum": [
+              "file",
+              "url"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "description": "Label shown to the buyer/lead",
+            "minLength": 1
+          },
+          "blobPath": {
+            "type": "string",
+            "description": "For kind=file: private blob path from POST /api/digital-products/upload (Desktop product-upload adapter)"
+          },
+          "url": {
+            "type": "string",
+            "description": "For kind=url: external destination (http/https)"
+          },
+          "fileName": {
+            "type": "string",
+            "description": "Original/display file name"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "description": "File size in bytes",
+            "minimum": 0
+          },
+          "contentType": {
+            "type": "string",
+            "description": "MIME type"
+          }
+        },
+        "required": [
+          "productId",
+          "kind",
+          "label"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "add this pdf as a deliverable to prod_1",
+        "add a Notion template link to my product"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "digital",
+      "idempotent": false
+    },
+    {
+      "name": "offer.product.removeDeliverable",
+      "namespace": "offer.product",
+      "summary": "Remove a deliverable from a product.",
+      "description": "Removes the deliverable with the given id from a product.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "Product id",
+            "minLength": 1
+          },
+          "deliverableId": {
+            "type": "string",
+            "description": "Deliverable id",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "productId",
+          "deliverableId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "remove deliverable del_abc from prod_1"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "digital",
+      "idempotent": false
+    },
+    {
+      "name": "offer.product.attachToOffer",
+      "namespace": "offer.product",
+      "summary": "Attach a digital product to the offer.",
+      "description": "Links a product the caller owns to the current offer so its deliverables are sold (paid mode) or given away (free mode). Idempotent per (offer, product).",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "Product id",
+            "minLength": 1
+          },
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "role": {
+            "type": "string",
+            "description": "Link role, e.g. 'primary' or 'bonus'",
+            "default": "primary"
+          },
+          "sortOrder": {
+            "type": "integer",
+            "description": "Display order",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "productId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "attach product prod_1 to this offer",
+        "add my ebook to this offer as a bonus"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "digital",
+      "idempotent": true
+    },
+    {
+      "name": "offer.product.detachFromOffer",
+      "namespace": "offer.product",
+      "summary": "Detach a digital product from the offer.",
+      "description": "Removes the link between a product and the current offer. The product itself is not deleted.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "Product id",
+            "minLength": 1
+          },
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "productId"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "remove product prod_1 from this offer"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "digital",
+      "idempotent": true
+    },
+    {
+      "name": "offer.product.listForOffer",
+      "namespace": "offer.product",
+      "summary": "List digital products attached to the offer.",
+      "description": "Returns the products currently linked to the offer, in display order.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "what products are on this offer",
+        "list attached digital products"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "digital",
+      "idempotent": true
+    },
+    {
+      "name": "offer.digital.preflight",
+      "namespace": "offer.digital",
+      "summary": "Check whether the digital offer is ready to launch.",
+      "description": "Audits the offer's digital setup and reports blocking issues before launch: whether products are attached, each attached product actually has a deliverable, paid/free mode matches pricing (paid needs a price on products or a checkout base price; free needs a free product), the lead-capture form includes an email field (free mode), and capture copy is present. Returns ready=true only when there are no error-level issues.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "examples": [
+        "is this digital offer ready to launch",
+        "check my lead magnet setup",
+        "preflight this offer"
+      ],
+      "requires": {
+        "auth": true,
+        "offerName": true
+      },
+      "category": "digital",
+      "idempotent": true
+    },
+    {
+      "name": "offer.media.generateImage",
+      "namespace": "offer.media",
+      "summary": "AI-generate an image and add it to the media library.",
+      "description": "Text-to-image generation. Produces an image from the prompt, uploads it to the creator's media library, and returns the hosted URL so the AI can reference it in a section (e.g. a hero background or feature illustration). Optionally set it as the offer's social/OG image.",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "What to generate, e.g. 'a minimal 3D illustration of a rocket on a dark gradient'",
+            "minLength": 3
+          },
+          "size": {
+            "type": "string",
+            "description": "Aspect ratio",
+            "enum": [
+              "square",
+              "portrait",
+              "landscape"
+            ],
+            "default": "square"
+          },
+          "fileName": {
+            "type": "string",
+            "description": "Optional base file name"
+          },
+          "setAsOgImage": {
+            "type": "boolean",
+            "description": "Also set this image as the offer's meta.ogImage"
+          },
+          "offerName": {
+            "type": "string",
+            "description": "Offer slug. Defaults to the current Offer Studio context.",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "prompt"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        "generate a hero image of a glowing dashboard",
+        "make an OG image for this launch and set it"
+      ],
+      "requires": {
+        "auth": true
+      },
+      "category": "media",
+      "idempotent": false
+    },
+    {
+      "name": "offer.capture.submit",
+      "summary": "Submit an explicitly approved real public free-lead form. May grant access and send actual email/WhatsApp. No invented contact, marketing consent, attribution or CAPTCHA solving. Native honeypot, rate limits and optional human Turnstile verification remain. No automatic replay after partial/uncertain dispatch; returned delivery URL is private.",
+      "description": "Submit an explicitly approved real public free-lead form. May grant access and send actual email/WhatsApp. No invented contact, marketing consent, attribution or CAPTCHA solving. Native honeypot, rate limits and optional human Turnstile verification remain. No automatic replay after partial/uncertain dispatch; returned delivery URL is private.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,160}$"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "phoneCountry": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "responses": {
+            "type": "object",
+            "maxProperties": 100,
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 2000
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "array",
+                  "maxItems": 100,
+                  "items": {
+                    "type": "string",
+                    "maxLength": 2000
+                  }
+                }
+              ]
+            }
+          },
+          "marketingConsent": {
+            "type": "boolean"
+          },
+          "consentText": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "acquisitionReceipt": {
+            "type": "string",
+            "maxLength": 4096
+          },
+          "turnstileToken": {
+            "type": "string",
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "offerName",
+          "email"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": true,
+      "idempotent": false,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.coupon.validate",
+      "summary": "Read-only native public checkout coupon validation, without consuming coupon or creating payment. Does not authorize checkout.",
+      "description": "Read-only native public checkout coupon validation, without consuming coupon or creating payment. Does not authorize checkout.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,160}$"
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "offerName",
+          "code"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.account.plans",
+      "summary": "Read current ContentLead platform pricing, trial duration and checkout upsells. This is not a seller-offer config or permission to pay.",
+      "description": "Read current ContentLead platform pricing, trial duration and checkout upsells. This is not a seller-offer config or permission to pay.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.account.validateCoupon",
+      "summary": "Read-only native ContentLead platform coupon check for one known approved code and optional INR/USD currency. No reservation, order or payment. Native currency/plan eligibility and rate limits apply; never enumerate/guess codes.",
+      "description": "Read-only native ContentLead platform coupon check for one known approved code and optional INR/USD currency. No reservation, order or payment. Native currency/plan eligibility and rate limits apply; never enumerate/guess codes.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "currency": {
+            "enum": [
+              "INR",
+              "USD"
+            ]
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.account.access",
+      "summary": "Read this signed-in account's ContentLead platform access, plan and expiry. Does not change a subscription or grant access.",
+      "description": "Read this signed-in account's ContentLead platform access, plan and expiry. Does not change a subscription or grant access.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.purchase.contents",
+      "summary": "Inspect products/deliverable IDs behind an unexpired private delivery token. Never print or log the token. No access counter mutation.",
+      "description": "Inspect products/deliverable IDs behind an unexpired private delivery token. Never print or log the token. No access counter mutation.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.purchase.download",
+      "summary": "Resolve one token-authorized product deliverable to a private native artifact/link; records access. No generic URL fetch. Keep resulting URL private.",
+      "description": "Resolve one token-authorized product deliverable to a private native artifact/link; records access. No generic URL fetch. Keep resulting URL private.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "productId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,160}$"
+          },
+          "deliverableId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,160}$"
+          }
+        },
+        "required": [
+          "token",
+          "productId",
+          "deliverableId"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": true,
+      "idempotent": false,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.leads.list",
+      "summary": "Seller: owner-scoped paginated free-capture leads including delivery state. PII; no messages sent.",
+      "description": "Seller: owner-scoped paginated free-capture leads including delivery state. PII; no messages sent.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,160}$"
+          },
+          "take": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "skip": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "q": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "sort": {
+            "enum": [
+              "name",
+              "email",
+              "phone",
+              "marketingConsent",
+              "deliveryStatus",
+              "createdAt"
+            ]
+          },
+          "direction": {
+            "enum": [
+              "asc",
+              "desc"
+            ]
+          },
+          "deliveryStatus": {
+            "enum": [
+              "PENDING",
+              "DELIVERED",
+              "PARTIAL",
+              "FAILED"
+            ]
+          },
+          "marketingConsent": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "offerName"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.payments.list",
+      "summary": "Seller: native owned-offer paid transactions and summary, optionally one offer. Saved Razorpay records, not payout settlement or universal ledger.",
+      "description": "Seller: native owned-offer paid transactions and summary, optionally one offer. Saved Razorpay records, not payout settlement or universal ledger.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,160}$"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.delivery.byLead",
+      "summary": "Seller: resolve the exact owned-offer lead's delivery ID before separately approved resend/revocation.",
+      "description": "Seller: resolve the exact owned-offer lead's delivery ID before separately approved resend/revocation.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,160}$"
+          },
+          "leadId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "offerName",
+          "leadId"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.delivery.resend",
+      "summary": "Seller: rotate the exact delivery link and send real email/WhatsApp again. Invalidates old link; do not retry an uncertain dispatch.",
+      "description": "Seller: rotate the exact delivery link and send real email/WhatsApp again. Invalidates old link; do not retry an uncertain dispatch.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,160}$"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "offerName",
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": true,
+      "idempotent": false,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.delivery.revoke",
+      "summary": "Seller: revoke delivery and entitlements, not refund money. Obtain exact buyer/access approval first.",
+      "description": "Seller: revoke delivery and entitlements, not refund money. Obtain exact buyer/access approval first.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,160}$"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "offerName",
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": true,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.purchase.deliveries",
+      "summary": "Buyer: paginated saved digital deliveries for this session, no token rotation or provider work. Excludes delivery tokens and private blob paths.",
+      "description": "Buyer: paginated saved digital deliveries for this session, no token rotation or provider work. Excludes delivery tokens and private blob paths.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "take": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "skip": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.purchase.list",
+      "summary": "Buyer: native purchase-page inventory including legacy purchases, platform subscriptions, free digital deliveries and paid-but-unfulfilled orders. Excludes TradingLead/indicator subscriptions; saved state only. Paginated response, full native account query.",
+      "description": "Buyer: native purchase-page inventory including legacy purchases, platform subscriptions, free digital deliveries and paid-but-unfulfilled orders. Excludes TradingLead/indicator subscriptions; saved state only. Paginated response, full native account query.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "take": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "skip": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.purchase.open",
+      "summary": "Buyer: native owned delivery reaccess. Rotates link and may claim guest entitlements; invalidates old email link. Returns private same-origin delivery URL, not file bytes.",
+      "description": "Buyer: native owned delivery reaccess. Rotates link and may claim guest entitlements; invalidates old email link. Returns private same-origin delivery URL, not file bytes.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": true,
+      "idempotent": false,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.billing.get",
+      "summary": "Read this buyer's self-declared GST/billing details, not seller invoice branding.",
+      "description": "Read this buyer's self-declared GST/billing details, not seller invoice branding.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.billing.update",
+      "summary": "Update current buyer billing/GST details for future checkouts only. Does not rewrite frozen invoices.",
+      "description": "Update current buyer billing/GST details for future checkouts only. Does not rewrite frozen invoices.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "gstin": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 20
+          },
+          "gstLegalName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "billingAddress": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "line1": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "line2": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "city": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "state": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "country": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "postalCode": {
+                    "type": "string",
+                    "maxLength": 20
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [],
+        "additionalProperties": false,
+        "minProperties": 1
+      },
+      "requiresConfirmation": true,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.subscription.prepare",
+      "summary": "Read recurring terms, quote, enabled state and existing buyer subscription before consent.",
+      "description": "Read recurring terms, quote, enabled state and existing buyer subscription before consent.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,160}$"
+          }
+        },
+        "required": [
+          "offerName"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.subscription.get",
+      "summary": "Read owned saved subscription and payment history without provider reconciliation.",
+      "description": "Read owned saved subscription and payment history without provider reconciliation.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,160}$"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "offerName",
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.subscription.start",
+      "summary": "Prepare an explicitly consented mandate with a fresh quote and stable requestId; human checkout authorization is still required.",
+      "description": "Prepare an explicitly consented mandate with a fresh quote and stable requestId; human checkout authorization is still required.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,160}$"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quote": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "consent": {
+            "const": true
+          },
+          "acquisitionReceipt": {
+            "type": "string",
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "offerName",
+          "requestId",
+          "quote",
+          "consent"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": true,
+      "idempotent": false,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.subscription.check",
+      "summary": "Reconcile provider payment/access state; may persist verified transitions. Does not authorize a charge.",
+      "description": "Reconcile provider payment/access state; may persist verified transitions. Does not authorize a charge.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,160}$"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "offerName",
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": true,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.subscription.cancel",
+      "summary": "Cancel future renewals as buyer or seller; retain already-paid access. Review returned cancellation confirmation.",
+      "description": "Cancel future renewals as buyer or seller; retain already-paid access. Review returned cancellation confirmation.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,160}$"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "offerName",
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": true,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.subscription.list",
+      "summary": "List up to 100 signed-in buyer offer subscriptions (saved state only).",
+      "description": "List up to 100 signed-in buyer offer subscriptions (saved state only).",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.subscription.subscribers",
+      "summary": "Seller: list the latest 100 owned-offer subscribers and verified paid-period summary before approved cancellation.",
+      "description": "Seller: list the latest 100 owned-offer subscribers and verified paid-period summary before approved cancellation.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "offerName": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,160}$"
+          }
+        },
+        "required": [
+          "offerName"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.invoice.list",
+      "summary": "List up to 200 owned paid ContentLead invoices, without generating PDFs.",
+      "description": "List up to 200 owned paid ContentLead invoices, without generating PDFs.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": false,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.invoice.get",
+      "summary": "Read an owned paid invoice. First access allocates/fixes its tax snapshot; explicit approval required.",
+      "description": "Read an owned paid invoice. First access allocates/fixes its tax snapshot; explicit approval required.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,100}$"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": true,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    },
+    {
+      "name": "offer.invoice.download",
+      "summary": "Generate/reuse an owned invoice PDF and return its short-lived native downloadUrl; never fetch arbitrary URLs.",
+      "description": "Generate/reuse an owned invoice PDF and return its short-lived native downloadUrl; never fetch arbitrary URLs.",
+      "category": "digital",
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,100}$"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "requiresConfirmation": true,
+      "idempotent": true,
+      "responseEnvelope": "native JSON; inspect HTTP status",
+      "native": true
+    }
+  ]
+}

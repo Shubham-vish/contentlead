@@ -16,22 +16,32 @@ import { execFileSync } from "node:child_process";
 import os from "node:os";
 import {
   health, textJson, imageSearch, transcribeShort, voiceGenerate, execute, downloadTo,
+  configureTarget, assertTargetReady,
 } from "./lib/api.mjs";
+import { createLayerInserter } from "./lib/timeline.mjs";
 
 // Prompts (the tuned viral wording) live OUTSIDE this file: prompts.local.mjs
 // (private, gitignored) is preferred; prompts.example.mjs (public, generic) is the
 // fallback so the skill still runs after a fresh clone.
 const here = new URL(".", import.meta.url).pathname;
-let PROMPTS;
-try { ({ PROMPTS } = await import("./prompts.local.mjs")); }
-catch { ({ PROMPTS } = await import("./prompts.example.mjs")); }
-const ask = (builder, ...args) => { const { system, user } = builder(...args); return textJson(system, user); };
-
 const [, , scriptPath, ...flags] = process.argv;
-if (!scriptPath) { console.error("usage: node run.mjs <script.json> [--plan] [--only <stage>] [--config <path>]"); process.exit(1); }
+if (!scriptPath) { console.error("usage: node run.mjs <script.json> [--plan] [--tab-id <tab> --content-id <content>] [--only <stage>] [--config <path>]"); process.exit(1); }
 const PLAN = flags.includes("--plan");
-const ONLY = flags.includes("--only") ? flags[flags.indexOf("--only") + 1] : null;
-const CONFIG_ARG = flags.includes("--config") ? flags[flags.indexOf("--config") + 1] : null;
+const flagValue = key => {
+  const index = flags.indexOf(key), value = index < 0 ? null : flags[index + 1];
+  return value && !value.startsWith("--") ? value : null;
+};
+const ONLY = flagValue("--only");
+const CONFIG_ARG = flagValue("--config");
+const TAB_ID = flagValue("--tab-id");
+const CONTENT_ID = flagValue("--content-id");
+let PROMPTS;
+if (PLAN) ({ PROMPTS } = await import("./prompts.example.mjs"));
+else {
+  try { ({ PROMPTS } = await import("./prompts.local.mjs")); }
+  catch { ({ PROMPTS } = await import("./prompts.example.mjs")); }
+}
+const ask = (builder, ...args) => { const { system, user } = builder(...args); return textJson(system, user); };
 
 const s = JSON.parse(readFileSync(scriptPath, "utf8"));
 s._stages ??= {};
@@ -43,6 +53,7 @@ const log = (...a) => console.log(...a);
 // OUT of the public/tracked script. Loaded from (in order): --config, env
 // DIALOGUE_STORY_CONFIG, or ./config.local.json next to this file. Never persisted.
 function loadLocalConfig() {
+  if (PLAN) return {};
   const candidates = [CONFIG_ARG, process.env.DIALOGUE_STORY_CONFIG, `${here}config.local.json`].filter(Boolean);
   for (const p of candidates) { try { return JSON.parse(readFileSync(p, "utf8")); } catch { /* next */ } }
   return {};
@@ -78,9 +89,9 @@ async function stage10_voices() {
   const dir = `${os.homedir()}/Downloads/cl-dialogue-story/${s.script_name ?? "story"}`;
   for (const d of s.dialogues) {
     if (d.audio?.file) continue;
+    if (PLAN) { log(`  [1.0] would TTS #${d.id} (${d.character}; authorized voice configuration required)`); continue; }
     const voiceId = charVoice(d.character);
     if (!voiceId) throw new Error(`No voiceId for "${d.character}". Set it in the script's characters, or in config.local.json (see config.example.json).`);
-    if (PLAN) { log(`  [1.0] would TTS #${d.id} (${d.character}/${voiceId})`); continue; }
     const r = await voiceGenerate({ text: d.sentence, voiceId });
     if (!r.url) throw new Error(`voiceGenerate returned no url for #${d.id}: ${JSON.stringify(r.raw)}`);
     const file = `${dir}/${String(d.id).padStart(2, "0")}-${d.character}.mp3`;
@@ -224,6 +235,10 @@ async function stage20_captiontitle() {
 async function stage30_compose() {
   if (s._stages.composed) { log("  [3.0] already composed — skip"); return; }
   if (PLAN) { log("  [3.0] would build 5-layer timeline (see ../remotion-composition.md)"); return; }
+  if (s.dialogues.some(d => !(d.audio?.url || d.audio?.file) || !Number.isFinite(d.audio?.duration) || d.audio.duration <= 0)) {
+    throw new Error("Composition requires every dialogue's audio source and positive duration; finish voice/timing stages first.");
+  }
+  const insert = createLayerInserter(execute);
   // Build cumulative dialogue start times (audio is the clock).
   let t = 0; const starts = s.dialogues.map(d => { const st = t; t += (d.audio.duration ?? 0) * 1000; return st; });
   log("  [3.0] Compose — driving editor.* commands. See ../remotion-composition.md for exact z-order.");
@@ -231,14 +246,13 @@ async function stage30_compose() {
   // Layer 5: dialogue audio (the clock). Each line at its cumulative start.
   for (let i = 0; i < s.dialogues.length; i++) {
     const d = s.dialogues[i];
-    const srcAudio = d.audio?.file ?? d.audio?.url;
+    const srcAudio = d.audio?.url ?? d.audio?.file;
     if (!srcAudio) { log(`        (no audio for #${d.id} — run stage 1.0 first)`); continue; }
-    await execute("editor.addAudio", { src: srcAudio, from: starts[i], name: `vo-${d.character}-${i}`, volume: 95 })
-      .catch(e => log(`        (addAudio #${d.id} failed) ${e.message}`));
+    await insert("audio", { src: srcAudio, from: starts[i], duration: d.audio.duration * 1000, name: `vo-${d.character}-${i}`, volume: 95 });
   }
   // Layer 4: background
   const bg = bgVideo();
-  if (bg) await execute("editor.addVideo", { src: bg, from: 0, duration: t, name: "bg" });
+  if (bg) await insert("background", { src: bg, from: 0, duration: t, name: "bg" });
   else log("        (no background_video set — skipping bg layer; add a gameplay clip when the story needs one)");
   // Layer 3: characters (alternate side, slide-in).
   // Reliable path: editor.addImage at the correct time + editor.setAnimation slideIn.
@@ -249,16 +263,17 @@ async function stage30_compose() {
     const from = starts[i]; const dur = (d.audio.duration ?? 0) * 1000;
     const img = charImage(d.character);
     if (!img) { log(`        (no image for ${d.character} — set it in config.local.json; skipping character layer for #${d.id})`); continue; }
-    const r = await execute("editor.addImage", {
+    const r = await insert("characters", {
       src: img, from, duration: dur, name: `char-${d.character}-${i}`,
-    }).catch(e => { log("        (character addImage failed)", e.message); return null; });
+    });
     const itemId = r?.result?.itemId;
-    if (itemId) await execute("editor.setAnimation", { itemId, type: "in", animationId: side === "left" ? "slideInLeft" : "slideInRight" }).catch(() => {});
+    if (itemId) await execute("editor.setAnimation", { itemId, animationIn: side === "left" ? "slideInLeft" : "slideInRight" })
+      .catch(e => log(`        (character animation needs review) ${e.message}`));
   }
   // Layer 2: context images (global windows)
   for (let i = 0; i < s.dialogues.length; i++) {
     for (const img of s.dialogues[i].images ?? []) {
-      await execute("editor.addImage", { src: img.url, from: starts[i] + img.image_start * 1000, duration: (img.image_end - img.image_start) * 1000 }).catch(() => {});
+      await insert("images", { src: img.url, from: starts[i] + img.image_start * 1000, duration: (img.image_end - img.image_start) * 1000 });
     }
   }
   // Layer 1: karaoke captions — use the PROPER caption-item mechanism (editor.addCaption),
@@ -288,7 +303,7 @@ async function stage30_compose() {
       const from = wordsAbs[0].start;
       const next = ws[j + CAP_CHUNK];
       const to = next ? Math.round(starts[i] + next.start * 1000) : wordsAbs[wordsAbs.length - 1].end;
-      await execute("editor.addCaption", {
+      await insert("captions", {
         from, to,
         text: grp.map(w => w.word).join(" "),
         words: wordsAbs,
@@ -297,7 +312,7 @@ async function stage30_compose() {
         fontSize: 84, fontWeight: 900,
         width: 960, x: 60, y: 1360,
         autoReorder: false,
-      }).catch(e => log(`        (caption #${s.dialogues[i].id} chunk failed) ${e.message}`));
+      });
       capCount++;
     }
   }
@@ -320,10 +335,9 @@ async function stage30_compose() {
       `    </AbsoluteFill>\n` +
       `  );\n` +
       `};`;
-    await execute("scene.addCustomScene", { code: titleCode, name: "Title Hook", from: 0, durationMs: titleDur })
-      .catch(e => log(`        (title scene failed) ${e.message}`));
+    await insert("title", { code: titleCode, name: "Title Hook", from: 0, durationMs: titleDur });
   }
-  await execute("editor.reorderTracks", {}).catch(() => {});
+  await execute("editor.reorderTracks", {});
   s._stages.composed = true; save();
   log("  [3.0] ✓ timeline built (title>subs>images>chars>bg). Review & tweak in the editor.");
 }
@@ -338,6 +352,11 @@ const STAGES = [
 (async () => {
   log(`\n🎬 cl-dialogue-story: ${s.script_name ?? scriptPath}  (${s.dialogues.length} dialogues)${PLAN ? "  [PLAN]" : ""}`);
   if (!PLAN) {
+    configureTarget({ tabId: TAB_ID, contentId: CONTENT_ID });
+    const capabilities = await assertTargetReady();
+    if (want("3.0") && !s._stages.composed && capabilities.contracts?.trackPlacement?.createNewTrack !== true) {
+      throw new Error("Renderer does not advertise explicit new-track placement; no pipeline stage started.");
+    }
     const h = await health().catch(() => null);
     if (!h) { console.error("❌ Desktop API not reachable. Launch ContentLead first."); process.exit(1); }
     if (h.cloud && h.cloud.authenticated === false) console.warn("⚠ cloud.authenticated=false — voice/AI need sign-in inside ContentLead.");
@@ -348,6 +367,6 @@ const STAGES = [
     try { await fn(); }
     catch (e) { console.error(`\n❌ Stage ${id} failed: ${e.message}`); if (e.detail) console.error("   detail:", JSON.stringify(e.detail).slice(0, 500)); if (e.sentBody) console.error("   sent:", JSON.stringify(e.sentBody).slice(0, 300)); process.exit(1); }
   }
-  log(`\n✅ Done. Script JSON updated: ${scriptPath}`);
+  log(PLAN ? "\n✅ Plan complete. No API calls, private overlay reads or script writes." : `\n✅ Done. Script JSON updated: ${scriptPath}`);
   if (s.captioned_data) log(`\n📸 IG caption ready in script.captioned_data (hashtags: ${(s.captioned_data.hashtags||"").split(" ").length} tags).`);
 })();

@@ -1,0 +1,1178 @@
+{
+  "namespace": "deals",
+  "source": "SkillTown/lib/marketplace/commands.ts + workflowCommands.ts + affiliateCommands.ts + payoutCommands.ts",
+  "sourceOnly": true,
+  "commands": [
+    {
+      "name": "deals.affiliate.me",
+      "description": "Creator: get own tracked link/promo and recorded stats. Native GET can lazily create an assignment, so explicit confirmation is required; native participation checks remain.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.affiliate.analytics",
+      "description": "Owner: read affiliate reporting and recorded conversions. query {view:creators,page?} pages creators; reports do not prove a completed payout.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.directory.list",
+      "description": "Browse listed brands with query {q?,category?,market?,sort?,page?}; contacts remain gated.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.directory.get",
+      "description": "Read a listed brand and caller's outreach/contact visibility.",
+      "requiredIds": [
+        "brandId"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "brandId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.directory.reachout",
+      "description": "Creator: record approved outreach to a listed brand, body {message?}; native contact-unlock and identity checks apply.",
+      "requiredIds": [
+        "brandId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "brandId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.directory.updateOutreach",
+      "description": "Creator: mark own directory outreach RESPONDED or ARCHIVED with body {status}.",
+      "requiredIds": [
+        "brandId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "brandId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.notifications.list",
+      "description": "Read caller's Deals notifications; native query paging/unread filters.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.notifications.markRead",
+      "description": "Mark one caller-owned reviewed notification read.",
+      "requiredIds": [
+        "notificationId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "notificationId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.campaigns.setStatus",
+      "description": "Owner: publish/activate, pause, complete or cancel after reviewing campaign state. body {status:ACTIVE|PAUSED|COMPLETED|CANCELLED}. Native completeness, dates and brand checks apply.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.campaigns.duplicate",
+      "description": "Owner: duplicate an existing campaign into a new unfunded draft; review returned state.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.campaigns.apply",
+      "description": "Creator: apply to a DIRECT campaign with body {message?}; not managed participation or guaranteed payment.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.campaigns.reportBrand",
+      "description": "Creator: report their DIRECT lead. body {reason:NO_RESPONSE|NO_PAYMENT|OTHER,note?}; native validation applies.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.leads.list",
+      "description": "Owner: read DIRECT campaign applicants and their contact/status; optional query.status.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.leads.update",
+      "description": "Owner: update a DIRECT lead with body {status:NEW|CONTACTED|ARCHIVED}; native ownership checks apply.",
+      "requiredIds": [
+        "campaignId",
+        "leadId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "leadId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.creatives.withdraw",
+      "description": "Creator: permanently withdraw their not-yet-posted creative. Read current revision/state first.",
+      "requiredIds": [
+        "creativeId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "creativeId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.creatives.attachment",
+      "description": "Authorized creative viewer: resolve a stored creator-owned uploaded attachment by index0..19 to a ten-minute downloadUrl; never fetch arbitrary URLs.",
+      "requiredIds": [
+        "creativeId",
+        "attachmentIndex"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "creativeId": "string",
+          "attachmentIndex": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.submissions.list",
+      "description": "Read authorized campaign submissions; owner sees campaign, creator sees own.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.submissions.create",
+      "description": "Creator: attach an already-published connected post or URL; does not publish. Native identity/payout gates apply.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.submissions.review",
+      "description": "Owner: human-approved decision {decision:APPROVED|REJECTED,reason?}. Approval may immediately settle REAL earnings; rejection raises a dispute.",
+      "requiredIds": [
+        "submissionId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "submissionId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.submissions.escalate",
+      "description": "Owner: escalate a submission to admin with body {reason}; pauses settlement while disputed.",
+      "requiredIds": [
+        "submissionId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "submissionId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.submissions.refresh",
+      "description": "Refresh LIVE platform views only, body {real:true}. May settle REAL eligible earnings; explicit human approval required. No fabricated/manual/simulated counts.",
+      "requiredIds": [
+        "submissionId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "submissionId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.messages.history",
+      "description": "Read an authorized thread's actual message history. query {limit?:1..50,before?:messageId}, oldest-to-newest page with exclusive nextBefore cursor; no read receipt.",
+      "requiredIds": [
+        "campaignId",
+        "creatorUserId"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "creatorUserId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.messages.markRead",
+      "description": "Advance own read cursor only after reviewing the actual viewed message. body {action:markRead,messageId}.",
+      "requiredIds": [
+        "campaignId",
+        "creatorUserId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "creatorUserId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.messages.inbox",
+      "description": "Read signed-in actor's authorized cross-campaign inbox, without marking messages read.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.messages.attachment",
+      "description": "Resolve a stored authorized thread attachment to a ten-minute downloadUrl; messageId and attachmentKey identify the stored attachment, never a caller URL.",
+      "requiredIds": [
+        "campaignId",
+        "creatorUserId",
+        "messageId",
+        "attachmentKey"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "creatorUserId": "string",
+          "messageId": "string",
+          "attachmentKey": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.funding.prepare",
+      "description": "Owner: create a provider funding order with body {amount} in INR major units. Review native order and authorize in human checkout; never treat preparation as funded.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.funding.reconcile",
+      "description": "Owner: recover an already human-paid live provider order with body {orderId}. Native provider verification credits at most once; HTTP202 remains pending. Does not authorize payment.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.funding.proof",
+      "description": "Owner or Deals admin: resolve an existing claim's proof to a ten-minute downloadUrl; no arbitrary blob/URL access.",
+      "requiredIds": [
+        "claimId"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "claimId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.funding.discardProof",
+      "description": "Owner: discard only an uploaded, unsubmitted campaign proof with body {proofUrl}; native storage/path checks reject proofs attached to claims.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.admin.payments.discardProof",
+      "description": "Deals admin: discard only an unsubmitted campaign proof with body {proofUrl}; never remove evidence attached to a claim.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.account.readiness",
+      "description": "Read caller's native KYC/payout readiness and masked destination; no account changes or decrypted bank/PAN fields.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.balance.get",
+      "description": "Read caller's balance buckets and withdrawal readiness (paise and INR).",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.earnings.get",
+      "description": "Read caller's joined campaigns, submissions and recorded earnings.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.withdrawals.list",
+      "description": "Read caller's last 100 withdrawal states, frozen public payout details, references and reversals. Use separately approved deals.withdrawals.request for a creator request; admin financial approval/processing stays human.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.affiliate.configure",
+      "description": "Owner: body {affiliate:{affiliateEnabled?,affiliatePayoutMode?,destinationUrl?,attributionWindowHours?,conversionHoldDays?,cpcPayout?,cpaFlatPayout?,commissionPct?,maxCpcClicksPerCreator?,maxConversionsPerCreator?,promoCodePrefix?}}. INR major-unit payout rates and percentage points; native draft-only economic term locks remain. Published campaigns accept landing URL/prefix edits only.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.affiliate.importConversions",
+      "description": "Owner: import 1..1000 reviewed real order rows via body {rows:[{order_id,order_value_paise?,net_order_value_paise?,promo_code?,click_id?,short_code?,creator_user_id?,occurred_at?,status?}]}. Integer INR paise; paid rows require order_value_paise. Native order-ID deduplication applies. Can immediately settle or reverse REAL creator earnings. Never fabricate orders or auto-retry partial/uncertain imports; inspect accepted/reversed/rejected/errors and affiliate analytics.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.withdrawals.request",
+      "description": "Creator: request withdrawal of an explicitly reviewed integer amountPaise using body {amountPaise,requestId,note?}. Requires explicit financial approval. Immediately debits real available ledger balance and freezes the existing payout destination; NOT a payment completion. Native verified KYC/destination, minimum/balance, transaction lock and one-in-flight gates apply. Required requestId (8..128 letters/digits/._:-) preserves native idempotency; never change key/amount to evade uncertainty. Inspect withdrawals.list before any deliberate recovery. No provider authorization, destination change or admin processing.",
+      "requiredIds": [],
+      "mutates": true,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.creator.profile",
+      "description": "Read the current creator registration/profile.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.creator.register",
+      "description": "Create or complete the signed-in creator profile.",
+      "requiredIds": [],
+      "mutates": true,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.creator.edit",
+      "description": "Update the signed-in creator profile.",
+      "requiredIds": [],
+      "mutates": true,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.brand.profile",
+      "description": "Read the signed-in brand profile.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.brand.register",
+      "description": "Create the signed-in brand profile.",
+      "requiredIds": [],
+      "mutates": true,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.brand.edit",
+      "description": "Update the signed-in brand profile.",
+      "requiredIds": [],
+      "mutates": true,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.accounts.list",
+      "description": "List the signed-in creator's connected accounts.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.accounts.posts",
+      "description": "Read post-picker items for an owned connected account.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.applications.list",
+      "description": "List managed-campaign applications for the owner.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.applications.review",
+      "description": "Approve or reject a managed-campaign application.",
+      "requiredIds": [
+        "campaignId",
+        "participationId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "participationId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.assessment.get",
+      "description": "Read assessment and whether it is outdated; query.attachmentIndex selects media.",
+      "requiredIds": [
+        "creativeId"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "creativeId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.assessment.run",
+      "description": "Assess actual uploaded media. body: {attachmentIndex,confirm:true}. Advisory only; up to 150 seconds.",
+      "requiredIds": [
+        "creativeId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "creativeId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.outreach.list",
+      "description": "Deals admin: list sequences and setup status; query.page paginates.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.outreach.create",
+      "description": "Deals admin: save a draft only, with verified recipient, contactBasis and up to three steps.",
+      "requiredIds": [],
+      "mutates": true,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.outreach.action",
+      "description": "Deals admin: body {id,action,confirm:true}; approval schedules real mail. Review every message and recipient first.",
+      "requiredIds": [],
+      "mutates": true,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.campaigns.list",
+      "description": "Browse campaigns. Filters go in query.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.campaigns.get",
+      "description": "Read campaign detail for the signed-in actor.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.campaigns.create",
+      "description": "Create a draft campaign; existing validation applies.",
+      "requiredIds": [],
+      "mutates": true,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.campaigns.edit",
+      "description": "Edit an owned campaign brief. No funding/payment operations.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.campaigns.join",
+      "description": "Join or apply to an eligible managed campaign.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.campaigns.report",
+      "description": "Read an owner-only campaign progress report.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.campaigns.paymentClaims.list",
+      "description": "Owner: offline payment instructions and the campaign's offline funding claims.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.campaigns.paymentClaims.create",
+      "description": "Owner: report a UPI/bank payment for admin verification. body {amount,method?,reference?,paidAt?,note?,proofUrl?} (proofUrl from the in-app proof upload); credits nothing until approved.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.creatives.list",
+      "description": "Read authorized creatives; pass cursor in query for paging.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.creatives.create",
+      "description": "Create an idea/draft as an accepted participant.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.creatives.get",
+      "description": "Read a creative and its review events.",
+      "requiredIds": [
+        "creativeId"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "creativeId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.creatives.edit",
+      "description": "Edit an editable creative owned by the caller.",
+      "requiredIds": [
+        "creativeId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "creativeId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.creatives.submit",
+      "description": "Submit the current creative revision for review.",
+      "requiredIds": [
+        "creativeId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "creativeId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.creatives.review",
+      "description": "Approve, request changes or reject with existing role and revision guards.",
+      "requiredIds": [
+        "creativeId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "creativeId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.creatives.post",
+      "description": "Attach published content to a ready creative; does not publish externally.",
+      "requiredIds": [
+        "creativeId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "creativeId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.messages.list",
+      "description": "Read thread authorization metadata (myRole and campaignTitle) only, not messages. Use deals.messages.history for actual bounded history; realtime remains native UI.",
+      "requiredIds": [
+        "campaignId",
+        "creatorUserId"
+      ],
+      "mutates": false,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "creatorUserId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.messages.send",
+      "description": "Send one message to an authorized campaign thread; requires explicit confirmation.",
+      "requiredIds": [
+        "campaignId",
+        "creatorUserId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "creatorUserId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.viewers.get",
+      "description": "Read own visibility preferences, owned targets or an authorized report.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.viewers.setVisibility",
+      "description": "Set current user's named-browsing preference; opt-out anonymizes history.",
+      "requiredIds": [],
+      "mutates": true,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.admin.queue",
+      "description": "Read the Deals-admin queue with independent paging.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.admin.tracking",
+      "description": "Read tracking freshness; requires Deals-admin access.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.admin.payments.list",
+      "description": "Deals admin: offline funding claims; query.view pending|history, query.page.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    },
+    {
+      "name": "deals.admin.payments.record",
+      "description": "Deals admin: credit a verified offline payment to a managed campaign's REAL spendable budget. body {amount,method?,reference?,paidAt?,note?,claimId?,proofUrl?,idempotencyKey?}; only amount is required. proofUrl must come from a prior multipart upload to /api/deals/admin/campaigns/:campaignId/offline-payment/proof.",
+      "requiredIds": [
+        "campaignId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "campaignId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.admin.payments.reject",
+      "description": "Deals admin: reject an offline funding claim. body {action:\"reject\",reason}; credits nothing.",
+      "requiredIds": [
+        "claimId"
+      ],
+      "mutates": true,
+      "input": {
+        "params": {
+          "claimId": "string",
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": true
+      }
+    },
+    {
+      "name": "deals.admin.activity",
+      "description": "Read recorded admin activity; coverage is incomplete.",
+      "requiredIds": [],
+      "mutates": false,
+      "input": {
+        "params": {
+          "query": "optional scalar query object",
+          "body": "underlying REST JSON body for mutations"
+        },
+        "confirm": false
+      }
+    }
+  ]
+}

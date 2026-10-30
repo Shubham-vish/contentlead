@@ -6,7 +6,10 @@ tags: competitor-ads, meta-ad-library, facebook-ads, instagram-ads, creative-ana
 
 # Ad Intelligence — AI Agent Skill
 
-> **⚙️ Is the ContentLead app running?** These calls need `~/.skilltown-desktop/api.json`. If it is missing, the desktop app is not running — start it, then wait ~30s for the file: **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`. Full OS-aware detect/start/poll (Linux + dev too): see `cl-editor/infrastructure.md` → "Ensure the ContentLead desktop app is running". Only ask the user if it still does not come up.
+> Follow `cl-desktop`'s audited connection rules: privately parse fresh
+> `~/.skilltown-desktop/api.json`, then bounded authenticated health/app-auth
+> checks. File presence is not liveness. If unavailable/signed out, report the
+> boundary; do not start, reload or switch the shared app to discover commands.
 
 Research and analyze competitor ads across Meta platforms (Facebook + Instagram).
 
@@ -21,7 +24,7 @@ Research and analyze competitor ads across Meta platforms (Facebook + Instagram)
 ## Prerequisites
 
 1. **Desktop app running** — all routes go through Electron bridge
-2. **Meta Ad Library API key** — user must configure via the UI or `ads.setConfig`
+2. **Meta Ad Library API key** — user must configure via the UI or `POST /api/bridge/ads/config`. The Desktop catalog advertises `ads.*` names, but this recipe verifies the REST handlers, not renderer execution; do not assume `ads.setConfig` works through `/api/execute`.
 3. **Logged in** — brands/saved/folders require authenticated session
 
 ---
@@ -58,9 +61,9 @@ Research and analyze competitor ads across Meta platforms (Facebook + Instagram)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/bridge/ads/saved` | List saved ads `?folderId=&tag=` |
-| POST | `/api/bridge/ads/saved` | Save ad(s) `{ad, tags?, folderId?}` or `{ads: [...]}` |
+| POST | `/api/bridge/ads/saved` | Save ad(s) `{ad, tags?, folderId?, notes?}` or `{ads: [...], tags?, folderId?}` |
 | DELETE | `/api/bridge/ads/saved?adId=X` | Unsave an ad |
-| PATCH | `/api/bridge/ads/saved` | Update tags/folder `{adId, tags?, folderId?}` |
+| PATCH | `/api/bridge/ads/saved` | Update `{adId, tags?, folderId?, notes?}`; null clears folder/notes |
 
 ### Folders
 
@@ -78,6 +81,28 @@ Research and analyze competitor ads across Meta platforms (Facebook + Instagram)
 | GET | `/api/bridge/ads/config` | Get API key status |
 | POST | `/api/bridge/ads/config` | Set API key `{apiKey}` |
 | DELETE | `/api/bridge/ads/config` | Remove API key |
+
+`GET /config` returns `{configured, apiKey, apiKeyFull}`: **`apiKeyFull` is a
+secret**, not merely status. Keep it in memory only, never print/save it in
+logs, reports, prompts or public skill files. Search/pages require both the
+Desktop bearer token and `x-meta-ad-api-key`; the configured key is not
+automatically attached by these handlers. Confirm configuration writes/removal.
+Thumbnail/media are the documented unauthenticated exceptions; other routes
+require `Authorization: Bearer $TOKEN`. Research scores are heuristics, not
+evidence of performance, spend or conversions.
+
+Tracked brands, saved ads and folders use the same session-owned native
+collections as the UI. IDs allow1–200 letters/digits/underscore/hyphen, not
+paths. Saved batches contain1–1000ads; tags at most100, notes at most10000
+characters. A batch patches only its selected ads, not the whole collection.
+Confirm save/update/untrack/unsave/delete actions before writes. An uncertain
+write is never safe to replay automatically: read the saved collection first.
+The source proxy opts into strict JSON; HTML/invalid JSON/transport failure is
+not success or permission to silently repeat a mutation.
+The optional UI creative-brief template, first-seen counters, grid density,
+player controls and clipboard/export presentation do not have REST commands.
+These are not a claim of agent-generated personalized creative or automated
+brand monitoring; use the supported search/saved analysis workflow.
 
 ---
 
@@ -167,7 +192,7 @@ POST /api/bridge/ads/compare
 Body: {"ads": [...], "groupBy": "page"}
 
 # 3. Identify patterns — which hooks/CTAs dominate?
-# → summary.topHooks, summary.topCtas, summary.topTriggers
+# → summary[].topHooks, summary[].topCtas, summary[].topTriggers
 ```
 
 ### Workflow 3: Creative Audit

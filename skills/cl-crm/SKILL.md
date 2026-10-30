@@ -1,13 +1,13 @@
 ---
 name: cl-crm
-description: Use the authenticated ContentLead Desktop CRM bridge for the exact 23 owner/platform CRM commands, including owner customer relationships and platform-admin read-only customers and payments. Explicit approval is required for CRM writes. Replies, Calls, charges, consent and account/access changes remain in existing tools/UI.
+description: Use the authenticated ContentLead Desktop CRM bridge for 32 owner/platform commands plus stored-message binary media download: contacts, rich timeline, CSV, revision-safe bulk, tasks, pipeline, owner buyers and platform customer/payment context. Platform ADMIN WhatsApp inspection, exact approved replies and reviewed mark-read are separate from creator messaging; no role impersonation, consent, charge or account/access changes.
 tags: crm, contacts, tasks, followups, opportunities, notes, sources, customers, payments, deals, desktop bridge
 ---
 
 # ContentLead CRM — scoped relationship work, not channel automation
 
 > **Owns the question:** *"How can an agent read and update the supported CRM workspace without bypassing ownership, administrator scope, revisions, consent, or existing channel tools?"*
-> **Delegates to:** `cl-calls` for Calls Studio; existing platform inbox UI for WhatsApp/TradingChat replies and customer actions; existing offer/deals/billing tools for their authoritative workflows.
+> **Delegates to:** `cl-calls` for Calls Studio; existing authorized tools for unsupported inbox channels/customer actions and offer/deals/billing workflows.
 
 ## Connect and discover
 
@@ -26,7 +26,7 @@ def bridge(path, body=None):
     with urllib.request.urlopen(req, timeout=35) as response:
         return json.load(response)
 
-manifest = bridge("/api/bridge/crm/commands")
+manifest = bridge("/api/bridge/crm/commands")["data"]
 
 def crm(name, **params):
     result = bridge("/api/bridge/crm/commands/"+name, {"params": params})
@@ -35,8 +35,13 @@ def crm(name, **params):
     return result["data"]
 ```
 
-The manifest must report namespace `crm`, version `1`, and exactly **23
-commands**: 12 reads and 11 writes. Use its exact JSON schemas. A source checkout,
+The manifest must report namespace `crm`, version `1`, and exactly **32
+commands**: 18 reads and 14 writes. This includes rich timeline, CSV artifact
+export, revision-aware bulk actions, opportunity totals and platform CRM context.
+Platform support WhatsApp list/get/reply/markRead commands require `scope:"platform"`
+and the caller's current ADMIN role; see [support-inbox.md](support-inbox.md).
+Stored-message media uses its separate fixed authenticated binary GET, not a JSON command.
+Use its exact JSON schemas. A source checkout,
 skill listing, or packaged file is not proof the installed Desktop and website
 release support the handlers. Treat 404 as release mismatch, 503
 `MIGRATION_REQUIRED` as unapplied persistence, and report source, packaged,
@@ -46,7 +51,8 @@ installed, and deployed status separately.
 
 | Work | Read |
 |---|---|
-| Contact search/detail/create/update/archive; tasks/follow-ups | [contacts-tasks.md](contacts-tasks.md) |
+| Contact search/detail/timeline/create/update/archive; CSV export; approved bulk tag/archive actions; tasks | [contacts-tasks.md](contacts-tasks.md) |
+| Platform ADMIN WhatsApp inspection, stored media, exact approved replies and reviewed mark-read (not owner messaging) | [support-inbox.md](support-inbox.md) |
 | Opportunities, stages, amounts, notes and activity | [opportunities-notes.md](opportunities-notes.md) |
 | Authorized source browse, preview, import/link and unlink | [sources.md](sources.md) |
 | Owner customer relationships; separate platform-admin customer/access and payment reads | [customers-payments.md](customers-payments.md) |
@@ -65,8 +71,13 @@ installed, and deployed status separately.
 - Preview is advisory and read-only. Apply reauthorizes every source and is
   transactional. Never infer consent, auto-merge by phone/email, overwrite a
   contact from source data, or retry a stale/uncertain write automatically.
-- WhatsApp/TradingChat replies/read/tags/customer actions, Calls and microphone
-  workflows, billing/access changes, campaigns, broadcasts and paid activities
-  are not CRM commands. Use the existing authorized UI/tool only when asked.
+- Only the documented platform ADMIN WhatsApp subset is exposed: inspected
+  conversations/stored media, exact approved text replies and reviewed mark-read.
+  TradingChat, other channel actions, Calls/microphone, billing/access changes,
+  campaigns, broadcasts and paid activities require their existing authorized tools.
 - Minimize PII in output. Use cursor paging. Respect revision conflicts and
   refresh before a specifically reapproved retry.
+- CSV exports return a bounded UTF-8 artifact inside `data`, never a cloud URL
+  or server-side path. Save only to an explicitly chosen local file without
+  overwriting; do not print the CSV. Bulk `ok:true` can contain failed items:
+  inspect every outcome and never automatically replay the original batch.

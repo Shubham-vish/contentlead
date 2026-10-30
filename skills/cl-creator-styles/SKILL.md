@@ -10,6 +10,10 @@ tags: styles, cl-creator-styles, templates, kallaway, storytelling, cinematic, e
 
 ## What exists today
 
+For the owner's **personal saved styles** (capture, edit semantic notes,
+rename/delete) and durable uploaded-media records, read `owned-library.md`.
+Those authenticated server bridges are separate from the public templates below.
+
 Source of truth: `_EditingStyleDetails/_Style/index.json` and each `_EditingStyleDetails/_Style/{styleId}/template-main.json`. Do **not** use the old local `style-catalog.json` duplicate.
 
 Available styles: `ankitarora`, `buildercentral`, `editingburst`, `kallaway`, `keanuvisuals`, `mitmonk`, `motion-backgrounds`, `sisinty`, `tharun`, `varunmayya`.

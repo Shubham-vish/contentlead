@@ -1,55 +1,23 @@
-// lib/api.mjs — thin, dependency-free helpers for the cl-dialogue-story orchestrator.
-// Wires to the three live surfaces the skill depends on:
-//   - cl-ai-media  : POST /api/bridge/ai/*  (real JSON; per-user keys injected server-side)
-//   - voice     : POST /api/bridge/voice/*
-//   - contentlead editor : POST /api/execute { type:"editor.*", params }
-// All are documented in their own skills; this only calls them in order.
-// NOTE: the old tool-call proxy has been REMOVED for AI media/text/transcribe —
-// everything now flows through the desktop AI bridge, same auth chain as voice.
+// Dependency-free Desktop helpers. Discovery is read only when executing a request.
+import { createEditorClient } from "./client.mjs";
+export { loadApi } from "./client.mjs";
 
-import os from "node:os";
-import path from "node:path";
-import { readFileSync } from "node:fs";
-
-export function loadApi() {
-  const cfgPath = path.join(os.homedir(), ".skilltown-desktop", "api.json");
-  const cfg = JSON.parse(readFileSync(cfgPath, "utf8"));
-  return { API: `http://127.0.0.1:${cfg.port}`, TOKEN: cfg.token };
-}
-
-const { API, TOKEN } = loadApi();
-const AUTH = { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json" };
-
-async function post(pathname, body) {
-  const res = await fetch(`${API}${pathname}`, {
-    method: "POST",
-    headers: AUTH,
-    body: JSON.stringify(body),
-  });
-  const text = await res.text();
-  let json;
-  try { json = JSON.parse(text); } catch { json = { raw: text }; }
-  if (!res.ok) {
-    const err = new Error(`POST ${pathname} → ${res.status}`);
-    err.detail = json; err.sentBody = body;
-    throw err;
+const client = createEditorClient();
+export const configureTarget = target => client.setTarget(target);
+export const assertTargetReady = () => client.assertTarget();
+export const execute = async (type, params) => {
+  const out = await client.execute(type, params);
+  if (out.editorHealth?.hasNewErrors || out.warnings?.length) {
+    console.warn(`Editor health needs review after ${type}; inspect the targeted renderer.`);
   }
-  return json;
-}
+  return out;
+};
+export const health = () => client.health();
 
-export async function health() {
-  const res = await fetch(`${API}/api/health`, { headers: AUTH });
-  return res.json();
-}
-
-// ---- cl-ai-media (desktop AI bridge) -----------------------------------------
-// Real JSON in/out. Per-user Tavily/Gemini keys are injected by the SkillTown
-// /api/ai proxy server-side — never send keys here.
 export async function aiBridge(action, body) {
-  return post(`/api/bridge/ai/${action}`, body);
+  return client.post(`/api/bridge/ai/${action}`, body);
 }
 
-// text/generate takes a REAL messages array (no stringification). Ask for strict JSON.
 export async function textJson(system, user) {
   const messages = [
     { role: "system", content: system + "\nReturn ONLY valid minified JSON. No prose, no code fences." },
@@ -77,33 +45,18 @@ export async function transcribeShort(audioUrl) {
   return aiBridge("transcribe/short", { video_url: audioUrl });
 }
 
-// Download a (possibly SAS/expiring) URL to a local file so the timeline can play it.
 export async function downloadTo(url, filePath) {
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`download ${res.status} for ${url}`);
+  if (!res.ok) throw new Error(`Asset download failed (HTTP ${res.status}).`);
   const buf = Buffer.from(await res.arrayBuffer());
   const { writeFileSync, mkdirSync } = await import("node:fs");
+  const path = await import("node:path");
   mkdirSync(path.dirname(filePath), { recursive: true });
   writeFileSync(filePath, buf);
   return filePath;
 }
 
-// ---- voice bridge (DIRECT) -------------------------------------------------
 export async function voiceGenerate({ text, voiceId, format = "mp3", speed = 1.0 }) {
-  // POST /api/bridge/voice/generate → { status, audio_url, format, duration_seconds }
-  const out = await post("/api/bridge/voice/generate", { text, voice_id: voiceId, format, speed });
+  const out = await client.post("/api/bridge/voice/generate", { text, voice_id: voiceId, format, speed });
   return { url: out.audio_url ?? out.url, duration: out.duration_seconds ?? out.duration, raw: out };
 }
-
-// ---- contentlead editor ----------------------------------------------------
-export async function execute(type, params) {
-  const out = await post("/api/execute", { type, params });
-  const warns = out?.warnings ?? [];
-  const health = out?.editorHealth;
-  if (health?.hasNewErrors || warns.length) {
-    console.warn(`  ⚠ ${type} warnings:`, warns.slice(0, 3));
-  }
-  return out;
-}
-
-export { API };

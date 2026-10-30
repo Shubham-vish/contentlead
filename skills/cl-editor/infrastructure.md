@@ -10,11 +10,11 @@ Endpoints for debugging, media management, project lifecycle, and UI automation 
 
 ## 🟢 Ensure the ContentLead desktop app is running (do this FIRST)
 
-Every bridge call needs `~/.skilltown-desktop/api.json`. **If that file is MISSING, the app is not running** — start it and wait for the file to appear, instead of stalling on the user.
+Every bridge call needs fresh `~/.skilltown-desktop/api.json` discovery. File existence alone does **not** prove liveness: an earlier crash can leave stale port/token data. A missing file means discovery is unavailable, not necessarily that no process exists.
 
-**Step 1 — detect.** If `~/.skilltown-desktop/api.json` exists, the app is up; use it. If not, continue.
+**Step 1 — detect.** Parse discovery without printing credentials, verify its API origin is loopback, and use an authenticated request with a short timeout to `/api/health`. On refusal or 401, re-read discovery once. If still unavailable, report runtime unavailability. A source/mock audit must stop here without launching, reloading, switching origins, or contacting cloud/provider APIs.
 
-**Step 2 — start it. Pick the ONE line for YOUR operating system — never run a macOS command on Windows (or vice-versa).** Detect the OS first (bash: `uname`; the agent already knows its platform).
+**Step 2 — only if the task allows launching.** Pick the ONE line for YOUR operating system. Preserve existing work and do not start a local web server or switch an existing application's origin as an automatic repair.
 
 ```bash
 # ── macOS (packaged app) ──────────────────────────────────────────────
@@ -37,7 +37,7 @@ cd SkillTown-Desktop && npm start           # electron .  (uses cloud web app)
 # full stack (local Next.js + Electron):  npm run dev:with-server
 ```
 
-**Step 3 — wait for readiness (port + token regenerate on every launch).**
+**Step 3 — wait for discovery, then verify liveness.** These file polls alone do not establish readiness; re-read credentials and repeat the authenticated health request after discovery appears.
 
 ```bash
 # bash (macOS/Linux) — poll up to ~30s
@@ -48,13 +48,13 @@ for i in $(seq 1 30); do [ -f ~/.skilltown-desktop/api.json ] && break; sleep 1;
 1..30 | ForEach-Object { if (Test-Path "$env:USERPROFILE\.skilltown-desktop\api.json") { break }; Start-Sleep 1 }
 ```
 
-**Step 4 — fallback.** If `api.json` still doesn't appear after ~30s, the app may not be installed, or the user isn't signed in — only THEN ask the user to launch/sign in.
+**Step 4 — distinguish failures.** Missing/stale discovery is a local connection issue. Web login is separate: `GET /api/app/auth` reports that session (200/401). A healthy local API does not prove cloud login, project hydration, command support, or provider availability.
 
 > App identity: display name **`ContentLead`** (bundle `com.contentlead.editor`, macOS `/Applications/ContentLead.app`). This is the same app every `cl-*` bridge skill talks to.
 
 ## ⚠️ App/API Port Regenerates on Restart
 
-Every time the Electron app restarts (hot reload, crash, manual restart, code changes), the API port + token regenerate in `~/.skilltown-desktop/api.json`. Never hardcode these — always read fresh each call:
+On each API-server start the bearer token regenerates; the preferred port may be reused or may change. Always read fresh discovery after a restart:
 
 ```bash
 CONFIG=$(cat ~/.skilltown-desktop/api.json)
@@ -62,7 +62,7 @@ PORT=$(echo "$CONFIG" | python3 -c "import sys,json; print(json.load(sys.stdin)[
 TOKEN=$(echo "$CONFIG" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
 ```
 
-If your script hits `ConnectionRefusedError` mid-session, re-read the config — the port likely changed.
+If your script hits `ConnectionRefusedError` mid-session, re-read discovery and make one bounded health check: the listener may have restarted or stopped, with or without a port change.
 
 ## Debugging & Monitoring
 
@@ -95,11 +95,22 @@ Last 100 browser console errors/warnings (circular buffer). Does not clear on re
 curl "http://127.0.0.1:$PORT/api/console-errors" -H "Authorization: ******"
 # -> [{"seq": 1, "level": "error", "message": "...", "source": "...", "timestamp": "..."}, ...]
 ```
-Use `?since=<seq>` to get only errors after a known sequence number (for delta checks).
+Use `?afterSeq=<seq>` to get only errors after a known sequence number (for delta checks). The response is `{entries, count, totalBuffered, lastSeq}`, not a bare array.
+
+## Transport and distribution contract
+
+1. The AI reads local discovery (schema v4), authenticates with `Authorization: Bearer $TOKEN`, selects a tab, and sends `/api/execute`.
+2. Desktop resolves that tab's `webContents`, queues commands per tab, and sends `editor:execute` through preload to the web `ElectronAgentBridge`. The web executor handles its own typed/validated command path. Results return through `editor:result`; Desktop accepts them only from the addressed renderer, then adds diagnostics. A timeout is not proof a mutation was rolled back.
+3. `/api/bridge/*` is a different transport: Desktop forwards allowlisted requests through the signed-in renderer/session to web API routes. Business command manifests and server schemas belong to those routes; they are not entries in the editor executor's registry. Some media uploads use the same session's cookies with a Node HTTP upload.
+4. `/api/capabilities?tabId=<id>` separates installed `commands`/`httpOperations`/endpoint metadata from sender-bound live `renderer.capabilities` (authoritative names/version, hydration, safe-to-write, save state and bounded `contracts.trackPlacement` fresh-track support/command names). Query `query.getCapabilities` for the full renderer contracts; absent placement support is not permission to assume it. Missing live reports are labeled unverified; multiple tabs without a target return `renderer:null` plus the list. Desktop-native handlers are listed separately. Unsupported live commands, stale `expectedContentId` and unhydrated writes fail before queued IPC; separate capability updates never trigger auto-restore. Ads/content-style/watchlist HTTP-only aliases still reject execute/batch with `command_not_executable`. No catalog alone proves complete UI parity.
+5. `/api/skills` merges canonical files over validated public bundles. `source`, `partial`, `errors` and `installation` expose provenance, failures and concrete helper availability. Missing declared public families or a missing family manifest are partial/unverified, not silent completeness. Canonical root selection is explicit `CONTENTLEAD_SKILLS_DIR`, installed `cl-desktop`/`cl-editor` loader target, then legacy checkout location. Unsupported watching refreshes per request. Authenticated local private Markdown discovery is preserved, **never** redistributed. Helper availability verifies declared source-file presence only, not source hashes, Python/models or executable readiness.
+6. Packaging runs `node scripts/sync-public-skills.cjs` and `--check` before electron-builder. Only public-Git-tracked Markdown, exact reviewed new public docs, allowlisted Offers/Deals `commands.json`, and four approved indexes ship. Untracked session files, arbitrary JSON/media/scripts, hidden/env/Git files and symlink escapes do not. Target roots/source overlap and unmanaged existing files are refused; generation only replaces known managed bundle contents. The hash manifest is written last. JSON references return as response `content` strings. Helper scripts/dependencies are not installed; use reported canonical paths and their prerequisites/review status, not guessed hard-coded machine paths.
+
+Do not equate edited source, bundle, installed app, loaded renderer or deployed server. Known JSON commands/reviewed JSON routes and opted-in uploads reject HTML/non-JSON success as an uncertain outcome, with no generic mutation replay. Calls/CRM/Meta retain only their recognized pre-execution session-auth retry. Valid unrelated text/binary paths are not forced through JSON. Reconcile native saved state before retrying a timeout, payment, generation or publishing write.
 
 ### Error Information in Every Command Response
 
-**Every** `/api/execute` response automatically includes error monitoring data — no extra call needed:
+Completed `/api/execute` execution paths add error monitoring. Early auth/body/tab/preflight errors may not include it, and `warnings` is omitted when empty:
 
 ```json
 {
@@ -128,7 +139,7 @@ Use `?since=<seq>` to get only errors after a known sequence number (for delta c
 }
 ```
 
-**These fields are returned in every response automatically — no extra call needed.** The agent just reads them from the response it already has.
+Read the health/diagnostic fields when present, as well as HTTP status and the JSON outcome. Missing health fields on a rejected request are not evidence of a clean editor.
 
 | Field | What It Means |
 |---|---|

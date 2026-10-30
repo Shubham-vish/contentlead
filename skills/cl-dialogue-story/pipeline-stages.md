@@ -1,11 +1,20 @@
 # Pipeline Stages — exact flow, endpoints, resumability
 
 Ported from `TlEditingSolution/final_flow.py` (`process_script`). Each stage:
-1. **checks its output field** — if present, **skips** (idempotent/resumable);
+1. **checks its output field** — if present, **skips** (not an API idempotency guarantee);
 2. otherwise calls the live capability and **writes the field back into the script JSON**;
 3. saves the JSON after every dialogue so a crash never loses work.
 
-To re-run one stage: delete its field(s) from the JSON and re-run `run.mjs`.
+Real runs require `--tab-id <chosen-tab> --content-id <chosen-content>` and
+matching renderer readiness; the helper never chooses an arbitrary target.
+`--plan` is offline, ignores private overlays and does not write the script.
+Composition requires the advertised fresh-track feature, creates owned role
+tracks and reuses their exact IDs with native layer priorities.
+
+Composition is non-atomic: inspect actual timeline state after a failure rather
+than deleting a flag and blindly replaying inserts. Obtain paid-action approval
+before real API stages. See `SKILL.md` and `cl-editor/workflow-readiness.md` for
+the current safe invocation, save receipt and render handoff.
 
 All endpoints below are the ones the **voice**, **cl-ai-media** and **contentlead**
 skills already document. This skill only calls them in the proven order.
@@ -71,7 +80,10 @@ Rahul example (same shape, his clone + his Devanagari line):
   server-side (do NOT bother passing `model`/`language_boost` — they are dropped).
 
 ### Add the returned audio to the timeline
-Download `audio_url` to a local mp3, then `editor.addAudio { src:<file>, from:<cumulativeMs>, volume:95 }`.
+Download `audio_url` to a local mp3 for local transcription; prefer its authorized
+playback URL for timeline audio. Insert with deliberate `trackId` or
+`createNewTrack:true`, timing and `volume:95`; the helper retains its own audio
+role track. Validate source accessibility before final save/render.
 The **first** line starts at `from:0`; each subsequent line starts at the running sum of
 prior `duration_seconds` (× 1000). `duration_seconds` **is the clock** for all later
 stages (captions/images are timed relative to it).
@@ -178,7 +190,11 @@ Runs once over the **whole** combined Latin script (`proc_word_data.text` joined
   replace it with Remotion for real springs, transitions and editability.
 
 ## Stage 4.0 — Export
-- `editor.export` → `final_video`. Optionally re-host / deliver.
+- This is a manual command handoff after the helper's final composition stage.
+  Follow `cl-editor/workflow-readiness.md`: stabilized preview, current-design
+  cloud-save receipt, immutable design, actual HTTP `/api/render` job/status,
+  and `render.verifyOutput({jobId})`. `editor.export` is not the helper's
+  pollable export implementation, and `final_video` is not populated by it.
 
 ---
 

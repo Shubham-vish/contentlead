@@ -101,6 +101,7 @@ Need web or GitHub research?                     → use built-in web search/fet
 | Aggregate tech news, RSS feeds, web search/crawl | `news-and-web.md` |
 | Understand /inspiration vs /explore vs /pulse, velocity, needsConnect, FanOutResponse | `explore-vs-pulse.md` |
 | Full desktop bridge endpoint reference | `bridge-endpoints.md` |
+| Read Reel Inbox transcripts, link/unlink Instagram senders, delete reviewed inbox rows, read existing transient Findings | `reel-inbox.md` |
 
 ## Interfaces at a glance
 
@@ -213,6 +214,9 @@ curl -X POST "http://127.0.0.1:$PORT/api/bridge/media/download"   -H "Authorizat
 - Check `/connection-status` before Instagram/X-heavy work.
 - Search broadly, then filter by engagement and recency.
 - Save findings and references so the user can revisit them.
+  Findings are transient per-server-instance memory (not a durable research
+  archive); save durable outputs as references, Hub drafts, Content scripts or
+  style remixes. See `reel-inbox.md` for the exact retention/read contract.
 - Combine platforms: web/news trend + YouTube performance + X discussion = stronger validation.
 
 ## Watchlists (TradingView-style creator groups)
@@ -235,7 +239,7 @@ interface Watchlist {
   userId: string;
   type: "watchlist";
   name: string;
-  color?: string;       // hex, e.g. "#7c3aed"
+  color: string;        // required named token, e.g. "violet" (not a hex color)
   emoji?: string;       // e.g. "🔥"
   creatorKeys: string[]; // e.g. ["instagram:nike", "youtube:mkbhd"]
   createdAt: string;
@@ -248,37 +252,37 @@ interface Watchlist {
 **List all watchlists:**
 ```bash
 curl -s "http://127.0.0.1:$PORT/api/bridge/inspiration/watchlists" \
-  -H "Authorization: $TOKEN"
+  -H "Authorization: Bearer $TOKEN"
 # → { watchlists: Watchlist[] }
 ```
 
 **Create a watchlist:**
 ```bash
 curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/watchlists" \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
-  -d '{"name": "Top Brands", "color": "#7c3aed", "emoji": "🏢", "creatorKeys": ["instagram:nike"]}'
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"name": "Top Brands", "color": "violet", "emoji": "🏢", "creatorKeys": ["instagram:nike"]}'
 # → { watchlist: Watchlist }
 ```
 
 **Update watchlist metadata:**
 ```bash
 curl -s -X PUT "http://127.0.0.1:$PORT/api/bridge/inspiration/watchlists/:id" \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
-  -d '{"name": "Renamed List", "color": "#ef4444"}'
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"name": "Renamed List", "color": "rose"}'
 # → { watchlist: Watchlist }
 ```
 
 **Delete a watchlist:**
 ```bash
 curl -s -X DELETE "http://127.0.0.1:$PORT/api/bridge/inspiration/watchlists/:id" \
-  -H "Authorization: $TOKEN"
+  -H "Authorization: Bearer $TOKEN"
 # → { deleted: true }
 ```
 
 **Add members (creator keys):**
 ```bash
 curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/watchlists/:id/members" \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"creatorKeys": ["instagram:adidas", "youtube:veritasium"]}'
 # → { watchlist: Watchlist }
 ```
@@ -286,7 +290,7 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/watchlists/:id/me
 **Remove members:**
 ```bash
 curl -s -X DELETE "http://127.0.0.1:$PORT/api/bridge/inspiration/watchlists/:id/members" \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"creatorKeys": ["instagram:adidas"]}'
 # → { watchlist: Watchlist }
 ```
@@ -321,7 +325,7 @@ Creator keys may appear in different formats across the system. All filter point
 
 **Create a watchlist and populate it:**
 ```
-1. POST /api/bridge/inspiration/watchlists  → {"name": "AI Creators"}
+1. POST /api/bridge/inspiration/watchlists  → {"name": "AI Creators", "color": "violet"}
 2. POST /api/bridge/inspiration/watchlists/:id/members → {"creatorKeys": ["instagram:openai", "youtube:3blue1brown"]}
 ```
 
@@ -329,7 +333,17 @@ Creator keys may appear in different formats across the system. All filter point
 ```
 1. GET /api/bridge/inspiration/watchlists → find watchlist by name
 2. Read watchlist.creatorKeys
-3. For each key, GET /api/bridge/inspiration/creators/items?identifier=<key>
+3. Split each key into source + identifier, then GET /api/bridge/inspiration/creators/items?source=<source>&identifier=<identifier>
 4. Transcribe + analyze their content
 5. Push findings via /api/bridge/inspiration/ai-output
 ```
+
+Watchlist `color` must be one of `violet|blue|emerald|amber|rose|cyan|orange|slate`.
+Creation requires it; update validates it when supplied. Hex colors are rejected
+with HTTP 400. Use the REST watchlist routes above; a catalog `inspiration.*`
+entry alone is not proof of a working `/api/execute` adapter.
+Research refresh/search/transcription/download can call providers,
+consume credits or persist data; stored feed/items reads are not equivalent to
+a live scrape. Never use refresh-all, paid transcription or cookie export as a
+speculative health check. On async transcript requests, poll the returned key
+instead of starting duplicate work.

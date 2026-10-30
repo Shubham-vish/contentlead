@@ -190,7 +190,7 @@ export default MyScene;
 ```
 
 ### Naming Rules
-- Alphanumeric, hyphens, underscores only: `my-scene`, `chart_v2`, `introAnimation`
+- Alphanumeric, hyphens, underscores only: `demo-scene`, `chart_v2`, `introAnimation`
 - Must start with a letter
 - Max 64 characters
 - The composition ID will be `Custom_<name>` (e.g., `Custom_split-screen`)

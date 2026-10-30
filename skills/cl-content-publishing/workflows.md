@@ -20,9 +20,7 @@ curl -X POST "http://127.0.0.1:$PORT/api/content/create"   -H "Authorization: Be
 ### Step 2: Set metadata and video
 
 ```bash
-curl -X PUT "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"displayTitle":"5 AI Tools You Need in 2025","contentTitle":"5 AI Tools You Need in 2025","description":"A deep dive into AI tools for content creators","caption":"5 AI tools you need right now! 🚀
-
-Comment FREE to get the guide!","videoUrl":"https://storage.blob.../video.mp4","downloadableSasUrl":"https://storage.blob.../video.mp4?sv=...","sasExpiresAt":"2025-12-31T00:00:00Z","thumbnail":"https://storage.blob.../thumb.jpg","status":"ready"}'
+curl -X PUT "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"displayTitle":"5 AI Tools You Need in 2025","contentTitle":"5 AI Tools You Need in 2025","description":"A deep dive into AI tools for content creators","caption":"5 AI tools you need right now! 🚀\n\nComment FREE to get the guide!","videoUrl":"https://storage.blob.../video.mp4","downloadableSasUrl":"https://storage.blob.../video.mp4?sv=...","sasExpiresAt":"2025-12-31T00:00:00Z","thumbnail":"https://storage.blob.../thumb.jpg","status":"ready"}'
 ```
 
 If you render locally in SkillTown Desktop, prefer `POST /api/render` with `contentId` and `uploadToCloud:true`; it renders locally, uploads the MP4 + thumbnail, and sets `Content.videoUrl`, SAS URLs, and `thumbnail` automatically.
@@ -40,15 +38,11 @@ Use the returned Instagram account ID, YouTube channel/account ID, and LinkedIn 
 ### Step 4: Configure channels
 
 ```bash
-curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"instagram","config":{"enabled":true,"toPublish":true,"postType":"reel","caption":"5 AI tools you need right now! 🚀
-
-Comment FREE to get the guide!","hashtags":["AI","tools","2025","contentcreator"],"selectedAccount":"ig_abc123"}}'
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"instagram","config":{"enabled":true,"toPublish":true,"postType":"reel","caption":"5 AI tools you need right now! 🚀\n\nComment FREE to get the guide!","hashtags":["AI","tools","2025","contentcreator"],"selectedAccount":"ig_abc123"}}'
 
 curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"youtube","config":{"enabled":true,"toPublish":true,"postType":"long","title":"5 AI Tools You Need in 2025","description":"In this video, I share the top 5 AI tools...","tags":["AI","tools","tutorial"],"privacy":"public","category":"22","selectedAccount":"UCxxx"}}'
 
-curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"linkedin","config":{"enabled":true,"toPublish":true,"postType":"post","title":"5 AI Tools You Need in 2025","description":"Just published a deep dive into AI tools...
-
-#AI #ContentCreation","selectedAccount":"li_def456"}}'
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"linkedin","config":{"enabled":true,"toPublish":true,"postType":"post","title":"5 AI Tools You Need in 2025","description":"Just published a deep dive into AI tools...\n\n#AI #ContentCreation","selectedAccount":"li_def456"}}'
 ```
 
 ### Step 5: Set Instagram CTA before publishing
@@ -80,14 +74,13 @@ Expected response includes `success:true`, `videoId`, and optional CTA comment s
 
 ### Step 8: Post to LinkedIn and mark tracking manually
 
-LinkedIn posting is not content-aware. Read the Content doc if you need a caption or YouTube URL, post, then manually mark LinkedIn status.
+Read Content for caption/link data, pass `contentId` when posting to record
+attempt history, then manually mark LinkedIn status **only after confirmed success**.
 
 ```bash
 curl "http://127.0.0.1:$PORT/api/bridge/content/content_xxx"   -H "Authorization: Bearer $TOKEN"
 
-curl -X POST "http://127.0.0.1:$PORT/api/bridge/publish/linkedin"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"accountId":"li_def456","text":"Just published: 5 AI Tools You Need in 2025! 🚀
-
-#AI #ContentCreation"}'
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/publish/linkedin"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","accountId":"li_def456","text":"Just published: 5 AI Tools You Need! 🚀\n\n#AI #ContentCreation","postType":"text","visibility":"PUBLIC","approved":true}'
 
 curl -X POST "http://127.0.0.1:$PORT/api/bridge/content/configure-publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","platform":"linkedin","config":{"status":"published"}}'
 ```

@@ -2,6 +2,129 @@
 
 Everything that is NOT object CRUD: camera control, selection, theme, canvas background, and persistence.
 
+## PDF import — shared native jobs
+
+These commands use the **same `PdfImportService` as PDFImportPanel**, including
+pdf.js, native grid placement, authenticated `/api/boards/upload`, and canvas
+history. They do not imitate a PDF import with unrelated image-add or a modal.
+Runtime-discover them through `board.query.commands`; older renderers need an
+owner-approved update, not automatic reload of unsaved work.
+
+### Select a local PDF without exposing Desktop credentials to the renderer
+
+After the user selects the exact file:
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/media/import" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"path":"/absolute/path/slides.pdf","userSelected":true}'
+```
+
+The bounded native PDF branch checks regular-file/home policy, no symlinks,
+PDF magic and at most100MiB. It copies into private local media-imports without
+overwriting an existing file, and returns
+`{status:"imported",mediaUrl,fileName,size,contentType:"application/pdf",...}`.
+An unavailable media server returns503 without copying. Use the **returned
+`mediaUrl`**, not a guessed port or `/api/local-file` URL. The media-server URL is
+loopback `/media?path=...`, CORS-readable without a bearer. Never put the Desktop
+token in a renderer URL or command parameter.
+
+An approved HTTPS PDF asset URL also works if browser CORS permits it.
+Preparation omits credentials, refuses redirects/embedded URL credentials, and
+bounds actual streamed bytes even without Content-Length. HTTP is accepted only
+for Desktop loopback `/media`. It is not a generic endpoint proxy.
+
+### Prepare, select, upload, review, apply
+
+Send each body to `POST /api/execute` with the usual Desktop bearer. Always use
+the explicit board tabId. Outer `status:"success"` means a job action was
+accepted; **inner `result.status` is the actual import phase**.
+
+```json
+{"tabId":"<board-tabId>","type":"board.importPdf.prepare","params":{"sourceUrl":"<returned mediaUrl>","fileName":"slides.pdf"}}
+```
+
+Returns a session-scoped `jobId` immediately. Poll:
+
+```json
+{"tabId":"<board-tabId>","type":"board.importPdf.status","params":{"jobId":"<jobId>"}}
+```
+
+Wait for `review`; inspect `totalPages`/`fileName`. No pages have been uploaded
+or placed. Get user approval of the exact selected pages, their cloud disclosure,
+and placement, then:
+
+```json
+{"tabId":"<board-tabId>","type":"board.importPdf.start","params":{"jobId":"<jobId>","pages":[1,3,4],"x":100,"y":200,"approved":true}}
+```
+
+`pages` is a distinct, explicit1-based array,1–500 entries within the source PDF.
+Pages are placed in ascending page order using the native400×560 objects, up to
+4 columns,40-unit gaps. `x`/`y` must be finite within±10000000. No silent
+“first500” truncation: for a larger document select the desired at most500 pages.
+UI accepts `all` only for documents at most500 pages, or explicit ranges.
+
+Rendering and upload run sequentially with cancellation, bounded canvas
+dimensions/pixels and local downscaling to fit the native10MiB/page PNG limit.
+Only selected pages are rendered/uploaded. Poll status; it reports
+`pages`, `uploadedPages`, `failures`, `objectIds`, `saveRequired`.
+States: `preparing → review → running → ready|partial`, then `applied`;
+or `cancelled|failed`. Uploaded pages are **staged, not on the canvas**.
+
+After `ready`, review then apply:
+
+```json
+{"tabId":"<board-tabId>","type":"board.importPdf.apply","params":{"jobId":"<jobId>","approved":true}}
+```
+
+Only successfully issued native signed HTTPS page URLs are added, in **one undo entry**. The response has
+`objectIds` and `saveRequired:true`. Verify with `board.query.objects`, then call
+`board.save` and inspect its response. Applying does not itself persist the board.
+No temporary data/blob URLs are placed where autosave could strip them.
+Repeated apply returns the same IDs without adding duplicates; after undo use
+`board.redo`, not apply as a shortcut to duplicate pages.
+
+These are long-lived signed read URLs, **not permanent access**:
+`generateReadSasUrl` currently defaults to two years. Expiry, deletion or storage
+policy changes can still make saved images inaccessible; saving a URL does not
+extend its lifetime.
+
+### Partial failure, explicit retry, and cancellation
+
+`failures` contains bounded `{page,stage,code,status?,outcomeUncertain}` entries.
+Codes are `render_failed`, `upload_rejected`, or `upload_uncertain`;401/403
+indicate sign-in/access recovery in the app. No PDF text, raw provider body,
+source URL or cookie is logged in those errors.
+
+- If bytes were accepted but native read-URL signing fails, `/api/boards/upload`
+  returns502 `{error:"read_url_unavailable",blobAccepted:true,retryable:false}`
+  without a raw private blob URL. The job reports `upload_uncertain` and stages
+  nothing for that page. Inspect signing/storage before any reviewed retry;
+  automatically re-uploading can duplicate an already accepted blob.
+- No automatic upload retries. After inspecting a partial job, explicitly
+  approve retrying failed pages:
+  `board.importPdf.retry {jobId,approved:true}`. Already uploaded successes are
+  retained, not re-uploaded. An uncertain upload may have left an orphaned asset.
+- To deliberately keep only successful pages use
+  `board.importPdf.apply {jobId,approved:true,allowPartial:true}`.
+  Failed pages remain reported; this is not complete-import success.
+- `board.importPdf.cancel {jobId}` aborts preparation/render/upload and discards
+  staging. Navigation to another board also cancels the job. No staged pages
+  are placed afterward; completed cloud uploads are **not deleted** automatically.
+  Abort cannot guarantee an in-flight storage request did not commit.
+- Applied jobs require `board.undo` rather than cancel. One active job per
+  renderer; finish/cancel before preparing another. Jobs are not restored after
+  renderer reload. On timeout inspect the job/canvas; never blindly restart an
+  import or reload unsaved work. Password-protected/unreadable PDFs fail
+  preparation rather than being silently downgraded.
+- These job commands are not executor `board.batch` actions. Poll individual
+  commands on the same board tab; don't confuse command acceptance with upload,
+  apply, or saved-board completion.
+
+Native UI now uses these same review/upload/retry/apply stages. Closing its panel
+cancels un-applied work; it no longer silently clears failed background uploads
+and lets autosave strip missing page images.
+
 ## Viewport — two independent axes
 
 There are **two** zoom systems on a board page, do not confuse them:

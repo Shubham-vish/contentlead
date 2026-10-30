@@ -7,12 +7,19 @@ Use the helper and safety gates in [SKILL.md](SKILL.md).
 
 `calls.query.list` supports contacts, campaigns, assets, agents, attempts,
 recordings and automations. Page with returned `nextCursor` until **null**,
-preserving entity/search/filters; default 50, max 100. See entity filter tables
+preserving entity/search/filters/sort/direction; default 50, max 100. See entity filter and sort tables
 in the command reference. Never locally filter a capped workspace snapshot and
 claim complete coverage. `calls.query.detail {entity,id}` supplies full owned
 UUIDs and `related` hydration. Contacts include pronunciation, context and actual
 permission evidence; campaigns include recipient asset assignments; agents
 include instructions/revision. A display label is not an ID.
+
+The manifest's `querySorts` lists exact allowed fields for each entity.
+Pass `sort:"name",direction:"asc"` for contacts, for example; `direction`
+requires `sort`. Omit both for the legacy native order. Confirm response
+`sortVersion:1` before claiming global sorting: an older processing backend
+can return legacy unsorted rows without that field. Never substitute a
+local sort of a partial page for a globally sorted audience.
 
 ## Manual contact save and suppression
 

@@ -134,7 +134,10 @@ Use `containerName: "ConfigurationData"` only when manually targeting production
 | Path | Method | Body/query params | Description |
 |------|--------|-------------------|-------------|
 | `/api/bridge/accounts` | GET | — | Aggregate connected Instagram, LinkedIn, and YouTube accounts |
-| `/api/bridge/publish/linkedin` | POST | `accountId`, `text`, `postType?`, `imageUrns?` | Post to LinkedIn. This endpoint is not content-aware |
+| `/api/bridge/linkedin/posts` | GET | `accountId?`, `status?`, `limit?`, `offset?`, `postUrn?` | Owner-scoped saved posts/status; not a live provider refresh |
+| `/api/bridge/linkedin/posts/upload-image` | POST | `accountId`, absolute `filePath`, `approved:true` | PNG/JPEG/GIF at most8MiB → native image upload → returned image URN |
+| `/api/bridge/publish/linkedin` | POST | `accountId`, `text`, `contentId`, `postType`, `visibility`, `approved:true`, `imageUrns?`, `articleUrl?`, `articleTitle?`, `retryOf?` | Approved tracked publication; exact validation/partial-outcome handling in `linkedin.md` |
+| `/api/bridge/linkedin/posts` | DELETE | `accountId`, `postUrn`, `approved:true` | Delete exact owned saved post at provider then locally; no false success on partial failure |
 
 ### Content
 

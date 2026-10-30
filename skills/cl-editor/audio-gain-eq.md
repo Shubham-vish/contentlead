@@ -20,6 +20,8 @@ Keep total audio items (music + SFX) to ≤ 5. Overlap is fine, but total distin
 ```json
 { "type": "editor.addAudio", "params": {
   "src": "/Users/shubham/Music/bgm.mp3",
+  "createNewTrack": true,
+  "trackName": "Background music",
   "from": 0,
   "durationMs": 15000,
   "details": { "volume": 35 }
@@ -87,14 +89,17 @@ The render pipeline now processes each audio item's effects (volume, EQ) INDIVID
 - **Volume >100% is supported** via Remotion's native `<Video volume={x}>` and `<Audio volume={x}>` — see `electron/design-converter/item-converters.cjs::resolveAudioVolume()`
 - **EQ per-item** — see `electron/render-worker.cjs::preProcessItemAudio()` for the pattern (pre-processes source file with ffmpeg, swaps `details.src` before Remotion mixes)
 
-### Clipping warning
-- **Preview clamps at 0 dBFS in browser** — audio never "sounds distorted" in preview even if math would clip
-- **Render captures raw math** — volume=400% + heavy EQ boost WILL clip in the MP4
-- **No automatic limiter** — user is responsible for volume + EQ combinations that stay ≤0 dBFS peak
+### Clipping and master-bus processing
+- Preview sound is not proof of exported peak or loudness compliance.
+- Heavy gain/EQ can clip before the final mix; fix per-item levels rather than relying on a final limiter to repair distortion.
+- The editor has persisted master-bus loudness/limiter presets. Inspect `query.getMasterBus`; set `audio.setMasterBus` using `workflow-completion.md`. `off` disables that stage. A setting receipt is not a measured export result.
 - If you need to check: `ffmpeg -i output.mp4 -af ebur128=peak=true:framelog=quiet -f null /dev/null` — Peak should be ≤0 dBFS
 
 ### Multi-track SFX architecture
-`editor.addAudio` auto-splits SFX across separate tracks based on time-overlap detection. If you add 20 SFX close in time, expect 5-6 audio tracks in the timeline (by design — avoids overlap conflicts).
+Legacy auto-placement can allocate additional compatible tracks for overlapping
+audio. For deterministic placement, use an existing compatible `trackId`, or
+`createNewTrack:true` once and reuse the returned actual owner track for later
+items. `trackName` alone does not force fresh ownership.
 
 ## Auto-Mixing
 

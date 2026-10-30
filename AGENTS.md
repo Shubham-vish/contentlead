@@ -2,9 +2,26 @@
 
 > Control the SkillTown video editor from any AI terminal.
 
+## Audited transport contract (2026-10-29)
+
+This section takes precedence over historical startup/recovery recipes below.
+
+- Never print discovery JSON, tokens, cookies, or authorization headers. Parse `~/.skilltown-desktop/api.json` privately. File presence is **not** liveness; use bounded authenticated loopback health, re-read once on refusal/401, then report runtime unavailable.
+- A source-only audit must not start/reload/switch the app, close tabs, contact providers, or modify live data. Existing live origins may be shared. Only launch/navigate/reload when the task authorizes that operation; save and verify first.
+- Use `GET /api/tabs` and explicit `tabId` on editor commands and supported project/diagnostic endpoints. Ambiguous multi-tab requests return HTTP 409; never close another session's tabs to bypass it. Discovery schema v4 includes `tabs`; current top-level active fields describe only the active tab.
+- Do not use a fixed sleep as proof project data loaded. Editor readiness, project hydration, media readiness, and web login are separate checks. Inspect the intended project/canvas before writing.
+- `/api/execute` goes through per-tab IPC/preload to `ElectronAgentBridge` and the web editor executor. `/api/bridge/*` instead forwards with the logged-in web session to the relevant authenticated/validated web route. Business saved-object commands are not timeline commands or local autosaves.
+- `/api/capabilities?tabId=<id>` separates the installed snapshot from sender-bound live `renderer.capabilities`: names/version, hydration, safe-to-write and save readiness. Legacy renderers remain explicitly unverified. Use `params.expectedContentId`; Desktop-native workflows remain separate from web names. `/api/skills` exposes docs/provenance plus canonical-helper discovery, not executable installation. Private local Markdown can remain available but is never shipped; public bundles use tracked/reviewed allowlists and safe managed targets.
+- Known JSON commands/reviewed JSON routes and opted-in uploads do not treat HTML/non-JSON200 as success or blindly replay writes. Inspect saved state after uncertainty. Only specialized Calls/CRM/Meta recognized pre-execution auth retries remain. `DELETE /api/jobs/:id` stops local monitoring, not provider work.
+- Read HTTP status and JSON outcome. Even HTTP 200 may contain a failed editor command; failure paths may lack `editorHealth`. A timeout does not imply rollback. Never automatically replay paid/publishing writes or repair by deleting items, restoring projects, clearing logs, or reloading a shared editor.
+- Current Hub routes are `GET /api/bridge/hub/commands` and `POST /api/bridge/hub/commands/:name`; historical `/learn/*` and `/hub/:handle/*` bridge recipes below are obsolete.
+- Historical single-tab snippets below omit `tabId`: add the resolved target to each command/project request and diagnostic query before using them in a shared app. Their omission is not permission for implicit multi-tab routing.
+
+Whole-product startup/router: [`skills/cl-desktop/SKILL.md`](skills/cl-desktop/SKILL.md); video editor: [`skills/cl-editor/SKILL.md`](skills/cl-editor/SKILL.md); transport: [`skills/cl-editor/infrastructure.md`](skills/cl-editor/infrastructure.md); targeting: [`skills/cl-editor/multi-tab.md`](skills/cl-editor/multi-tab.md).
+
 ## ⚠️ MANDATORY Startup Protocol
 
-**EVERY session must follow this protocol before ANY editing.** Do not skip steps.
+**Editing sessions** follow this protocol subject to the audited contract above. Source-only audits do not launch or call the app.
 
 ### Step 0: Start the App (if not running)
 
@@ -12,9 +29,10 @@ The app loads the cloud frontend from `contentlead.in` by default. No local serv
 
 ```bash
 # Check if app is already running
-cat ~/.skilltown-desktop/api.json 2>/dev/null | python3 -c "
+python3 -c "
 import sys,json,subprocess
-d = json.load(sys.stdin)
+from pathlib import Path
+d = json.loads((Path.home()/'.skilltown-desktop/api.json').read_text())
 r = subprocess.run(['kill', '-0', str(d['pid'])], capture_output=True)
 if r.returncode == 0: print(f'RUNNING on port {d[\"port\"]} — origin: {d.get(\"appOrigin\",\"unknown\")}')
 else: print('NOT RUNNING')
@@ -29,7 +47,7 @@ cd /Users/shubham/Codes/SkillTown-Desktop && npm run dev
 # Or point to local Next.js dev server:
 cd /Users/shubham/Codes/SkillTown-Desktop && npm run dev -- --url=http://localhost:3000
 
-# ⚠️ Port and token CHANGE every restart — always re-read api.json
+# ⚠️ Token changes on API-server start; preferred port may be reused. Re-read discovery.
 ```
 
 #### Switching between cloud and local dev at runtime
@@ -78,9 +96,9 @@ print(f'Editor: ready={d[\"editorReady\"]}, content={d.get(\"contentId\",\"none\
 "
 # If status is 'issues_found', fix all errors before editing
 # Common fixes:
-#   - ERR_CONNECTION_REFUSED on media URLs → media URLs have stale port, reload project
+#   - ERR_CONNECTION_REFUSED on media URLs → inspect stale media ports; preserve work before any authorized restore
 #   - Blob URL errors → media needs re-adding
-#   - React errors → reload the page via POST /api/reload
+#   - React errors → diagnose first; save/verify before any task-authorized reload
 ```
 
 ### Step 4: Open content if editor not ready
@@ -106,7 +124,7 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/navigate" \
 
 ```bash
 # After navigation completes, wait for DB content load:
-sleep 10  # Must wait 8-12 seconds after editorReady for new projects
+# Do not rely on a fixed sleep; verify the addressed project state before writing.
 
 # Then verify canvas size before adding anything:
 curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
@@ -219,7 +237,7 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/content/create" \
 
 ### ⚠️ editorHealth — Check EVERY command response
 
-Every command response includes an `editorHealth` object. **Always read it:**
+Completed editor command execution adds `editorHealth`; early auth/body/tab/preflight errors may not. **Always read it when present, and check HTTP/JSON failures first:**
 ```json
 {
   "editorHealth": {
@@ -265,7 +283,7 @@ curl -s "http://127.0.0.1:$PORT/api/diagnostics?full=true" -H "Authorization: Be
 ```
 
 **How proactive error detection works:**
-1. Every command response includes `warnings` array + `hasNewErrors` flag + `diagnosticsCursor` seq number
+1. Completed execution paths add diagnostics; `warnings` and `hasNewErrors` are conditional, and early rejections may lack health data
 2. Scene-affecting commands (`scene.addLibraryScene`, `editor.addVideo`, etc.) wait 500ms after execution to catch async render errors
 3. `GET /api/diagnostics?afterSeq=N` gives you only NEW errors since your last check
 4. SSE stream emits `error.console` events in real-time
@@ -341,7 +359,7 @@ Common scene prop mistakes that cause crashes:
 
 ### editorHealth in Command Responses
 
-Every `/api/execute` response includes `editorHealth`. **READ IT after every command:**
+Completed `/api/execute` execution paths include `editorHealth`. Early request rejections may not. **READ it when present after every command:**
 
 ```json
 {
@@ -415,7 +433,7 @@ When to call `/api/diagnostics` directly:
 | **Animations don't persist** | HIGH | `setAnimation` works in-session but animations are lost on save/restore | Re-apply animations after every project restore |
 | ~~Volume >100~~ | N/A | **Not a bug** — volume >100 is intentional (amplification/boost feature) | Use `query.getAudioLoudness` to verify levels |
 | **`orientation` param ignored** | LOW (fixed) | `orientation` only sets metadata, never affected actual scene dimensions | Now auto-derived from canvas, but param still misleading |
-| **HMR breaks after code changes** | MEDIUM | Hot module replacement can leave broken state after modifying handler code | Full app restart (`kill all + npm run dev:with-server`) required |
+| **HMR breaks after code changes** | MEDIUM | Hot module replacement can leave broken state after modifying handler code | Diagnose first; only reload/restart the owned editor when task-authorized, after verified save |
 | **Placement returns empty `{}`** | MEDIUM | `placement` on text items is ignored — all text centers by default | Use `editor.positionItem` or combine text into single blocks |
 
 ### Enhancements Needed
@@ -430,7 +448,7 @@ When to call `/api/diagnostics` directly:
 
 ```bash
 # 1. Read connection info
-cat ~/.skilltown-desktop/api.json
+API=$(cat ~/.skilltown-desktop/api.json) # Parse privately as in Step 1; never print credentials.
 # → {"port": 3847, "token": "abc...", "baseUrl": "http://127.0.0.1:3847", "editorReady": true}
 
 # 2. Check readiness (no auth needed)
@@ -543,13 +561,13 @@ Hybrid architecture:
   Switch at runtime: POST /api/app/set-origin {"origin": "local"} or {"origin": "cloud"}
 ```
 
-> **Scope note:** This guide documents the recommended command/API subset for AI agents. It is curated, not exhaustive. Additional commands and endpoints exist — use `GET /api/skills` at runtime for the full current surface, or `GET /api/capabilities` for endpoint discovery.
+> **Scope note:** This is a curated guide, not an exhaustive live registry. `/api/skills` discovers documents; `/api/capabilities` describes the installed Desktop's catalog/endpoints. Use domain manifests for server command surfaces and distinguish installed Desktop, loaded web renderer, and deployed backend revisions.
 
 ## Navigation & Content Discovery
 
 ### Discovery file (v4)
 ```bash
-cat ~/.skilltown-desktop/api.json
+API=$(cat ~/.skilltown-desktop/api.json) # Parse privately; the following JSON is synthetic, not output to log.
 # → {"schemaVersion":4, "port":54110, "token":"abc...", "baseUrl":"http://127.0.0.1:54110",
 #    "apiOrigin":"http://127.0.0.1:54110", "appOrigin":"https://contentlead.in",
 #    "mediaServerPort":54109, "editorReady":false, "activeTabId":"tab-abc",
@@ -690,7 +708,7 @@ curl -X POST http://127.0.0.1:$PORT/api/navigate \
   -d '{"url": "/content/content_abc...", "waitForReady": true, "autoRestore": true}'
 
 # 8. Re-run error check after loading project (media URLs may be stale)
-curl -s "http://127.0.0.1:$PORT/api/console-errors?level=error&clear=true" -H "Authorization: Bearer $TOKEN"
+curl -s "http://127.0.0.1:$PORT/api/console-errors?level=error&tabId=$TAB_ID" -H "Authorization: Bearer $TOKEN"
 # Wait 2 seconds for async media errors
 sleep 2
 curl -s "http://127.0.0.1:$PORT/api/console-errors?level=error" -H "Authorization: Bearer $TOKEN"
@@ -714,7 +732,7 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/execute" \
 
 The AI agent MUST:
 1. **Check errors at startup** — before any editing (see Startup Protocol)
-2. **Check `editorHealth` in EVERY command response** — it's embedded in every response
+2. **Check `editorHealth` when present** — also inspect HTTP status and JSON failures; early rejections may omit health fields
 3. **Check errors after media/scene commands** — wait 2s, then check `/api/diagnostics`
 4. **Check errors before saving** — run `validateTimeline` and `media.status`
 5. **💾 Save your work** — call `editor.save` after completing edits and before rendering. Also save periodically during long editing sessions (every 5-10 commands, or after completing each phase of work).
@@ -1101,13 +1119,13 @@ These endpoints exist but are not covered in detail above:
 
 ## Batch Operations with Transactions
 
-For multi-step edits, AI can use transactions for atomic operations:
+`POST /api/batch` executes commands sequentially and returns per-command outcomes. Its HTTP handler does **not** implement `transaction:true` rollback:
 
 ```json
-{"type": "batch", "commands": [...], "transaction": true}
+{"tabId": "tab-example", "commands": [{"type":"query.getCanvasSize","params":{}}], "stopOnError": true}
 ```
 
-If any command fails, all earlier commands in the batch are automatically rolled back via undo.
+Earlier successful mutations remain applied if a later command fails. `stopOnError` stops subsequent commands but does not roll back. The separate renderer `batch.execute` path has its own contract; do not infer atomicity for HTTP batches.
 
 ## Circuit Breaker & Retry
 
@@ -2234,7 +2252,7 @@ When editing scene/template rendering code: `TemplateInner` component does NOT h
 | GET | `/api/capabilities` | Yes | Auto-generated full command catalog with categories |
 | POST | `/api/debug/toggle` | Yes | Toggle verbose debug logging |
 | POST | `/api/execute` | Yes | Execute editor command. Response includes `warnings`, `hasNewErrors`, `diagnosticsCursor` |
-| POST | `/api/batch` | Yes | Execute multiple commands (supports `transaction: true` for rollback) |
+| POST | `/api/batch` | Yes | Sequential commands; `stopOnError` supported, no HTTP transaction rollback |
 | GET | `/api/state` | Yes | Get current editor state/design (⚠️ returns null for empty timelines) |
 | POST | `/api/scenes` | Yes | Create custom .tsx scenes |
 | POST | `/api/scene-bundles/build` | Yes | Compile .tsx scene with imports (esbuild) |

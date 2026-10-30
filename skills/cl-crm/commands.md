@@ -706,6 +706,196 @@ Side effect: **no**.
   }
 }
 ```
+## crm.opportunities.summary
+
+Read scoped opportunity counts and currency-separated stage totals using the existing search/archive filters.
+
+Side effect: **no**.
+
+### Params schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "scope": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "platform"
+      ],
+      "default": "owner"
+    },
+    "search": {
+      "type": "string",
+      "maxLength": 200,
+      "default": ""
+    },
+    "contactId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "archived": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [],
+  "additionalProperties": false
+}
+```
+
+### Example request
+
+```json
+{
+  "params": {
+    "search": "Synthetic",
+    "archived": false
+  }
+}
+```
+## crm.customer.context
+
+Read bounded platform CRM context only for exact authorized persisted source edges. Platform administrators only; no message history, consent or account access mutation.
+
+Side effect: **no**.
+
+### Params schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "scope": {
+      "const": "platform"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "platform_user",
+              "whatsapp_thread",
+              "tradingchat_thread"
+            ]
+          },
+          "sourceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 191
+          }
+        },
+        "required": [
+          "kind",
+          "sourceId"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 12
+    }
+  },
+  "required": [
+    "scope",
+    "sources"
+  ],
+  "additionalProperties": false
+}
+```
+
+### Example request
+
+```json
+{
+  "params": {
+    "scope": "platform",
+    "sources": [
+      {
+        "kind": "platform_user",
+        "sourceId": "synthetic-user"
+      }
+    ]
+  }
+}
+```
+## crm.contacts.timeline
+
+Read the rich scoped contact timeline with filter-bound cursor paging (at most 50 items). Platform-only payment, subscription and conversation sections retain administrator checks.
+
+Side effect: **no**.
+
+### Params schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "scope": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "platform"
+      ],
+      "default": "owner"
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "all",
+        "notes",
+        "tasks",
+        "deals",
+        "payments",
+        "subscriptions",
+        "conversations"
+      ],
+      "default": "all"
+    },
+    "cursor": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 30
+    }
+  },
+  "required": [
+    "id"
+  ],
+  "additionalProperties": false
+}
+```
+
+### Example request
+
+```json
+{
+  "params": {
+    "id": "00000000-0000-4000-8000-000000000001",
+    "type": "all",
+    "limit": 25
+  }
+}
+```
 ## crm.contacts.create
 
 Create a scoped CRM contact without auto-merging or inferring consent.
@@ -1928,6 +2118,404 @@ Side effect: **no**.
 {
   "params": {
     "id": "offer_order:synthetic-order"
+  }
+}
+```
+## crm.contacts.export
+
+Export filtered scoped contacts as a UTF-8 CSV artifact. Rejects more than 5,000 rows or 1 MiB; narrow filters instead of accepting a truncated export.
+
+Side effect: **no**.
+
+### Params schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "scope": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "platform"
+      ],
+      "default": "owner"
+    },
+    "search": {
+      "type": "string",
+      "maxLength": 200,
+      "default": ""
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "updated",
+        "created",
+        "name",
+        "updatedAsc",
+        "createdAsc",
+        "nameDesc"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "LEAD",
+        "ACTIVE",
+        "CUSTOMER",
+        "INACTIVE"
+      ]
+    },
+    "label": {
+      "type": "string",
+      "maxLength": 48
+    },
+    "archived": {
+      "type": "boolean",
+      "default": false
+    },
+    "sourceKind": {
+      "type": "string",
+      "enum": [
+        "calls_contact",
+        "offer_lead",
+        "event_registration",
+        "storefront_lead",
+        "brand_profile",
+        "brand_outreach",
+        "platform_user",
+        "whatsapp_thread",
+        "tradingchat_thread",
+        "deals_brand",
+        "deals_campaign"
+      ]
+    }
+  },
+  "required": [],
+  "additionalProperties": false
+}
+```
+
+### Example request
+
+```json
+{
+  "params": {
+    "scope": "owner",
+    "label": "sample",
+    "archived": false
+  }
+}
+```
+## crm.contacts.bulk
+
+Apply an approved tag/archive change to 1–100 unique scoped contacts with each expectedRevision. Tag operations require tag; per-item outcomes are not an atomic transaction. Never automatically replay failures.
+
+Side effect: **yes**.
+
+### Params schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "scope": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "platform"
+      ],
+      "default": "owner"
+    },
+    "operation": {
+      "type": "string",
+      "enum": [
+        "addTag",
+        "removeTag",
+        "archive",
+        "unarchive"
+      ]
+    },
+    "tag": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "expectedRevision"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "acknowledged": {
+      "const": true
+    }
+  },
+  "required": [
+    "operation",
+    "items",
+    "acknowledged"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "enum": [
+              "addTag",
+              "removeTag"
+            ]
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "required": [
+          "tag"
+        ]
+      }
+    }
+  ]
+}
+```
+
+### Example request
+
+```json
+{
+  "params": {
+    "acknowledged": true,
+    "operation": "addTag",
+    "tag": "reviewed",
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "expectedRevision": 1
+      }
+    ]
+  }
+}
+```
+## crm.inbox.whatsapp.list
+
+Read bounded platform-admin support WhatsApp conversation summaries; not creator/owner inbox. Offset pages are not snapshots.
+
+Side effect: **no**.
+
+### Params schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "scope": {
+      "const": "platform"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 30
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    }
+  },
+  "required": [
+    "scope"
+  ],
+  "additionalProperties": false
+}
+```
+
+### Example request
+
+```json
+{
+  "params": {
+    "scope": "platform",
+    "limit": 25
+  }
+}
+```
+## crm.inbox.whatsapp.get
+
+Read an existing platform support thread, with bounded pages inside the native latest-200-message window. No arbitrary recipient or complete-history claim.
+
+Side effect: **no**.
+
+### Params schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "scope": {
+      "const": "platform"
+    },
+    "threadId": {
+      "type": "string",
+      "pattern": "^[0-9]{6,20}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 30
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 199,
+      "default": 0
+    }
+  },
+  "required": [
+    "scope",
+    "threadId"
+  ],
+  "additionalProperties": false
+}
+```
+
+### Example request
+
+```json
+{
+  "params": {
+    "scope": "platform",
+    "threadId": "919876543210",
+    "limit": 25
+  }
+}
+```
+## crm.inbox.whatsapp.reply
+
+Send only the specifically approved exact text to an existing platform support thread at expectedLastMessageId with acknowledged:true; native ADMIN/24h-window guards remain. Preflight is not a transaction lock; never retry uncertain delivery.
+
+Side effect: **yes**.
+
+### Params schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "scope": {
+      "const": "platform"
+    },
+    "threadId": {
+      "type": "string",
+      "pattern": "^[0-9]{6,20}$"
+    },
+    "body": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+    },
+    "expectedLastMessageId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "acknowledged": {
+      "const": true
+    }
+  },
+  "required": [
+    "scope",
+    "threadId",
+    "body",
+    "expectedLastMessageId",
+    "acknowledged"
+  ],
+  "additionalProperties": false
+}
+```
+
+### Example request
+
+```json
+{
+  "params": {
+    "scope": "platform",
+    "threadId": "919876543210",
+    "expectedLastMessageId": "synthetic-last-message",
+    "body": "Synthetic approved support reply.",
+    "acknowledged": true
+  }
+}
+```
+## crm.inbox.whatsapp.markRead
+
+Mark only the approved inspected latest-message cursor read in a known platform support thread; acknowledged:true required. Native transactions never consume a newer message or regress a newer read cursor. Refresh after stale/uncertain results.
+
+Side effect: **yes**.
+
+### Params schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "scope": {
+      "const": "platform"
+    },
+    "threadId": {
+      "type": "string",
+      "pattern": "^[0-9]{6,20}$"
+    },
+    "expectedLastMessageId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,200}$"
+    },
+    "acknowledged": {
+      "const": true
+    }
+  },
+  "required": [
+    "scope",
+    "threadId",
+    "expectedLastMessageId",
+    "acknowledged"
+  ],
+  "additionalProperties": false
+}
+```
+
+### Example request
+
+```json
+{
+  "params": {
+    "scope": "platform",
+    "threadId": "919876543210",
+    "expectedLastMessageId": "synthetic-last-message",
+    "acknowledged": true
   }
 }
 ```

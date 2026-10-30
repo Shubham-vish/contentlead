@@ -19,6 +19,10 @@ approval. Allowed stages are `PROSPECT`, `QUALIFIED`, `PROPOSAL`, `WON`, `LOST`.
 - Update/archive requires `expectedRevision`. A 409 means reload and review; do
   not blindly resubmit.
 - Archive is reversible and preserves history.
+- `crm.opportunities.summary {scope,search,archived}` reads the same filtered
+  stage totals as the UI. Each stage has its count and currency-separated
+  `amountMinor` strings; never add different currencies together. It does not
+  depend on the current list page and does not change any opportunity.
 
 ## Notes and activity
 

@@ -32,11 +32,38 @@ The user must be:
 1. Signed in to `https://contentlead.in` in a browser (agents via the desktop bridge auto-pass session cookies), AND
 2. Have a **claimed handle**. If not, claim one first:
    ```bash
-   POST /api/user/handle   { "handle": "<lowercase-handle>", "displayName": "<name>?" }
+   curl -X POST "http://127.0.0.1:$PORT/api/bridge/user/handle" \
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+     -d '{"handle":"chosen_creator","displayName":"Approved display name","approved":true}'
    ```
-   (handle = lowercase letters, numbers, `-`, `_`.) Without a handle, every storefront command fails with a 400 `Claim your handle first`.
+   Get approval of the exact public handle/name first. The narrow Desktop bridge
+   calls the same native `POST /api/user/handle` as the UI; it does not require an
+   existing storefront context. Handle3–50 letters/digits/`-`/`_` is normalized
+   lowercase; optional displayName is at most100 characters. Only these fields
+   and literal `approved:true` are accepted. Identity remains the session.
+   Native reserved-name, existing/legacy ownership and first-primary rules apply.
+   Reserved/taken names return409; do not bypass the guard or auto-pick a name.
+   Success is `{success:true,handle,id}`. A deliberate repeat of an already-owned
+   handle returns the same ID; uncertain transport is not automatically replayed.
+   There is no native GET on this claim route. After success use
+   `storefront.getState`/`storefront.listHandles` to inspect context.
+   Without a handle, storefront commands still fail400 `Claim your handle first`.
 
-You do NOT read `~/.skilltown-desktop/api.json` for this skill — there is no local port. Commands target the user's session directly.
+Browser callers use the web routes below. Terminal agents should read `port` and
+`token` fresh from `~/.skilltown-desktop/api.json`, then use the local Desktop
+bridge; it attaches session cookies without extracting them.
+
+```bash
+curl -s "http://127.0.0.1:$PORT/api/bridge/storefront/commands" \
+  -H "Authorization: Bearer $TOKEN"
+curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/storefront/commands/storefront.getState" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"params":{}}'
+```
+
+These proxy `/api/storefront/commands/manifest` and `/api/storefront/commands/<name>`.
+For multiple owned pages, pass **top-level** `"handle":"chosen-handle"` beside
+`params`; omission selects the primary handle. Never put identity inside params.
 
 > **⚙️ If you run via the desktop bridge** (session cookies come from the app) **and it isn't running,** start it first — **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"` (see `cl-editor/infrastructure.md`). If you call `contentlead.in` directly with the user's browser session, no app start is needed — just ensure they're signed in.
 
@@ -67,6 +94,8 @@ POST /api/storefront/ai   { "prompt": "Make my page a warm minimal creator hub a
 | Command | Params | Returns |
 |---|---|---|
 | `storefront.getState` | `{}` | `{ handle, isPublished, publishedAt, draft, published, hasDraftChanges }` |
+| `storefront.listHandles` | `{}` | `{ active, handles }` — list owned pages; target one with the top-level `handle` field |
+| `storefront.claimHandle` | `{ handle, displayName? }` | `{ handle, id }` — claim another page; first-handle onboarding uses Desktop `/api/bridge/user/handle` (native `/api/user/handle`) because command context requires an existing handle |
 | `storefront.listCatalog` | `{}` | Addable section types + variants + `allowMultiple`/`dataBound` (includes `gallery`, `embed`, `faq`, `marquee`) |
 | `storefront.listKits` | `{}` | Starter kits `[{ id, label, description }]` |
 | `storefront.listVibes` | `{}` | Theme vibe presets `[{ id, label, description, theme }]` |
@@ -187,7 +216,7 @@ Example:
 
 ### 1. Generate a page from the creator's real profile, then publish
 ```
-1. storefront.getState {}                                  # ensure handle exists (else POST /api/user/handle)
+1. storefront.getState {}                                  # ensure handle exists (else POST /api/bridge/user/handle)
 2. storefront.generateFromProfile { goal: "grow my audience" }
 3. (open /<handle>/preview to review)
 4. storefront.section.setProps { id: "<aboutId>", props: { body: "..." } }   # tweak copy
@@ -265,6 +294,9 @@ The human builder lives at **`/deals/creator/storefront`** ("My Page" in the Dea
 - Success: `{ ok: true, result: { ok: true, data, message } }`. Failure: `{ ok: false, error }` (+ `validationErrors` for bad params). HTTP: 401 = not signed in; 400 = validation error or `Claim your handle first`; 500 = server error.
 - Params are strict (`additionalProperties: false`) — you cannot smuggle a `userId`/`handleId`; identity is always the signed-in session.
 - If a section id isn't found, re-read `storefront.getState` — ids are regenerated on some whole-draft ops (`applyKit`, `generateFromProfile`, `discardDraft`).
+- Concurrent edits/publishing use the saved draft version: `Storefront changed in another editor. Reload and retry your edit.` (or `retry publishing`) means re-read state, review the intervening changes, then retry deliberately. Do not overwrite another editor's work or repeat paid generation blindly.
+- Confirm the target handle before publishing, unpublishing, discarding a draft or deleting media. Upload only approved public assets; publication exposes authored custom code and image URLs. An httpOnly cookie prevents reading the cookie value, not all same-origin actions by custom JavaScript; this is not an isolation guarantee.
+- On timeout or uncertain transport errors, re-read state before retrying mutations or paid generation. There is no universal idempotency key. Telemetry failure alone must not change a successful mutation response.
 
 ## Where the code lives (for maintainers)
 

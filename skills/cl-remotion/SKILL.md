@@ -66,16 +66,19 @@ Read individual rule files for detailed explanations and code examples:
 // Minimal sandbox scene — paste into scene.addCustomScene
 const Scene = () => {
   const frame = useCurrentFrame();
-  const opacity = fadeIn(frame, 0, 15);
-  const scale = springPop(frame, 30, 0);
+  const scale = 0.94 + 0.06 * springPop(frame, 30, 0);
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bgDark, justifyContent: 'center', alignItems: 'center' }}>
       <PurpleGradientBg intensity={0.4} />
-      <div style={{ opacity, transform: `scale(${scale})`, fontSize: 72, fontWeight: 900, color: 'white', fontFamily }}>
+      <div style={{ opacity: 1, transform: `scale(${scale})`, fontSize: 72, fontWeight: 900, color: 'white', fontFamily }}>
         Hello World
       </div>
     </AbsoluteFill>
   );
 };
 ```
+
+The starter keeps its subject visible at frame 0 for a usable poster. Validate
+code before inserting, verify timed frames with `query.previewFrameAt`, then
+save the timeline; successful compilation alone is not visual/render evidence.

@@ -11,6 +11,13 @@ tags: clipping, podcast, production, shortlist, discovery, camera, director, syn
 
 ## Start here
 
+For recording-session dashboard operations (rather than the timeline), read
+`recording-dashboard.md`. Its bridge routes do not implement local capture or
+the native processing/upload/finalization lifecycle.
+For separately mounted native processing, studio device/quality and actual
+LiveKit peer chat, read `native-runtime.md`; those capability-gated renderer
+controllers are not timeline commands or saved-dashboard HTTP routes.
+
 Follow `cl-editor` startup: fresh API handle, health, diagnostics, tabs. Send every
 command to an explicit `tabId`. `params.contentId`, when supplied, is an assertion
 against that tab's content, NOT a way to operate on another open project.
@@ -31,14 +38,15 @@ are an upgrade/deployment blocker, not permission to invent alternative commands
 Send this envelope to `POST /api/execute` with the normal Bearer header.
 Inspect `status`, `error`, `result`, `warnings` and `editorHealth` on every response.
 
-**Two different state scopes:**
+**Timeline production state scopes** (mounted dashboard/studio scopes are in
+`native-runtime.md`):
 
 - `production.*` reads/writes **saved server documents**, using the signed-in
   tab's same-origin cookies and existing owner/capability checks. Save first.
   These commands do not load drafts, mutate the open timeline or trigger its
   desktop autosave. Refresh/reopen UI data explicitly. Recipe application returns
   `reloadRequired` for affected editors; do not save stale open editor state.
-- `podcast.*` and `transcript.*Tightening` operate on the **live editor** through
+- Timeline `podcast.*` and `transcript.*Tightening` operate on the **live editor** through
   shared planners and atomic history. Pause playback before preview. Apply is a
   separate request with the returned `previewToken` and `confirm:true`, after
   reviewing the result. Repeat the original preview inputs unchanged. Changes to

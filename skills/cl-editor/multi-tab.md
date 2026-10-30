@@ -6,7 +6,9 @@ SkillTown-Desktop now supports multiple simultaneous projects via tabs. Agents c
 
 ## Discovery
 
-`~/.skilltown-desktop/api.json` now uses `schemaVersion: 4` and includes a `tabs[]` array in addition to the active-tab compatibility fields (`contentId`, `editorReady`, etc.). Treat the top-level `contentId` as the active tab only; use `tabs[]` or `GET /api/tabs` when you need all projects.
+`~/.skilltown-desktop/api.json` uses `schemaVersion: 4` and includes `tabs[]` and `activeTabId` in addition to active-tab compatibility fields (`contentId`, `editorReady`, etc.). Treat the top-level `contentId` as the active tab only; use authenticated `GET /api/tabs` for current projects. Older installed builds may omit discovery's `activeTabId`; find the `active:true` tab or use the endpoint. Read discovery privately, never print its token.
+
+New renderer reports add per-tab `contractVersion`, `hydration` and `readyForWrites` to discovery summaries; live `/api/tabs` exposes `commandCapabilities`. Inspect `GET /api/capabilities?tabId=<id>` for the authoritative loaded command inventory/version and save readiness. Without a new report, readiness/support is unverified. Pass `params.expectedContentId` to protect against a tab navigating after selection; queued writes revalidate the addressed project before IPC.
 
 Example discovery file:
 
@@ -27,7 +29,7 @@ Example discovery file:
       "title": "Active Project",
       "url": "/content/content_active?view=editor",
       "active": true,
-      "ready": true
+      "editorReady": true
     },
     {
       "tabId": "tab-def",
@@ -35,7 +37,7 @@ Example discovery file:
       "title": "Other Project",
       "url": "/content/content_other?view=editor",
       "active": false,
-      "ready": true
+      "editorReady": true
     }
   ]
 }
@@ -63,7 +65,7 @@ Response shape:
       "title": "Active Project",
       "url": "/content/content_active?view=editor",
       "active": true,
-      "ready": true
+      "editorReady": true
     }
   ]
 }
@@ -92,10 +94,10 @@ The same 4-rule strict validation applies to **every HTTP endpoint that dispatch
 | Endpoint | tabId location | Notes |
 |----------|---------------|-------|
 | `POST /api/execute` | body `{tabId}` | Main command endpoint |
-| `POST /api/batch` | body `{tabId}` on each command | Batch runs in one tab |
+| `POST /api/batch` | body `{tabId}` default, or each command's `{tabId}` | May address multiple explicit tabs; inspect all results |
 | `POST /api/project/save` | body `{tabId}` or `{contentId}` | Saves specific project |
 | `POST /api/project/save-autosave` | body `{tabId}` or `{contentId}` | Autosave specific project |
-| `POST /api/project/export` | body `{tabId}` | Exports specific project |
+| `GET /api/project/export` | query `?tabId=` | Exports specific project |
 | `POST /api/project/import` | body `{tabId}` | Imports into specific tab |
 | `POST /api/project/open` | body `{tabId}` | Opens file in specific tab |
 | `POST /api/project/restore` | body `{tabId}` or `{contentId}` | Restores specific project |
@@ -104,6 +106,8 @@ The same 4-rule strict validation applies to **every HTTP endpoint that dispatch
 | `GET  /api/screenshot?mode=preview` | query `?tabId=` | Captures specific tab |
 
 If `tabId` (or `contentId` for endpoints that accept it) is omitted and only one tab is open, the command runs against that tab. If multiple tabs are open and no target is specified, the request is REJECTED with HTTP 409 and an actionable error listing all available tabs. This prevents commands being silently applied to the wrong project.
+
+Tab-independent commands are exempt from editor targeting. Production/podcast/AI-generation commands can use the special `tab_id_required` error instead of `tabId_required`; both mean resolve the intended tab, not change focus or close other tabs. `GET /api/tabs` reports `editorReady` (some lifecycle summaries additionally expose `ready`). Readiness does not guarantee every project data load or command implementation is current.
 
 ```bash
 # Body-based (POST endpoints)
@@ -125,13 +129,13 @@ curl -X POST http://127.0.0.1:$PORT/api/project/save-autosave \
 
 ### Endpoints that intentionally ignore tabId
 
-These target the active tab by design (background/UI operations, not agent commands):
+These are not per-tab editing commands:
 
 - Health-check cache refreshers inside the API server
 - Keyboard shortcut dispatcher (`deselectAll`, etc.)
 - SSE stream events (broadcast globally)
 
-These paths don't accept agent-supplied commands, so ambiguity isn't possible.
+Health is an active-tab summary; SSE is global. Do not use either as proof that another addressed tab is ready/healthy. Business `/api/bridge/*` requests operate on the signed-in web session and explicit domain object IDs, not editor `tabId`.
 
 ### Validation errors you might get
 
@@ -237,6 +241,8 @@ curl -X POST http://127.0.0.1:$PORT/api/tabs/tab-abc/close \
 ```
 
 Save before closing a tab if you made changes:
+
+Only close tabs the user/task authorizes you to close. Never close another session's tabs as a shortcut around HTTP 409.
 
 ```bash
 curl -X POST http://127.0.0.1:$PORT/api/execute \

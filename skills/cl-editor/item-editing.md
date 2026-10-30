@@ -33,6 +33,21 @@ Slide an item left or right on the timeline (changes `display.from` and `display
 
 ## Splitting & Cutting
 
+### Moving a saved group
+
+`editor.select` is transient selection, not persistent grouping. To offset an
+existing metadata group, call:
+
+```json
+{"type":"editor.moveGroup","params":{"groupId":"<existing-group-id>","offsetMs":1000},"tabId":"<target-tab>"}
+```
+
+The whole group moves by the same finite millisecond offset in one undo step,
+including absolute keyframes/supplemental state. A locked member, invalid range,
+or member crossing time zero rejects the entire move; no partial group shift.
+This does not simulate UI drag snapping, collision placement or vertical track
+changes. Inspect the result/state, then `editor.save`.
+
 ### `editor.splitItem`
 Slice a clip into two separate clips at a specific time.
 ```json

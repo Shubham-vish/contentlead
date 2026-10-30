@@ -102,7 +102,7 @@ You can send either:
 curl -X POST http://127.0.0.1:$PORT/api/project/save \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{ "filePath": "/Users/me/projects/my-video.skilltown" }'
+  -d '{ "filePath": "/Users/me/projects/video.skilltown" }'
 
 # Save to default location (autosave path)
 curl -X POST http://127.0.0.1:$PORT/api/project/save \
@@ -116,7 +116,7 @@ curl -X POST http://127.0.0.1:$PORT/api/project/save \
 curl -X POST http://127.0.0.1:$PORT/api/project/open \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{ "filePath": "/Users/me/projects/my-video.skilltown" }'
+  -d '{ "filePath": "/Users/me/projects/video.skilltown" }'
 ```
 
 ### List Autosaves
@@ -149,7 +149,7 @@ project = resp.json()["project"]
 design = project["design"]
 
 # Add a new text item
-new_id = "my-new-text-001"
+new_id = "text-001"
 design["trackItemsMap"][new_id] = {
     "id": new_id,
     "type": "text",

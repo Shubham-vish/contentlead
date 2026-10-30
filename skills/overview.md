@@ -6,18 +6,24 @@ tags: overview, capabilities, index, help, start
 
 # SkillTown Desktop Editor — Overview
 
+For the whole desktop lifecycle (research → production → publishing → offers → CRM/Calls/Webinars/Deals), start with [`cl-desktop`](cl-desktop/SKILL.md). This overview remains the video-editor index, not the business-command router.
+
 ## How to Control the Editor
 
 The desktop app runs a local HTTP API. Commands are JSON objects with `type` and `params`.
 
 ### Discovery
 ```bash
-cat ~/.skilltown-desktop/api.json
-# → { "schemaVersion": 3, "port": 3847, "token": "abc...", "baseUrl": "http://127.0.0.1:3847",
+# Read into variables privately; never print the token. See getting-started.md.
+# Synthetic shape: { "schemaVersion": 4, "port": 3847, "token": "<redacted>", "baseUrl": "http://127.0.0.1:3847",
 #     "apiOrigin": "http://127.0.0.1:3847", "appOrigin": "https://contentlead.in",
 #     "mediaServerPort": 3848, "contentId": "content_xxx", "editorReady": true,
 #     "startedAt": "2025-...", "pid": 12345 }
 ```
+
+Discovery can be stale. Use a bounded authenticated health request and report unavailable runtime if it fails after one fresh read; only launch/reload/switch origins if the task permits. `GET /api/tabs` identifies the current active tab. Always pin the intended `tabId`; multi-tab ambiguity returns HTTP 409, not implicit active-tab dispatch.
+
+`GET /api/capabilities?tabId=<id>` separates the installed Desktop snapshot from `renderer.capabilities` (authoritative names/version, hydration and save readiness when a new renderer reports them). Legacy renderers are unverified. `/api/skills` serves documentation/provenance and canonical-helper discovery, not handler installation. Saved business commands use authenticated `/api/bridge/<domain>/commands/:name` and their web manifests, not editor IPC. See `cl-editor/workflow-readiness.md`, `cl-editor/infrastructure.md` and `cl-editor/desktop-bridge-routes.md`.
 
 ### Health Check (recommended first call)
 ```bash

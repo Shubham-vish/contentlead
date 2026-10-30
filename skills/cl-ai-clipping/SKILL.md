@@ -46,7 +46,7 @@ Source Video → Transcribe → Score Virality → Extract Clips → Reframe 9:1
 | Crop to vertical | `editor.cropItem` | Center crop for 9:16 |
 | Auto-caption clip | `editor.autoCaption` | Add captions to clip |
 | Render | `POST /api/render` | Export final MP4 |
-| Tab management | `GET /api/tabs`, `POST /api/tabs/activate` | Switch between projects |
+| Tab management | `GET /api/tabs`, `POST /api/tabs/<tabId>/activate` | Inspect/switch projects; pin every command to its intended tab |
 
 ---
 
@@ -57,13 +57,13 @@ Source Video → Transcribe → Score Virality → Extract Clips → Reframe 9:1
 ```bash
 # Import video file
 curl -s -X POST "http://127.0.0.1:$PORT/api/media/import" \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"path": "/Users/shubham/Movies/podcast-episode-42.mp4"}'
 # → {status, sourcePath, importedPath, mediaUrl, fileName, size, extension}
 
 # Get detailed metadata
 curl -s -X POST "http://127.0.0.1:$PORT/api/media/analyze" \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"path": "/Users/shubham/Movies/podcast-episode-42.mp4"}'
 # → {filePath, analysis: {duration, durationMs, format, size, video, audio, sceneChanges, volume, energy}}
 ```
@@ -76,6 +76,7 @@ You need a project with the source video loaded to run autoCaption:
 // Add the full source video to the current project
 {"type": "editor.addVideo", "params": {
   "src": "/Users/shubham/Movies/podcast-episode-42.mp4",
+  "trackName": "Source Video",
   "from": 0,
   "width": 1920, "height": 1080,
   "duration": 1800000
@@ -84,6 +85,11 @@ You need a project with the source video loaded to run autoCaption:
 // Run auto-caption (triggers Whisper transcription)
 {"type": "editor.autoCaption", "params": {"language": "en"}}
 ```
+
+Include the resolved `tabId` on these `/api/execute` envelopes. For each clip
+project, explicitly declare a source track and reuse its returned track ID for
+additional segments; project creation is not timeline persistence. Verify media
+placement and captions, reorder tracks, then `editor.save` before rendering.
 
 ### 1.3 Poll for completion
 
@@ -435,7 +441,7 @@ For each selected highlight, create a separate editor project:
 
 ```bash
 curl -s -X POST "http://127.0.0.1:$PORT/api/content/create" \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"title": "Clip 1 — The One Thing Nobody Tells You", "description": "Score: 87 | Hook: forbidden-knowledge opener"}'
 # → {contentId, navigated: true}
 ```
@@ -455,6 +461,7 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/content/create" \
   "src": "/Users/shubham/Movies/podcast-episode-42.mp4",
   "from": 0,
   "trim": {"from": 423500, "to": 489200},
+  "trackName": "Clip Source",
   "width": 1920, "height": 1080,
   "duration": 65700
 }}
@@ -494,7 +501,7 @@ Use the built-in reframe pipeline to dynamically pan the crop window to follow t
 ```bash
 # Run face detection + reframe on the source video
 curl -s -X POST "http://127.0.0.1:$PORT/api/media/reframe" \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{
     "path": "/path/to/source-video.mp4",
     "itemId": "<videoItemId>",
@@ -620,11 +627,11 @@ Use tabs to keep all clip projects accessible:
 
 ```bash
 # List all open tabs
-curl -s "http://127.0.0.1:$PORT/api/tabs" -H "Authorization: $TOKEN"
+curl -s "http://127.0.0.1:$PORT/api/tabs" -H "Authorization: Bearer $TOKEN"
 
 # Switch to a specific tab
 curl -s -X POST "http://127.0.0.1:$PORT/api/tabs/<tabId>/activate" \
-  -H "Authorization: $TOKEN"
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 ---
@@ -634,11 +641,11 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/tabs/<tabId>/activate" \
 ```bash
 # Render current project
 curl -s -X POST "http://127.0.0.1:$PORT/api/render" \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"renderType": "design", "data": "<design object from project.getFullState>", "contentId": "<clipContentId>", "uploadToCloud": true}'
 
 # Poll render status
-curl -s "http://127.0.0.1:$PORT/api/render/<jobId>" -H "Authorization: $TOKEN"
+curl -s "http://127.0.0.1:$PORT/api/render/<jobId>" -H "Authorization: Bearer $TOKEN"
 ```
 
 ---
@@ -686,7 +693,7 @@ Use audio energy data to boost virality scores with non-textual signals:
 ```bash
 # Analyze with energy detection enabled
 curl -s -X POST "http://127.0.0.1:$PORT/api/media/analyze" \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"path": "/path/to/video.mp4", "detectEnergy": true, "detectScenes": true}'
 ```
 
@@ -743,7 +750,7 @@ Instead of static center crop, use face detection for intelligent vertical refra
 ```bash
 # Detect faces in the source video
 curl -s -X POST "http://127.0.0.1:$PORT/api/media/face-detect" \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"path": "/path/to/video.mp4", "sampleRate": 1, "targetRatio": 0.5625}'
 ```
 
@@ -799,6 +806,7 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/media/face-detect" \
   "src": "/path/to/video.mp4",
   "from": 0,
   "trim": {"from": 0, "to": 45000},
+  "trackName": "Reframed Segments",
   "width": 1920, "height": 1080, "duration": 45000
 }}
 // Crop segment 1 with face-tracked position
@@ -812,6 +820,7 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/media/face-detect" \
   "src": "/path/to/video.mp4",
   "from": 45000,
   "trim": {"from": 45000, "to": 90000},
+  "trackId": "<trackId returned by segment 1>",
   "width": 1920, "height": 1080, "duration": 45000
 }}
 // Crop segment 2

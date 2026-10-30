@@ -152,42 +152,37 @@ interface RemixedContent {
 
 ## API Routes
 
-### Base: `/api/cl-content-style`
+### Base: `/api/content-style`
+
+Desktop uses `/api/bridge/content-style` with the same suffix and HTTP method.
+Use authenticated HTTP, not `/api/execute`: the historical `style.*` catalog
+entries are not executable handlers. Never log the discovery token or raw
+account documents.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/cl-content-style/profiles` | List all style profiles |
-| POST | `/api/cl-content-style/profiles` | Create a new style profile |
-| GET | `/api/cl-content-style/profiles/[id]` | Get a specific profile |
-| PUT | `/api/cl-content-style/profiles/[id]` | Update a profile |
-| DELETE | `/api/cl-content-style/profiles/[id]` | Delete a profile |
-| POST | `/api/cl-content-style/profiles/[id]/analyze` | Re-analyze samples → update style |
-| GET | `/api/cl-content-style/profiles/[id]/samples` | List samples for a style |
-| POST | `/api/cl-content-style/profiles/[id]/samples` | Add a sample script |
-| DELETE | `/api/cl-content-style/profiles/[id]/samples/[sampleId]` | Remove a sample |
-| POST | `/api/cl-content-style/remix` | Remix inspiration → user's style |
-| GET | `/api/cl-content-style/remixes` | List past remixes |
-| GET | `/api/cl-content-style/remixes/[id]` | Get a specific remix |
+| GET | `/api/content-style/profiles` | List profiles: `{success,items,total}` |
+| POST | `/api/content-style/profiles` | Create `{name,description?,tags?}` → `{success,profile}` |
+| GET | `/api/content-style/profiles/[id]` | Read `{success,profile}` |
+| PUT | `/api/content-style/profiles/[id]` | Update `{name?,description?,tags?,voice?,hooks?,structure?,cta?}` |
+| DELETE | `/api/content-style/profiles/[id]` | Delete profile; child cleanup is best-effort |
+| POST | `/api/content-style/profiles/[id]/analyze` | Return `{success,profile,samples,instruction}` for caller analysis |
+| GET | `/api/content-style/profiles/[id]/samples` | List `{success,items,total}` |
+| POST | `/api/content-style/profiles/[id]/samples` | Add `{title,transcript,source?,sourceUrl?,sourceContentId?,analysis?}` → `{success,sample}` |
+| DELETE | `/api/content-style/profiles/[id]/samples/[sampleId]` | Remove a sample |
+| POST | `/api/content-style/remix` | Persist caller-generated `{styleProfileId,inspiration,output}` → `{success,remix}` |
+| GET | `/api/content-style/remixes?profileId=...&limit=20` | Filter using **profileId**, not styleProfileId |
+| GET | `/api/content-style/remixes/[id]` | Read `{success,remix}` |
 
 ---
 
 ## Bridge Commands (Desktop)
 
-These commands are available via the SkillTown Desktop bridge for AI agents:
-
-| Command | Description |
-|---------|-------------|
-| `style.listProfiles` | List all user's content style profiles |
-| `style.getProfile` | Get a specific profile with full details |
-| `style.createProfile` | Create a new style profile (name, optional description/tags) |
-| `style.deleteProfile` | Delete a style profile |
-| `style.addSample` | Add a sample script to a profile |
-| `style.removeSample` | Remove a sample from a profile |
-| `style.listSamples` | List all samples for a profile |
-| `style.analyze` | Re-run AI analysis on all samples → extract/update style |
-| `style.remix` | Remix an inspiration transcript into the user's style |
-| `style.listRemixes` | List past remixes |
-| `style.getRemix` | Get a specific remix |
+The table above is the callable surface. Analysis and remix text generation
+happen in the agent, **not** in a server model call. Destructive profile/sample
+deletion requires explicit approval of the exact target before making the call.
+An ambiguous mutation response does not imply rollback: read saved state, never
+automatically replay creation or deletion.
 
 ---
 
@@ -198,10 +193,10 @@ The AI performs these steps when a user says "create my content style":
 ### Step 1: Create Profile
 
 ```bash
-curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/cl-content-style/profiles" \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/content-style/profiles" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"name": "My Hinglish AI Style", "tags": ["tech", "education", "hinglish"]}'
-# → {id: "abc-123", name: "My Hinglish AI Style", ...}
+# → {success:true, profile:{id:"abc-123", name:"My Hinglish AI Style", ...}}
 ```
 
 ### Step 2: Add Sample Scripts
@@ -209,8 +204,8 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/cl-content-style/profiles" \
 User provides 3-5 sample scripts (their best-performing content):
 
 ```bash
-curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/cl-content-style/profiles/abc-123/samples" \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/content-style/profiles/abc-123/samples" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{
     "title": "Comment Automation Reel",
     "transcript": "Ye dekho... ek button click karo aur sab automate ho jayega. No coding needed. Let me show you step by step...",
@@ -221,8 +216,8 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/cl-content-style/profiles/abc
 Or pull from Content Inspiration (already-transcribed content):
 
 ```bash
-curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/cl-content-style/profiles/abc-123/samples" \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/content-style/profiles/abc-123/samples" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{
     "title": "Best performing reel from last week",
     "source": "cl-content-inspiration",
@@ -231,11 +226,11 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/cl-content-style/profiles/abc
   }'
 ```
 
-### Step 3: Analyze (AI Extracts Style)
+### Step 3: Read Samples, Extract Style, Then Save
 
 ```bash
-curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/cl-content-style/profiles/abc-123/analyze" \
-  -H "Authorization: $TOKEN"
+curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/content-style/profiles/abc-123/analyze" \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 **This is where the AI agent does the heavy lifting.** It reads all samples and extracts:
@@ -244,7 +239,11 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/cl-content-style/profiles/abc
 - **Structure patterns**: typical format, pacing, segments
 - **CTA patterns**: how they close content
 
-The AI writes these back to the profile.
+This POST does not perform that reasoning. It updates `lastAnalyzedAt` at
+preparation time (not proof of completed analysis) and returns the samples.
+The agent must then `PUT /api/bridge/content-style/profiles/abc-123` with
+`{voice,hooks,structure,cta}`, inspect `{success,profile}`, and GET it back.
+The request returns 409 when there are no samples.
 
 ### Step 4: Review & Refine
 
@@ -262,16 +261,21 @@ When user finds content they like in Content Inspiration:
 ### Step 1: Get the inspiration transcript
 
 ```bash
-# From Content Inspiration — already transcribed
-curl -s "http://127.0.0.1:$PORT/api/bridge/inspiration/transcript?contentId=xyz" \
-  -H "Authorization: $TOKEN"
+# Source URL → transcript; see cl-content-inspiration for async status/polling
+curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/transcript" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"source":"instagram","url":"https://www.instagram.com/reel/XYZ/"}'
 ```
 
-### Step 2: Remix it
+### Step 2: Generate, score, then persist the remix
+
+Read the saved profile and source transcript, write original copy in the user's
+voice, and apply `cl-virality-scoring` before this call. `output` is mandatory;
+omitting it returns 400. This endpoint saves your output; it does not generate it.
 
 ```bash
-curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/cl-content-style/remix" \
-  -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/content-style/remix" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{
     "styleProfileId": "abc-123",
     "inspiration": {
@@ -279,6 +283,13 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/bridge/cl-content-style/remix" \
       "creatorHandle": "garyvee",
       "originalTranscript": "Stop overthinking and just post. The algorithm rewards...",
       "url": "https://www.instagram.com/reel/XYZ/"
+    },
+    "output": {
+      "script": "Your reviewed original script",
+      "hook": "Your original hook",
+      "structure": ["hook","explanation","cta"],
+      "estimated_duration_sec": 45,
+      "notes": "Voice adaptations and the agent rubric score/reason"
     }
   }'
 ```
@@ -319,14 +330,16 @@ and apply it to the remixed script. This keeps cl-content-style, `cl-ai-clipping
 - For a full line-by-line rewrite pass (not just a score), hand the draft to **`cl-script-evaluator`**
   Mode 2 — cl-content-style owns *voice fidelity*, cl-script-evaluator owns *craft polish*.
 
-Persist the score on the `RemixedContent` doc (`virality_score`, `virality_reason`) so past
-remixes are comparable.
+The native route does **not** persist top-level `virality_score` or
+`virality_reason`. Include the score and reasoning in `output.notes` if you want
+them saved; retain structured scoring in the agent's own result. Do not claim
+unsupported fields were stored.
 
 ---
 
 ## AI Agent: Style Analysis Algorithm
 
-When `style.analyze` is called, the AI reads all samples and extracts patterns:
+After the analyze HTTP call returns samples, the AI reads them and extracts patterns:
 
 ```
 FOR each sample_script in profile.samples:
@@ -374,7 +387,7 @@ WRITE to profile.voice, profile.hooks, profile.structure, profile.cta
 User: "I like this reel from @levelsio about building in public. Make a version in my style."
 
 Agent:
-1. style.getProfile → loads user's "Hinglish AI Style"
+1. GET the saved profile → loads user's "Hinglish AI Style"
 2. Fetches transcript of @levelsio's reel from Content Inspiration
 3. Extracts core message: "share your building journey publicly for accountability and audience"
 4. Reads user's style: hinglish, fast-paced, demo-first, signature "dikhata hoon"
@@ -389,28 +402,13 @@ Agent:
 
 ---
 
-## Commands Quick Reference
+## HTTP Quick Reference
 
-```bash
-# Profile management
-style.listProfiles
-style.createProfile {name, description?, tags?}
-style.getProfile {profileId}
-style.deleteProfile {profileId}
-
-# Sample management
-style.addSample {profileId, title, transcript, source, sourceUrl?}
-style.removeSample {profileId, sampleId}
-style.listSamples {profileId}
-
-# Analysis
-style.analyze {profileId}  → AI extracts style from samples
-
-# Remix
-style.remix {styleProfileId, inspiration: {source, creatorHandle?, url?, originalTranscript}}
-style.listRemixes {styleProfileId?, limit?}
-style.getRemix {remixId}
-```
+Use the 12 method/path pairs above with the Desktop bridge prefix.
+There is no `/api/cl-content-style` or `/api/bridge/cl-content-style` endpoint.
+Remix generation and scoring are local reasoning, while the POST only persists
+`inspiration` and `output`. Confirm `response.remix.output.script` by reading
+`GET /api/bridge/content-style/remixes/<response.remix.id>`.
 
 ---
 

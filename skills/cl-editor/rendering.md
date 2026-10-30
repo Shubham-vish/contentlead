@@ -88,8 +88,13 @@ DESIGN=$(curl -s -X POST http://127.0.0.1:$PORT/api/execute \
   -d '{"tabId":"'$TAB'","type":"project.getFullState","params":{}}' | jq -c '.result.project.design')
 curl -X POST http://127.0.0.1:$PORT/api/render \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d "$(echo "$DESIGN" | jq -c '{renderType:"design", data:(. + {fps:30, width:.size.width, height:.size.height}), preset:"instagram_reel"}')"
+  -d "$(echo "$DESIGN" | jq -c '{renderType:"design", data:(. + {width:.size.width, height:.size.height})}')"
 ```
+
+This preserves the project's canonical FPS. Choose a preset or FPS conversion
+only deliberately; do not silently force every design to 30 FPS. First follow
+`workflow-readiness.md` to verify the selected content, preview and cloud-save
+receipt, then retain the submitted immutable snapshot and returned render job ID.
 
 ### 3. Template Render (`renderType: "template"`)
 

@@ -49,19 +49,20 @@ Use `medium` model or larger. `small` **hallucinates repetition loops on Hindi**
 ```bash
 # 1. Extract mono 16 kHz audio for the segment (widen by ±300 ms to avoid
 #    clipping edge words — Whisper needs breathing room).
+mkdir -p .media-work
 ffmpeg -y -ss $((FROM_S - 1)) -i "$SRC" -t $((DUR_S + 2)) \
-       -ac 1 -ar 16000 -c:a pcm_s16le /tmp/seg.wav
+       -ac 1 -ar 16000 -c:a pcm_s16le .media-work/seg.wav
 
 # 2. Transcribe with anti-hallucination flags.
-whisper /tmp/seg.wav \
+whisper .media-work/seg.wav \
   --model medium \
   --language hi \
   --word_timestamps True \
   --condition_on_previous_text False \
   --temperature 0 \
   --output_format json \
-  --output_dir /tmp
-# → /tmp/seg.json has result["segments"][i]["words"] = [{word,start,end}]
+  --output_dir .media-work
+# → .media-work/seg.json has result["segments"][i]["words"] = [{word,start,end}]
 ```
 
 For repetition-loop symptoms ("प्राइज प्राइज प्राइज…"): re-run with a NARROWER window (5–8 s max) and `--no_speech_threshold 0.8`.
@@ -110,6 +111,12 @@ whole Option A/B pipeline below for you.
   "transcriptWordCount": 318
 }
 ```
+
+This is a **Desktop-native synchronous completion receipt**, not a renderer job
+submission. Keep explicit tab targeting. A timeout does not prove the operation
+failed and must not trigger an automatic duplicate. No native auto-caption
+status/cancel HTTP route is exposed; `/api/jobs` provider monitoring is a
+different surface and deleting a subscription does not cancel transcription.
 
 **Progress tracking via job file.** The command runs a multi-step job and writes live
 progress to:
@@ -237,7 +244,10 @@ curl -s $API$JOB -H "Authorization: Bearer $TOKEN" \
 
 ### Checking transcription status — `query.getTranscriptionStatus`
 
-Auto-caption (`editor.autoCaption`) transcription runs asynchronously. Poll its status instead of guessing — it's derived from persisted content, so it survives reloads.
+The renderer's UI transcription process runs asynchronously; this query observes
+its persisted content scopes and survives reloads. It is not a native
+`editor.autoCaption` job-status endpoint: that Desktop command waits for its own
+completion and returns the receipt above.
 
 | Param | Type | Description |
 |---|---|---|
@@ -398,11 +408,14 @@ For adding individual clips with more control:
 When source video is very long (>2min) and segments are far apart, browser decoders may timeout. Pre-cut with ffmpeg:
 
 ```bash
-ffmpeg -ss 3 -to 21.7 -i source.mp4 -c:v libx264 -preset fast -crf 18 -c:a aac -b:a 128k /tmp/cuts/01_hook.mp4
-ffmpeg -ss 75 -to 100 -i source.mp4 -c:v libx264 -preset fast -crf 18 -c:a aac -b:a 128k /tmp/cuts/02_demo.mp4
+mkdir -p .media-work/cuts
+ffmpeg -ss 3 -to 21.7 -i source.mp4 -c:v libx264 -preset fast -crf 18 -c:a aac -b:a 128k .media-work/cuts/01_hook.mp4
+ffmpeg -ss 75 -to 100 -i source.mp4 -c:v libx264 -preset fast -crf 18 -c:a aac -b:a 128k .media-work/cuts/02_demo.mp4
 ```
 
-Then add each cut file as a separate video. `/tmp/` is in the media server's allowed paths.
+Then add each cut file as a separate video with explicit track intent. Keep the
+project-local `.media-work` directory under an approved media root (for example
+your project beneath `~/Codes`); use the actual absolute file path for import.
 
 ### When to use which method
 
@@ -594,19 +607,24 @@ For screen-share + face-cam videos, position captions in the black bars:
 
 ## Complete Workflow Example
 
+First follow `workflow-readiness.md`: pin tab/content, verify hydration and
+command support, preserve local approvals, then verify the final save receipt.
+Create `.media-work` in your project before using the local-file examples.
+
 ```bash
 # 1. Extract audio + transcribe
-ffmpeg -i video.mp4 -vn -acodec aac /tmp/audio.m4a
+mkdir -p .media-work
+ffmpeg -i video.mp4 -vn -acodec aac .media-work/audio.m4a
 # → upload + transcribe via /api/bridge/ai/transcribe/* → get word timestamps
 
 # 2. Analyze transcript → identify segments + pauses
 
-# 3. Clear timeline
+# 3. Clear timeline ONLY for an explicitly approved full replacement; otherwise skip
 POST /api/execute → editor.clearTimeline
 
 # 4. Add segments in one call
 POST /api/execute → editor.addVideoSegments {
-  url, segments: [{start, end, label}, ...], width, height
+  url, segments: [{start, end, label}, ...], width, height, createNewTrack: true
 }
 
 # 5. Remove pauses (from end to start!)
@@ -616,7 +634,7 @@ for pause in reversed(pauses):
 # 6. Apply captions (with timeline-mapped word times)
 POST /api/execute → content.applyCaptions {subtitles, words}
 
-# 7. Save
+# 7. Save; inspect currentDesignSaved/newerChanges/activeContentChanged receipt
 POST /api/execute → editor.save
 ```
 
@@ -629,16 +647,16 @@ POST /api/execute → editor.save
 **How to verify:**
 ```bash
 # 1. Build the actual audio your edit produces
-ffmpeg -y -ss <segment1_start> -to <segment1_end> -i source.mp4 -vn -acodec libmp3lame /tmp/p1.mp3
+ffmpeg -y -ss <segment1_start> -to <segment1_end> -i source.mp4 -vn -acodec libmp3lame .media-work/p1.mp3
 # ... repeat for each segment
-ffmpeg -y -i "concat:/tmp/p1.mp3|/tmp/p2.mp3|/tmp/p3.mp3" -acodec copy /tmp/verify.mp3
+ffmpeg -y -i "concat:.media-work/p1.mp3|.media-work/p2.mp3|.media-work/p3.mp3" -acodec copy .media-work/verify.mp3
 
 # 2. Upload with unique blob name (see Phase 1) and re-transcribe
 # 3. Diff the returned text against what you expected
 
 # Check for repetitions:
 python3 -c "
-text = open('/tmp/verify_transcript.txt').read()
+text = open('.media-work/verify_transcript.txt').read()
 # Opening phrases should appear ONCE
 signature = 'अगर तुम एक'  # or your video's unique opening
 assert text.count(signature) == 1, f'REPETITION: found {text.count(signature)}x'
@@ -654,7 +672,7 @@ print('OK — no repetition')
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
-| 403 on media URL | File not in allowed directory | Move to ~/Codes, ~/Downloads, or /tmp/ |
+| 403 on media URL | File not in allowed directory | Use a project-local media directory beneath an approved root such as ~/Codes or ~/Downloads |
 | MP4Clip.tick timeout | Browser decoder can't seek far in large file | Use ffmpeg pre-cut method |
 | Captions not visible | Caption track below video track | Call `editor.reorderTracks` |
 | Duration wrong after trim | Old behavior before fix | Use `trim_start`/`trim_end` (auto-derives duration) |

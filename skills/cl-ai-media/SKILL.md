@@ -139,18 +139,22 @@ if [ "$(echo "$RESP" | jq -r '.status')" != "success" ] || [ -z "$URL" ] || [ "$
   echo "AI image gen failed:"; echo "$RESP" | jq .; exit 1
 fi
 
-# 2. Download locally (pre-signed SAS URL — no auth needed, may expire)
-IMG=$(mktemp -t aibg).png
+# 2. Download under the working directory (no temporary-directory dependency).
+mkdir -p ./contentlead-media
+IMG="$(pwd)/contentlead-media/ai-background-$(date +%Y%m%d-%H%M%S).png"
 curl -sfL "$URL" -o "$IMG"
 
-# 3. Add to editor timeline (direct /api/execute — NOT a bridge/ai call)
+# 3. Resolve TAB_ID through cl-editor, then add with explicit track intent.
 curl -sX POST "$API/api/execute" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d "$(jq -n --arg s "$IMG" '{type:"editor.addImage",params:{src:$s,name:"AI Background",from:0,duration:5000}}')"
+  -d "$(jq -n --arg s "$IMG" --arg tab "$TAB_ID" '{type:"editor.addImage",tabId:$tab,params:{src:$s,name:"AI Background",trackName:"AI Background",from:0,duration:5000}}')"
 ```
 
 > Editor commands (`editor.*`, `scene.*`) go through `/api/execute`, NOT the AI
-> bridge. See `contentlead/*.md`.
+> bridge. See `cl-editor/*.md`. After placement, inspect the result, reorder
+> tracks, verify with `query.previewFrameAt`, and call `editor.save`.
+> For more assets reuse the returned track ID, not one new named track per asset.
+> Generation/library persistence does not save the timeline.
 
 ### Compose from reference images
 
@@ -182,8 +186,9 @@ Provide **either** `image_url` **or** `base64_image` (plus `prompt`).
 
 ```bash
 # 1. Extract frames at representative timestamps
-ffmpeg -ss 5  -i /path/video.mp4 -frames:v 1 -q:v 2 /tmp/frame-a.jpg -y
-ffmpeg -ss 15 -i /path/video.mp4 -frames:v 1 -q:v 2 /tmp/frame-b.jpg -y
+mkdir -p ./contentlead-media
+ffmpeg -ss 5  -i /path/video.mp4 -frames:v 1 -q:v 2 ./contentlead-media/frame-a.jpg -y
+ffmpeg -ss 15 -i /path/video.mp4 -frames:v 1 -q:v 2 ./contentlead-media/frame-b.jpg -y
 
 # 2a. Prefer the local `view` tool to read the frame (free, no upload).
 # 2b. OR re-host + analyze remotely:
@@ -278,7 +283,16 @@ JOB=$(curl -sX POST "$API/api/jobs/subscribe" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d "$(jq -n --arg p "$FBP" '{kind:"transcription",firebase_path:$p}')" | jq -r '.trackingUrl')
 
-until [ "$(curl -s "$API$JOB" -H "Authorization: Bearer $TOKEN" | jq -r .status)" = "complete" ]; do sleep 5; done
+STATUS=""
+for attempt in $(seq 1 120); do
+  STATUS=$(curl -sf "$API$JOB" -H "Authorization: Bearer $TOKEN" | jq -r .status) || break
+  case "$STATUS" in complete|failed|stale) break ;; esac
+  sleep 5
+done
+if [ "$STATUS" != "complete" ]; then
+  echo "Transcription not complete ($STATUS); inspect the existing job before retrying." >&2
+  exit 1
+fi
 curl -s "$API$JOB" -H "Authorization: Bearer $TOKEN" \
   | jq '.snapshot.result | {full_text, words: .complete_transcription.words}'
 ```
@@ -350,7 +364,8 @@ The single most valuable use of this skill is combining **analysis + generation*
    - Backgrounds / B-roll → `image/generate`, or search stock via `image/search`
    - Long transcripts → `transcribe/long`
 4. **Attach** every generated asset to the timeline via `/api/execute`
-   (`editor.addImage`, `editor.addText`, …). See `contentlead/*.md`.
+   (`editor.addImage`, `editor.addText`, …). Declare track intent, pin `tabId`,
+   inspect placement, then save the timeline. See `cl-editor/*.md`.
 
 For dialogue-driven B-roll (decide → source → pick → align → place), load the
 **`cl-dialogue-broll`** skill — it orchestrates this skill's routes per line of
@@ -373,7 +388,7 @@ dialogue.
 
 ## 9. Cross-references
 
-- `contentlead/*.md` — editor commands (all `editor.*` / `scene.*` via `/api/execute`)
+- `cl-editor/*.md` — editor commands (all `editor.*` / `scene.*` via `/api/execute`)
 - `cl-dialogue-broll/` — dialogue-driven B-roll orchestration (uses these routes)
 - `cl-content-inspiration/` — web/scraping/news research inputs
 - `cl-content-publishing/` — Instagram/LinkedIn/YouTube publishing
