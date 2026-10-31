@@ -71,11 +71,11 @@ cl-content-style (voice)  →  cl-script-evaluator (craft polish)  →  cl-viral
 | Skill | Use it to |
 |-------|-----------|
 | **`cl-content-direction`** | Creative strategy, storyboarding, narrative arcs, SFX/audio-layering plan, track management. The "director" layer. |
-| **`cl-ai-media`** | AI image search / generation / compose / vision analysis; text generation. Sources visuals. |
+| **`cl-ai-media`** | AI image search / generation / compose / vision analysis; text generation; SFX catalog search, categories, quick picks and contextual select/timing. |
 | **`cl-ai-generate`** | Generate video/images through discoverable `aiVideo.*` commands; pending jobs and candidates appear in AI Generate. Poll with jobId + progressId, then add to an explicitly targeted track and save. Veo, Omni, NanoBanana and BYOK. |
 | **`cl-ai-video`** | 23 authenticated AI Video Studio HTTP commands: models, Reference Kits, prompt enhancement/presets, estimates, generation, jobs and saved candidates. Distinct from the six editor `aiVideo.*` commands; use `cl-ai-generate` for editor integration and timeline placement. |
 | **`cl-voice`** | Desktop Voice Lab bridge: speech/history/clones; Replace Voice with selected-trim transcription, local Hindi word matching, one-time setup, selected-word resync/nudges/undo, and Advanced timing. Add audio with measured duration + explicit track intent. |
-| **`cl-audio`** | Local audio processing — vocal/music stem separation, cleanup. |
+| **`cl-audio`** | Local stem separation; read-only LUFS, sample/true-peak and mono-loss measurement via its canonical Python helper. No bundled sound library or automatic taste verdict. |
 | **`cl-dialogue-broll`** | Add word-timed B-roll images/scenes that pop in as concepts are spoken (any clip). Reuses word-level transcript + `cl-ai-media`. |
 | **`cl-creator-styles`** | Browse / inspect / subset / compose the SkillTown visual style templates (10 creator styles). The *visual* look — distinct from `cl-content-style` (which is the *voice*). |
 | **`cl-remotion`** | Author custom Remotion scenes (animations, effects, charts, transitions) to add to the editor timeline. |

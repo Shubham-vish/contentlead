@@ -1,7 +1,7 @@
 ---
 name: cl-audio
-description: Local audio processing recipes for the ContentLead workflow — vocal/music stem separation from any video or audio file, plus supporting downloads and encodes. All local, no cloud. Cross-platform (Mac + Windows + Linux).
-tags: audio, stems, separation, vocals, instrumental, karaoke, demucs, ffmpeg, yt-dlp, source-separation
+description: Local audio processing and read-only audio QA for ContentLead — vocal/music stem separation, LUFS, sample/true peak and stereo-to-mono loss on actual rendered files. Python/ffmpeg helpers, no cloud or audio models for QA. Cross-platform.
+tags: audio, stems, separation, vocals, instrumental, demucs, ffmpeg, loudness, true-peak, mono, audio-qa
 ---
 
 # Local Audio Processing
@@ -11,7 +11,14 @@ Offline recipes for extracting stems from any audio or video file. No API keys, 
 Current recipes:
 
 - **Stem separation** — split any track into vocals + instrumental (or full 4-stem: drums / bass / vocals / other) using [Demucs](https://github.com/facebookresearch/demucs).
+- **Read-only audio QA** — [`audio-review.md`](audio-review.md): measured LUFS,
+  sample/true peak and mono loss via `scripts/audio_qa.py` (Python stdlib + ffmpeg).
+  No models/uploads; measurements do not approve a style or license.
 - **(Companion)** download an arbitrary Instagram / TikTok / YouTube / X reel to a local file before separating — see the `Download → separate` end-to-end below.
+
+**Ownership:** `cl-content-direction` owns approved SFX roles/cue planning;
+`cl-ai-media` owns catalog search/select; `cl-editor/audio-gain-eq.md` owns
+timeline mixing. This skill does not bundle a sound library or a beat detector.
 
 ## Tool prerequisites
 

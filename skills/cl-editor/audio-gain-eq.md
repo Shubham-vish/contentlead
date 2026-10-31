@@ -10,9 +10,12 @@ Resync / earlier / later / Undo, and manual controls under Advanced. Check
 word matching needs one-time setup and an updated/restarted desktop. This is separate from adding
 a narration track or the audio-only **Match Timing** utility.
 
-## ⚠️ Browser Audio Limits
-The browser can only mount **~5-6 Html5Audio tags simultaneously**. 
-Keep total audio items (music + SFX) to ≤ 5. Overlap is fine, but total distinct tracks/items must be small.
+## Playback and render checks
+
+Do not infer a universal total-item limit from a browser audio-tag pool. Preview
+and render constraints depend on the installed engine and concurrent playback.
+Inspect actual diagnostics. Preserve editable cues; use stems only when the
+workflow needs them, keeping the source cue worksheet.
 
 ## Adding Audio
 
@@ -53,7 +56,8 @@ Recommended for mixing. Range: -60 dB to 0 dB.
 - Voiceover: `0` dB
 
 ### `query.getAudioLoudness`
-Get volume/gain info for specific audio items.
+Get configured volume/gain info for specific audio items. This command does
+**not** measure source or rendered LUFS, RMS, sample peak or true peak.
 ```json
 { "type": "query.getAudioLoudness", "params": { "itemId": "aud_123" } }
 // Or multiple: { "itemIds": ["aud_123", "aud_456"] }
@@ -93,7 +97,8 @@ The render pipeline now processes each audio item's effects (volume, EQ) INDIVID
 - Preview sound is not proof of exported peak or loudness compliance.
 - Heavy gain/EQ can clip before the final mix; fix per-item levels rather than relying on a final limiter to repair distortion.
 - The editor has persisted master-bus loudness/limiter presets. Inspect `query.getMasterBus`; set `audio.setMasterBus` using `workflow-completion.md`. `off` disables that stage. A setting receipt is not a measured export result.
-- If you need to check: `ffmpeg -i output.mp4 -af ebur128=peak=true:framelog=quiet -f null /dev/null` — Peak should be ≤0 dBFS
+- Measure the encoded export with `cl-audio/audio-review.md`; use the approved
+  delivery ceiling and inspect intersample true peak, not just sample peak.
 
 ### Multi-track SFX architecture
 Legacy auto-placement can allocate additional compatible tracks for overlapping
@@ -104,7 +109,11 @@ items. `trackName` alone does not force fresh ownership.
 ## Auto-Mixing
 
 ### `audio.duckMusic`
-Automatically lower music volume where narration/voiceover overlaps. Music tracks are detected by track name (contains "music" or "bg") or low volume (≤40).
+Coarsely lower a **whole music item's** volume if any narration item overlaps.
+This is not a time-varying sidechain envelope. The current handler considers
+audio items, not embedded speech in video items. It classifies music by track
+name ("music"/"bg"), `metadata.role:"music"`, or volume <=40; a quiet SFX can be
+misclassified. Inspect roles and results before using it.
 
 ```json
 { "type": "audio.duckMusic", "params": {
@@ -121,7 +130,9 @@ Automatically lower music volume where narration/voiceover overlaps. Music track
 **Returns:** `{ musicItems, narrationItems, ducked, duckedItemIds, duckAmountDb, musicVolume }`
 
 ### `audio.balanceVolumes`
-Set all audio items to role-appropriate volumes. Roles are detected by track name ("music", "sfx", "bg").
+Set audio items to fixed role-appropriate volumes. Roles are detected by track
+name ("music", "sfx", "bg") or role metadata. This is not measured loudness
+normalization and can overwrite reviewed per-cue gains.
 
 ```json
 { "type": "audio.balanceVolumes", "params": {
@@ -137,7 +148,7 @@ Set all audio items to role-appropriate volumes. Roles are detected by track nam
 | `sfxVolume` | `number` | `50` | Target volume for SFX items |
 | `narrationVolume` | `number` | `100` | Target volume for narration/voiceover items |
 
-**Returns:** `{ adjusted: [{id, type, oldVolume, newVolume}] }`
+**Returns:** `{ targetLevels, adjusted, details: [{id, type, oldVolume, newVolume}] }`
 
 ## Noise Reduction (Main Process)
 

@@ -6,7 +6,10 @@ tags: sfx, audio, sound-effects, whoosh, transition-sound, voiceover, volume
 
 # SFX & Audio Workflow
 
-SkillTown Desktop does NOT have a local SFX library. Instead, use **the SkillTown Desktop AI bridge (`/api/bridge/ai/sfx/*`)** to search, discover, and download sound effects, then add them to the timeline.
+Use **the SkillTown Desktop AI bridge (`/api/bridge/ai/sfx/*`)** for catalog
+search, or a verified user-supplied local library. This skill does not bundle
+audio files. Read `cl-content-direction/sfx-reference.md` for palette approval
+and licensing, and `sfx-placement.md` for acoustic anchors and cue verification.
 
 ## SFX Acquisition Workflow
 
@@ -38,9 +41,9 @@ curl -sL "<blob_url>" -o ~/Downloads/boom.mp3
 ```json
 { "type": "editor.addAudio", "params": {
   "src": "/Users/.../Downloads/boom.mp3",
-  "name": "Boom SFX",
+  "trackId": "<existing-compatible-sfx-track-id>",
   "from": 5000,
-  "duration": 1500
+  "durationMs": 1500
 }}
 ```
 
@@ -74,12 +77,16 @@ curl -sL "<blob_url>" -o ~/Downloads/boom.mp3
 
 ## Scene-Type → SFX Pairing Logic
 
-The logic behind SFX pairing is based on **energy matching** and **temporal placement**. Each scene has 3 SFX slots: entry, accent, and exit. The rules:
+The following are candidate pairings, not automatic placement rules or approved
+defaults. Entry, accent and exit are optional. Preserve the approved palette;
+do not sound every visual event. All fixed frame/volume examples below are
+illustrative and must be adapted to the actual motion and measured source.
 
 1. **Entry SFX** — Matches the scene's entrance energy. Gentle scenes (Ken Burns) get airy whooshes. Dramatic scenes (title cards) get risers → hits.
 2. **Accent SFX** — Placed at key content moments (data point appears, word highlights, camera shifts). Should match the visual action.
 3. **Exit SFX** — Usually a whoosh or nothing. Only add if the scene has an exit animation.
-4. **Frame timing** — Entry SFX at frame 0-15. Accent SFX at the key visual moment. Exit SFX at negative offset from end (e.g., frame -15 = 15 frames before scene end).
+4. **Frame timing** — Align the chosen audible start/arrival/peak to the actual
+   output-frame event. File start is not necessarily audible arrival.
 5. **Volume scaling** — Risers: 0.15-0.25 (background build). Hits: 0.4-0.5 (impact). UI sounds: 0.3-0.4 (subtle). Pops: 0.5-0.6 (punchy).
 
 ### Detailed Pairing Table (from remotion-projects `sfx_suggest.py`)
@@ -144,9 +151,10 @@ curl -sL "<audio_url>" -o ~/Downloads/voiceover.mp3
 # 3. Add to timeline
 { "type": "editor.addAudio", "params": {
   "src": "/Users/.../Downloads/voiceover.mp3",
-  "name": "Voiceover",
+  "createNewTrack": true,
+  "trackName": "Voiceover",
   "from": 0,
-  "volume": 90
+  "details": { "volume": 90 }
 }}
 ```
 
@@ -165,13 +173,12 @@ Use `POST /api/bridge/voice/delete`.
 ## Audio + Timeline Tips
 
 - **Reorder tracks** after adding audio: `editor.reorderTracks` puts audio below text but above video
-- **Master volume**: UI-only control — no API command yet. Individual items use `editor.editItem` with `volume` param
-- **SFX timing**: Place transition SFX centered on scene boundaries (start 0.5s before boundary)
-- **Avoid overlap**: Don't stack too many SFX at the same timestamp — keep max 2 simultaneous
+- **Master bus**: `query.getMasterBus` / `audio.setMasterBus`; see
+  `cl-editor/workflow-completion.md`. Measure the export separately.
+- **SFX timing**: use the cue's measured anchor, not a universal half-second lead.
+- **Overlap**: preserve intentional layers but review masking and peaks.
 
-> **Reference**: SFX lives in two tiers:
-> - **Core Set** (27 keyed sounds): `_Assets/sfx/core-set/` — one best sound per role, AI default. See `core_sfx_manifest.json` for ML analysis and `CORE_SFX_GUIDE.md` for quick reference.
-> - **Full Library** (81 sounds): `_Assets/sfx/remotion-ready/` — 12 categories with `sfx_manifest.json` for variety/fallback.
-> - **Placement guide**: See `cl-content-direction/sfx-placement.md` (skill doc) for the complete SFX placement workflow.
-> - Use `POST /api/bridge/ai/sfx/search` (desktop AI bridge) for additional SFX from the cloud catalog (1000+ sounds).
-> - Regenerate manifests anytime: `python _Assets/sfx/_analysis/generate_manifest.py <folder>`
+> **Ownership:** `cl-ai-media` owns acquisition, `cl-content-direction` owns
+> approved role/placement decisions, `cl-editor` owns timeline commands, and
+> `cl-audio` owns local measurements. Historical core-set paths/counts are not
+> portable; verify the selected library and its license manifest.

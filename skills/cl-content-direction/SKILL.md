@@ -20,6 +20,19 @@ Every video edit must start with a PURPOSE — what story are we telling, who's 
 
 This file covers: narrative arcs, pacing, scene diversity, audio layering, track management, text pacing, and the pre-edit planning template.
 
+## Creative approval and audio ownership
+
+Preserve the user's approved visual style and sound palette. A reference analysis,
+downloaded pack or successful measurement is not approval to replace either.
+For a new theme/palette or a changed role mapping, show a short representative
+preview and ask for review before applying or saving it as a default.
+
+- `sfx-reference.md`: roles and palette review; no mandatory sound count.
+- `sfx-placement.md`: cue planning, acoustic anchors, licensing and verification.
+- `cl-ai-media`: cloud catalog search and contextual selection.
+- `cl-editor/audio-gain-eq.md`: actual timeline gain/EQ/ducking commands.
+- `cl-audio`: local stem separation and read-only rendered-audio measurements.
+
 ---
 
 ## Mandatory Pre-Edit Steps
@@ -80,12 +93,15 @@ Step N: "And that's it!" (result + SFX celebration)
 
 ## Pacing Guidelines
 
-| Video Length | Recommended Scenes | Scene Duration | SFX Count |
-|---|---|---|---|
-| 15s (short reel) | 3-4 scenes | 3-5s each | 5-8 |
-| 30s (standard reel) | 5-7 scenes | 4-6s each | 10-15 |
-| 45s (extended) | 6-8 scenes | 5-7s each | 15-25 |
-| 60s (full reel) | 8-12 scenes | 4-7s each | 25-40 |
+| Video Length | Starting scene budget | Scene Duration |
+|---|---|---|
+| 15s (short reel) | 3-4 scenes | 3-5s each |
+| 30s (standard reel) | 5-7 scenes | 4-6s each |
+| 45s (extended) | 6-8 scenes | 5-7s each |
+| 60s (full reel) | 8-12 scenes | 4-7s each |
+
+These are planning examples, not quotas. Sound density follows the approved
+style and the meaning of the action. A silent cue is a valid decision.
 
 ### Pacing Rules
 - **Never 3 slow scenes in a row** — alternate fast/slow
@@ -113,28 +129,29 @@ When building a multi-scene video, track these to ensure variety:
 
 ## Audio Layering Strategy
 
-### Layer 1: Background Music (ALWAYS present)
-- Add FIRST before any SFX
-- Volume: 25-35 (about -12 to -9 dB)
-- Choose music that matches the content mood
-- Location: `_Assets/background_music/`
+### Layer 1: Background Music (when the approved style calls for it)
+- Choose or deliberately omit a bed; do not add music to satisfy a checklist.
+- Source from the user's verified library or an appropriately licensed catalog.
+- Measure the source before setting gain. A slider percentage is a multiplier,
+  not an absolute loudness target.
 
 ### Layer 2: SFX (Contextual, not random)
-- Map each SFX to content meaning — see `sfx-reference.md` for the 27 core sounds
+- Map each SFX to content meaning — see `sfx-reference.md` for role guidance
 - Place at meaningful moments, not arbitrary time points
-- Respect spacing rules: min 1.5s gap, min 7s for same type
+- Avoid unnecessary repetition and masking; timing constraints come from the
+  approved content/style, not a global minimum-gap or event-count rule.
 
 ### Layer 3: Source Audio (Selective)
 - If a video has speech, unmute it (set as primary audio)
 - If a video has ambient sound, keep at low volume for atmosphere
 - If a video has no useful audio, keep muted
 
-### Audio Balance Target
-```
-Background music:  -12 to -9 dB (always audible but never dominant)
-SFX accents:       -14 to -6 dB (noticeable but not jarring)
-Source speech:      -3 to 0 dB   (loudest layer when present)
-```
+### Audio balance
+
+Keep speech intelligible. Set conservative initial gains from the measured
+sources, then review in context. Configure one owner for ducking/mastering so
+processing is not accidentally doubled. Measure the final encoded file; a
+master-bus setting alone does not establish its loudness or true peak.
 
 ## Pre-Edit Planning Template
 
@@ -155,9 +172,9 @@ Use this mental template before any video editing session:
 ## Video Building Best Practices
 
 ### Build Order
-1. **Set dark canvas background** — `editor.setBackground` with `#0a0a0f`
+1. **Use the approved canvas/background** — do not impose a new color theme
 2. **Add all background scenes FIRST** (bottom tracks after reorder)
-3. **Add LightLeak transitions** at section boundaries (1s each)
+3. **Add only approved transitions** where they support the edit; do not auto-insert LightLeaks
 4. **Add all text/content LAST** (top tracks after reorder)
 5. **Call `editor.reorderTracks`** to fix layer ordering
 6. **Call `editor.save`** to persist
@@ -182,7 +199,9 @@ Always call `editor.reorderTracks` after adding items. Sort order:
 5. **Template/Scene tracks** (bottom — background)
 
 ### Smart Track Reuse
-**Always pass `from`/`to` in add commands.** Without them, every item creates a new track at time 0.
+Pass timing and explicit track intent in add commands. Use an existing compatible
+`trackId`, or create a track once and reuse the actual returned owner. Timing
+alone is not sufficient to control track ownership.
 
 ```python
 # ❌ BAD: 7 items → 7 tracks
@@ -190,9 +209,9 @@ for slide in slides:
     addImage(src=slide.img)  # all at time 0 → new track each
     moveItem(itemId, from=slide.from, to=slide.to)
 
-# ✅ GOOD: 7 items → 1 track
+# ✅ GOOD: reuse the explicitly selected compatible track
 for slide in slides:
-    addImage(src=slide.img, from=slide.from, to=slide.to)  # auto-reuse
+    addImage(src=slide.img, from=slide.from, to=slide.to, trackId=image_track_id)
 ```
 
 ### Track Naming
@@ -241,7 +260,7 @@ Validate AFTER building, BEFORE presenting to user:
 - [ ] Visual scenes have supporting text where needed?
 - [ ] Background music present (or intentionally omitted)?
 - [ ] SFX contextually matched to content, not randomly placed?
-- [ ] No dead silence > 3 seconds?
+- [ ] Unintended silence investigated, intentional silence preserved?
 - [ ] Videos not all muted with nothing replacing audio?
 - [ ] Narrative has a clear arc?
 - [ ] Scene diversity — not reusing same source excessively?
