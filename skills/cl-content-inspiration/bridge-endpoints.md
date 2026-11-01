@@ -158,24 +158,97 @@ Untrack a creator. `identifier` is URL-encoded (matches the value you added with
 
 ### `POST /api/bridge/inspiration/creators/refresh`
 
-Refresh ONE creator's feed. Runs the source-specific scraper (Electron social browser for IG, HTTP fetchers for X/YT/Reddit) and appends new items to that creator's Cosmos doc.
+Refresh ONE creator's feed. Runs the source-specific scraper (for IG: the Desktop social browser, the same fetcher and save path as the UI refresh button; HTTP fetchers for X/YT/Reddit) and saves new items. The open Inspiration page reloads automatically.
 
 **Body:**
 ```json
-{ "source": "instagram", "identifier": "mkbhd" }
+{ "source": "instagram", "identifier": "mkbhd", "count": 12 }
 ```
 
-**Response:** `{ok: true, newItems: N, totalItems: N, elapsedMs: N}` (shape varies slightly per source).
+`source` defaults to `instagram`; `username` is accepted for `identifier`; `count` is Instagram 1-50 (default 12).
+
+**Instagram response:**
+```json
+{ "success": true, "source": "instagram", "identifier": "mkbhd", "cursorUsed": null,
+  "fetched": 12, "newItems": 3, "totalItems": 40, "nextCursor": "4017941904087786349",
+  "hasMore": true, "exhausted": false, "via": null, "items": [ /* summaries, see load-older */ ] }
+```
+X / YouTube / Reddit return the web route's shape (`newItems`, `totalItems`, …).
 
 ---
 
 ### `POST /api/bridge/inspiration/creators/refresh-all`
 
-Refresh EVERY tracked creator. No body. Sequential to avoid hammering IG rate limits.
+Refresh EVERY tracked creator. Body optional: `{"source":"instagram","count":12}` limits it to one source. Instagram creators run one at a time with a 3 s pause; once Instagram rate-limits, the remaining IG creators are skipped instead of hammered.
 
-**Response:** `{ok: true, refreshed: N, failed: N, results: [{identifier, ok, error?}]}`.
+**Response:**
+```json
+{ "success": false, "refreshed": 4, "failed": 2, "totalNewItems": 9,
+  "rateLimited": true, "retryAfterMs": 600000,
+  "results": [
+    { "source": "instagram", "identifier": "mkbhd", "success": true, "newItems": 3, "totalItems": 40, "hasMore": true },
+    { "source": "instagram", "identifier": "other", "success": false, "error": "INSTAGRAM_RATE_LIMITED", "message": "...", "retryAfterMs": 600000 },
+    { "source": "instagram", "identifier": "third", "success": false, "skipped": true, "error": "INSTAGRAM_RATE_LIMITED", "retryAfterMs": 600000 }
+  ] }
+```
 
-⚠️ Can take 30-60s on a 10-creator account.
+⚠️ Can take 30-60s+ on a 10-creator account.
+
+---
+
+### `POST /api/bridge/inspiration/creators/load-older`
+
+Fetch the next page of OLDER posts **from the platform** and save them. For Instagram this is the same Desktop fetcher and save path as the "Load older posts" button, and the open page reloads automatically. It is not limited to already-saved posts.
+
+**Body:**
+```json
+{ "source": "instagram", "identifier": "canwebuildthis", "cursor": "4012868371963877949", "count": 12 }
+```
+
+| Field | Notes |
+|---|---|
+| `identifier` | Required (`username` accepted). Creator must already be tracked. |
+| `source` | Default `instagram`. X / YouTube / Reddit use the web back-catalog route. |
+| `cursor` | Optional. Pass the previous response's `nextCursor`. Omitted = continue from the oldest saved post (or the stored pagination cursor, whichever is older). |
+| `count` | Instagram 1-50, default 12. |
+
+**Instagram response:**
+```json
+{ "success": true, "source": "instagram", "identifier": "canwebuildthis",
+  "cursorUsed": "4017941904087786349", "fetched": 7, "newItems": 7, "totalItems": 12,
+  "nextCursor": "4012868371963877949", "hasMore": true, "exhausted": false, "via": "ssr-window",
+  "items": [ { "shortcode": "DQx...", "mediaPk": "40150...", "instagramUrl": "https://www.instagram.com/p/DQx.../",
+               "contentType": "reel", "postedTimeReadable": "...", "views": 1520, "likes": 80,
+               "comments": 4, "caption": "first 140 chars" } ] }
+```
+
+End of feed: `{"success": true, "fetched": 0, "nextCursor": null, "hasMore": false, "exhausted": true, ...}`.
+
+**Repeat until exhausted:** call without `cursor`, then while `hasMore` is true wait 5-10 s and call again with `cursor: nextCursor`. `newItems: 0` with `hasMore: true` just means the page was already saved, so keep going.
+
+**Instagram errors** (`{success:false, source, identifier, error, message, retryAfterMs?, hasMore:false, exhausted}`):
+
+| HTTP | `error` | Meaning / action |
+|---|---|---|
+| 429 | `INSTAGRAM_RATE_LIMITED` | Stop all Instagram calls for `retryAfterMs`. |
+| 409 | `INSTAGRAM_LOGIN_REQUIRED` | Instagram session missing/expired, or the account is private. Ask the user to reconnect Instagram in the desktop app. |
+| 502 | `INSTAGRAM_OLDER_POSTS_UNAVAILABLE` | Instagram served nothing older (`exhausted:true`). Treat as end of feed. |
+| 404 | `creator_not_tracked` / profile unavailable | Add the creator first / check the handle. |
+| 400 | `missing_params` / invalid cursor | Fix the body; drop `cursor` to resume from the oldest saved post. |
+
+---
+
+### `GET /api/bridge/inspiration/creators/items`
+
+Page through a creator's SAVED posts, newest first. Reads storage only, so no scraping and no rate limit.
+
+**Query:** `source` (default `instagram`), `identifier` (or `username`), `page` (default 1), `limit` (default 50; Instagram max 100, others max 500).
+
+**Response:**
+```json
+{ "source": "instagram", "identifier": "canwebuildthis", "items": [ /* full saved items */ ],
+  "totalCount": 12, "page": 1, "limit": 50, "hasMore": false, "nextPage": null }
+```
 
 ---
 
@@ -665,8 +738,8 @@ These product capabilities are not in the verified desktop bridge mapping. Do no
 | `/api/content/inspiration/transcribe/status` | Poll long-running IG transcription jobs (shortcode-based) | Web UI only — use `/transcript` (unified) instead when possible |
 | `/api/content/inspiration/creators/[username]` | Deep-dive on ONE tracked creator | Web UI only |
 | `/api/content/inspiration/creators/preview` | Preview a creator before adding | ✅ Bridge: `POST /api/bridge/inspiration/creators/preview` |
-| `/api/content/inspiration/creators/load-older` | Backfill older items for a tracked creator | ✅ Bridge: `POST /api/bridge/inspiration/creators/load-older` |
-| `/api/content/inspiration/creators/items` | Flat item list across creators (with filters) | ✅ Bridge: `GET /api/bridge/inspiration/creators/items` |
+| `/api/content/inspiration/creators/load-older` | Back-catalog for X/YouTube/Reddit (Instagram load-older runs in the Desktop app) | ✅ Bridge: `POST /api/bridge/inspiration/creators/load-older` |
+| `/api/content/inspiration/creators/items` | Flat item list across creators (with filters; IG bridge reads `/feed`) | ✅ Bridge: `GET /api/bridge/inspiration/creators/items` |
 | `/api/content/inspiration/niches/[slug]/items` | DELETE cached items for a niche (clear cache) | ✅ Bridge: `DELETE /api/bridge/inspiration/niches/:slug/items` |
 | `/api/content/inspiration/video-proxy` + `-two` | CORS-safe video streaming for the in-app player | Player only |
 
@@ -719,6 +792,7 @@ Cloud-level errors (from `/api/content/inspiration/*`) pass through with status 
 ```
 1. POST /creators {source, identifier}                  (add)
 2. POST /creators/refresh {source, identifier}          (initial pull)
+   POST /creators/load-older {source, identifier[, cursor]}  (repeat while hasMore, 5-10 s apart)
    Then user (or a cron) periodically:
 3. POST /creators/refresh-all                           (weekly)
 ```

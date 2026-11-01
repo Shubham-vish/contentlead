@@ -69,8 +69,9 @@ Load `cl-content-inspiration` when the user wants to:
 Need to search a topic across sources?           → POST /api/bridge/inspiration/search
 Need synced IG reels?                            → GET  /api/bridge/inspiration/feed
 Need a live pull for a specific creator?         → POST /creators, then POST /creators/refresh
-Need older posts from a creator?                 → POST /creators/load-older (paginate back-catalog)
-Need stored items (no scraping)?                 → GET  /creators/items?source=&identifier=
+Need older posts from a creator?                 → POST /creators/load-older (fetches + saves the next older page; repeat while hasMore)
+Need to refresh every tracked creator?           → POST /creators/refresh-all
+Need stored items (no scraping)?                 → GET  /creators/items?source=&identifier=&page=&limit=
 Need ongoing niche monitoring?                   → GET|POST /niches, POST /niches/:slug/refresh
 Need a transcript?
   ├── YouTube URL (any, random)                  → POST /transcript {source:"youtube", url:"..."}  ✅ instant
@@ -112,10 +113,10 @@ Need web or GitHub research?                     → use built-in web search/fet
 | `POST /api/bridge/inspiration/search` | Cross-platform fan-out search across Instagram cache, X, YouTube, Reddit, tech news |
 | `GET /api/bridge/inspiration/feed` | Browse synced Instagram reels by tracked creator |
 | `GET|POST /api/bridge/inspiration/creators` | List/add tracked creators |
-| `POST /api/bridge/inspiration/creators/refresh` | Live refresh one tracked creator (X, YouTube, Reddit; IG uses /refresh route) |
-| `POST /api/bridge/inspiration/creators/refresh-all` | Refresh all tracked creators |
-| `POST /api/bridge/inspiration/creators/load-older` | Paginate older posts from a creator's back-catalog |
-| `GET /api/bridge/inspiration/creators/items` | Get stored items for a creator (fast, no scraping) |
+| `POST /api/bridge/inspiration/creators/refresh` | Fetch + save one tracked creator's latest posts (all sources; IG uses the same Desktop fetcher as the UI) |
+| `POST /api/bridge/inspiration/creators/refresh-all` | Refresh all tracked creators (IG one at a time, stops after a rate limit) |
+| `POST /api/bridge/inspiration/creators/load-older` | Fetch + save the next page of OLDER posts from the platform; returns `nextCursor` + `hasMore` |
+| `GET /api/bridge/inspiration/creators/items` | Page through a creator's saved posts (fast, no scraping) |
 | `POST /api/bridge/inspiration/creators/preview` | Preview a creator's profile + sample items before adding |
 | `DELETE /api/bridge/inspiration/creators/:identifier` | Remove a tracked creator |
 | `GET|POST /api/bridge/inspiration/niches` | List/create Pulse niches |
@@ -164,6 +165,73 @@ curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/creators"   -H "Auth
 curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/creators/refresh"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"source":"instagram","identifier":"mkbhd"}'
 ```
 
+### Refresh, load older posts, and read them back
+
+These hit the same Desktop fetcher and save path as the Inspiration page's
+refresh / "Load older posts" buttons, and the open page reloads by itself. The
+same commands are available via `POST /api/execute` as
+`inspiration.refreshCreator`, `inspiration.refreshAll`,
+`inspiration.loadOlderPosts` and `inspiration.getCreatorItems`.
+
+```bash
+# Latest posts (count: Instagram 1-50, default 12)
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/creators/refresh" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"source":"instagram","identifier":"canwebuildthis"}'
+
+# Next page of older posts. Omit cursor on the first call (continues from the
+# oldest saved post), then pass back nextCursor.
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/creators/load-older" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"source":"instagram","identifier":"canwebuildthis","cursor":"4012868371963877949"}'
+```
+
+Instagram response (refresh and load-older share it):
+
+```json
+{
+  "success": true, "source": "instagram", "identifier": "canwebuildthis",
+  "cursorUsed": "4017941904087786349", "fetched": 7, "newItems": 7, "totalItems": 12,
+  "nextCursor": "4012868371963877949", "hasMore": true, "exhausted": false,
+  "via": "ssr-window",
+  "items": [{ "shortcode": "DQx...", "mediaPk": "40150...", "instagramUrl": "https://www.instagram.com/p/DQx.../",
+              "contentType": "reel", "postedTimeReadable": "...", "views": 1520, "likes": 80, "comments": 4,
+              "caption": "first 140 chars" }]
+}
+```
+
+**Load the whole back-catalog (repeat until exhausted):**
+
+1. `POST /creators/load-older {"identifier":"<handle>"}` (no cursor).
+2. While `hasMore` is `true`: wait 5-10 s, then call again with `"cursor": <nextCursor>`.
+3. Stop when `hasMore` is `false` / `exhausted` is `true` (end of feed), or on any error below.
+4. Read everything saved with `GET /creators/items?source=instagram&identifier=<handle>&page=1&limit=50`
+   and keep going while `hasMore` (use `nextPage`).
+
+A page with `newItems: 0` but `hasMore: true` only means those posts were
+already saved — keep going with `nextCursor`.
+
+**Instagram errors** (`{success:false, error, message, hasMore:false, exhausted}`):
+
+| HTTP | `error` | What to do |
+|---|---|---|
+| 429 | `INSTAGRAM_RATE_LIMITED` | Stop. Wait `retryAfterMs` (often minutes) before any more Instagram calls. |
+| 409 | `INSTAGRAM_LOGIN_REQUIRED` / private account | Ask the user to reconnect Instagram in the desktop app, or the account is private. |
+| 502 | `INSTAGRAM_OLDER_POSTS_UNAVAILABLE` | Instagram served nothing older for this account (`exhausted:true`). Treat as end of feed. |
+| 404 | `creator_not_tracked` | Add the creator first with `POST /creators`. |
+| 400 | `missing_params` / invalid cursor | Fix the request; drop `cursor` to continue from the oldest saved post. |
+
+Rate-limit guidance: keep to a handful of pages per session with 5-10 s pauses,
+never run creators in parallel, and never retry a 429 immediately.
+
+`refresh-all` (body optional: `{"source":"instagram","count":12}`) returns
+`{success, refreshed, failed, totalNewItems, rateLimited?, retryAfterMs?, results:[{source, identifier, success, newItems, totalItems?, hasMore?, error?, skipped?}]}`.
+Instagram creators are refreshed one at a time with a 3 s pause; after a rate
+limit the remaining Instagram creators come back `skipped:true`.
+
+`GET /creators/items` returns `{source, identifier, items, totalCount, page, limit, hasMore, nextPage}`
+(Instagram `limit` max 100, other sources max 500; default 50).
+
 ### Bulk transcribe Instagram reels
 
 ```bash
@@ -198,8 +266,8 @@ curl -X POST "http://127.0.0.1:$PORT/api/bridge/media/download"   -H "Authorizat
 ### Competitor analysis
 
 1. Add competitor via `/api/bridge/inspiration/creators` for `instagram`, `x`, `youtube`, or `reddit`.
-2. Refresh via `/api/bridge/inspiration/creators/refresh`.
-3. Pull synced feed/items, download top URLs if needed, transcribe, and analyze hooks/CTA/structure.
+2. Refresh via `/api/bridge/inspiration/creators/refresh`; for more history, loop `/creators/load-older` while `hasMore`.
+3. Pull synced feed/items (`/creators/items`), download top URLs if needed, transcribe, and analyze hooks/CTA/structure.
 
 ### Find viral hooks
 

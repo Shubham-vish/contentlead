@@ -20,7 +20,18 @@ curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/creators"   -H "Auth
 curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/creators/refresh"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"source":"instagram","identifier":"mkbhd"}'
 ```
 
+### 2b) Load older posts (back-catalog)
+
+Fetches and saves the next older page from Instagram (same path as the UI's "Load older posts"). Omit `cursor` the first time, then repeat with `nextCursor` every 5-10 s while `hasMore` is true. Stop on `hasMore:false`, 429 `INSTAGRAM_RATE_LIMITED` (wait `retryAfterMs`), 409 `INSTAGRAM_LOGIN_REQUIRED`, or 502 `INSTAGRAM_OLDER_POSTS_UNAVAILABLE` (end of feed). See `bridge-endpoints.md` for the full shape.
+
+```bash
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/inspiration/creators/load-older"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"source":"instagram","identifier":"mkbhd"}'
+```
+
 ### 3) Read synced reels from the cache
+
+Either `/feed` or the paged `GET /api/bridge/inspiration/creators/items?source=instagram&identifier=mkbhd&page=1&limit=50` (`{items, totalCount, page, limit, hasMore, nextPage}`).
+
 
 ```bash
 curl "http://127.0.0.1:$PORT/api/bridge/inspiration/feed?username=mkbhd&limit=10"   -H "Authorization: Bearer $TOKEN"
