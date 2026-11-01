@@ -76,8 +76,16 @@ Rahul example (same shape, his clone + his Devanagari line):
 - `text` — the **Devanagari `sentence`** (≤5000 chars). Mixed Devanagari+Latin is fine.
 - `voice_id` — the character's CLONED voice id (from config).
 - `speed` — `1.0` (normal). `format` — `mp3`.
-- The bridge only forwards `text/voice_id/speed/format`; the HD Minimax model is fixed
-  server-side (do NOT bother passing `model`/`language_boost` — they are dropped).
+- Read `GET /api/bridge/voice/options` first. The backend owns supported models,
+  emotions, reaction tags and limits. Missing options blocks the voice stage.
+- `model` — optional script override, otherwise the advertised default.
+- `emotion` — optional supported mood per line; absent/null is Auto. Unknown moods
+  and incompatible models fail before generation, not silently.
+- `reaction` — optional script field containing an advertised tag name (for example
+  `sighs`). The orchestrator prepends `(sighs)` to provider text, leaving `sentence`
+  and its caption text free of provider instructions. Visual directions are not sent.
+- The bridge forwards `model` and `emotion`; the helper verifies returned settings
+  and saved history identity. It does not expose arbitrary provider parameters.
 
 ### Add the returned audio to the timeline
 Download `audio_url` to a local mp3 for local transcription; prefer its authorized
@@ -92,12 +100,20 @@ stages (captions/images are timed relative to it).
 Generate ONE Modi line, add it at `from:0`, screenshot/scrub to confirm it sounds right,
 THEN batch the rest. This is exactly how the good audio was validated.
 
-- **Skip if:** `dialogue.audio?.file` exists.
-- **Write:** `dialogue.audio = { url, file, duration }`.
+- **Skip if:** `dialogue.audio?.file` exists and recorded synthesis settings still
+  match. Unrecorded older audio cannot satisfy newly requested expression settings.
+- **Write:** `dialogue.audio = { url, file, duration, request, historyId, synthesis }`.
+  Save paid output before downloading; a download retry reuses it, not another TTS
+  call. `audioAttempt` guards uncertain paid attempts. Retained `needsReview` audio
+  must be reconciled before continuing. A structured pre-generation validation
+  rejection is marked `rejected`; correct the input before explicitly running again.
 - Orchestrator: `run.mjs stage10_voices` (resolves `charVoice()` → config voiceId → the
   call above → `downloadTo()` → stores `d.audio`).
-- Original engine parity: `audio_processor.py` + `services/minimax_voice_service.py`
-  (model `speech-2.5-hd-preview`), which also fed the raw Devanagari `sentence` to TTS.
+- The original engine used `speech-2.5-hd-preview`; current model selection is
+  deliberately owned by the speech-options API instead of that historical default.
+- Measure actual file duration, listen for natural reactions, and inspect ASR word
+  timings. ASR can emit "ha" or "ah" for reactions; review caption alignment instead
+  of treating a provider tag as a spoken caption or trimming the reaction away.
 
 ## Stage 1.1 — Word-level timestamps  ⭐ LOCAL
 

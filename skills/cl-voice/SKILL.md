@@ -1,7 +1,7 @@
 ---
 name: cl-voice
-description: Voice cloning + text-to-speech for ContentLead. Generate speech into the UI history, clone/list/rename/preview/delete owned voices, read saved generations, then add audio to an explicitly targeted timeline track. Uses the SkillTown Desktop Voice Lab bridge with signed-in cookies; no manual provider credentials.
-tags: voice, tts, text-to-speech, clone, cloning, voiceover, narration, speech, audio, bridge, minimax
+description: Voice cloning and expressive text-to-speech for ContentLead. Discover supported models, moods and vocal reactions through speech options; generate into UI history, manage owned voices, then add measured audio to an explicitly targeted track. Uses the authenticated Desktop Voice Lab bridge; no manual provider credentials.
+tags: voice, tts, text-to-speech, clone, cloning, voiceover, narration, speech, audio, bridge, minimax, emotion, laughter, breath
 ---
 
 # Voice Cloning & Text-to-Speech (via Desktop Bridge)
@@ -14,7 +14,7 @@ one bearer token. The bridge uses the same `/api/voice-lab/*` routes as the UI:
 capability checks, owned clone names/previews, and generation history all match.
 Provider credentials stay server-side. **No hand-copied JWT or RPC framing.**
 
-> Discover these endpoints through `/api/capabilities`. If history/rename/preview
+> Discover these endpoints through `/api/capabilities`. If options/history/rename/preview
 > is missing, the desktop process needs an updated build/restart. Skill availability
 > alone does not prove route availability. Never fall back to `/api/ai/*` for voice:
 > that bypasses UI persistence. `voice.generate` is not an `/api/execute` command.
@@ -47,8 +47,9 @@ All routes require `Authorization: Bearer <token>`. Bodies are JSON.
 
 | Method | Path | Body / Query | Returns |
 |--------|------|--------------|---------|
+| `GET` | `/api/bridge/voice/options` | Optional `?refresh=1` bypasses the web cache; read-only, no generation charge | `{ options_version, default_model, default_format, default_speed, models:[{id,label,emotions,tags,formats,speed,max_text_chars}] }` |
 | `GET`  | `/api/bridge/voice/voices` | `?voice_type=all\|system\|voice_cloning` | `{ voices:[{voice_id, display_name?, voice_name?, preview_audio_url?, ...}], count }` |
-| `POST` | `/api/bridge/voice/generate` | `{ text, voice_id, voice_name?, speed?, format? }` | `{ audio_url, format, duration_seconds?, history_id }` |
+| `POST` | `/api/bridge/voice/generate` | `{ text, voice_id, voice_name?, speed?, format?, model?, emotion? }` | `{ audio_url, format, duration_seconds?, history_id, model, emotion, speed, owner_user_id, options_version, provider_trace_id? }` |
 | `POST` | `/api/bridge/voice/upload` | `{ filePath }` (absolute local audio path) | `{ url, size_bytes, mime, file_name }` |
 | `POST` | `/api/bridge/voice/clone` | `{ audio_url, voice_name?, display_name?, voice_id?, demo_text? }` | `{ voice_id, cloned_voice_id, display_name, details? }` |
 | `POST` | `/api/bridge/voice/upload-and-clone` | `{ filePath, voice_name?, display_name?, voice_id?, demo_text? }` | Clone result plus `{upload_url, upload}` |
@@ -61,9 +62,9 @@ All routes require `Authorization: Bearer <token>`. Bodies are JSON.
 
 Notes:
 - `voice_type` defaults: list → `all`; delete → `voice_cloning`.
-- `format`: `mp3` (default), `wav`, `flac`, `aac`; `audio_format` is an alias.
-- `speed`: server clamps to 0.5-2.0 (`1.0` = normal).
-- `text` must be **≤ 5000 characters** per generate call.
+- Read supported output `formats`, speed range and text limit from `/options`. Initial output formats are MP3/WAV/FLAC, not AAC; `audio_format` is a bridge alias and must agree with `format` if both are sent.
+- Invalid speed/format/model/emotion is rejected, not clamped, substituted or silently dropped.
+- Initial text limit is **5000 characters** per generate call; obey the selected model's advertised `max_text_chars`.
 - Cloning input accepts `.wav .mp3 .m4a .flac .aac .ogg/.opus` (mime auto-inferred).
 - Local upload uses `/api/upload-blob`, whose server limit is **10 MiB** per file. Desktop `/upload` and `/upload-and-clone` reject larger files before reading/uploading bytes (`400 file_too_large`). Trim/compress the approved reference first.
 - Only clone the user's own voice or a voice they have permission to reproduce. Uploading sends the recording to hosted storage and cloning sends it to the provider; get approval before that disclosure, not just before deletion.
@@ -71,6 +72,62 @@ Notes:
 - Supply `voice_name` when cloning so the UI shows a meaningful name rather than a raw provider ID.
 - Writes notify open same-origin Voice Lab panels; history/voice lists also refresh on focus. No timeline insertion happens automatically.
 - Check `history_id` / `cloned_voice_id` to confirm persistence. `persistence_error` explicitly identifies provider success with a failed library save. Preserve the successful output/voice ID and report the persistence failure; never blindly re-generate/re-clone.
+
+## 1a. Expressive dialogue: discover, author, validate, generate
+
+1. Read `/api/capabilities` and `GET /api/bridge/voice/options` before authoring
+   expressive requests. Missing/failed options means stop and report that the
+   services need updating; do not strip the mood or use a generic AI proxy.
+   Skill delivery through `/api/skills` does not install updated handlers.
+2. Select an advertised model, normally `default_model`. Use only that entry's
+   `emotions`, `tags`, `formats` and limits. The backend owns this reviewed registry;
+   it does not automatically discover future provider features.
+3. Keep spoken dialogue, delivery choices and visual directions separate.
+   Choose a supported mood for each line. Insert exact supported reaction tokens
+   such as `(sighs)` where the reaction belongs. Never send prose such as
+   `[looks away sadly]` as if it were a supported synthesis instruction.
+4. Generate explicitly through `/api/bridge/voice/generate`. One emotion per
+   request; split turns if the mood changes. Auto means omit `emotion` or send
+   `null`, **not** the strings `"auto"` or `"neutral"`.
+5. Check the returned `model`, `emotion`, `speed`, `format`, `history_id` and any
+   persistence warning. These are resolved settings **sent by the backend**,
+   not an independent provider attestation of perceptual quality. Read the history
+   back, download the audio, measure its duration and audition it.
+6. Place the measured audio before building timing/captions. A sigh/exhale must
+   exist in the recording; padded silence and a visual acting note do not create
+   it. Keep natural breaths when tightening. ASR may transcribe laughter as
+   words; review caption content/timing against the actual audio.
+
+Example request, **only after the current options advertise these choices**:
+
+```json
+{
+  "text": "(sighs) One more trade. I'll win it back.",
+  "voice_id": "<authorized-voice-id>",
+  "model": "speech-2.8-hd",
+  "emotion": "sad",
+  "speed": 1,
+  "format": "wav"
+}
+```
+
+The initial expressive default is `speech-2.8-hd`. Its mood options include
+happy/sad/angry/fearful/disgusted/surprised/calm and its advertised tags include
+laughter and breathing. **Whisper is not supported on this model.** Do not infer
+support for another model from these examples, or substitute one without approval.
+The shared Voice Lab/editor form provides **Mood** and **Insert reaction** controls;
+voice cloning remains separate and existing authorized voice IDs can be reused.
+
+Unsupported combinations return HTTP 400 with `code`, `field` and relevant
+`allowed` values. Refetch `/options?refresh=1`, explain the mismatch and revise the request;
+do not automatically spend credits on a replacement take. An uncertain transport
+failure or `speech_settings_unverified` may include already-generated
+`audio_url`/`history_id`: retain them and reconcile, never blindly retry.
+Older history with missing model settings is **unrecorded**, not proof of a match.
+`owner_user_id` is assigned by the authenticated server, never a request parameter.
+The UI can retain unsaved audio locally for that account, but this is not a saved
+library entry. Download it: signed URLs expire, and unavailable/full browser
+storage must show an explicit recovery warning rather than promising persistence.
 
 ## 2. List voices
 

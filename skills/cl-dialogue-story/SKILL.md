@@ -100,9 +100,24 @@ otherwise the bg layer is skipped.
 
 
 
-Input is one JSON file: `[{ "id", "character", "sentence" }]` (Hinglish is fine).
-Every stage writes its output back into the script JSON and **skips if that field
-already exists** — delete a field to re-run only that stage.
+Input is one JSON file with `dialogues: [{ "id", "character", "sentence" }]` (Hinglish is fine).
+Each dialogue may also have `emotion`, `model` and `reaction`. `sentence` contains
+only spoken words; `reaction` is one advertised leading vocalization tag name
+without parentheses (for example `"sighs"`). Keep visual acting notes separate.
+The voice stage reads `/api/bridge/voice/options`, validates every line before
+spending credits, sends the resolved settings, and checks their returned values.
+Do not hardcode a mood/tag list into scripts: author against the current options
+using `cl-voice` §1a. Missing options stops execution rather than producing plain
+speech. Mood Auto is omitted/null, not `"auto"` or `"neutral"`.
+
+```json
+{"id":1,"character":"Trader","sentence":"One more trade.","emotion":"sad","reaction":"sighs"}
+```
+
+Stages save their outputs back to the script. Voice outputs also retain the exact
+synthesis request/history ID: changed settings or an uncertain paid attempt require
+reconciliation, not deleting a flag and automatically regenerating. Replacing audio
+invalidates downstream captions and timing. A failed download resumes from the saved URL.
 
 | # | Stage | What it does | Live capability used | Output field |
 |---|-------|--------------|----------------------|--------------|
@@ -173,6 +188,11 @@ The single most important correctness rule in this pipeline:
    exact curl and both worked examples.
 
 ### Native in-timeline silence removal: `editor.removeSilence`
+
+For expressive speech, the recipe above additionally requires options discovery,
+model/mood forwarding and returned-settings verification (`cl-voice` §1a).
+Measure the downloaded audio duration and preserve natural vocal reactions;
+the original plain-text examples do not synthesize the acting notes themselves.
 
 Use this for the timeline version of the dialogue reel. It runs the app's native
 silence detector (`lib/podcast/audio/silenceDetector.ts`) and cut engine

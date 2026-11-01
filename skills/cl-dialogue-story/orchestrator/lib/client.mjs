@@ -35,7 +35,9 @@ export function createEditorClient({ readDiscovery = loadApi, fetchImpl = (...ar
     try { result = await response.json(); }
     catch { throw new Error(`Desktop returned non-JSON for ${pathname} (HTTP ${response.status}).`); }
     if (!response.ok || result?.status === "failed" || result?.status === "error" || result?.success === false) {
-      throw new Error(`Desktop request failed: ${pathname} (HTTP ${response.status}). Inspect state before retrying.`);
+      throw Object.assign(new Error(`Desktop request failed: ${pathname} (HTTP ${response.status}). Inspect state before retrying.`), {
+        status: response.status, data: result,
+      });
     }
     return result;
   }
@@ -74,6 +76,12 @@ export function createEditorClient({ readDiscovery = loadApi, fetchImpl = (...ar
       await assertTarget();
       if (target !== pinned) throw new Error("Target changed during readiness inspection.");
       return request("POST", pathname, body);
+    },
+    get: async pathname => {
+      const pinned = requireTarget();
+      await assertTarget();
+      if (target !== pinned) throw new Error("Target changed during readiness inspection.");
+      return request("GET", pathname);
     },
     health: () => request("GET", "/api/health"),
   };

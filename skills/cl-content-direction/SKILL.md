@@ -32,6 +32,10 @@ preview and ask for review before applying or saving it as a default.
 - `cl-ai-media`: cloud catalog search and contextual selection.
 - `cl-editor/audio-gain-eq.md`: actual timeline gain/EQ/ducking commands.
 - `cl-audio`: local stem separation and read-only rendered-audio measurements.
+- `cl-voice` §1a: discover supported speech moods/reaction tags before writing
+  expressive dialogue. Plan spoken words, voice delivery and visual acting
+  separately; a requested sigh/exhale must be generated and auditioned, not
+  represented by silent padding. Use measured speech/reaction durations.
 
 ---
 

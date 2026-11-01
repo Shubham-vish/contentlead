@@ -92,7 +92,7 @@ Legacy `query.capturePreviewFrame` still exists but does NOT wait — only use w
 | Video & Chroma-key | `video` | `editor.addVideo`, `editor.addVideoSegments`, `editor.setClipState` |
 | Images & Static Media | `images` | `editor.addImage`, `editor.replaceMedia`, `media.validate` |
 | Audio, Gain, EQ, Noise | `audio-gain-eq` | `editor.addAudio`, `editor.setAudioGain`, `audio.setEq`, `audio.reduceNoise` |
-| **Voice cloning & TTS / voiceover** | `cl-voice` | `/api/bridge/voice/*`: generate into UI history, clone into the owned library, list/history, preview, rename, delete; then `editor.addAudio` with measured duration and track intent |
+| **Voice cloning & expressive TTS / voiceover** | `cl-voice` | `/api/bridge/voice/options` discovers supported moods/reaction tags; `/generate` records resolved settings in UI history. Clone/list/preview/rename/delete through the same bridge; then `editor.addAudio` with measured duration and track intent |
 | Position, Crop, Resize | `canvas-and-positioning` | `editor.positionItem`, `editor.resize`, `editor.cropItem` |
 | Trim/Split/Cut on timeline | `item-editing` | `editor.splitItem`, `editor.cutItem`, `editor.trimItem`, `editor.moveItem` |
 | Tracks, Z-order, Linking | `track-management` | `editor.reorderTracks`, `editor.linkTracks`, `editor.renameTrack` |

@@ -56,7 +56,46 @@ export async function downloadTo(url, filePath) {
   return filePath;
 }
 
-export async function voiceGenerate({ text, voiceId, format = "mp3", speed = 1.0 }) {
-  const out = await client.post("/api/bridge/voice/generate", { text, voice_id: voiceId, format, speed });
-  return { url: out.audio_url ?? out.url, duration: out.duration_seconds ?? out.duration, raw: out };
+export function prepareVoiceRequest({ text, voiceId, model, emotion, reaction, format, speed }, options) {
+  const selected = Array.isArray(options?.models)
+    ? options.models.find(entry => entry.id === (model ?? options.default_model)) : undefined;
+  if (!selected || typeof selected.id !== "string" ||
+      !Array.isArray(selected.emotions) || !Array.isArray(selected.tags) ||
+      !Array.isArray(selected.formats) || !Number.isFinite(selected.speed?.min) ||
+      !Number.isFinite(selected.speed?.max) || !Number.isInteger(selected.max_text_chars) ||
+      selected.max_text_chars <= 0 || typeof options.options_version !== "string") {
+    throw new Error("Speech options unavailable or model unsupported. Update the voice services; do not fall back to plain speech.");
+  }
+  if (emotion != null && !selected.emotions.includes(emotion)) throw new Error(`Unsupported speech emotion: ${emotion}`);
+  if (reaction != null && !selected.tags.includes(reaction)) throw new Error(`Unsupported reaction tag: ${reaction}`);
+  if (typeof text !== "string" || !text.trim() || typeof voiceId !== "string" || !voiceId.trim()) throw new Error("Speech text and an authorized voice ID are required.");
+  const request = {
+    text: reaction == null ? text : `(${reaction}) ${text}`,
+    voice_id: voiceId, model: selected.id, emotion: emotion ?? null,
+    format: format ?? options.default_format, speed: speed ?? options.default_speed,
+  };
+  if (!selected.formats.includes(request.format)) throw new Error(`Unsupported speech format: ${request.format}`);
+  if (typeof request.speed !== "number" || !Number.isFinite(request.speed) ||
+      request.speed < selected.speed.min || request.speed > selected.speed.max) throw new Error("Speech speed is outside the advertised range.");
+  if (request.text.length > selected.max_text_chars) throw new Error("Speech text exceeds the advertised limit.");
+  return request;
 }
+
+export function createVoiceClient(transport) {
+  return {
+    options: () => transport.get("/api/bridge/voice/options"),
+    generate: async (params, options) => {
+      const request = prepareVoiceRequest(params, options);
+      const out = await transport.post("/api/bridge/voice/generate", request);
+      if (!out.audio_url || !out.history_id || out.persistence_error ||
+          ["model", "emotion", "speed", "format"].some(key => out[key] !== request[key])) {
+        throw Object.assign(new Error("Speech output/history/settings need reconciliation. Retain the returned audio; do not regenerate."), { data: out });
+      }
+      return { url: out.audio_url, duration: out.duration_seconds, raw: out, request };
+    },
+  };
+}
+
+const voiceClient = createVoiceClient(client);
+export const voiceOptions = voiceClient.options;
+export const voiceGenerate = voiceClient.generate;

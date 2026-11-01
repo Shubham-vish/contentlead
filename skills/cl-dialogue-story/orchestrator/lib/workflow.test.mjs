@@ -6,6 +6,55 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { createEditorClient } from "./client.mjs";
 import { createLayerInserter } from "./timeline.mjs";
+import { createVoiceClient, prepareVoiceRequest } from "./api.mjs";
+
+const speechOptions = {
+  options_version: "test", default_model: "fixture-model", default_format: "mp3", default_speed: 1,
+  models: [{ id: "fixture-model", emotions: ["happy"], tags: ["laughs"], formats: ["mp3", "wav"], speed: { min: 0.5, max: 2 }, max_text_chars: 5000 }],
+};
+
+test("voice orchestration discovers options, keeps acting notes out of speech and verifies settings", async () => {
+  const requests = [];
+  const voice = createVoiceClient({
+    get: async route => { assert.equal(route, "/api/bridge/voice/options"); return speechOptions; },
+    post: async (route, body) => {
+      requests.push({ route, body });
+      return { audio_url: "https://media.test/voice.mp3", history_id: "saved", duration_seconds: 4, ...body };
+    },
+  });
+  const result = await voice.generate({ text: "One more trade.", voiceId: "authorized", emotion: "happy", reaction: "laughs", picture: "Look away." }, await voice.options());
+  assert.deepEqual(requests[0], { route: "/api/bridge/voice/generate", body: {
+    text: "(laughs) One more trade.", voice_id: "authorized", model: "fixture-model", emotion: "happy", format: "mp3", speed: 1,
+  } });
+  assert.equal(result.raw.history_id, "saved");
+  assert.equal(prepareVoiceRequest({ text: "Hello", voiceId: "v" }, speechOptions).emotion, null);
+});
+
+test("unsupported or missing speech options stop before paid generation", async () => {
+  let posts = 0;
+  const voice = createVoiceClient({ post: async () => { posts++; }, get: async () => { throw new Error("options unavailable"); } });
+  await assert.rejects(voice.options(), /unavailable/);
+  for (const params of [{ emotion: "whisper" }, { emotion: "auto" }, { reaction: "invented" }, { model: "other" }, { format: "aac" }, { speed: true }]) {
+    await assert.rejects(voice.generate({ text: "Hello", voiceId: "v", ...params }, speechOptions), /Unsupported|unsupported|range/);
+  }
+  await assert.rejects(voice.generate({ text: "Hello", voiceId: "v" }, null), /unavailable/);
+  await assert.rejects(voice.generate({ text: "Hello", voiceId: "v" }, { models: {} }), /unavailable/);
+  await assert.rejects(voice.generate({ text: "Hello", voiceId: "v" }, { ...speechOptions, models: [{ ...speechOptions.models[0], max_text_chars: undefined }] }), /unavailable/);
+  assert.equal(posts, 0);
+});
+
+test("paid speech with missing settings or failed persistence remains recoverable and is never retried", async () => {
+  for (const change of [{ emotion: null }, { persistence_error: "save failed" }, { history_id: undefined }]) {
+    let posts = 0;
+    const output = { audio_url: "https://media.test/retained.mp3", history_id: "saved", model: "fixture-model", emotion: "happy", speed: 1, format: "mp3", ...change };
+    const voice = createVoiceClient({ post: async () => { posts++; return output; } });
+    await assert.rejects(voice.generate({ text: "Hello", voiceId: "v", emotion: "happy" }, speechOptions), error => {
+      assert.equal(error.data, output);
+      return /reconciliation/.test(error.message);
+    });
+    assert.equal(posts, 1);
+  }
+});
 
 const response = result => new Response(JSON.stringify(result), { headers: { "Content-Type": "application/json" } });
 const ready = () => ({ status: "success", result: {
@@ -56,6 +105,7 @@ test("wrong, loading and read-only targets stop before editor/provider dispatch"
     client.setTarget({ tabId: "explicit-tab", contentId: "content-a" });
     await assert.rejects(client.execute("editor.addImage", {}), /unverified/);
     await assert.rejects(client.post("/api/bridge/voice/generate", {}), /unverified/);
+    await assert.rejects(client.get("/api/bridge/voice/options"), /unverified/);
     assert.ok(sent.every(body => body.type === "query.getCapabilities" && body.tabId === "explicit-tab"));
   }
   const sent = [];
@@ -66,6 +116,26 @@ test("wrong, loading and read-only targets stop before editor/provider dispatch"
   missingTab.setTarget({ tabId: "nonexistent-tab", contentId: "content-a" });
   await assert.rejects(missingTab.execute("editor.addImage", {}), /failed/);
   assert.deepEqual(sent.map(body => body.type), ["query.getCapabilities"]);
+});
+
+test("speech option reads use the explicit ready target and preserve structured validation errors", async () => {
+  const sent = [];
+  const rejection = { error: "Unsupported emotion", code: "unsupported_emotion", field: "emotion", options_version: "test" };
+  const client = createEditorClient({ readDiscovery: discovery, fetchImpl: async (url, init) => {
+    sent.push({ url, method: init.method, body: init.body && JSON.parse(init.body) });
+    if (url.endsWith("/api/execute")) return response(ready());
+    if (init.method === "GET") return response(speechOptions);
+    return new Response(JSON.stringify(rejection), { status: 400, headers: { "Content-Type": "application/json" } });
+  } });
+  client.setTarget({ tabId: "tab-a", contentId: "content-a" });
+  assert.deepEqual(await client.get("/api/bridge/voice/options"), speechOptions);
+  assert.equal(sent[0].body.tabId, "tab-a");
+  assert.equal(sent[1].method, "GET");
+  await assert.rejects(client.post("/api/bridge/voice/generate", {}), error => {
+    assert.equal(error.status, 400);
+    assert.deepEqual(error.data, rejection);
+    return true;
+  });
 });
 
 test("actual execute pins tab/content and treats HTTP200 failure as failure", async () => {

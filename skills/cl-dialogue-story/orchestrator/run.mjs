@@ -16,7 +16,7 @@ import { execFileSync } from "node:child_process";
 import os from "node:os";
 import {
   health, textJson, imageSearch, transcribeShort, voiceGenerate, execute, downloadTo,
-  configureTarget, assertTargetReady,
+  configureTarget, assertTargetReady, voiceOptions, prepareVoiceRequest,
 } from "./lib/api.mjs";
 import { createLayerInserter } from "./lib/timeline.mjs";
 
@@ -87,16 +87,56 @@ async function stage05_normalize() {
 
 async function stage10_voices() {
   const dir = `${os.homedir()}/Downloads/cl-dialogue-story/${s.script_name ?? "story"}`;
+  const options = PLAN ? null : await voiceOptions();
+  const parameters = d => ({
+    text: d.sentence, voiceId: charVoice(d.character), format: "mp3",
+    model: d.model, emotion: d.emotion, reaction: d.reaction,
+  });
+  if (!PLAN) {
+    for (const d of s.dialogues) prepareVoiceRequest(parameters(d), options);
+  }
   for (const d of s.dialogues) {
-    if (d.audio?.file) continue;
     if (PLAN) { log(`  [1.0] would TTS #${d.id} (${d.character}; authorized voice configuration required)`); continue; }
-    const voiceId = charVoice(d.character);
-    if (!voiceId) throw new Error(`No voiceId for "${d.character}". Set it in the script's characters, or in config.local.json (see config.example.json).`);
-    const r = await voiceGenerate({ text: d.sentence, voiceId });
-    if (!r.url) throw new Error(`voiceGenerate returned no url for #${d.id}: ${JSON.stringify(r.raw)}`);
+    const request = prepareVoiceRequest(parameters(d), options);
+    if (d.audio?.needsReview) throw new Error(`Audio #${d.id} needs reconciliation. Review its retained output/history before continuing; do not regenerate.`);
+    if (d.audio?.request && JSON.stringify(d.audio.request) !== JSON.stringify(request)) {
+      throw new Error(`Speech settings changed for #${d.id}. Review the existing audio and invalidate dependent captions/timing before explicitly regenerating.`);
+    }
+    if ((d.audio?.file || d.audio?.url) && !d.audio.request && (d.model != null || d.emotion != null || d.reaction != null)) {
+      throw new Error(`Existing audio #${d.id} has no recorded synthesis settings; it cannot satisfy an expressive request without review.`);
+    }
+    if (d.audio?.file) continue;
+    if (!d.audio?.url) {
+      if (d.audioAttempt && d.audioAttempt.status !== "rejected") throw new Error(`An earlier paid attempt for #${d.id} needs reconciliation before another generation.`);
+      d.audioAttempt = { status: "started", request };
+      save();
+      try {
+        const r = await voiceGenerate(parameters(d), options);
+        d.audio = {
+          url: r.url, duration: r.duration, request,
+          historyId: r.raw.history_id,
+          synthesis: { model: r.raw.model, emotion: r.raw.emotion, speed: r.raw.speed, format: r.raw.format },
+        };
+        delete d.audioAttempt;
+        save();
+      } catch (error) {
+        if (error.data?.audio_url) {
+          d.audio = { url: error.data.audio_url, historyId: error.data.history_id, request, needsReview: true };
+        }
+        const rejected = error.status === 400 && error.data?.code &&
+          error.data?.field && error.data?.options_version && !error.data?.audio_url;
+        d.audioAttempt = { status: rejected ? "rejected" : "needs-reconciliation", request };
+        save();
+        throw error;
+      }
+    }
     const file = `${dir}/${String(d.id).padStart(2, "0")}-${d.character}.mp3`;
-    await downloadTo(r.url, file);
-    d.audio = { url: r.url, file, duration: r.duration };
+    await downloadTo(d.audio.url, file);
+    const duration = Number(execFileSync("ffprobe", [
+      "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", file,
+    ], { encoding: "utf8" }).trim());
+    if (!Number.isFinite(duration) || duration <= 0) throw new Error(`Invalid downloaded audio duration for #${d.id}; output retained, do not regenerate.`);
+    d.audio = { ...d.audio, file, duration };
     save(); log(`  [1.0] #${d.id} ✓ ${d.audio.duration ?? "?"}s → ${file.split("/").pop()}`);
   }
 }
