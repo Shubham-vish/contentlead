@@ -159,6 +159,19 @@ The board uses a simple 2D world-space camera: `{x, y, zoom}`.
 
 Frames content with a small margin. This is fit-to-content, not a reset to 100% zoom.
 
+### `board.frameNodes` (recording framing)
+
+```jsonc
+{"type":"board.frameNodes","params":{"nodeIds":["n1","n2"],"padding":64,"maxZoom":2}}
+// -> { previous, viewport, framed[], missing[] }
+```
+
+This centres the union of the nodes and zooms in **or** out to fill the canvas. `board.revealNode` only zooms out. It moves the camera only: no selection or undo change.
+
+### Presentation / clutter cleanup
+
+`board.dismissTransient {closeMenus?, dismissToasts?, closeDialogs?}` closes open menus, popovers and tooltips and dismisses transient toasts. `board.preparePresentation {hideCursor?, hideScrollbars?}` hides toasts, the dev overlay and tours. `board.resetPresentation` restores them. All of these are ephemeral and are never saved.
+
 ### `board.panBy`
 
 ```jsonc

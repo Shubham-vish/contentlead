@@ -88,6 +88,8 @@ Desktop catalog; these additions are not proof an older app is updated.
 | Namespace | What it does | Undo-logged? |
 |---|---|---|
 | `board.query.*` | Read canvas state (info, objects, selection, snapshot, viewport, point hit-test) | No |
+| `board.getNodeRects` / `board.revealNode` | Viewport CSS-px node rects for native `/api/ui` clicks/drags; camera-only reveal (see `queries.md`) | No |
+| `board.frameNodes` / `board.dismissTransient` / `board.preparePresentation` / `board.resetPresentation` | Recording framing (zoom in/out to fit nodes) and ephemeral clutter cleanup (see `viewport-and-io.md`) | No |
 | `board.query.canvasBounds` | Bbox of all objects (`minX/minY/maxX/maxY/width/height/count/isEmpty`) | No |
 | `board.query.searchImages` | Pexels stock-image search (returns URLs + dimensions) | No |
 | `board.addNode`, `board.editNode`, `board.deleteNodes`, `board.moveNode` | Object CRUD via `BoardActionExecutor` | Yes |

@@ -156,6 +156,35 @@ Coordinates are **world-space translations**: `screenX = (worldX + viewport.x) *
 
 `x`, `y` are **world-space** coordinates (not screen pixels). Convert from screen with `worldX = (screenX / zoom) - viewport.x`.
 
+## `board.getNodeRects` — viewport hit-testing for native UI control
+
+Read-only. Maps board objects to **top-level viewport CSS px** (the same space as Desktop `POST /api/ui` `ui-click`/`ui-drag` `{x,y}`), so an agent can click, double-click or drag a node precisely.
+
+```jsonc
+{"type":"board.getNodeRects","params":{"nodeIds":["obj_1"], "visibleOnly": false, "includeConnectors": false, "limit": 500}}
+// → { "coordinateSpace":"viewport-css-px", "viewport":{innerWidth,innerHeight,devicePixelRatio},
+//     "canvas":{"rect":{x,y,width,height},"visibleRect":…}, "camera":{"x","y","zoom"},
+//     "transform":{"formula":"viewportX = (worldX + camera.x) * camera.zoom + canvas.rect.x; …","scale","offsetX","offsetY"},
+//     "total", "truncated", "missingIds"?,
+//     "nodes":[{ "id","type","shapeType"?,"text" (≤80 chars),"selected","locked","rotation","rendered",
+//                "world":{x,y,width,height}, "rect","visible","visibleRect","hitPoint","hittable" }] }
+```
+
+- All params optional; without `nodeIds` every non-connector object is returned (`includeConnectors: true` adds connectors as path bounding boxes).
+- `hitPoint` is the centre of the visible part; `hittable: true` means `elementFromPoint` there reaches that node (not a panel/toolbar/overlay). Use `transform` to map any world point: `viewportX = worldX * scale + offsetX`.
+- `rect` is the axis-aligned unrotated box (`rotation` reported separately). Nodes hidden by mind-map folds report `rendered: false`.
+
+## `board.revealNode` — bring a node on screen (camera only)
+
+```jsonc
+{"type":"board.revealNode","params":{"nodeId":"obj_1", "align":"nearest", "margin":48}}
+// → { "moved": true, "camera":{x,y,zoom}, "node": { /* getNodeRects entry */ }, "canvas": {…} }
+```
+
+Pans minimally (`align:"center"` centres), keeps zoom unless the node cannot fit (then zooms out to fit). Unlike `board.revealObject` it never selects, expands folds or writes undo history. Recipe: `board.revealNode` → `ui-click`/`ui-drag` at `node.hitPoint` → verify with `board.query.object`.
+
+Toolbar DOM markers for native control: `board.tool.<toolId>` (select, hand, shape, text, sticky, …), `board.toggle.<label>` (pinned toggles), `board.toolbar.{undo,redo,generate,more-tools,import,options,background,minimap,ruler,shortcuts,present,slideshow,search}`, `board.zoom-{in,out,fit}`; object DOM nodes carry `data-object-id`.
+
 ## Common query recipes
 
 **Find every sticky containing "TODO":**
