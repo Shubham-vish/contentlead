@@ -55,6 +55,7 @@ ui '{"action":"ui-cursor","tabId":"demo:main","params":{"show":true,"preset":"re
 ```
 - `badge` and `frame` are **off by default**. Add `"badge":true` (or `{"text":"AI","color":"#7C3AED"}`) and `"frame":true` only when the person wants the "AI is controlling" look.
 - Use `ui-highlight` to call out an element during a beat. Labels are kept inside the viewport.
+- For text, use `ui-select-text` (a visible native drag selection only) or `ui-highlight-text` with `style` `marker` (highlight colour only, any `color`), `underline` (underline only), `box` or `reel`. `label`/`spotlight` are optional. The cursor parks off the text and off links (no hover popups), and the badge/label settle in blank space so the phrase stays readable.
 
 ### 4. Record in one `ui-run`
 ```bash

@@ -123,7 +123,14 @@ DevTools open it falls back to `sendInputEvent`.
 | `ui-set-viewport` / `ui-reset-viewport` | `{width, height, deviceScaleFactor?, resizeWindow?}`: fixed framing for recordings |
 | `ui-cursor` | `{show, preset?:reel\|subtle\|off, style?, size?, color?, ripple?, rippleColor?, rippleSize?, keys?, badge?, frame?}` |
 | `ui-highlight` | `{target\|rect, label?, style?:box\|reel, spotlight?, durationMs?}` or `{clear:true}`; labels stay 8px inside the viewport (below the box when there is no room above, else just inside its top) |
+| `ui-select-text` | `{text, to?, occurrence?, ignoreCase?, mode?:drag\|instant, durationMs?, whole?, scope target?}` or `{clear:true}`: **selection only** (native drag from just left of the phrase to just right, verified; Range fallback; `setSelectionRange` in inputs), no overlay |
+| `ui-highlight-text` | `{text, to?, occurrence?, all?, style?:marker\|underline\|box\|reel, color?:#rrggbb, label?, spotlight?, animate?, durationMs?}` or `{clear:true}`: `marker` = highlight colour only, `underline` = underline only, `box`/`reel` = box around the phrase; label/spotlight are optional |
 | `ui-mouse-leave` | `{target?}`: clear hover cards/tooltips before a clean shot |
+
+**Text tools keep the text readable.** After a select or highlight, the cursor glides off the phrase if
+it rests on it or on a link/control/`[title]`/iframe (so no hover popups such as Wikipedia footnotes),
+to a clear spot right of, below or left of the lines. The AI badge then settles in blank space (above or
+below × left or right, least text covered), and the highlight label is placed the same way.
 
 **AI badge and viewport frame (opt-in).** `badge` is `true`, `false` (default) or
 `{text?, color?}`: a dark pill with a glowing sparkle and bold "AI" text riding just
