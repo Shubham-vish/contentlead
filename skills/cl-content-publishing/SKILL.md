@@ -148,7 +148,7 @@ See `platform-rules.md` for details.
 
 ### CTA / Comment Automation — set it BEFORE you publish or schedule
 
-There is **one shared draft CTA** per content: a `media_trigger` doc in the **`ContentLeadCTA`** container keyed by `contentId`, created with `POST /api/bridge/instagram/automation` (`action:"update_cta"`). It powers **both** the Instagram comment→DM automation **and** the pinned YouTube CTA comment.
+There is **one shared draft CTA** per content: a `media_trigger` doc in the **`ContentLeadCTA`** container keyed by `contentId`, created with `POST /api/bridge/instagram/automation` (`action:"update_cta"`). It powers **both** the Instagram comment→DM automation **and** the YouTube CTA comment (pin manually in Studio).
 
 - It must exist **before** publish/schedule fires. At publish time it is auto-promoted to the live post's real `media_id` — no manual copy needed.
 - **If it does not exist when the post goes live, there is NO automation, and it cannot be attached retroactively through the publish flow.**

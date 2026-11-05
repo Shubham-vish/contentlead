@@ -67,10 +67,10 @@ Expected final response includes `status:"PUBLISHED"`, `mediaId`, and `permalink
 ### Step 7: Publish to YouTube
 
 ```bash
-curl -X POST "http://127.0.0.1:$PORT/api/bridge/youtube/publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx"}'
+curl -X POST "http://127.0.0.1:$PORT/api/bridge/youtube/publish"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"   -d '{"contentId":"content_xxx","channelId":"UCxxx","videoUrl":"<Content.downloadableSasUrl>","metadata":{"title":"5 AI Tools You Need in 2025","description":"…","tags":["AI"],"privacyStatus":"public","categoryId":"28"}}'
 ```
 
-Expected response includes `success:true`, `videoId`, and optional CTA comment state.
+The bridge does **not** read `channels.youtube` config for this call: pass `channelId`, `videoUrl`, and `metadata.title` explicitly, and put `privacyStatus`/`categoryId` **inside `metadata`** (top-level ones are dropped → video goes out **private**). Expected response includes `success:true`, `videoId`, and optional CTA comment state. Then run the mandatory privacy check in `youtube.md` → "Verify after publish".
 
 ### Step 8: Post to LinkedIn and mark tracking manually
 
@@ -121,7 +121,7 @@ Both platforms accept the same `{ contentId, wallTime, timeZone }` payload shape
 
 ### Step 1 (REQUIRED for comment automation): set the CTA draft FIRST
 
-A scheduled reel's automation is created **only** by promoting a pre-existing draft CTA when the slot fires. If you skip this, the reel publishes with **no** comment/DM automation, and it cannot be attached retroactively through this flow. So set the CTA before scheduling — run **Workflow 1, Step 5** (the `update_cta` call with `containerName:"ContentLeadCTA"`) for this `contentId` now. Skip this step only if the reel deliberately needs no automation. YouTube reads the same shared CTA draft and posts a pinned comment automatically at fire time.
+A scheduled reel's automation is created **only** by promoting a pre-existing draft CTA when the slot fires. If you skip this, the reel publishes with **no** comment/DM automation, and it cannot be attached retroactively through this flow. So set the CTA before scheduling — run **Workflow 1, Step 5** (the `update_cta` call with `containerName:"ContentLeadCTA"`) for this `contentId` now. Skip this step only if the reel deliberately needs no automation. YouTube reads the same shared CTA draft and posts the CTA comment automatically at fire time (pin manually).
 
 ### Step 2a: Schedule an Instagram reel
 
@@ -141,12 +141,12 @@ Same publish endpoint as immediate publishing — just add `publishAt` (ISO UTC)
 # Same shape as Instagram scheduling (wallTime + timeZone)
 curl -X POST "http://127.0.0.1:$PORT/api/bridge/youtube/publish" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"contentId":"content_xxx","channelId":"UCxxx","wallTime":"2026-08-05T14:00","timeZone":"Asia/Kolkata"}'
+  -d '{"contentId":"content_xxx","channelId":"UCxxx","videoUrl":"<Content.downloadableSasUrl>","metadata":{"title":"…"},"wallTime":"2026-08-05T14:00","timeZone":"Asia/Kolkata"}'
 
 # Or with an explicit UTC ISO publishAt
 curl -X POST "http://127.0.0.1:$PORT/api/bridge/youtube/publish" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"contentId":"content_xxx","channelId":"UCxxx","publishAt":"2026-08-05T08:30:00.000Z"}'
+  -d '{"contentId":"content_xxx","channelId":"UCxxx","videoUrl":"<Content.downloadableSasUrl>","metadata":{"title":"…"},"publishAt":"2026-08-05T08:30:00.000Z"}'
 ```
 
 Validation errors surfaced by the bridge: `publishAt_too_soon` (<10 min lead), `invalid_walltime` (bad tz or format), `invalid_publishAt` (not a valid ISO). Response includes `scheduled: true, publishAt: "<UTC ISO>"` so agents can distinguish a scheduled upload from an immediate one.

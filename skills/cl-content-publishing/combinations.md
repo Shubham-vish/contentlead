@@ -128,7 +128,7 @@ Since combinations aren't yet accepted by the publish endpoints directly, the fl
 1. **Resolve.** `GET /api/bridge/content/combinations` and find the combo the user asked for (by name, id, or "my usual" ≈ the enabled one or the most recently used).
 2. **Confirm.** Show the user the resolved per-platform accounts + intended timing/mode via `ask_user`. Never assume; combos change.
 3. **Configure per-platform.** For each account present in the combination, call `POST /api/bridge/content/configure-publish` once per platform (`instagram`, `youtube`, `linkedin`) with the correct account selector.
-4. **Set the CTA once.** The CTA draft is content-scoped (`contentId`), not per-platform, so a single `POST /api/bridge/instagram/automation update_cta` covers both the Instagram DM automation and the YouTube pinned comment.
+4. **Set the CTA once.** The CTA draft is content-scoped (`contentId`), not per-platform, so a single `POST /api/bridge/instagram/automation update_cta` covers both the Instagram DM automation and the YouTube CTA comment.
 5. **Fan out publish/schedule calls** — Instagram via `POST /api/bridge/instagram/publish` (or `.../schedule`), YouTube via `POST /api/bridge/youtube/publish` (with `wallTime`+`timeZone` for scheduled), LinkedIn via `POST /api/bridge/publish/linkedin`.
 6. **Verify** with `GET /api/bridge/content/:id` — check `channels.instagram.published`, `channels.youtube.published`, `channels.linkedin.status`.
 

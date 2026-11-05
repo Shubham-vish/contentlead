@@ -127,7 +127,7 @@ Use `containerName: "ConfigurationData"` only when manually targeting production
 
 | Path | Method | Body/query params | Description |
 |------|--------|-------------------|-------------|
-| `/api/bridge/youtube/publish` | POST | `contentId`, `channelId?`, `selectedAccount?`, `title?`, `description?`, `tags?`, `privacyStatus?`, `thumbnailUrl?` | Upload a Content document video to YouTube and apply CTA comment behavior |
+| `/api/bridge/youtube/publish` | POST | `contentId`, `channelId`, `videoUrl`, `title`, `description?`, `tags?`, `thumbnailUrl?`, `metadata.privacyStatus` (**inside `metadata`; default private**), `metadata.categoryId` | Upload a Content document video to YouTube and apply CTA comment behavior |
 
 ### LinkedIn
 

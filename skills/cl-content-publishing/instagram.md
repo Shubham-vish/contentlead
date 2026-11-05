@@ -90,6 +90,7 @@ Possible errors: `token_invalid`, `token_expired`, `permissions_revoked`. If unh
 | `caption` | | Optional caption override |
 | `trial_reel` | | **Boolean.** If `true`, publishes as a Meta **Trial Reel** — served only to non-followers, not shown on the profile grid, comment/like counts only visible to you. Use for A/B testing content. See "🛑 MANDATORY: Trial Reels — always confirm" below. |
 | `trial_graduation_strategy` | | Only meaningful when `trial_reel: true`. **Default `"manual"`** — you decide later whether to graduate the reel to a regular post. Do NOT auto-graduate without user consent. |
+| `metadata.coverUrl` | | Reel cover image (public/SAS JPG) → Graph `cover_url`. **Direct publish does not read `Content.thumbnail`**; without this the cover is frame 0 (or `metadata.thumbOffset` ms). Cannot be changed after publish via API. Design rules: `cl-editor/rendering.md` → "Designing a cover". |
 
 > **⚠️ Always use `contentId`.** Direct account/video workflows can publish but are not dashboard-tracked, so they are intentionally not documented for agent use.
 >
