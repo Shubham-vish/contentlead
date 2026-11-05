@@ -1,6 +1,6 @@
 ---
 name: cl-voice
-description: Voice cloning and expressive text-to-speech for ContentLead. Discover supported models, moods and vocal reactions through speech options; generate into UI history, manage owned voices, then add measured audio to an explicitly targeted track. Uses the authenticated Desktop Voice Lab bridge; no manual provider credentials.
+description: Voice cloning and expressive text-to-speech for ContentLead. Discover models, moods and vocal reactions; direct and compare raw dialogue takes, preserve breaths and timing, verify UI history, distinguish synthesis from optional processing, and add approved measured audio to an explicitly targeted track. Uses the authenticated Desktop Voice Lab bridge.
 tags: voice, tts, text-to-speech, clone, cloning, voiceover, narration, speech, audio, bridge, minimax, emotion, laughter, breath
 ---
 
@@ -22,11 +22,10 @@ Provider credentials stay server-side. **No hand-copied JWT or RPC framing.**
 ## 0. Setup — one-time per shell
 
 ```bash
-# Read desktop port + token (rewritten every app restart)
-eval "$(node -e '
-  const c = require(require("os").homedir()+"/.skilltown-desktop/api.json");
-  console.log(`export API=http://127.0.0.1:${c.port}\nexport TOKEN=${c.token}`);
-')"
+# Read privately; no eval, shell tracing, or printing discovery JSON.
+PORT=$(python3 -c 'import json,pathlib; print(json.loads((pathlib.Path.home()/".skilltown-desktop/api.json").read_text())["port"])')
+TOKEN=$(python3 -c 'import json,pathlib; print(json.loads((pathlib.Path.home()/".skilltown-desktop/api.json").read_text())["token"])')
+export API="http://127.0.0.1:$PORT"
 
 # Auth uses the Bearer scheme for these bridge routes:
 export AUTH="Authorization: Bearer $TOKEN"
@@ -35,7 +34,9 @@ export AUTH="Authorization: Bearer $TOKEN"
 curl -s "$API/api/health" -H "$AUTH" | python3 -c "
 import sys,json; d=json.load(sys.stdin)
 print('cloud.authenticated =', d.get('cloud',{}).get('authenticated'))"
-# If cloud.authenticated is false/null → sign in inside the ContentLead app first.
+# Health/liveness is not proof of cloud login. Null means unknown.
+# GET /api/app/auth distinguishes signed in (200) from signed out (401).
+# Check status without printing account data; ask the user to sign in on 401.
 ```
 
 If `~/.skilltown-desktop/api.json` doesn't exist, the desktop app isn't running —
@@ -74,6 +75,11 @@ Notes:
 - Check `history_id` / `cloned_voice_id` to confirm persistence. `persistence_error` explicitly identifies provider success with a failed library save. Preserve the successful output/voice ID and report the persistence failure; never blindly re-generate/re-clone.
 
 ## 1a. Expressive dialogue: discover, author, validate, generate
+
+**Read [expressive-dialogue.md](expressive-dialogue.md)** for delivery choices,
+bounded A/B auditions, raw-audio assembly, review gates and the processing map.
+Default to **raw audio first**. Section 3b is optional cleanup, not a step to run
+on every generated line. A quiet breath or hesitation can be the performance.
 
 1. Read `/api/capabilities` and `GET /api/bridge/voice/options` before authoring
    expressive requests. Missing/failed options means stop and report that the
@@ -117,6 +123,11 @@ laughter and breathing. **Whisper is not supported on this model.** Do not infer
 support for another model from these examples, or substitute one without approval.
 The shared Voice Lab/editor form provides **Mood** and **Insert reaction** controls;
 voice cloning remains separate and existing authorized voice IDs can be reused.
+
+**Hinglish numbers:** Hinglish speakers say numbers in English. Hindi voices and
+Hindi clones read digits in Hindi (`75` → "पचहत्तर", `91%` → "इक्यानवे"), so in the
+`text` write numbers as English words in Latin script (`seventy-five rupees`,
+`ninety-one percent`). Never use Hindi number words. Captions can still show digits.
 
 Unsupported combinations return HTTP 400 with `code`, `field` and relevant
 `allowed` values. Refetch `/options?refresh=1`, explain the mismatch and revise the request;
@@ -323,17 +334,18 @@ Use **Check again** in the sidebar after updating/restarting to re-read service
 capabilities without discarding the draft. A healthy bridge alone does not prove
 that these timing features are available.
 
-## 3b. Remove silence / tighten dialogue — native timeline command (preferred) or offline Python
+## 3b. Optional silence removal / tightening — only after listening approval
 
-Raw TTS/cloned clips have dead air at the head/tail of each line and inconsistent
-loudness. For punchy dialogue reels (brain-rot / Modi-vs-Rahul style), there are
-now **two correct paths**:
+Generated clips may contain intentional breathing, hesitations and emotional
+pauses, not just dead air. Do not trim, normalize, boost or collapse gaps for the
+first audition. Preserve the downloaded original. If the user requests tightening,
+review the proposed removals and create a separate processed version.
 
-> # ⚠️ ORDER IS NON-NEGOTIABLE ⚠️
-> **Preferred in-app path:** PLACE RAW AUDIO → ADD CAPTIONS/LINKED VISUALS →
-> `editor.removeSilence` with `cascadeLinkedTracks:true`.
+> **Timing order when cleanup is authorized:**
+> **Already on the timeline:** dry-run `editor.removeSilence`, review the cuts,
+> then apply with the correct explicit ripple scope. Preserve linked captions/visuals.
 >
-> **Offline Python path:** PROCESS AUDIO → PLACE PROCESSED AUDIO → *THEN* CAPTION.
+> **Offline path:** PROCESS A COPY → PLACE PROCESSED AUDIO → *THEN* CAPTION.
 >
 > Caption word timings are stored as **absolute timeline times**. If you use the
 > Python script, **NEVER caption first and trim later** — every word after the first
@@ -352,7 +364,7 @@ audio — are shifted automatically so everything stays synced.
 | Param | Type | Default | Notes |
 |-------|------|---------|-------|
 | `itemId` | `string` | required | Audio or video timeline item to de-silence |
-| `thresholdDbfs` | `number` | `-50` | Silence threshold in dBFS. Raise toward `-45` to catch soft breathy pauses; do not go above `-45` |
+| `thresholdDbfs` | `number` | `-50` | Energy threshold, not a speech/reaction classifier. Even quiet intentional breaths can fall below it; review cuts by ear |
 | `minSilenceMs` | `number` | `800` | Minimum silence length to cut. Lower = tighter; keep ≥ `120` |
 | `mergeGapMs` | `number` | `200` | Merge nearby silent ranges before cutting |
 | `mode` | `'remove'\|'split-only'` | `'remove'` | `remove` = splice out silence AND ripple-close the holes; `split-only` = just cut, leave pieces in place |
@@ -369,15 +381,15 @@ left but keeps the turn-taking gap.
 ```bash
 # Step 1 — dry run: returns the cut ranges WITHOUT touching the timeline
 curl -sX POST "$API/api/execute" -H "$AUTH" -H "Content-Type: application/json" \
-  -d '{"type":"editor.removeSilence","params":{"itemId":"audio_abc","apply":false,"thresholdDbfs":-45,"minSilenceMs":150,"mergeGapMs":120}}'
+  -d '{"type":"editor.removeSilence","tabId":"<target-tab-id>","params":{"itemId":"audio_abc","apply":false,"thresholdDbfs":-50,"minSilenceMs":800}}'
 
-# Step 2a — apply (detects + splices + ripples every later item left to stay in sync)
+# Step 2a — only after approval; detection + ripple affects every later item
 curl -sX POST "$API/api/execute" -H "$AUTH" -H "Content-Type: application/json" \
-  -d '{"type":"editor.removeSilence","params":{"itemId":"audio_abc","apply":true,"thresholdDbfs":-45,"minSilenceMs":150}}'
+  -d '{"type":"editor.removeSilence","tabId":"<target-tab-id>","params":{"itemId":"audio_abc","apply":true,"thresholdDbfs":-50,"minSilenceMs":800,"rippleScope":"all"}}'
 
 # Step 2b — OR apply exact reviewed cuts from the dry run (skips re-detection)
 curl -sX POST "$API/api/execute" -H "$AUTH" -H "Content-Type: application/json" \
-  -d '{"type":"editor.removeSilence","params":{"itemId":"audio_abc","apply":true,"cuts":[{"sourceStart":640,"sourceEnd":880}]}}'
+  -d '{"type":"editor.removeSilence","tabId":"<target-tab-id>","params":{"itemId":"audio_abc","apply":true,"rippleScope":"linked","cuts":[{"sourceStart":640,"sourceEnd":880}]}}'
 ```
 
 Response `result` includes `{ applied, cutsApplied, rippledItemCount, rippleScope,
@@ -393,33 +405,35 @@ ranges:[{startMs,endMs,peakDbfs}], cuts:[{sourceStart,sourceEnd}], totalRemovedM
   tails, trailing vowels at roughly −40 to −45 dBFS — **not silence**. The waveform
   renderer scales to peak, so soft audio *looks* like empty gaps.
 - Presets, gentlest → tightest:
-  - `-50 dBFS / 800 ms` (**default**) — only true long dead air. Safest.
-  - `-45 dBFS / 150 ms / mergeGap 120` — **recommended for punchy reels**; removes
-    breathy inter-word pauses while keeping speech natural.
+  - `-50 dBFS / 800 ms` (**default**) — a conservative detection starting point,
+    not a guarantee that proposed removals are unwanted.
+  - `-45 dBFS / 150 ms / mergeGap 120` — historical aggressive punchy-reel
+    setting; can remove the very breaths and hesitations expressive dialogue needs.
+    Never apply it as an automatic expressive-voice preset.
   - **Do NOT** raise the threshold above `-45 dBFS` or drop `minSilenceMs` below
     ~`120 ms` — you start clipping consonant/word tails and breaths → choppy, robotic
     speech. Leave ≥ ~120 ms of any real pause.
-- If a clip was already run through `process_dialogue_audio.py --max-gap-ms …`, a
-  default `editor.removeSilence` will report **0 removable** — that is **correct**,
-  there is no dead air left. Don't crank the threshold just to "see something cut."
+- An already-tightened clip may report **0 removable**. That is not proof that
+  all dead air is gone; don't crank the threshold just to "see something cut."
 
 **Light pause between speakers (turn-taking):**
 
-- Never butt one speaker's audio hard against the next. A turn change needs a short beat.
-- Place each next line at `previousLineEnd + PAUSE`, with **PAUSE ≈ 120–200 ms**
-  (~150 ms feels natural; ≤80 ms sounds rushed; >300 ms drags).
+- Decide the turn gap from the exchange, including silence already inside the
+  raw files. For quick exchanges, 120–200 ms of added space can be a starting
+  point, not a rule. A vulnerable admission or reaction may need 300–450 ms or
+  longer; don't shorten it solely because it exceeds a numeric target.
 - `editor.removeSilence` **preserves** this gap: it anchors the first clip and only
   closes the silence windows it detected, so trimming speaker A's internal pauses
   ripples speaker B left **but keeps the turn-taking gap** (verified — an 80 ms
   Modi→Rahul gap survived a trim pass).
-- To *standardize* the turn gap, trim first, then set it explicitly with
-  `editor.moveItem` on the next clip (`from = prevEnd + 150`).
+- If a changed gap is approved, set it explicitly with `editor.moveItem`
+  (`from = prevEnd + approvedGapMs`) and recheck linked visuals and later turns.
 
 ### 3b-2. Offline/pre-import option: `process_dialogue_audio.py`
 
-Use the Python path only when preparing files **before** importing them into the
-timeline. It remains useful for batch offline processing and loudness prep, but
-the in-timeline "remove gaps" job should use `editor.removeSilence`.
+Use this legacy Python path only for explicitly approved processing **before**
+import. It is not part of speech generation. It is not a transparent passthrough,
+even with all processing flags disabled: loading/exporting can re-encode.
 
 This is a faithful port of the TlEditingSolution pipeline
 (`AudioTrimmer.trim_silence` + `boost_audio.py`).
@@ -431,29 +445,26 @@ min-silence 100 ms) → optionally **collapse** long internal pauses → **boost
 (+dB gain and/or peak normalize). Defaults mirror TlEditing: −40 dBFS / 100 ms,
 **+13 dB**, normalize **on**.
 
+**Warning:** positive gain can clip PCM before peak normalization; normalizing
+afterwards cannot recover it. Edge trimming at -40 dBFS can remove soft reactions.
+Do not use defaults for raw auditions. The in-place `.backup` is re-exported
+audio, not a byte-identical original; retain the original download separately.
+
 ```bash
-# one-time: pip install pydub   (ffmpeg must be on PATH)
-
-# process a single downloaded line in place (TlEditing defaults: trim + normalize + 13 dB)
-python "$SKILLS/voice/scripts/process_dialogue_audio.py" ~/Downloads/voiceover.mp3
-
-# gentler boost, write to a new file, no normalize
-python "$SKILLS/voice/scripts/process_dialogue_audio.py" in.mp3 -o out.mp3 --boost-db 6 --no-normalize
-
-# also shorten mid-line pauses longer than 350 ms
-python "$SKILLS/voice/scripts/process_dialogue_audio.py" in.mp3 --max-gap-ms 350
-
-# batch a whole folder of dialogue lines, in place
-python "$SKILLS/voice/scripts/process_dialogue_audio.py" "~/Downloads/dialogue/*.mp3" --boost-db 13
+# Only if edge trimming was approved; distinct new output, no boost.
+# Requires pydub + ffmpeg; install only if the selected command reports them missing.
+python3 "$HOME/.copilot/skills/cl-voice/scripts/process_dialogue_audio.py" \
+  ~/Downloads/voiceover.wav -o ~/Downloads/voiceover-trimmed-review.wav \
+  --boost-db 0 --no-normalize --silence-thresh -50 --min-silence-len 800
 ```
 
 Then `editor.addAudio` the **processed** file and caption from that processed
 file. In-place runs write a one-time `.backup` next to the original. Run
 `--help` for all flags.
 
-> **Rule of thumb:** for multi-speaker dialogue reels, trim every line and boost to a
-> consistent level so no speaker is quieter than another. Use `--max-gap-ms` only when
-> a specific line drags; the head/tail trim alone already tightens most cuts.
+> **Rule of thumb:** preserve performance first. Quiet vulnerability need not be
+> as loud as confident speech. Measure a separate final master with `cl-audio`;
+> never mistake equal peak levels for equal perceived loudness or good acting.
 
 ## 4. Clone a voice
 
@@ -544,3 +555,5 @@ curl -sX DELETE "$API/api/bridge/voice/voices/moss_audio_xxxxxxxx?voice_type=voi
 - `remotion/rules/sfx-and-audio` — voiceover volume levels, SFX, audio mixing.
 - `contentlead/audio-gain-eq` — gain/EQ/ducking once the voiceover is on the timeline.
 - `cl-ai-media/SKILL` — other AI media (image/text/transcription) via the desktop AI bridge.
+- [expressive-dialogue.md](expressive-dialogue.md) — delivery, raw A/B review and processing boundaries.
+- `cl-audio` — read-only loudness/peak QA; measurements do not certify emotion.

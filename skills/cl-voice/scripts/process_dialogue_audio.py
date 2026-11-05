@@ -3,9 +3,10 @@
 process_dialogue_audio.py — Dialogue/TTS audio post-processor for ContentLead reels.
 
 Ported from the proven TlEditingSolution pipeline (Tools/main/audio_trimmer.py +
-Tools/boost_audio.py). Run this on EVERY generated/cloned voice clip BEFORE placing
-it on the timeline, so dialogue reels feel tight and punchy — no dead air at the
-head/tail of a line, and consistent, loud levels across speakers.
+Tools/boost_audio.py). Optional legacy processing, NOT a mandatory generation
+step. Audition raw expressive speech first. Use only after approval, on a separate
+output: trimming may remove breaths and +13 dB can clip before normalization.
+The in-place backup is re-encoded; retain the original download separately.
 
 What it does (in order):
   1. TRIM  — removes leading/trailing silence (detect_nonsilent, thresh -40 dBFS,
@@ -22,17 +23,12 @@ Defaults mirror the TlEditingSolution values:
   - normalize            on       (DynamicVideoEditor boost_audio_normalize)
 
 Usage:
-  # single file, in place, TlEditing defaults (trim + normalize + 13 dB)
-  python process_dialogue_audio.py modi-clone-test.mp3
+  # Approved edge trimming only, separate output, no gain/normalization:
+  python3 process_dialogue_audio.py in.wav -o trimmed-review.wav \
+    --boost-db 0 --no-normalize --silence-thresh -50 --min-silence-len 800
 
-  # write to a new file, gentler +6 dB, no normalize
-  python process_dialogue_audio.py in.mp3 -o out.mp3 --boost-db 6 --no-normalize
-
-  # also collapse internal pauses longer than 350 ms
-  python process_dialogue_audio.py in.mp3 --max-gap-ms 350
-
-  # batch a whole folder (glob), each file trimmed + boosted in place
-  python process_dialogue_audio.py "audio_dir/*.mp3" --boost-db 13
+  # Internal gap collapse is opt-in via --max-gap-ms; audition cuts first.
+  # Omitting -o overwrites the input. Avoid that for raw auditions.
 
 Dependency:  pip install pydub   (needs ffmpeg on PATH)
 Exit code 0 on success, non-zero if any file failed.
