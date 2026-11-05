@@ -80,6 +80,11 @@ Returns `{imageBase64, width, height, timeMs, targetFrame, stabilized, videoTimi
 Legacy `query.capturePreviewFrame` still exists but does NOT wait — only use when you're certain the frame is already stable.
 
 
+## Native UI control (last resort)
+
+If no editor command fits (e.g. shift/cmd-click multi-select and drag on the timeline canvas), the desktop exposes native clicks/drags/keys with modifiers via `POST /api/ui`. Load `cl-desktop/ui-automation.md`; always verify with `query.getEditorState` afterwards.
+Aim canvas gestures with the read-only hit-test commands `timeline.getItemRects`, `timeline.getTrackRects`, `timeline.timeToViewportX`, `timeline.revealItem` and `preview.getLayerRects` (viewport CSS px, same space as `/api/ui`), and DOM controls via stable `data-agent-id` markers — see `queries-and-state.md` → *Hit-testing for native UI control*.
+
 ## Skill Routing Table
 
 **⚠️ CRITICAL:** Load the relevant skill file BEFORE attempting to use commands in that category. The detailed docs contain mandatory rules (like track z-order, parameter names, and timing formats) that you will fail without.
@@ -105,6 +110,8 @@ Legacy `query.capturePreviewFrame` still exists but does NOT wait — only use w
 | Project save/load, Snapshots | `project-and-export` | `editor.save`, `editor.createSnapshot`, `editor.restoreSnapshot`, `project.saveAutosave`, `project.getFullState`, `project.loadFullState` |
 | **🎬 Local video rendering (mp4 output, jobId, progress, cancel)** | `rendering` | `POST /api/render` (renderType `"design"`/`"custom"`/`"template"`), `GET /api/render/{jobId}` (progress + `outputPath`), `GET /api/render/jobs`, `POST /api/render/{jobId}/cancel`, `render.validate`, `render.verifyOutput`. **Output → `~/Movies/SkillTown/{jobId}.mp4`**. ⚠️ Do **NOT** use `editor.export` for programmatic renders — it returns `jobId: null` (see `project-and-export.md`). |
 | Read timeline/editor state | `queries-and-state` | `query.getTimelineItems`, `query.getTrackInfo`, `query.getEditorState` |
+| Hit-test timeline/preview for native clicks & drags | `queries-and-state` | `timeline.getItemRects`, `timeline.getTrackRects`, `timeline.timeToViewportX`, `timeline.revealItem`, `preview.getLayerRects` |
+| Frame/clean the UI for recordings (view-only) | `queries-and-state` | `timeline.zoomToFit`, `timeline.setZoom`, `timeline.zoomToRange`, `timeline.scrollToTime`, `preview.zoomToFit`, `preview.setZoom`, `preview.setPlaybackRate`, `ui.dismissTransient`, `ui.preparePresentation`, `ui.resetPresentation` |
 | Debugging, Logs, Arch | `infrastructure` | `GET /api/diagnostics`, `GET /api/console-errors` |
 | Legacy / advanced command contracts | `legacy-command-reference` | Source-verified params, saved-state effects and approval boundaries for advanced/legacy editor commands |
 | Testing / QA | `cl-testing` | Agent-run contract, state, visual, and workflow tests |

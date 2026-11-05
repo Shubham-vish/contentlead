@@ -58,3 +58,14 @@ Read each owning skill for exact payloads, limits and remaining product gaps. A 
 - Spreadsheet prepare/apply is not editable PPTX import. Recording start and
   stop/chunk/upload finalization remain explicit missing operations; device/
   quality selection does not imply recording or permission consent.
+
+## Stable DOM markers for native UI control
+
+`/api/ui` selectors should prefer `[data-agent-id="…"]` (dotted lowercase `surface.area.action`); repeated items add `data-agent-key="<item id>"` — combine both attributes in the selector. Never target `data-agent-human-only` controls.
+
+- Nav (every `ContentSidebarItem`): `nav.` + route path with `/` → `.` — `nav.content`, `nav.content.instagram`, `nav.content.youtube`, `nav.crm`, `nav.deals`, …
+- Content list: `content.list.{search,refresh,export,export-csv,export-full,filters,delete-selected,create}`, rows `content.row.{preview,menu}` and cards `content.card.menu` (+key = contentId).
+- YouTube workspace: `youtube.toolbar.{refresh,export,cards-per-row,insights,collapse-all,video-count}`, `youtube.channel-filter` (+key = channelId), `youtube.video` and `youtube.video.edit` (+key = videoId).
+- Instagram: `instagram.toolbar.{refresh,export,cards-per-row,insights,collapse-all,post-count}`, `instagram.post` (+key = mediaId).
+- CRM: `crm.contacts.{search,sort,export,create}`, `crm.contact.open` (+key = contactId), `crm.followups.create`, `crm.opportunities.create`.
+- Editor / timeline / media bin / scenes: see cl-editor `queries-and-state.md` → *Stable DOM markers*. Boards: cl-board `queries.md`.

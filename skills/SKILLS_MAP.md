@@ -20,6 +20,7 @@ IDEA → RESEARCH → SCRIPT → PRODUCE (edit / voice / media) → CLIP → PUB
 | Skill | What it is | Who calls it |
 |-------|------------|--------------|
 | **`cl-desktop`** | Whole-Desktop entry router: private discovery, live capabilities/readiness, domain lifecycle routing, safe outcomes and genuine human handoffs. | start here for cross-feature ContentLead workflows |
+| **`cl-web-demo`** | Demo ANY website in ContentLead: isolated Demo browser (`demo:main`) → AI-controlled recorded take (cursor/ripple/badge, events sidecar) → editor import → `camera.autoZoomFromEvents`. | website demos / product tours recorded in-app |
 | **`cl-virality-scoring`** | The single 0–100 virality rubric (8 signals). Medium-agnostic — judges "is this viral?" for a clip, a written script, a hook line, a post idea, or a thumbnail. | `cl-ai-clipping`, `cl-script-evaluator`, `cl-dialogue-story`, `cl-content-style` |
 | **`cl-editor`** | Master router for the ContentLead desktop video editor (290 source renderer names, including native freeze frame; verify live capabilities). Load first before any editor command; it explains the local HTTP API. | every skill that touches the editor |
 | **`cl-production`** | Reviewed episode clipping, discovery, podcast camera/director/sync, tightening, derived drafts, finishing recipes and delivery through desktop commands. | `cl-ai-clipping`, `cl-editor`, podcast production agents |

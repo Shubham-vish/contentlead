@@ -1,7 +1,7 @@
 ---
 name: animations-and-effects
 description: Enter/exit/loop animations, keyframes, visual effects, and canonical Effect Span commands
-tags: animation, effect, effect-span, fx-lane, keyframe, fadeIn, fadeOut, slide, scale, blur, brightness, contrast, grayscale, sepia, camera, reveal, loop, pulse, glitch, spin
+tags: animation, effect, effect-span, auto-zoom, recording-events, fx-lane, keyframe, fadeIn, fadeOut, slide, scale, blur, brightness, contrast, grayscale, sepia, camera, reveal, loop, pulse, glitch, spin
 ---
 
 # Animations and Effects
@@ -222,6 +222,72 @@ Example:
   }
 }
 ```
+
+## `camera.autoZoomFromEvents`
+
+Turns a screen recording's events sidecar (`<name>.events.json`, written next to
+the MP4 by ContentLead Desktop / TradingLead Desktop recordings, e.g.
+`~/.tradinglead-desktop/recordings/live-test-0115.events.json`) into camera
+zoom/pan keyframes on a video clip. It can also add click/whoosh SFX and short
+click "punches". This is the same as the camera panel's **Auto-zoom from
+recording…** entry. The planner is a port of RehookStudio
+`faceless-screen-demo/engine/events_to_plan.py`:
+- clicks, drags and highlights are clustered;
+- each cluster is framed with a lead/hold/dwell and eased (ease-in-out cubic) moves;
+- zoom is capped at `maxZoom`;
+- the view always stays inside the frame and lowers zoom in 0.05 steps until
+  the target sits in the safe area;
+- mark `data.zoom` overrides the zoom and mark `data.sfx` adds sounds.
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `itemId` | `string` | required | Video clip (`trackItemId` alias) |
+| `events` | `object \| string` | — | Inline events document (or its JSON text, ≤ 5 MB) |
+| `eventsUrl` | `string` | — | `http(s)` URL or same-origin path of the JSON |
+| `eventsPath` | `string` | — | **Absolute** local `.json` path. It is read by the Desktop app's preload (no `~`), so it works only in ContentLead Desktop |
+| `options.maxZoom` | `number 1..5` | `3.5` | Hard cap for every zoom, including mark overrides |
+| `options.zoom` | `number 1..5` | `1.8` | Target zoom for a framed cluster. Framing lowers it in 0.05 steps, never below `zoomMin` 1.5. The usual range is `zoomMin`..`zoomMax` (1.5..2.2), and the range widens to include `zoom` |
+| `options.sfx` | `boolean` | `true` | Add click/whoosh SFX on "Auto-zoom SFX" audio tracks |
+| `options.punches` | `boolean` | `true` | Add a 0.38 s, +4.5 % half-sine zoom bump on each click |
+| `options.replace` | `boolean` | `true` | Remove SFX that an earlier run added for this clip. Camera zoom/position keyframes are always replaced |
+| `options.captions` | `boolean` | `false` | Add subtitle text items for marks with `data.caption` |
+| `options.srcRect` | `{x,y,width,height}` | clip crop | Recorded area in video px when the clip is cropped |
+| `options.clickSfxSrc` / `whooshSfxSrc` / `keyboardSfxSrc` | `string` | library sounds | Custom SFX URLs. Keyboard has no default sound |
+
+Resolution order for the events: `events` → `eventsUrl` → `eventsPath` → the
+clip's `details.recordingEvents` / `details.recordingEventsUrl`. Top-level
+params also work as aliases for `options` keys. Advanced planner tuning keys
+(`lead`, `hold`, `move`, `release`, `fit`, `safe`, …) are accepted too.
+
+**Time mapping:** recording time `t` maps to clip time
+`(t - trim.from) / playbackRate`, and the timeline position is
+`display.from` + that. Events outside the trimmed range are dropped, and
+keyframes are item-relative frames.
+
+**Undo:** a single `editor.undo` reverts the camera keyframes and the SFX
+together.
+
+```json
+{
+  "type": "camera.autoZoomFromEvents",
+  "params": {
+    "itemId": "<videoItemId>",
+    "eventsPath": "/Users/shubham/.tradinglead-desktop/recordings/live-test-0115.events.json",
+    "options": { "maxZoom": 2.2, "sfx": true, "punches": true, "replace": true }
+  }
+}
+```
+
+The result includes:
+- `changed`, `eventsSource`, `scaleKeyframes`, `positionKeyframes`
+- `clusters`, `punches` (item frames)
+- `sfxItemIds`, `removedSfxItemIds`, `skippedSfx`
+- `captionItemIds`, `captions`, `tags`, `srcRect`, `stats`
+
+Error codes are `INVALID_PARAMS`, `NOT_FOUND`, `EVENTS_REQUIRED`,
+`EVENTS_UNREACHABLE`, `EVENTS_TOO_LARGE` and `INVALID_EVENTS`. Two marker
+fields are planned but not drawn: `tags` (on-screen labels) and
+`data.caption` when `captions` is false. Render them yourself if needed.
 
 ## Effect Spans: one timeline view over every effect system
 

@@ -170,6 +170,50 @@ These are straightforward — naming tells you what they do:
 | `query.getAssets` | `{}` | All registered media assets |
 | `query.diff` | `{ sinceVersion }` | State diffs since a version number |
 
+## Hit-testing for native UI control (`timeline.*` / `preview.*` geometry)
+
+Read-only, cheap, no undo/save effect. Use them to aim `POST /api/ui` clicks/drags (see `cl-desktop/ui-automation.md`) at the Fabric timeline canvas and the preview player, which are not DOM. Every rect is **top-level viewport CSS px** (same space as `ui-click {x,y}`), already corrected for canvas offset, timeline scroll, timeline zoom and CSS scale; devicePixelRatio is reported but never needs applying. Shared per-target shape: `rect` (full box, may be off-screen), `visible`, `visibleRect` (clipped by scroll panes + window), `hitPoint` (centre of the visible part or `null`), `hittable` (`elementFromPoint` reaches the canvas/layer, i.e. no overlay on top).
+
+| Command | Params | Returns |
+|---|---|---|
+| `timeline.getItemRects` | `{ itemIds?, trackIds?, visibleOnly?, includeHandles? = true, limit? ≤ 500 }` | `{ coordinateSpace, viewport{innerWidth,innerHeight,devicePixelRatio}, canvas{rect,visibleRect,logicalWidth,logicalHeight}, scroll{scrollLeft,scrollTop}, zoom{index,zoom,unit}, mapping, playhead, total, truncated, items[], missingIds? }`; item = `{ id, trackId, type, name, from, to, durationMs, selected, rect, visible, visibleRect, hitPoint, hittable, handles{requiresSelection:true, left, right} }` (times in ms) |
+| `timeline.getTrackRects` | `{ trackIds?, visibleOnly? }` | same header + `tracks[{ id, index, type, name, itemCount, muted, locked, hidden, header (DOM row [data-track-row]), lane (canvas lane) }]` |
+| `timeline.timeToViewportX` | `{ timeMs }` \| `{ seconds }` \| `{ timesMs: [] }` | header + `laneCenterY`, `points[{ timeMs, x, visible }]` (single input also spread at top level) |
+| `timeline.revealItem` | `{ itemId, align?: "nearest" \| "center", margin? }` | scrolls the **view only** (not the design) so the clip is visible, then `getItemRects` result + `scrolled`, `item` |
+| `preview.getLayerRects` | `{ itemIds?, visibleOnly? }` | `{ container{rect,visibleRect}, composition{width,height}, playheadMs, layers[{ id, type, zOrder (0 = front), selected, from, to, activeAtPlayhead, mounted, rect, visible, visibleRect, hitPoint, hittable }], selectionControls[{ direction, rect, hitPoint }] }` |
+
+`mapping` is function-free: `x = originX - scrollLeft + seconds * pxPerSecond` (also `pxPerMs`, `zeroX`). `playhead` = `{ timeMs, x, rect, visible, visibleRect, hitPoint, knobPoint }` (DOM `[data-agent-id="timeline.playhead"]`; drag from `knobPoint` to scrub).
+
+Recipes:
+- **Move a clip**: `timeline.revealItem` → `ui-drag` from `item.hitPoint` by `Δms * mapping.pxPerMs` → verify with `query.getTimelineItems`.
+- **Trim**: select the clip first (handles are only live on selected clips), re-read rects, drag `handles.left/right` centre.
+- **Shift/Cmd multi-select**: `ui-click` each `hitPoint` with `modifiers`.
+- Always re-read after scroll/zoom changes; only trust `hittable: true` points (overlay scrollbars/menus may cover edges). Preview layers exist only while active at the playhead (`mounted: false` otherwise); rotated layers report axis-aligned bounds.
+- Errors: `timeline-not-mounted` / `preview-not-mounted` (timeline collapsed or editor not open in that tab).
+
+### Framing & presentation for recordings (view-only, ephemeral)
+
+These commands never touch the design, and timeline zoom is **not** persisted to the saved view.
+
+| Command | Params | Returns |
+|---|---|---|
+| `timeline.zoomToFit` | `{}` | `{ previous, scale{index,zoom,unit}, changed, scrollLeft }` (scrolls to start) |
+| `timeline.setZoom` | `{ index }` (0 = coarsest … `maxIndex`) | `{ previous, scale, changed, maxIndex }` |
+| `timeline.zoomToRange` | `{ startMs, endMs, padding? = 0.05 }` | `{ previous, scale, changed, scrollLeft }` (tightest discrete level that fits, range start at left) |
+| `timeline.scrollToTime` | `{ timeMs, align?: "center" \| "start" \| "nearest", margin? }` | `{ scrolled, scrollLeft }` (playhead unchanged) |
+| `preview.zoomToFit` | `{}` | `{ previous, zoom, fitZoom }` (same as Ctrl+0) |
+| `preview.setZoom` | `{ zoom }` (0.05–5) or `{ relativeToFit }` (1 = fit) | `{ previous, zoom, fitZoom, clamped }`. Centred. |
+| `preview.setPlaybackRate` | `{ rate }` (non-zero, −4…4) | `{ previous, rate }`. This is the preview speed; the clip speed is `editor.setPlaybackRate`. |
+| `ui.dismissTransient` | `{ closeMenus?, dismissToasts?, clearHover? (true), closeDialogs?, blur? (false), preserveToastIds? }` | `{ menusClosed, dialogsClosed, toastsDismissed, toastsPreserved, hoverCleared, blurred }` |
+| `ui.preparePresentation` | `{ hideToasts?, hideDevOverlays?, hideTours?, dismissTransient? (true), hideCursor?, hideScrollbars? (false) }` | `{ previous, state, dismissed }` |
+| `ui.resetPresentation` / `ui.getPresentation` | `{}` | `{ wasActive, previous }` / `{ active, options }` |
+
+`ui.dismissTransient` sends Escape to the topmost Radix layer, so editor shortcuts do not see it. It leaves modal dialogs open unless `closeDialogs` is set. The save-conflict toast (`editor-save-conflict`) and loading toasts are always kept.
+
+### Stable DOM markers (`data-agent-id`)
+
+Key controls carry `data-agent-id` (dotted lowercase `surface.area.action`); repeated items add `data-agent-key="<item id>"`, so target `[data-agent-id="youtube.video.edit"][data-agent-key="<videoId>"]`. Editor: `editor.toolbar.{undo,redo,play-pause,skip-back,toggle-timeline,save,resize,export}`, `editor.export.start`, `editor.panel.<menuId>` (uploads, texts, videos, images, …), `editor.panel.toggle`; timeline: `timeline.{play-pause,loop,zoom-in,zoom-out,zoom-fit,delete,split,split-cut,ripple-delete,duplicate,magnetic,compact,crop-mode,pan-mode,waveforms,fade-handles,freeze-frame,add-marker,add-adjustment,shortcuts,volume,canvas,ruler,playhead}`, `timeline.track` (+key = trackId) with children `timeline.track.{visibility,mute,solo,lock,select}`; media bin: `media-bin.{upload,browse,library,search}`, `media-bin.asset` (+key); scenes: `scenes.card`/`scenes.add`/`scenes.bundled.add`/`scenes.mine.add` (+key = sceneId). Properties: `properties.tab.<tabId>`. Content page: `content.tab.<tabId>`, `content.detail.{save,cancel-edit,download,share,share-copy,duplicate,edit,delete}`, `cta.{add,edit,refresh,toggle,add-config}`, `publish.instagram.{publish,cancel-processing,schedule,schedule-cancel,schedule-refresh}`, `publish.youtube.publish`. Shared dialogs: `dialog.confirm`, `dialog.cancel` and `dialog.close`. Controls marked `data-agent-human-only` (payments, auth, OAuth, secrets) must be left to the human.
+
 ## Diagnostics & Health
 
 Commands for detecting issues that aren't visible in normal responses:

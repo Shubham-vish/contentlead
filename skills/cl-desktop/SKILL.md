@@ -1,6 +1,6 @@
 ---
 name: cl-desktop
-description: Start here for the whole ContentLead Desktop workflow: private connection discovery, live renderer readiness, research, editing, publishing, creator surfaces, commerce, CRM, Calls, Webinars and Deals. Routes to owning skills rather than inventing generic commands.
+description: "Start here for the whole ContentLead Desktop workflow: private connection discovery, live renderer readiness, research, editing, publishing, creator surfaces, commerce, CRM, Calls, Webinars and Deals. Routes to owning skills rather than inventing generic commands."
 tags: desktop, start, workflow, discovery, capabilities, readiness, routing
 ---
 
@@ -109,5 +109,10 @@ timeline render, or misclassify these missing capabilities as consent alone.
 Packaged public skills contain documentation/allowlisted JSON, **not** arbitrary scripts, private overlays or installed Python/model dependencies. If a helper is required, use a user-authorized public checkout in a new folder; link skills without overwriting existing directories, or set `CONTENTLEAD_SKILLS_DIR` before a separately authorized app start. No automatic clone/install/restart occurs.
 
 Physical helper availability is not a readiness guarantee. The reviewed optional dialogue-story orchestrator is canonical-checkout-only, not a packaged executable: it requires explicit `--tab-id`/`--content-id`, live placement/readiness capability preflight and owned role tracks before composition. Its offline plan path does not connect to Desktop or run providers. Runtime/model dependencies and paid-stage approval remain separate. Pure local voice processing still needs Python/pydub/ffmpeg and explicit input/output selection.
+
+## Native UI control and tab recording
+
+When no domain command covers a UI-only gesture (timeline multi-select/drag, canvas boards, dialogs, drop-zone uploads), use `POST /api/ui` (or the `/api/ui/ws` WebSocket) on an explicit tab: `ui-enable` → observe (`ui-snapshot`, `ui-screenshot-marks`, `ui-read`; canvas geometry via `timeline.getItemRects` / `board.getNodeRects`) → one `ui-click`/`ui-drag`/`ui-key`/`ui-type`/`ui-select`/`ui-upload` (optional `modifiers`), or a `ui-batch` with `expect` waits → verify (`ui-wait`, `ui-diff`, domain state). Refs prefer `data-agent-id`/`data-agent-key` markers. Credential, payment, OAuth and `data-agent-human-only` controls stay human-only; human input pauses control (`ui-resume`). Stop via `ui-disable` or Help → Stop AI control and recording (Cmd/Ctrl+Shift+Escape). Only the person can raise the AI control level (Help → AI control: standard/extended/full); agents read it via `ui-status` and may only lower it. Full unlocks payments (`confirmPayment` + spend cap), password/OTP typing, `ui-eval` and OS-level `os-*` input. `ui-agent-ids` + `ui-invoke` reach any `data-agent-id` control without a domain command. See [ui-automation.md](ui-automation.md).
+Aim at canvases with read-only hit-test commands (`timeline.getItemRects`/`getTrackRects`/`timeToViewportX`/`revealItem`, `preview.getLayerRects` — cl-editor `queries-and-state.md`; `board.getNodeRects`/`board.revealNode` — cl-board `queries.md`) and at DOM controls with stable `[data-agent-id]` markers (dotted `surface.area.action`, e.g. `editor.toolbar.export`, `timeline.zoom-in`, `nav.content.youtube`; repeated items add `data-agent-key="<id>"`, e.g. `youtube.video.edit`).
 
 See [workflow verification](workflows.md). Edited source, bundled docs, installed app, loaded renderer and deployed server can all be different revisions. Never claim runtime/deployment parity from source-only tests.
