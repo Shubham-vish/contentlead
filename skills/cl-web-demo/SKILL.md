@@ -87,6 +87,21 @@ ex '{"tabId":"<editorTab>","type":"camera.autoZoomFromEvents","params":{"itemId"
 - Run `editor.save`, then confirm the saved state via `GET /api/bridge/content/<id>` (zoom keyframes and SFX present).
 - Render through `cl-editor/rendering`, and check frame 0 / the cover before publishing (`my-cl-publishing`).
 
+## Scrape data / inspect a site's API calls
+The details are in `cl-desktop/ui-automation.md`, section "Scraping and network capture (Demo browser)". All of these
+need `ui-enable` on `demo:main`.
+1. **Capture first.** Start with `ui-network-capture-start {resourceTypes:["xhr","fetch"]}`, then browse, scroll or
+   page through the site. Stop with `ui-network-capture-stop {captureId, har:true}` to get the JSONL and HAR. Credential
+   headers and secret query values are redacted. Auth, payment and OAuth URLs keep metadata only.
+2. **Call the JSON API you found** with `ui-page-fetch {url, method?, body?}`. It runs inside the page with the
+   person's login, so it returns clean JSON.
+3. **Only when the data exists only in HTML,** use `ui-scrape {item, fields, next:{selector}|{scroll:true}|{urls}, format:"csv"}`.
+   Files land in `~/.skilltown-desktop/scrapes`.
+- **Be polite:** respect the site's terms and robots rules. Keep `delayMs` (800 ms by default, 300 ms minimum), use
+  small `maxPages`, and don't scrape personal data you weren't asked for.
+- **Private files:** response bodies are stored as-is, so don't share capture files.
+- **Never** try to read password, OTP or card fields. They return `null` / `UI_HUMAN_ONLY`.
+
 ## Errors to expect
 | Code | Meaning / fix |
 |---|---|

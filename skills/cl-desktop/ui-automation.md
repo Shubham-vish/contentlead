@@ -423,6 +423,89 @@ ui '{"action":"record-status","tabId":"demo:main","params":{"recordingId":"rec-.
 The events sidecar is identical to the one from trusted surfaces. Import the MP4 with `editor.addVideo`, then pass
 `eventsPath` to the editor command `camera.autoZoomFromEvents` for zoom punches on clicks and `zoom-here` marks.
 
+### Scraping and network capture (Demo browser)
+
+These five actions work on **`tabId:"demo:main"` only**; any other tab gets `INVALID_REQUEST`. Each one needs
+`ui-enable` and runs at the standard level, because the Demo browser's partition is isolated.
+- **Denylist:** every action reuses the network denylist from "Batches … network" below: auth/session/token/OTP,
+  payments, identity providers, and Meta/YouTube graph/OAuth/upload.
+- **Output:** files are private (mode 0600) and never overwritten (`UI_PATH_EXISTS`). A bare name goes to
+  `~/.skilltown-desktop/captures` or `~/.skilltown-desktop/scrapes`. An absolute path must be new, inside your home
+  folder, and not in a hidden or system folder.
+- **Recommended flow:** capture first to find the site's JSON API. Then call that API with `ui-page-fetch`. Use
+  `ui-scrape` only when the data exists only in the HTML. Respect the site's terms and robots rules, and keep the
+  polite delays.
+
+| Action | Params → result |
+|---|---|
+| `ui-network-capture-start` | `{urlIncludes?\|urlRegex? (≤300), resourceTypes?:["document","xhr","fetch","script","stylesheet","image","media","font","websocket","eventsource","manifest","ping","preflight","other",…], bodies?:true, maxBodyBytes?:1024..5242880 (1048576), maxEntries?:1..20000 (5000), websocket?:false, path? (.jsonl)}` → `{captureId, path, running:true}`. Not a mutation: no retry key, and it works while paused. One capture at a time (`UI_BUSY`). |
+| `ui-network-capture-status` | `{captureId}` (read) → `{captureId, running, path, entries, requests, websocketFrames, denied, bodies, bytes, droppedPending, startedAt, stoppedAt?, stoppedReason?, harPath?}` |
+| `ui-network-capture-stop` | `{captureId, har?:false}` → final status. `har:true` also writes `<name>.har` (HAR 1.2, same redactions) next to the JSONL and adds `harPath`. This also works after an auto-stop. |
+| `ui-page-fetch` | `{url (absolute, or relative to the page), method?:"GET"\|"POST"\|"PUT"\|"PATCH"\|"DELETE"\|"HEAD"\|"OPTIONS", headers?:{…}(≤50), body?:string\|JSON (≤1 MB; not for GET/HEAD), responseType?:"json"\|"text", timeoutMs?:1000..120000 (30000), path?}` → `{url, status, statusText, ok, redirected, headers, contentType, size, body? (≤256 KB inline; parsed JSON), bodyTruncated?, jsonError?, bodyOmitted?, path?}`. `path` saves the full raw body (≤50 MB). Its extension must be one of .json/.txt/.html/.csv/.xml/.jsonl/.js/.md/.bin. |
+| `ui-scrape` | `{item, fields:{name:{selector?, attr?:"text"\|"href"\|"src"\|"value"\|<attr>, all?}} (1..50), next?:{selector}\|{scroll:true, settleMs?:1500}\|{urls:[…≤100]}, maxPages?:1..100 (5), maxItems?:1..50000 (1000), waitFor?, delayMs?:300..60000 (800), timeoutMs?:1000..60000 (15000/page), format?:"jsonl"\|"csv"\|"json", path?, dedupeBy?}` → `{path, format, items, pages, stoppedReason, protectedSkipped, duplicates, urls, sample (first 5)}` |
+
+**Capture** writes one JSONL line per finished request with these fields: `{type:"request", ts, method, url, status,
+statusText, mimeType, resourceType, requestHeaders, responseHeaders, postData?, body?, bodyTruncated?, bodySize?,
+bodyOmitted?, timing:{startedAt, durationMs, ttfbMs, dnsMs, connectMs, sslMs, sendMs, waitMs, receiveMs}, fromCache,
+fromServiceWorker, encodedDataLength, protocol, redirectedTo?, failed?:{errorText, canceled}}`.
+- **WebSocket:** `websocket:true` adds `websocket`, `websocket-frame` (text payload only, ≤16 KB, truncated) and
+  `websocket-closed` lines.
+- **Bodies:** stored by default for JSON/text `xhr`, `fetch` and `document` responses, and for any type you list in
+  `resourceTypes`. Otherwise `bodyOmitted` is `"type"`, `"binary"`, `"disabled"` or `"unavailable"`.
+- **Redaction:** `Authorization`, `Cookie`, `Set-Cookie`, `Proxy-Authorization`, `x-csrf*`/`x-xsrf*` and token,
+  api-key, session and signature headers become `"REDACTED"`. So do secret-looking query values (`token`, `key`, `sig`,
+  `code`, `session`, `password`…) and password/OTP/card keys inside JSON or form post data. **Response bodies are kept
+  as-is**, so treat the files as private.
+- **Denylisted URLs:** metadata only: `denied:true` and `bodyOmitted:"denied"`, with no headers and no post data.
+- **Navigation:** a capture keeps running across page loads, including cross-site ones.
+- **Auto-stop:** a capture stops by itself with a `stoppedReason`: `control-ended` (ui-disable, or control lost),
+  `window-closed`, `max-entries`, `max-bytes` (200 MB file cap), `write-failed` or `attach-failed`. A manual stop gives
+  `stopped`.
+
+**Page fetch** runs `fetch(url, {credentials:"include"})` in the page's main world, so the person's login cookies and
+the site's CORS rules apply exactly as they do for the site's own scripts.
+- **URL rules:** the URL must pass the Demo browser URL policy (`UI_URL_BLOCKED`) and must not be on the denylist
+  (`UI_URL_DENIED`). A redirect to a denylisted URL drops the body (`bodyOmitted:"denied"`).
+- **Refused headers:** `Cookie`, `Authorization`, `Proxy-Authorization` and `Set-Cookie`.
+- **Errors:** `UI_TIMEOUT`, `UI_FETCH_FAILED` (network/CORS) and `UI_RESPONSE_TOO_LARGE` (over 50 MB with `path`).
+- **Page scripts:** the page's own scripts could observe or patch `fetch`, so only use sites you trust.
+
+**Scrape** reads each field inside every `item`. A field without `selector` reads the item itself; `all:true` returns a list.
+- **Protected values:** password/OTP/card values (protected fields) are never read. They come back as `null` and are
+  counted in `protectedSkipped`.
+- **`next` modes:**
+  - **`{selector}`:** a link loads through the URL policy and the denylist. A button is clicked like `ui-click`, and the
+    scraper waits for the URL, the item count or the first item to change.
+  - **`{scroll:true}`:** scrolls to the bottom and stops when no new items appear.
+  - **`{urls}`:** visits exactly those pages, in order.
+- **Pacing:** `delayMs` (minimum 300 ms) is applied between pages. `waitFor` waits for a selector on each page.
+- **Output:** CSV quotes fields RFC-4180 style, joins lists with `" | "`, and prefixes formula-like values with `'`.
+  These are values that start with `=`, `+`, `@`, or a `-` that isn't part of a number. `dedupeBy` drops repeats of that field. Scroll mode always drops identical rows.
+- **`stoppedReason`:** `max-items`, `max-pages`, `no-next`, `next-disabled`, `next-protected`, `next-denied`,
+  `next-blocked`, `next-repeat`, `next-no-change`, `no-new-items`, `urls-done`, `wait-timeout` or `control-lost`. A
+  failure after some items keeps the partial file and reports `error:<code>`.
+- **Steps:** `ui-page-fetch` and `ui-scrape` also work as `ui-run` steps.
+
+```bash
+ui '{"action":"demo-browser-open","tabId":"demo:main","params":{"url":"https://shop.example.com"},"idempotencyKey":"s1"}'
+ui '{"action":"ui-enable","tabId":"demo:main","params":{},"idempotencyKey":"s2"}'
+ui '{"action":"ui-network-capture-start","tabId":"demo:main","params":{"resourceTypes":["xhr","fetch"],"path":"shop.jsonl"}}'
+# browse or scroll the site (ui-scroll / ui-click), then:
+ui '{"action":"ui-network-capture-stop","tabId":"demo:main","params":{"captureId":"cap-…","har":true}}'
+# → {path:".../captures/shop.jsonl", harPath:".../captures/shop.har", requests, denied, bodies, …}; look for the JSON API, then:
+ui '{"action":"ui-page-fetch","tabId":"demo:main","params":{"url":"/api/products?page=2","responseType":"json"},"idempotencyKey":"s3"}'
+# → {status:200, ok:true, headers:{…, "set-cookie":"REDACTED"}, body:{items:[…]}}
+ui '{"action":"ui-scrape","tabId":"demo:main","idempotencyKey":"s4","params":{"item":".product","fields":{"title":{"selector":"h2"},"url":{"selector":"a","attr":"href"},"price":{"selector":".price"}},"next":{"selector":"a.next"},"maxPages":10,"format":"csv","path":"products.csv","dedupeBy":"url"}}'
+# → {path:".../scrapes/products.csv", items:87, pages:10, stoppedReason:"max-pages", sample:[…]}
+```
+
+**Limits:**
+- **Not captured:** requests from cross-origin iframes (OOPIFs) and from workers.
+- **Small buffers:** `ui-wait-idle`/`ui-wait-response` while a capture runs may re-enable Network with small buffers.
+  Bodies over that limit then come back as `bodyOmitted:"unavailable"`.
+- **Scrape scope:** only the main document is scraped. There are no iframes and no shadow-DOM item selectors.
+- **Serial lock:** `ui-scrape` holds the tab's lock until it returns.
+
 ## Recording
 
 `record-start` captures only this tab to `~/.skilltown-desktop/recordings` (mode 0600).
