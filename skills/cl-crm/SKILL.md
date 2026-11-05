@@ -1,6 +1,6 @@
 ---
 name: cl-crm
-description: Use the authenticated ContentLead Desktop CRM bridge for 32 owner/platform commands plus stored-message binary media download: contacts, rich timeline, CSV, revision-safe bulk, tasks, pipeline, owner buyers and platform customer/payment context. Platform ADMIN WhatsApp inspection, exact approved replies and reviewed mark-read are separate from creator messaging; no role impersonation, consent, charge or account/access changes.
+description: "Use the authenticated ContentLead Desktop CRM bridge for 32 owner/platform commands plus stored-message binary media download: contacts, rich timeline, CSV, revision-safe bulk, tasks, pipeline, owner buyers and platform customer/payment context. Platform ADMIN WhatsApp inspection, exact approved replies and reviewed mark-read are separate from creator messaging; no role impersonation, consent, charge or account/access changes."
 tags: crm, contacts, tasks, followups, opportunities, notes, sources, customers, payments, deals, desktop bridge
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: cl-calls
-description: Operate all current Calls Studio workflows through the authenticated ContentLead Desktop bridge: paged contacts/context/imports, agents/tests, saved AI/recorded/manual campaigns, private audio and personalization, history/transcripts, settings/analytics/automation/retention/recovery. Manual Call next/skip, microphone/live voice tests, listening approval and recording review require human UI handoff. Not messaging.
+description: "Operate all current Calls Studio workflows through the authenticated ContentLead Desktop bridge: paged contacts/context/imports, agents/tests, saved AI/recorded/manual campaigns, private audio and personalization, history/transcripts, settings/analytics/automation/retention/recovery. Manual Call next/skip, microphone/live voice tests, listening approval and recording review require human UI handoff. Not messaging."
 tags: calls, contacts, csv, excel, campaigns, agents, plivo, audio, personalization, consent, recovery
 ---
 
