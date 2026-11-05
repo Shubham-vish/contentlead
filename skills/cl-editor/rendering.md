@@ -308,6 +308,53 @@ curl -sL "$IMG_URL" -o /tmp/ai_cover.png
 | Want a completely bespoke cover unrelated to any video frame | Option B — AI generate + SAS upload |
 | Instagram Reel already published with bad cover | **Cannot fix via API.** User must edit cover manually in the IG app OR delete + republish (CTA auto-syncs to the new `media_id`) |
 
+### 🎯 Designing a cover that grabs attention
+
+A frame grab is a *fallback*, not a thumbnail. A designed cover sells **one promise** in under a second at feed size (~200 px wide).
+
+| Rule | Do | Don't |
+|---|---|---|
+| One promise | The payoff the viewer wants: "PREMIUM Indicators FREE mein", "₹0 vs ₹4,599" | Describe the process ("Step 2 Code Copy → Paste") |
+| Few words | Hook 2–4 words (max ~6 incl. small pretext), 140–170 px Black weight | Sentences, captions, UI text as the message |
+| Colour | 2–3 colours: white + yellow keyword + one accent (green = free/gain, red = loss/warning) on a dimmed background | Mono white-on-grey, or 5+ colours |
+| Contrast | Dim the background frame 40–60 % so text pops; real product/UI visible behind | Busy unreadable UI competing with the hook |
+| Proof element | One badge/sticker (₹0, ✓, 10×, a face/emotion) | Several stickers |
+| Safe zone (9:16) | Keep hook in y≈420–1500 px of 1920 (centre band survives 4:5 grid crops and 16:9 search crops) | Text in top 250 px / bottom 350 px (UI overlays) |
+| Consistency | Cover words ≈ title/first line of caption | A cover promising something the video doesn't deliver |
+| Brand | Small brand pill/logo, never the hero | Logo as the biggest element |
+
+Always **show the cover image to the user in the pre-flight** before publishing.
+
+### Where each platform takes its cover from
+
+| Platform / surface | Cover source | How to set |
+|---|---|---|
+| Instagram Reel (direct publish) | `metadata.coverUrl` → Graph `cover_url`; otherwise frame 0 (or `thumbOffset` ms) | Pass `metadata.coverUrl: <public/SAS jpg>` in `POST /api/bridge/instagram/publish`. Direct publish does **not** read `Content.thumbnail` automatically |
+| Instagram Reel (scheduled) | `metadata.coverUrl` → else `Content.thumbnail` | Set `Content.thumbnail` (SAS upload + PUT) or pass `coverUrl` |
+| YouTube Shorts — **swipe feed / Shorts shelf** | **Always an auto-picked video frame** (custom thumbnails are ignored there) | Plant the designed cover as the opening frames of the video, or pick a frame manually in the YouTube mobile app/Studio |
+| YouTube — watch page, channel grid, search, subscriptions | Custom thumbnail | `thumbnailUrl` at publish, or `POST /api/bridge/youtube/thumbnail` `{contentId, videoId, thumbnailUrl, selectedAccount}` (passthrough to `/api/youtube/thumbnail`; API `thumbnails.set` on Shorts is flaky — verify on the watch page) |
+| IG after publish | Not changeable via API | Edit in IG app or delete + republish |
+
+**Rule for vertical reels:** make the designed cover *both* a JPG (for `coverUrl` / `thumbnailUrl` / `Content.thumbnail`) *and* the first ~0.4 s of the video, so Shorts' auto-pick and IG's frame 0 show it too.
+
+### Thumbnail bridge commands — real status (audited 2026-11-03)
+
+Never call a command marked broken; use the working path instead.
+
+| Command | Status | Use instead |
+|---|---|---|
+| SAS upload (`/api/bridge/content/upload-url`) + `PUT Content.thumbnail` | ✅ Working | — (Options A/B above) |
+| `POST /api/bridge/ai/image/generate` → `azure_url` | ✅ Working | — (Option B) |
+| IG publish `metadata.coverUrl` | ✅ Server supports it (Graph `cover_url`) | — |
+| YouTube publish `thumbnailUrl` | ✅ Working (watch page/grid only) | — |
+| `POST /api/bridge/youtube/thumbnail` | ⚠️ Route exists, not yet verified live | Verify on watch page after |
+| `POST /api/bridge/compose-thumbnail-scene` | ⚠️ Builds a `design` thumbnail (hook lines over a video frame/image) and renders it. Installed builds before the 2026-11 release fail with `Cannot find module 'electron'` (fixed in source) | Code-built cover or Option A/B until the release ships |
+| `POST /api/bridge/compose-thumbnail` (AI w/ reference images) | ❌ Broken — proxies to `/api/mcp/compose-thumbnail`, which does not exist on the server | Option B |
+| `POST /api/bridge/thumbnail-from-editor` | ❌ Broken — depends on missing `/api/mcp/thumbnails/set` | Option A |
+| `GET /api/bridge/thumbnails`, `/thumbnails/restore`, `DELETE /thumbnails/:id` | ❌ Broken — server returns 404 | Keep your own copies |
+
+`compose-thumbnail-scene` body (once released): required `contentId`, `hookLines` (1–3 strings), `backgroundSource` = `{type:"videoFrame", seekTimeSec}` or `{type:"image", url|filePath|assetId|base64}`; optional `overlayScreenshot` (`opacity` default 0.22), `style` (`instagram`/`youtube`/`podcast`), `aspectRatio` (`9:16`/`16:9`/`1:1`), `pretextLabel`, `hookAccentColor`, `pillColor`, `showPill`, `badgeText`, `setAsThumbnail` (default `true`), `designOverride`, `description`.
+
 ---
 
 ## Job Management
