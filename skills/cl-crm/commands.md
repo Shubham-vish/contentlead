@@ -242,6 +242,14 @@ Side effect: **no**.
         "deals_brand",
         "deals_campaign"
       ]
+    },
+    "from": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "to": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
     }
   },
   "required": [],
@@ -2189,6 +2197,14 @@ Side effect: **no**.
         "deals_brand",
         "deals_campaign"
       ]
+    },
+    "from": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "to": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
     }
   },
   "required": [],
