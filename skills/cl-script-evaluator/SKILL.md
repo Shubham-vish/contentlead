@@ -1,6 +1,6 @@
 ---
 name: cl-script-evaluator
-description: Evaluate scripts for viral potential, write viral scripts from scratch, and improve existing scripts. Applies the shared `cl-virality-scoring` brain (8-signal framework) to written content BEFORE it's ever filmed.
+description: Evaluate scripts for viral potential, write viral scripts from scratch, and improve existing scripts. Use for "write a hook", "evaluate/score this script", "rewrite this reel script", two-character skit or dialogue scripts, Hinglish reel scripts, and script-backwards writing. Applies the shared `cl-virality-scoring` brain (8-signal framework) to written content BEFORE it's ever filmed.
 tags: script, writing, evaluation, viral, hooks, copywriting, content-strategy, scoring, rewrite
 ---
 
@@ -174,6 +174,66 @@ CLOSE (70-85s):
 [End with highest-impact item or callback to hook]
 ```
 
+#### Template E: Two-character skit / misconception → correction (25-45s)
+
+Adapted from the POV/Skit structure in `coreyhaines31/marketingskills` (MIT) and
+straight-man/comic craft. One character holds the viewer's belief or feeling;
+the other answers it. Their gap is the engine.
+
+```
+BELIEF (0-3s):   Character A states what the VIEWER already believes or feels,
+                 in their words. No name/greeting as the first word.
+CONTRADICT (3-5s): Character B contradicts in 2-4 words ("That's the trap.").
+HEIGHTEN (5-25s): 2-4 short exchanges. A defends; B exposes the flaw with ONE
+                 concrete number/example. "But/then" beats, never a lecture.
+                 Let A do the arithmetic or reach the realisation where possible.
+PUNCHLINE (25-40s): The reframe as one quotable line (B, or A's "oh no" moment).
+END:             The earned emotional/comic beat. Any comment-keyword or follow
+                 ask goes in the caption/end card, not the dialogue.
+```
+
+---
+
+## Writing Workflow — Script Backwards
+
+1. Write the **payoff line first** (the reframe/punchline you want screenshotted).
+2. Draft **3-5 candidate hooks** that tease that payoff without giving it away;
+   pick one *stop-scroll* opener (negation, specificity, question, the viewer's
+   own belief) and plan one *retention* beat (story, confession, emotion) by ~5s.
+3. Seed **one open question** early; answer it only near the end.
+4. Fill the middle with the fewest beats that make the payoff land. One concept
+   per video; explain any jargon in the very next line.
+5. Line test, for every line (from `marketingskills` copywriting, MIT): can the
+   viewer picture it? could it be proven true/false? could a competitor say this
+   exact sentence? Cut or rewrite lines that fail.
+6. **Send test:** name the one person a viewer would forward it to.
+7. Count words of the version that will actually be voiced (~2.7 words/sec)
+   before any TTS/render, and cut to budget.
+
+### No AI tells (narration, captions, on-screen text)
+
+Adapted from `coreyhaines31/marketingskills` (MIT). Scan and remove:
+- Self-answered questions / colon reveals: "The result? 3x faster."
+- Negation lists: "No X, no Y, no Z."
+- Trailing pile-on clauses that restate the claim.
+- Stock phrases: "Here's the thing", "Unlock the power of", "Say goodbye to",
+  "In today's fast-paced world", "game-changer".
+- Engagement bait with no earned beat: "Let that sink in", spoken "Comment X".
+- Over-explaining: a character repeating what the viewer just saw or computed.
+
+Exception: in dialogue, a character flatly contradicting another ("That's a
+myth.") is the format's core move, not an AI tell. Apply the list to narrator
+and copy voice; apply judgement to character lines.
+
+### Optional language pack: Hinglish (Indian audiences)
+
+Choose the language per series and A/B test it; don't assume Hinglish wins.
+When used: hook and emotion in Hinglish, technical term in English with an
+instant Hindi reframe, rupee amounts and Indian references, CTA in Hinglish.
+Numbers are spoken in English ("seventy-five rupees", "ninety-one percent"), never
+Hindi number words; for TTS write them as English words in Latin, not digits.
+Never transliterate English lines word-for-word.
+
 ---
 
 ## Hook Library — Proven Patterns
@@ -216,8 +276,9 @@ CLOSE (70-85s):
 - Speaking pace: 160-180 words per minute (fast but clear)
 - Captions are MANDATORY (85% watch without sound)
 - End with a loop-friendly moment (seamless restart = algorithm boost)
-- Engagement prompt: "Comment [X] if you agree" / "Save this for later"
-- Optimal length: 45-60s (completes in one watch, algorithm favors >50% watch-through)
+- Engagement prompt: in the caption or on-screen end card ("Comment GUIDE"); a spoken ask only when it's the format's natural close
+- Optimal length: 45-60s in large-N engagement studies; this is correlation across all Reels, not a target. Every line must earn its place; past ~60s, justify the length explicitly
+- The opening frame should carry the hook visually and as on-screen text as well as in voice: check this at render, not when scoring the script
 ```
 
 ### YouTube Shorts (30-60s)
@@ -259,7 +320,7 @@ CLOSE (70-85s):
 
 ```
 1. USER provides script (or topic for writing)
-2. EVALUATE — Score all 8 signals
+2. EVALUATE — Score all 8 signals on the version that will actually be voiced, anchored (see `cl-virality-scoring` Calibration)
 3. IDENTIFY — Top 3 weaknesses with highest improvement potential
 4. REWRITE — Provide 2-3 alternatives for each weak section
 5. RE-EVALUATE — Score the improved version
@@ -286,3 +347,12 @@ When a script has already been filmed and you're extracting clips:
 3. **Post-film extraction**: Use the `cl-ai-clipping` skill with the virality scores as priors — segments you pre-identified as viral in the script should get a scoring bonus when found in the transcript
 
 This creates a **feedback loop**: script evaluation → filming → clip extraction → performance data → better script evaluation next time.
+
+## Post-publish loop (before writing the next script in a series)
+
+Pull Instagram insights for the last reel and record them next to its script:
+- **Skip rate / 3-second hold** → if poor, fix frame 0 and the first line.
+- **Average watch time vs length** → find the beat where viewers left; cut that kind of beat next time.
+- **Sends per reach** → high likes but low sends means the ending needs a "send this to X" moment.
+
+Use Instagram's own metrics, not YouTube Shorts retention rules of thumb (e.g. "90% retention"). One reel proves nothing; change one variable at a time.

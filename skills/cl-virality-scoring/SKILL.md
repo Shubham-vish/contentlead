@@ -30,7 +30,7 @@ output shape) differs and lives in that consumer's own doc.
 Before scoring, classify. This changes which signals matter most.
 
 ```
-Content Type: podcast | interview | tutorial | lecture | commentary | debate | vlog | story | other
+Content Type: podcast | interview | tutorial | lecture | commentary | debate | vlog | story | dialogue-skit | other
 Content Density: low (filler/chit-chat) | medium | high (dense info/stories)
 ```
 
@@ -195,6 +195,38 @@ De-emphasize: Practical value (×0.5)
 Hook style: Drop into the middle of the story (in medias res)
 ```
 
+### Two-character dialogue / skit
+```
+Boost:      Hook moments (×1.4), Emotional peaks (×1.3), Story arc (×1.3)
+Secondary:  Quotable lines (the punchline), Opinion bombs (one character's hot take)
+De-emphasize: Revelation (×0.7) unless the correction itself is the surprise
+Hook style: Line 1 voices the VIEWER's own belief; line 2 contradicts it in 2-4 words
+Special:    Score the CONTRAST between characters. One holds the belief/feeling,
+            the other corrects or answers it. If both reason alike, Story arc ≤ 40.
+            Penalise the expert "doing the maths for the viewer" or lecturing for
+            more than one beat: the correction should be a reframe, not a lesson.
+            Arc: setup → belief stated → heighten → punchline/correction.
+```
+
+---
+
+## Calibration — score what ships, and anchor before you score
+
+Scores drift upward when unanchored. Before scoring:
+
+1. **Score the version that is actually voiced/rendered** (e.g. the production
+   `script.json`), not an earlier reviewed draft. If they differ, score both and
+   flag the gap: it is a process failure, not a writing-taste issue.
+2. **Anchor against known outcomes.** Score one proven hit and one known flop in
+   the same format first, then place the new script relative to them. Without
+   anchors, report the score as unanchored. (Example from a dialogue-reel audit:
+   the 1.2M-view reel scored ~78, two niche reels ~68, our unpublished drafts
+   81-88 by an unanchored reviewer but 51-64 when re-scored honestly.)
+3. **Separate script quality from distribution factors** the script can't control:
+   recognisable faces/characters, account size, topic breadth, language.
+   Name them next to the score; never fold them silently into a signal.
+4. Report scores as a range (± ~8) and never as a view prediction.
+
 ---
 
 ## Step 5 — Quality Checklist
@@ -206,6 +238,9 @@ Before finalizing any score, verify:
 - [ ] **Context test** — a cold viewer understands it without prior context
 - [ ] **Emotion test** — at least one genuine feeling is triggered
 - [ ] **Screenshot test** — at least one line is quotable on its own
+- [ ] **Send test** — name the one specific person a viewer would forward this to. Sends per reach drive reach beyond followers on Instagram (Mosseri); likes mostly reflect existing followers
+- [ ] **Open-loop test** — a question is raised early and answered only near the end
+- [ ] **Calibration test** — scored the shipped version, against anchors (see Calibration)
 - [ ] **Virality test** — composite score ≥ 60 (below 60 = probably not viral-worthy)
 
 ---
