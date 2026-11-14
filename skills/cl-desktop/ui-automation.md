@@ -602,6 +602,10 @@ ContentLead specifics:
 - Password/OTP/payment fields and `data-agent-human-only` controls are never read, filled, selected or recorded (`UI_HUMAN_ONLY` / masked with a warning): the person must do those steps.
 - Without `ui-dialog`, nothing changes: ContentLead keeps a page whose `beforeunload` blocks unload (and cancels a pending quit).
 
+## Capabilities
+
+The app ships a code-level policy (`electron/main/automation-policy.cjs`, shared engine in `lead-desktop-automation`) that turns action groups on or off: observe, control, record, text, codegen, demo-browser, network-capture, scrape, network-mock, eval, os-input, payments. Rules can limit a group to an AI control level, a date range or daily time windows. `ui-capabilities` (read-only, never gated) lists each group, its rule and whether it is allowed right now. Groups marked unavailable are hidden from the catalog. Session actions (`ui-enable`, `ui-disable`, `ui-status`, `ui-resume`, `ui-level-lower`, `ui-log`) always work.
+
 ## Errors
 
 | Code | Meaning / recovery |
@@ -623,6 +627,7 @@ ContentLead specifics:
 | `UI_DEBUGGER_BUSY` | A non-DevTools debugger is attached (DevTools itself is closed and reopened automatically) |
 | `UI_LEVEL_REQUIRED` | Action needs a higher AI control level → ask the person (Help ▸ AI control) |
 | `UI_LEVEL_RAISE_FORBIDDEN` | Agents can only lower the level |
+| `UI_CAPABILITY_OFF` | The app's shipped capability policy blocks this action group (`details.capability`, `details.reason`: off, restricted, not-yet, expired, outside-window, owner, level). Call `ui-capabilities` to see what is allowed now; do not retry or work around it |
 | `UI_PAYMENT_CONFIRM_REQUIRED` / `UI_PAYMENT_CAP_EXCEEDED` / `UI_PAYMENT_AMOUNT_UNKNOWN` | Payment rules (full only) |
 | `UI_EVAL_*` | `ui-eval` timeout, throw or bad result |
 | `OS_*` | OS input: permission, secure input, out of bounds, unsupported platform |
