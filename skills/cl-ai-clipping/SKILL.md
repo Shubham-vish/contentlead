@@ -27,6 +27,8 @@ Source Video → Transcribe → Score Virality → Extract Clips → Reframe 9:1
 
 ## Prerequisites
 
+- Load `cl-editor/workflow-readiness.md`: pin every command to the intended
+  tab/content, verify hydration, and keep source-only audits offline.
 - ContentLead Desktop running (follow `cl-editor` startup protocol)
 - Source video file accessible (in ~/Movies, ~/Downloads, ~/Desktop, ~/Documents, ~/Codes)
 - Editor open with a project loaded
@@ -38,7 +40,7 @@ Source Video → Transcribe → Score Virality → Extract Clips → Reframe 9:1
 | Import | `POST /api/media/import` | Import source video |
 | Analyze | `POST /api/media/analyze` | Get duration, resolution, fps |
 | Transcribe | `editor.autoCaption` | Get word-level transcript |
-| Poll status | `query.getTranscriptionStatus` | Wait for transcription |
+| Inspect transcript state | `query.getTranscriptionStatus` | Renderer/UI state; not the native auto-caption job status |
 | Read transcript | `query.getTranscript` | Get timestamped words/segments |
 | Create clip project | `POST /api/content/create` | New project per clip |
 | Resize canvas | `editor.resize` | Set to 1080×1920 (9:16) |
@@ -83,7 +85,7 @@ You need a project with the source video loaded to run autoCaption:
 }}
 
 // Run auto-caption (triggers Whisper transcription)
-{"type": "editor.autoCaption", "params": {"language": "en"}}
+{"type": "editor.autoCaption", "params": {"trackItemId": "<source-video-item-id>", "language": "en"}}
 ```
 
 Include the resolved `tabId` on these `/api/execute` envelopes. For each clip
@@ -91,13 +93,14 @@ project, explicitly declare a source track and reuse its returned track ID for
 additional segments; project creation is not timeline persistence. Verify media
 placement and captions, reorder tracks, then `editor.save` before rendering.
 
-### 1.3 Poll for completion
+### 1.3 Verify native completion
 
-```json
-// Poll until transcription finishes
-{"type": "query.getTranscriptionStatus", "params": {}}
-// Wait for: isAnyProcessing: false, status: "completed", wordCount > 0
-```
+Desktop-native `editor.autoCaption` waits for completion and returns a receipt
+including `jobId`, `captionCount`, `trackId`, `transcriptPersisted` and
+`transcriptWordCount`. Inspect it, then read the persisted transcript.
+`query.getTranscriptionStatus` describes renderer/UI transcription state, not
+this native job. There is no native auto-caption status/cancel HTTP endpoint;
+an uncertain timeout requires reconciliation, never automatic resubmission.
 
 ### 1.4 Read the transcript
 
@@ -442,11 +445,13 @@ For each selected highlight, create a separate editor project:
 ```bash
 curl -s -X POST "http://127.0.0.1:$PORT/api/content/create" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"title": "Clip 1 — The One Thing Nobody Tells You", "description": "Score: 87 | Hook: forbidden-knowledge opener"}'
-# → {contentId, navigated: true}
+  -d '{"title": "Clip 1 — The One Thing Nobody Tells You", "description": "Score: 87 | Hook: forbidden-knowledge opener", "navigate": false}'
+# Preserve contentId, then explicitly open it with POST /api/tabs/new {contentId}.
 ```
 
-**⚠️ Wait 10-12 seconds after navigation for DB content to load** (race condition — the editor page navigates before Cosmos content finishes loading; poll `query.getEditorState` / editor summary and confirm the project/canvas is present before adding items).
+Poll `query.getProjectReadiness` on the returned tab with the expected content ID.
+Require matching hydrated content and `readyForWrites:true` within a bounded
+deadline; a fixed sleep or visible canvas is not proof of content readiness.
 
 ### 3.2 Set up canvas for vertical
 
@@ -470,9 +475,13 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/content/create" \
 The `trim` values are in milliseconds — they select the source time range.
 `from: 0` places the clip at the start of the new project's timeline.
 
-### 3.3b Editorial Tightening (MANDATORY)
+### 3.3b Review Editorial Tightening
 
-**Before reframing or adding captions**, tighten the clip by removing filler content, dead air, and low-value speech. This is a separate phase documented in [`editorial-tightening.md`](./editorial-tightening.md).
+**Before reframing or adding captions**, review possible cuts without changing
+meaning or removing intentional reactions. Apply only approved proposals;
+the heuristics in [`editorial-tightening.md`](./editorial-tightening.md) are not
+unconditional deletion instructions. Prefer the preview/token/approval workflow
+in `cl-production` for supported sources.
 
 **Summary of what to cut:**
 1. **Silence gaps > 0.4s** → cut, keep 150ms breath
@@ -541,7 +550,7 @@ For v1 or when face detection isn't needed, use a static center crop. Works for 
 **Or use fill-canvas scaling** (scales video to fill vertical frame, crops sides):
 ```json
 {"type": "editor.editItem", "params": {
-  "id": "<videoItemId>",
+  "itemId": "<videoItemId>",
   "updates": {"details": {
     "crop": null,
     "width": 3413, "height": 1920, "left": -1167, "top": 0
@@ -570,7 +579,11 @@ cropY = 0
 
 **Option A (Preferred — when you have diarization word data):**
 
-If you ran `query.transcribeWithSpeakers` in Phase 1.5, you already have word-level timestamps. Use them directly — no need for a second transcription:
+If you ran `query.transcribeWithSpeakers` in Phase 1.5, you already have source
+word timestamps. For an unchanged contiguous trim, subtract `clip_start` below.
+After tightening, map each retained word through the actual kept segments to
+its new timeline position; source timestamps minus one offset will drift after
+the first cut. Do not reuse this simple example on a tightened timeline.
 
 ```python
 # Filter speakerTranscript.words[] for this clip's time range
@@ -588,10 +601,12 @@ subtitles = build_captions_from_words(clip_words, clip_start)
 Run a fresh transcription on just this clip's audio:
 
 ```json
-{"type": "editor.autoCaption", "params": {"language": "en"}}
+{"type": "editor.autoCaption", "params": {"trackItemId": "<actual-clip-item-id>", "language": "en"}}
 ```
 
-Wait for transcription to complete (poll `query.getTranscriptionStatus`).
+Inspect the native completion receipt as in §1.3. For multiple retained segments,
+target actual supported items and verify each caption range; this is not an
+implicit whole-project transcription.
 
 **⚠️ NEVER use proportional word timing from turn-level dialogue data.** See the critical warning in Phase 1.5.
 
@@ -600,6 +615,9 @@ Wait for transcription to complete (poll `query.getTranscriptionStatus`).
 ```json
 {"type": "editor.save", "params": {}}
 ```
+Require `result.saved:true`, matching `contentId`, `currentDesignSaved:true`,
+`newerChanges:false` and `activeContentChanged:false`; local autosave is not
+the cloud receipt. See `cl-editor/workflow-readiness.md`.
 
 ---
 
@@ -609,13 +627,13 @@ Wait for transcription to complete (poll `query.getTranscriptionStatus`).
 
 ```
 For each highlight (sorted by score, highest first):
-  1. POST /api/content/create → new project
-  2. Wait 10-12s for DB load
+  1. POST /api/content/create {navigate:false} → new project; explicitly open its tab
+  2. Verify bounded tab/content hydration and write readiness
   3. editor.resize → 1080×1920
   4. editor.addVideo with trim → place trimmed clip
   5. editor.cropItem → vertical reframe
   6. editor.autoCaption → add captions
-  7. Wait for transcription
+  7. Inspect native completion receipt and caption timing
   8. editor.save
   9. POST /api/render → export MP4
   10. Move to next clip
@@ -642,7 +660,7 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/tabs/<tabId>/activate" \
 # Render current project
 curl -s -X POST "http://127.0.0.1:$PORT/api/render" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"renderType": "design", "data": "<design object from project.getFullState>", "contentId": "<clipContentId>", "uploadToCloud": true}'
+  -d '{"renderType": "design", "data": "<design object from project.getFullState>", "contentId": "<clipContentId>", "uploadToCloud": false}'
 
 # Poll render status
 curl -s "http://127.0.0.1:$PORT/api/render/<jobId>" -H "Authorization: Bearer $TOKEN"
@@ -680,7 +698,7 @@ Here's the full agent thought process for a 45-minute podcast:
 
 4. RENDER
    - Render each clip to MP4
-   - Upload to cloud
+   - Upload to cloud only if separately requested/approved
    - Report results to user
 ```
 

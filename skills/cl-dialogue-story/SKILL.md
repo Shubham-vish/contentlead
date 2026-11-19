@@ -18,7 +18,11 @@ tags: dialogue, story, storytelling, viral, reel, short, modi, rahul, two-charac
 > Historical manual media snippets below are payload fragments: add explicit
 > track intent and follow the current readiness guide, not implicit routing.
 
-> **⚙️ Is the ContentLead app running?** These calls need `~/.skilltown-desktop/api.json`. If it is missing, the desktop app is not running — start it, then wait ~30s for the file: **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`. Full OS-aware detect/start/poll (Linux + dev too): see `cl-editor/infrastructure.md` → "Ensure the ContentLead desktop app is running". Only ask the user if it still does not come up.
+> **Connection gate:** Follow `cl-editor/infrastructure.md` for fresh private
+> discovery and bounded authenticated health checks. Missing discovery is not
+> proof that the app is stopped; file presence is not readiness. Launch only
+> when the task authorizes it, never for a source-only audit. Do not reload,
+> switch origins or contact providers merely to check these instructions.
 
 Turn a **tiny dialogue script** into a finished vertical reel — with character voices,
 word-level subtitles in correct Latin script, AI-chosen context images timed to the
@@ -38,17 +42,18 @@ one-shot MoviePy render.
 
 The original's predictability came from **two** things, and we keep both:
 
-1. **The content formula** (viral hooks, 12-dialogue myth-bust arc, character roles,
-   topic selection) — captured verbatim in `script-schema-and-formula.md`.
+1. **An explicit content plan** — define the hook, character roles, topic and
+   dialogue arc in your script. The public example supplies the JSON shape;
+   personal tuned formulas are not a public dependency or a virality guarantee.
 2. **Deterministic execution** — the same stages, in the same order, with the same
    AI prompts and the same composition rules — captured in `pipeline-stages.md`,
-   `ai-prompts.md`, `remotion-composition.md`, and enforced by `orchestrator/run.mjs`.
+   `orchestrator/prompts.example.mjs`, `remotion-composition.md`, and implemented
+   by `orchestrator/run.mjs`. Model outputs themselves are not deterministic.
 
-We only **replace the renderer**. Everything that made it work (same Minimax voices,
-same WhisperX-class word timing, same Tavily image search, same GPT prompts) is reused
-via ContentLead's bridges. The upgrade: Remotion characters animate with real springs,
-subtitles become styled karaoke captions, images get transitions, and the whole thing
-stays editable on the timeline afterward. **Same virality logic, strictly richer output.**
+The public pipeline reuses the stage structure through ContentLead's current
+voice, transcription and image bridges; it does not ship the original personal
+voices or exact tuned prompts. Remotion adds animated characters, styled karaoke
+captions and editable timeline layers. Quality and engagement still need review.
 
 > **Virality scoring:** clip/segment selection uses the shared **`cl-virality-scoring`** skill
 > (8-signal 0-100 rubric). Load it when deciding which dialogue moments to keep or lead with.
@@ -58,8 +63,8 @@ stays editable on the timeline afterward. **Same virality logic, strictly richer
 **Both.** Docs alone would let the AI drift run-to-run and you'd lose predictability.
 So this skill ships:
 
-- **Playbook docs** — the ported rules and schemas (the "what/why"). The exact
-  prompts + tuned viral formula are kept in the **private overlay** (see below).
+- **Playbook docs** — generic rules and schemas (the "what/why"), with public
+  prompt templates rather than personal tuned formulas.
 - **A runnable, resumable orchestrator** (`orchestrator/run.mjs`) — the "how",
   executed identically every time (the "code flow").
 - **A reusable Remotion scene** (`orchestrator/scenes/DialogueCharacter.tsx`) — the
@@ -70,33 +75,24 @@ deterministic JS + prompts wired to our live endpoints.
 
 ## Public vs Private (this skill is shipped publicly)
 
-Nothing personal lives in the tracked files. Personal data is loaded at runtime from a
-**gitignored private overlay** (`orchestrator/config.local.json`) and is never written
-back into scripts.
+Keep personal voices, art, working scripts and tuned formulas outside this public
+skill directory, in user-owned private storage. Ignore rules do not make a public
+skill folder an appropriate home for private documentation.
 
-| Stays PUBLIC (committed) | Stays PRIVATE (gitignored, per-user) |
-|--------------------------|--------------------------------------|
-| Generic docs, `run.mjs`, `lib/`, `scenes/`, `config.example.json`, `prompts.example.mjs`, `scripts/example.dialogue.json` (characters carry only `side`) | `config.local.json` (your cloned **voice IDs**, character **art paths**, default **background**) |
-| The generic pipeline + technique | `assets/characters/*` (character **likenesses** — copyright/likeness) |
-| | `prompts.local.mjs` (your **tuned viral prompts** — competitive IP) |
-| | `ai-prompts.md` + `script-schema-and-formula.md` (the **exact prompts + 12-dialogue formula**) |
-| | Your working `scripts/*.json` (accumulate personal generated asset URLs) |
-
-**Your one-time personal setup:**
+**Your one-time setup (use an existing private directory):**
 ```bash
-cd orchestrator
-cp config.example.json config.local.json   # gitignored — your voice IDs, art paths, bg
-cp prompts.example.mjs  prompts.local.mjs  # gitignored — refine the tuned wording
+cp orchestrator/config.example.json /absolute/private/path/dialogue-config.json
+# Fill only authorized voice IDs and asset paths, then pass --config on real runs.
 ```
-`run.mjs` auto-loads `config.local.json` (override with `--config <path>` or env
-`DIALOGUE_STORY_CONFIG`) and prefers `prompts.local.mjs` over `prompts.example.mjs`.
-Public scripts reference characters by name only; the overlay fills voice + art.
+`run.mjs` accepts `--config <path>` or `DIALOGUE_STORY_CONFIG`; config values
+fill missing voice/art without being copied into the script. Generated stage
+outputs **are** written to the working script, so keep that script private too.
+Legacy in-folder `config.local.json` and `prompts.local.mjs` loading remains
+supported by the helper; do not create new private material there. The public
+helper has no external prompt-module option: use its generic
+`prompts.example.mjs`, rather than claiming it loads an external tuned formula.
 Background is **optional** — set it only when a story needs a gameplay backdrop;
 otherwise the bg layer is skipped.
-
-> **Backing up the private files:** they're `.gitignore`'d from the public repo, so
-> commit them to your **private full-mirror repo** for cross-PC sync (see
-> `orchestrator/PRIVATE-MIRROR.md`).
 
 
 
@@ -136,16 +132,17 @@ Full details, resumability logic, and exact command payloads: **`pipeline-stages
 
 | Doc | Contents |
 |-----|----------|
-| `script-schema-and-formula.md` | **(private)** Script JSON schema, the 12-dialogue viral formula, character roles, hook/CTA/topic IP — gitignored, in your private mirror |
+| `orchestrator/scripts/example.dialogue.json` | Public script JSON example; copy to private working storage before generation |
 | `pipeline-stages.md` | Stage-by-stage: exact endpoint, args, resumability field, ported rules, fallbacks |
-| `ai-prompts.md` | **(private)** The exact tuned prompts — gitignored, in your private mirror. Public template of the prompt *shapes*: `orchestrator/prompts.example.mjs` |
+| `orchestrator/prompts.example.mjs` | Public generic prompt templates; no personal formula required |
 | `remotion-composition.md` | The 5-layer composition rules ported from `editor_agent.py` + the Remotion upgrades (character scene, karaoke subs, timed images, title, camera) |
 
 ## ⭐ Verified voice recipe (do this first, never skip)
 
 > # ⚠️ AUDIO ORDER RULE — READ THIS FIRST ⚠️
-> **Preferred in-app flow:** Generate → place RAW audio on timeline → add captions /
-> linked visuals → `editor.removeSilence { apply:true, cascadeLinkedTracks:true }`.
+> **Preferred in-app flow:** Generate → audition RAW audio → place approved audio
+> → add captions / linked visuals. Only if tightening is requested: dry-run
+> `editor.removeSilence`, review the cuts, then apply with explicit ripple scope.
 >
 > **Offline Python flow:** Generate → PROCESS (trim + boost) → place on timeline →
 > THEN caption from the processed file.
@@ -164,22 +161,23 @@ Full details, resumability logic, and exact command payloads: **`pipeline-stages
 
 The single most important correctness rule in this pipeline:
 
-1. **Voices = CLONED voices** (`voice_type: voice_cloning`), set in `config.local.json`:
-   Modi `moss_audio_c7d1738a-7b38-11f0-9359-4e72c55db738`, Rahul `RahulVoice_003`.
-   System/preset voices sound wrong — always use the clones.
+1. **Voices = authorized choices**, discovered through `cl-voice` and supplied
+   in the private config. A clone requires permission to reproduce that voice;
+   public examples do not supply personal clone IDs or authorize impersonation.
 2. **TTS text = the Devanagari `sentence`**, sent DIRECTLY. Hindi in देवनागरी, only real
    English/tech words in Latin. Never romanize the audio input. (`latin` is caption-only.)
 3. **Call:** `POST /api/bridge/voice/generate` (Bearer auth) `{ text, voice_id, speed:1.0, format:"mp3" }`
    → `{ audio_url, duration_seconds }`. Add with `editor.addAudio {src,from,volume:95}`,
    first line at `from:0`, each next at the running sum of prior durations.
-4. **Preferred gap removal:** add captions / character images / b-roll as linked
-   timeline items, then call `editor.removeSilence` on each dialogue audio item with
-   `apply:true, cascadeLinkedTracks:true`. This removes internal gaps and keeps all
-   linked caption/image timing synced automatically.
+4. **Optional gap removal:** preserve raw takes and natural breaths. If requested,
+   preview cuts with `apply:false`, listen, then apply only approved cuts with an
+   explicit `rippleScope`. `cascadeLinkedTracks:true` alone leaves the default
+   scope at `all`, which can shift unrelated later items.
 5. **Offline/pre-import option:** if you are composing from files before timeline
-   import, run the downloaded mp3 through the **voice** skill's
-   `scripts/process_dialogue_audio.py` BEFORE `editor.addAudio`. This is the ported
-   TlEditingSolution audio prep (silence trim −40 dBFS / 100 ms + normalize + 13 dB).
+   import and cleanup is approved, process a copy using the **voice** skill's
+   `scripts/process_dialogue_audio.py` BEFORE `editor.addAudio`. Its legacy
+   −40 dBFS / 100 ms / +13 dB defaults can remove breaths or clip audio; follow
+   `cl-voice` §3b rather than applying those defaults automatically.
    **Re-read the processed clip's duration** (it shrinks after trimming) and use THAT
    for the running offset. See the **voice** skill §3b for flags (`--boost-db`,
    `--max-gap-ms`, `--no-normalize`).
@@ -244,12 +242,12 @@ curl -sX POST "$API/api/execute" -H "$AUTH" -H "Content-Type: application/json" 
 > file is rewritten on app restart AND on origin switch (the port rotates).
 
 ```bash
-# Port + token
-eval "$(node -e '
-  const c=require(require("os").homedir()+"/.skilltown-desktop/api.json");
-  console.log(`export API=http://127.0.0.1:${c.port}\nexport TOKEN=${c.token}`);')"
+# Read privately; no eval or discovery JSON output.
+PORT=$(node -e 'const c=require(require("os").homedir()+"/.skilltown-desktop/api.json");process.stdout.write(String(c.port))')
+TOKEN=$(node -e 'const c=require(require("os").homedir()+"/.skilltown-desktop/api.json");process.stdout.write(c.token)')
+export API="http://127.0.0.1:$PORT"
 export AUTH="Authorization: Bearer $TOKEN"
-curl -s "$API/api/health" -H "$AUTH" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const d=JSON.parse(s);console.log("ok:",d.ok??true,"| cloud.auth:",d.cloud?.authenticated)})'
+curl --max-time 5 -fsS "$API/api/health" -H "$AUTH" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const d=JSON.parse(s);console.log("ok:",d.ok??"unknown","| cloud.auth:",d.cloud?.authenticated??"unknown")})'
 # Voices + AI need a signed-in cloud session. If cloud.authenticated is false → sign in inside ContentLead first.
 ```
 
@@ -258,11 +256,13 @@ curl -s "$API/api/health" -H "$AUTH" | node -e 'let s="";process.stdin.on("data"
 ```bash
 # The public example has placeholders; supply your own authorized voices/assets.
 # Choose the existing intended tab/content explicitly. Obtain paid-action approval first.
-node orchestrator/run.mjs orchestrator/scripts/example.dialogue.json \
+node orchestrator/run.mjs /absolute/private/path/story.dialogue.json \
+  --config /absolute/private/path/dialogue-config.json \
   --tab-id <chosen-tab> --content-id <chosen-content>
 
 # Author your own: copy the example, edit dialogues + characters, then run it.
-# Re-run only one stage: delete its output field from the JSON and run again.
+# --only <stage> selects a stage; it does not authorize replay.
+# Reconcile saved outputs/paid attempts before any approved rerun; do not delete flags blindly.
 # Fully offline generic stage plan: no discovery/token/private overlay, no script writes.
 node orchestrator/run.mjs orchestrator/scripts/example.dialogue.json --plan
 
@@ -283,8 +283,9 @@ source/mock contracts, not actual voices, caption timing/quality, output pixels,
 cloud save/reopen or installed/deployed renderer compatibility. The helper stops
 after composition; review/save/render via `cl-editor/workflow-readiness.md`.
 
-The orchestrator prints each stage, skips completed ones, and stops on the first
-failure with the exact endpoint + payload it tried (so it's debuggable). It drives:
+The orchestrator prints stage progress and skips completed outputs. Some AI
+stages have fallback behavior; inspect their outputs rather than treating a
+completed flag as quality proof. Keep diagnostic payloads private. It drives:
 the **voice** bridge, the **cl-ai-media** AI bridge, and the **contentlead** editor
 commands — all already documented in their own skills; this skill orchestrates them
 in the proven order.
@@ -296,7 +297,7 @@ The characters, voices, topic and formula are all **data**, not code. Swap the
 two-hander: teacher↔student, founder↔skeptic, Elon↔Peter, etc. Extra character art
 already exists under `TlEditingSolution/CharImages/` (elon, peter, stewie, trump).
 Keep the **role contrast** (curious questioner vs. confident expert) — that contrast
-is what drives retention. See `script-schema-and-formula.md`.
+can help retention. Use the public script example; personal formulas are not shipped.
 
 ## 🎬 Live In-App Edit Playbook — Two-Character Reel (verified working)
 
@@ -306,8 +307,7 @@ Use this runbook when recreating the battle-tested two-character cl-dialogue-sto
 
 1. Read fresh connection data **every session** and after every app restart/origin switch:
    ```bash
-   cat ~/.skilltown-desktop/api.json
-   # → { "port": 54110, "token": "...", "mediaServerPort": 54109, "tabs": [...] }
+   # Parse privately as above; never print the token or whole discovery file.
    ```
    The API `port` rotates on app restart. Never hardcode it.
 2. Send all editor commands to:
@@ -351,7 +351,8 @@ Keep the inter-speaker gap light and natural: `120–200ms`, with `150ms` as the
 
 ### 3. Build order — follow exactly
 
-1. Clear the timeline:
+1. Start with a verified empty, intended project. Clear only when replacing its
+   contents was explicitly authorized; never clear an existing edit by default:
    ```json
    { "type": "editor.clearTimeline", "params": {} }
    ```
@@ -542,7 +543,9 @@ Recommended animation plan:
 
 Valid entrance presets include `fadeIn`, `scaleIn`, `scaleOut`, `slideInLeft`, `slideInRight`, `slideInUp`, `slideInDown`, `slideOutLeft`, `slideOutRight`, `zoomIn`, `zoomOut`. Default duration is `500ms`; use `350–420ms` for snappier reels.
 
-> Warning: `setAnimation` entrance animations currently do **not** persist through project save/restore reload. Re-apply all entrance animations after every reload.
+> Verify animation persistence through the current save receipt and an authorized
+> reopen. Historical reload failures are not proof of current behavior; inspect
+> state before reapplying, and never reload the shared app as an automatic repair.
 
 ### 6. Audio preprocessing and silence removal
 
@@ -596,7 +599,10 @@ For a dry run:
    ```json
    { "type": "editor.save", "params": {} }
    ```
-   Confirm `status: "success"`. Cloud save requires all `src` fields to be media-server/blob/HTTPS URLs rather than bloated local data URIs.
+   Require `saved:true`, matching `contentId`, `currentDesignSaved:true`,
+   `newerChanges:false` and `activeContentChanged:false` in `result`, following
+   `cl-editor/workflow-readiness.md`. Local autosave or `status:"success"` alone
+   is not proof that the current cloud design was saved.
 3. Seek and screenshot:
    ```json
    { "type": "editor.seekTo", "params": { "time": 6479 } }
@@ -610,11 +616,9 @@ For a dry run:
    GET /api/screenshot?tabId=<tabId>
    ```
    The response is JSON `{ "imageBase64": "..." }`; decode it to PNG if needed.
-4. If the preview frame looks stale right after edits, force a refresh by playing a short range:
-   ```json
-   { "type": "editor.previewRange", "params": { "from": 6400, "to": 7000 } }
-   ```
-   Avoid `query.capturePreviewFrame`; it has returned blank frames in this workflow.
+4. For timed video evidence use `query.previewFrameAt` with the chosen `tabId`
+   and `timeMs`; require `stabilized:true`, an image and successful media checks.
+   A screenshot after seeking or playing is not proof of frame stabilization.
 5. Every `/api/execute` response includes `editorHealth` and `warnings[]`. Treat the command as healthy only when:
    ```text
    editorHealth.status === "clean"
@@ -639,7 +643,7 @@ def cmd(type_, params):
     }
 
 commands = [
-    cmd('editor.clearTimeline', {}),
+    # Clear only a specifically approved replacement project, never by default.
     cmd('editor.addVideo', {
         'url': bg_url, 'from': 0, 'to': TOTAL,
         'trim': {'from': 0, 'to': TOTAL},
@@ -674,6 +678,6 @@ commands += [
 - Numeric `wordsPerLine` crashes the caption control. Use string enum values only.
 - Forgetting to fix gameplay video track priority hides characters and b-roll behind the video.
 - Using local file path `src`s can create data-URI bloat and make cloud save fail. Use media-server URLs.
-- Not re-applying `editor.setAnimation` after reload means entrance animations disappear.
-- Trusting a screenshot immediately after edits can show stale preview state. Force refresh with `editor.previewRange`.
+- Verify saved animation state before reapplying anything after an authorized reopen.
+- Trusting a screenshot immediately after edits can show stale preview state. Use stabilized `query.previewFrameAt` evidence.
 - Hardcoding the API port breaks after restart. Always re-read `~/.skilltown-desktop/api.json`.

@@ -56,7 +56,11 @@ Read it through the **desktop bridge** (owner-scoped by the signed-in session, `
 
 All calls go to the **local** ContentLead desktop bridge, which attaches the signed-in web session cookies for you. Read the discovery file each session — the port + token change on restart:
 
-> **⚙️ Is the ContentLead app running?** These calls need `~/.skilltown-desktop/api.json`. If it's missing, the desktop app isn't running — start it, then wait ~30s: **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`. Only ask the user if it still doesn't come up.
+> **Connection gate:** Follow `cl-editor/infrastructure.md` for fresh private
+> discovery and bounded authenticated health checks. Missing discovery is not
+> proof that the app is stopped; file presence is not readiness. Launch only
+> when the task authorizes it, never for a source-only audit. Do not reload,
+> switch origins or contact providers merely to check these instructions.
 
 ```bash
 API=$(node -e 'const c=require(require("os").homedir()+"/.skilltown-desktop/api.json");process.stdout.write("http://127.0.0.1:"+c.port)')

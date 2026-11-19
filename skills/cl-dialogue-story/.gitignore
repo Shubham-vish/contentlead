@@ -1,7 +1,6 @@
-# cl-dialogue-story — private competitive IP. Kept out of the PUBLIC repo.
-# These are the tuned viral formula + exact prompt docs. The public skill ships
-# the generic orchestrator + prompts.example.mjs; owners keep the tuned docs here
-# and back them up via the private full-mirror repo (see SKILL.md → Public vs Private).
+# Legacy filenames: retain these exclusions during an ownership-preserving migration.
+# New personal documentation belongs outside this public skill directory.
+# The public helper uses prompts.example.mjs and does not read these Markdown files.
 
 ai-prompts.md
 script-schema-and-formula.md

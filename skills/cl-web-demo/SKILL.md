@@ -1,6 +1,6 @@
 ---
 name: cl-web-demo
-description: "Record a polished demo of ANY website inside ContentLead Desktop: open it in the isolated Demo browser (tabId demo:main), take AI control, show the agent cursor/ripple/optional AI badge, highlight elements, record MP4 + events sidecar, then import into a ContentLead project and auto-place zoom punches and click SFX with camera.autoZoomFromEvents. USE FOR: website demo, product tour of any site, record a site walkthrough in ContentLead, demo browser, screen-record a URL with auto zoom. NOT the standalone Playwright/Remotion pipeline (my-demo-factory)."
+description: "Record a polished demo of ANY website inside ContentLead Desktop: open it in the isolated Demo browser (tabId demo:main), take AI control, show the agent cursor/ripple/optional AI badge, highlight elements, record MP4 + events sidecar, then import into a ContentLead project and auto-place zoom punches and click SFX with camera.autoZoomFromEvents. USE FOR: website demo, product tour of any site, record a site walkthrough in ContentLead, demo browser, screen-record a URL with auto zoom. NOT a standalone Playwright/Remotion pipeline."
 tags: demo, website, demo-browser, recording, auto-zoom, walkthrough, cursor, ui-automation
 ---
 
@@ -11,7 +11,8 @@ tags: demo, website, demo-browser, recording, auto-zoom, walkthrough, cursor, ui
 > - UI actions: [`cl-desktop/ui-automation.md`](../cl-desktop/ui-automation.md), sections "Demo browser" and "Recording"
 > - editor commands: [`cl-editor`](../cl-editor/SKILL.md), with auto-zoom in `cl-editor/animations-and-effects.md`
 >
-> Want a standalone CLI pipeline with assertions, a PDF and subtitles instead? Use [`my-demo-factory`](../my-demo-factory/SKILL.md).
+> A standalone CLI pipeline with assertions, PDF output and subtitles is outside
+> this skill's in-app Demo browser scope.
 
 ## Ground rules
 - **Connect** with `cl-desktop` steps 1–4: read `~/.skilltown-desktop/api.json` privately and never print the token.
@@ -86,7 +87,7 @@ ex '{"tabId":"<editorTab>","type":"camera.autoZoomFromEvents","params":{"itemId"
 
 ### 7. Save and verify
 - Run `editor.save`, then confirm the saved state via `GET /api/bridge/content/<id>` (zoom keyframes and SFX present).
-- Render through `cl-editor/rendering`, and check frame 0 / the cover before publishing (`my-cl-publishing`).
+- Render through `cl-editor/rendering`, and check frame 0 / the cover before publishing (`cl-content-publishing`); preserve the creator's approved publishing preferences.
 
 ## Scrape data / inspect a site's API calls
 The details are in `cl-desktop/ui-automation.md`, section "Scraping and network capture (Demo browser)". All of these

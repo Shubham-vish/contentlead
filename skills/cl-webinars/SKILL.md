@@ -108,15 +108,17 @@ Intentionally **not** exposed: room join (LiveKit tokens), LiveKit webhook, VM q
 
 ### Show the user what you built (open the page in the app)
 
-After creating or changing something, **open the matching page in the ContentLead app** so the user sees the real UI (paths only; external URLs are blocked):
+When the task includes showing the result, open the matching page in an explicitly
+chosen meetings tab or a new tab. Do not replace an unrelated editor or navigate
+during a source-only audit (paths only; external URLs are blocked):
 
 ```bash
-curl -s "${H[@]}" -X POST "$API/api/navigate" -d '{"url":"/meetings/<eventId>/manage?tab=broadcast"}'
+curl -s "${H[@]}" -X POST "$API/api/tabs/<chosenTabId>/navigate" -d '{"url":"/meetings/<eventId>/manage?tab=broadcast"}'
 # new tab instead of replacing the current one:
 curl -s "${H[@]}" -X POST "$API/api/tabs/new" -d '{"url":"/meetings/<eventId>/manage?tab=overview","activate":true}'
 # check what the user sees (works on every page, not only the editor; needs app ≥1.0.44):
-curl -s "${H[@]}" "$API/api/screenshot?save=1"                          # → {path:"~/.skilltown-desktop/screenshots/shot-….png"} — open it with the view tool
-curl -s "${H[@]}" "$API/api/screenshot?fullPage=1&save=1&format=jpeg&maxWidth=1400"   # whole scrolling page
+curl -s "${H[@]}" "$API/api/screenshot?tabId=<chosenTabId>&save=1"          # → {path} — open it with the view tool
+curl -s "${H[@]}" "$API/api/screenshot?tabId=<chosenTabId>&fullPage=1&save=1&format=jpeg&maxWidth=1400"
 curl -s "${H[@]}" "$API/api/screenshot/targets"                         # tabs + windows; then ?tabId=<id> (background tabs work)
 ```
 
@@ -137,7 +139,12 @@ curl -s "${H[@]}" "$API/api/screenshot/targets"                         # tabs +
 | repeat-series picker | `/meetings/series/<seriesId>` |
 | webhooks | `/meetings/settings/webhooks` |
 
-Rules: tabs only appear when the feature applies (e.g. `broadcast` = WEBINAR + host/co-host; an unknown tab falls back to Overview). Pages load data once, so after further commands **navigate to the same URL again** (or `POST /api/reload`) to show the update. Never navigate to `/meetings/<id>?start=1` — that starts the event; only `webinar.start` after the user confirms. Don't yank the user away from the video editor mid-task: prefer `/api/tabs/new` when the current tab isn't a meetings page (`GET /api/navigation` shows it).
+Rules: tabs only appear when the feature applies (e.g. `broadcast` = WEBINAR +
+host/co-host; an unknown tab falls back to Overview). If saved changes are not
+visible, refresh only the chosen meetings tab with its targeted navigate route
+after preserving drafts; never globally reload the app. Never navigate to
+`/meetings/<id>?start=1` — that starts the event; only `webinar.start` after the
+user confirms. Prefer a new tab rather than displacing unrelated work.
 
 **Links to share:** landing / registration page `https://contentlead.in/meetings/<eventId>/landing`; repeat-series picker `https://contentlead.in/meetings/series/<seriesId>` (`seriesId` from `webinar.series.get`).
 

@@ -116,9 +116,12 @@ Then per image:
   "src": "<downloaded/rehosted url>",
   "from": <imageStartAbs_ms>,
   "to":   <imageEndAbs_ms>,
-  "track": 1
+  "trackId": "<chosen-broll-track-id>"
 }}
 ```
+If no owned B-roll track exists, use `createNewTrack:true` with
+`trackName:"B-roll"` for the first image (instead of `trackId`), then resolve and
+reuse its actual track ID. Include the chosen `tabId` on every command envelope.
 - **Re-host first** if the URL is a temporary SAS/stock link:
   `POST /api/bridge/ai/asset/rehost` → permanent Azure URL (see `cl-ai-media` §6).
 - **Z-ORDER:** B-roll must sit **in front of** the base video but **behind** captions/titles.

@@ -65,7 +65,10 @@ These proxy `/api/storefront/commands/manifest` and `/api/storefront/commands/<n
 For multiple owned pages, pass **top-level** `"handle":"chosen-handle"` beside
 `params`; omission selects the primary handle. Never put identity inside params.
 
-> **⚙️ If you run via the desktop bridge** (session cookies come from the app) **and it isn't running,** start it first — **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"` (see `cl-editor/infrastructure.md`). If you call `contentlead.in` directly with the user's browser session, no app start is needed — just ensure they're signed in.
+> **Desktop connection:** Follow `cl-editor/infrastructure.md`; discovery-file
+> presence is not liveness. Launch only for an authorized runtime task, never a
+> source-only audit. Existing authenticated browser execution needs no Desktop
+> launch; do not extract browser cookies or impersonate a session.
 
 **First discovery call:**
 ```bash

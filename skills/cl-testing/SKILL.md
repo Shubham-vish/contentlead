@@ -6,7 +6,11 @@ tags: testing, qa, bridge, contract, state, visual, workflow, screenshots, diagn
 
 # ContentLead Agent-Run Testing
 
-> **⚙️ Is the ContentLead app running?** These calls need `~/.skilltown-desktop/api.json`. If it is missing, the desktop app is not running — start it, then wait ~30s for the file: **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`. Full OS-aware detect/start/poll (Linux + dev too): see `cl-editor/infrastructure.md` → "Ensure the ContentLead desktop app is running". Only ask the user if it still does not come up.
+> **Connection gate:** Follow `cl-editor/infrastructure.md` for fresh private
+> discovery and bounded authenticated health checks. Missing discovery is not
+> proof that the app is stopped; file presence is not readiness. Launch only
+> when the task authorizes it, never for a source-only audit. Do not reload,
+> switch origins or contact providers merely to check these instructions.
 
 This skill turns the AI agent into the **test runner, assertion engine, and visual judge**.
 
@@ -45,7 +49,7 @@ _EditingStyleDetails/_Agent/skills/cl-testing/
 
 Current seed suite:
 
-- `testing/suites/bridge-smoke.yaml`
+- `suites/bridge-smoke.yaml` (relative to this skill)
 
 ---
 
@@ -107,7 +111,8 @@ If diagnostics are already bad, do **not** start a test suite on that tab. Creat
 
 ### 3.4 Multi-tab rule
 
-If multiple tabs are open, the agent must use the `tabId` of the active test tab on every `/api/execute` call body:
+Use the explicitly chosen disposable test `tabId` on every `/api/execute` call,
+even with one tab open; never infer ownership from whichever tab is active:
 
 ```json
 { "type": "query.getCanvasSize", "params": {}, "tabId": "tab_abc123" }
@@ -137,11 +142,9 @@ Open the returned `contentId` with `POST /api/tabs/new {contentId}`, following
 - `contentId`
 - `tabId`
 
-Wait 10 seconds after creation because new DB-backed projects can overwrite immediate edits:
-
-```bash
-sleep 10
-```
+Before writes, follow `cl-editor/workflow-readiness.md`: require the exact
+content ID, hydrated readiness and `readyForWrites:true` on this test tab.
+Use bounded polling; a fixed delay alone does not establish readiness.
 
 ### Reset before each test
 
@@ -470,13 +473,13 @@ Pattern:
 - `tabId=` any tab, including background tabs · `fullPage=1` whole scrolling document (pages that scroll inside an inner panel, e.g. `/content`, capture the viewport)
 - `format=jpeg&jpegQuality=80`, `maxWidth=1400` · `save=1` → `{path}` under `~/.skilltown-desktop/screenshots/` (keeps last 200; `inline=1` also returns base64)
 
-Simplest: `curl -s "$BASE/api/screenshot?save=1&maxWidth=1600" -H "$AUTH"` then view the returned `path`. Base64 variant:
+Simplest: `curl -s "$BASE/api/screenshot?tabId=$TAB_ID&save=1&maxWidth=1600" -H "$AUTH"` then view the returned `path`. Base64 variant:
 
 ```bash
 ART="$HOME/.skilltown-desktop/test-artifacts/$RUN_ID"
 mkdir -p "$ART"
 
-curl -s "$BASE/api/screenshot" -H "$AUTH" | \
+curl -s "$BASE/api/screenshot?tabId=$TAB_ID" -H "$AUTH" | \
 python3 -c '
 import sys, json, base64, os
 d=json.load(sys.stdin)
@@ -677,7 +680,9 @@ Without `Bearer`, the API returns `{"error": "unauthorized"}` even with a valid 
 
 ### `editor.editItem` params format
 **Correct:** `{"itemId": "...", "details": {"text": "...", "color": "..."}}`
-**Wrong:** `{"id": "...", "updates": {"details": {...}}}` — returns `status: success` but silently does NOT apply changes.
+**Also supported:** `{"itemId":"...","updates":{"details":{...}}}`.
+Use `itemId`, not `id`, and verify read-back; a success status alone does not prove
+the intended item changed.
 
 ### `query.getItemProperties` response shape
 Properties are at `result.item.details.*`, not `result.details.*`.

@@ -52,7 +52,10 @@ The user must be **signed in to `https://contentlead.in`** (agents via the deskt
   reserved/claimed names. No cookies need be extracted. See `cl-creator-biopage`
   startup for the full first-handle recipe, then re-read `hub.getState`.
 
-> **⚙️ Desktop bridge:** if session cookies come from the ContentLead app and it isn't running, start it first — **macOS** `open -a "ContentLead"` · **Windows (PowerShell)** `Start-Process "$env:LOCALAPPDATA\Programs\ContentLead\ContentLead.exe"`. If you call `contentlead.in` directly with the user's browser session, no app start is needed.
+> **Desktop connection:** Follow `cl-editor/infrastructure.md`; discovery-file
+> presence is not liveness. Launch only for an authorized runtime task, never a
+> source-only audit. Existing authenticated browser execution needs no Desktop
+> launch; do not extract browser cookies or impersonate a session.
 
 ---
 

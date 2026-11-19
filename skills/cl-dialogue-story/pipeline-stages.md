@@ -16,6 +16,13 @@ than deleting a flag and blindly replaying inserts. Obtain paid-action approval
 before real API stages. See `SKILL.md` and `cl-editor/workflow-readiness.md` for
 the current safe invocation, save receipt and render handoff.
 
+Use an external private config via `--config <path>` (or
+`DIALOGUE_STORY_CONFIG`) and keep the working script outside this public directory.
+The generic prompt builders below are exported by `orchestrator/prompts.example.mjs`.
+Legacy local prompt overrides still take precedence in real runs; the helper has
+no external prompt-module option. Personal formula Markdown is not a runtime
+dependency. Do not move an existing override without preserving its loader.
+
 All endpoints below are the ones the **voice**, **cl-ai-media** and **contentlead**
 skills already document. This skill only calls them in the proven order.
 
@@ -25,24 +32,22 @@ skills already document. This skill only calls them in the proven order.
 - **Skip if:** dialogue already normalized (tracked via `_stages.norm` flag).
 - **Call:** `POST /api/bridge/ai/text/generate` with a real JSON body
   `{ messages: [...] }` containing the *normalization* system prompt (see
-  `ai-prompts.md §1`). Batch of 3 dialogues. The response is backend JSON directly
+  `orchestrator/prompts.example.mjs`, `PROMPTS.normalize`). The response is backend JSON directly
   (single parse; no envelope wrapper).
 - **Write:** replaces `sentence` with the cleaned version.
 - Original engine: `sentence_ai_processor.py` (3 retries + confidence).
 
 ## Stage 1.0 — Per-character voices (TTS)  ⭐ CRITICAL — verified recipe
 
-> **This is the exact, tested procedure. Follow it verbatim — it is what produced the
-> good-sounding Modi & Rahul audio. Do NOT change the text framing or the voice type.**
+> Discover supported speech settings and choose an authorized voice through
+> `cl-voice`. The public example does not supply personal clone IDs or permission
+> to reproduce another person's voice.
 
 ### The two rules that make or break the audio
-1. **Use the CLONED voices** (`voice_type: voice_cloning`), NOT system voices. The
-   character clones are what give the recognizable Modi/Rahul sound. System voices
-   (e.g. `hindi_male_1_v2`) sound generic/wrong for this format.
-   - Modi  → `moss_audio_c7d1738a-7b38-11f0-9359-4e72c55db738`
-   - Rahul → `RahulVoice_003`
-   - (These live in `config.local.json` → `characters[*].voiceId`. List all clones with
-     `GET /api/bridge/voice/voices?voice_type=voice_cloning`.)
+1. **Use authorized voices**, supplied through the external config's
+   `characters[*].voiceId`. If using clones, list available authorized choices
+   with `GET /api/bridge/voice/voices?voice_type=voice_cloning`; a public character
+   label is not a reusable provider ID. Preset voices are also valid choices.
 2. **Send the Devanagari `sentence` field DIRECTLY to TTS.** Hindi words must be in
    देवनागरी; only genuinely English/tech terms stay Latin (`free`, `Pro subscription`,
    `Business model`, `cup`). Minimax pronounces Devanagari correctly; romanized Hindi
@@ -54,27 +59,27 @@ skills already document. This skill only calls them in the proven order.
 `~/.skilltown-desktop/api.json`.
 
 ```bash
-# Example — Modi line (the exact call that worked):
+# Example — choose an authorized voice and approve generation first:
 curl -sX POST "http://127.0.0.1:$PORT/api/bridge/voice/generate" \
   -H "Authorization: Bearer $TOK" -H "Content-Type: application/json" \
   -d '{
     "text": "राहुल, free तो सिर्फ पहला चाय का cup है। असली कमाई तो Pro subscription में छुपी है।",
-    "voice_id": "moss_audio_c7d1738a-7b38-11f0-9359-4e72c55db738",
+    "voice_id": "<authorized-speaker-a-voice-id>",
     "speed": 1.0,
     "format": "mp3"
   }'
 # → { "status":"success", "audio_url":"…", "duration_seconds": 7.92 }
 ```
 
-Rahul example (same shape, his clone + his Devanagari line):
+Second speaker example (same shape, independently authorized voice):
 ```jsonc
 { "text": "मोदी जी, ये ContentLead तो बिल्कुल free है... फिर पैसा कहाँ से आएगा? Business model ही नहीं है इसमें!",
-  "voice_id": "RahulVoice_003", "speed": 1.0, "format": "mp3" }
+  "voice_id": "<authorized-speaker-b-voice-id>", "speed": 1.0, "format": "mp3" }
 ```
 
 ### Fields
 - `text` — the **Devanagari `sentence`** (≤5000 chars). Mixed Devanagari+Latin is fine.
-- `voice_id` — the character's CLONED voice id (from config).
+- `voice_id` — the character's authorized voice ID (from external config).
 - `speed` — `1.0` (normal). `format` — `mp3`.
 - Read `GET /api/bridge/voice/options` first. The backend owns supported models,
   emotions, reaction tags and limits. Missing options blocks the voice stage.
@@ -140,7 +145,7 @@ THEN batch the rest. This is exactly how the good audio was validated.
   otherwise). This gives correct spelling + real spoken pacing. NO transcription of the
   romanization is needed. (`run.mjs stage12_translit` does this.)
 - **Fallback (no `latin`):** `POST /api/bridge/ai/text/generate` with
-  `{ messages: [...] }` and the **transliteration prompt** (`ai-prompts.md §2`) —
+  `{ messages: [...] }` and `PROMPTS.transliterate` from the public prompt template —
   this is critical for *correct on-screen Latin captions*. Then map the Latin words
   back onto the `word_data` timings (same count/order).
 - **Write:** `dialogue.proc_word_data = { text, words:[{word,start,end}] }`.
@@ -157,7 +162,7 @@ This is the "relevant images to the exact words spoken" behavior.
 > word-alignment, timeline placement + z-order) usable on any clip.
 - **Skip if:** `dialogue.images?.length` (or explicitly `[]` meaning "decided none").
 - **Step A — decide count + windows:** `POST /api/bridge/ai/text/generate` with
-  `{ messages: [...] }` and the **multiple-images decision prompt** (`ai-prompts.md §3`), passing
+  `{ messages: [...] }` and `PROMPTS.imageDecision` from the public prompt template, passing
   `dialogue.proc_word_data.text` + `dialogue.audio.duration`. Returns
   `image_decisions:[{search_query, image_start_duration, image_end_duration, reasoning}]`.
   - Rules baked in: images cover **60–90%** of the dialogue (leave gameplay gaps);
@@ -169,7 +174,7 @@ This is the "relevant images to the exact words spoken" behavior.
   SkillTown injects per-user keys server-side (configure them in app Settings →
   Image Search if missing).
 - **Step C — pick best:** `POST /api/bridge/ai/text/generate` with
-  `{ messages: [...] }` and the **best-image prompt** (`ai-prompts.md §4`) over
+  `{ messages: [...] }` and `PROMPTS.imagePick` from the public prompt template over
   the result descriptions → chosen index.
 - **Write:** `dialogue.images = [{ url, image_start, image_end, query, reason }]`
   (times **relative to the dialogue start**). If Step A/B fail → fallback single
@@ -182,12 +187,12 @@ Runs once over the **whole** combined Latin script (`proc_word_data.text` joined
 - **Skip if:** `title_data` / `captioned_data` present (separate flags).
 - **2a Script analysis:** `POST /api/bridge/ai/text/generate` → `ScriptAnalysis`
   `{ main_topic, key_concepts[], target_audience, content_type, engagement_style }`
-  (`ai-prompts.md §5`). Cached in `script_analysis`.
+  (`PROMPTS.scriptAnalysis` in the public prompt template). Cached in `script_analysis`.
 - **2b Hook title (on-screen overlay, 0–~3s):** `POST /api/bridge/ai/text/generate`
-  with `{ messages: [...] }` and the **hook-title prompt** (`ai-prompts.md §6`) →
+  with `{ messages: [...] }` and the public template's `PROMPTS.hookTitle` →
   `title_data = { text_hook_line (2–5 words), duration_to_show_text_hook_line_in_video_start (3.0–5.0s) }`.
 - **2c IG caption package:** `POST /api/bridge/ai/text/generate` with
-  `{ messages: [...] }` and the **caption prompt** (`ai-prompts.md §7`) →
+  `{ messages: [...] }` and the public template's `PROMPTS.igCaption` →
   `captioned_data = { main_caption(150–200w), hashtags(15–25), hook_line, call_to_action, text_hook_line }`.
 - Original engine: `process_caption.py` + `caption_generator.py`.
 

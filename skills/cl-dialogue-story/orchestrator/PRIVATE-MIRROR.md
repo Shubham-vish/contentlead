@@ -1,60 +1,44 @@
-# Private full mirror — commit everything (incl. gitignored files) across PCs
+# Personal configuration — outside the public skill
 
-This skill lives in the **public** repo `Shubham-vish/contentlead` (secrets are
-`.gitignore`'d and never pushed there). To still get commit history + cross-PC sync
-for the private overlay (voice IDs, character art, tuned prompts, the exact-prompt
-docs), the same folder is *also* tracked by a **second git dir** that pushes to a
-**private** repo: `Shubham-vish/contentlead-private`.
+This legacy filename is retained so existing links still resolve. It is not a
+recipe to force-add ignored files, mirror an entire working tree, or commit/push
+private assets from a public skill directory.
 
-One working tree, two independent repos:
+## Public setup
 
-| Repo | Git dir | Remote | Contents |
-|------|---------|--------|----------|
-| Public | `.git` | `cl-editor` | Everything **except** the gitignored overlay |
-| Private mirror | `.private.git` | `contentlead-private` | The same tree **plus** the overlay files |
+The public distribution supplies generic examples and needs no personal formula
+Markdown files. Copy `config.example.json` and `scripts/example.dialogue.json`
+to an existing user-owned private directory, then edit those copies. Keep voices,
+art, generated URLs and working scripts outside the public skill.
 
-`.private.git/` is hidden from the public repo via `.git/info/exclude`, so the two
-never interfere.
-
-## The `gitp` helper (run once per shell, or add to ~/.zshrc)
+From the skill root, a real run uses explicit private paths:
 
 ```bash
-# Operate the PRIVATE mirror from anywhere inside the _Agent folder:
-gitp() { git --git-dir="$(git rev-parse --show-toplevel)/.private.git" --work-tree="$(git rev-parse --show-toplevel)" "$@"; }
+node orchestrator/run.mjs /absolute/private/path/story.dialogue.json \
+  --config /absolute/private/path/dialogue-config.json \
+  --tab-id <chosen-tab> --content-id <chosen-content>
 ```
 
-## Daily workflow
+`DIALOGUE_STORY_CONFIG` is the alternative config path input. The working script
+is updated with generation results; it must not be the public example. Config
+values fill missing voice/art/background values; explicit script values win.
+Use authorized voices and absolute asset paths. Follow `../SKILL.md` for paid
+action approval, target readiness, recovery, save and render review.
 
-```bash
-# Normal PUBLIC work (secrets stay out automatically):
-git add -A && git commit -m "..." && git push
+## Legacy compatibility, not a new storage recommendation
 
-# Back up EVERYTHING to the private mirror (includes the gitignored overlay):
-gitp add -A                                   # all normal files
-gitp add -f skills/cl-dialogue-story/orchestrator/config.local.json \
-           skills/cl-dialogue-story/orchestrator/prompts.local.mjs \
-           skills/cl-dialogue-story/orchestrator/assets/characters \
-           skills/cl-dialogue-story/ai-prompts.md \
-           skills/cl-dialogue-story/script-schema-and-formula.md
-gitp commit -m "sync overlay" && gitp push
-```
-(The `-f` is only needed the first time each ignored file is added; afterwards a plain
-`gitp add -A` keeps already-tracked overlay files updated.)
+The helper still tries `config.local.json` as a config fallback and imports
+`prompts.local.mjs` when present beside `run.mjs`. Without that prompt module it
+uses `prompts.example.mjs`. There is currently **no external prompt-module path
+option**; `--config` does not select prompts.
 
-## Setting up on another PC
+Do not delete or relocate an existing tuned prompt module as a cleanup step:
+that can silently change generated output to generic prompts. Preserving tuned
+runtime behavior while moving it requires a separately reviewed loader change.
+The helper does not read personal formula Markdown documents.
 
-```bash
-# 1. Get the FULL tree (public files + private overlay) from the private mirror:
-git clone https://github.com/Shubham-vish/contentlead-private.git _Agent
-cd _Agent
-
-# 2. (optional) also wire the PUBLIC remote so you can push public changes:
-mv .git .private.git                          # the clone IS the private mirror
-git init -b main                              # fresh public .git
-git remote add origin https://github.com/Shubham-vish/contentlead.git
-git fetch origin && git reset --soft origin/main
-echo '.private.git/' >> .git/info/exclude     # hide mirror from public repo
-```
-
-Now `git …` drives the public repo and `gitp …` drives the private mirror, exactly as
-on the first machine.
+Existing ignore patterns are retained to protect legacy files during migration;
+ignoring a path neither untracks an already tracked file nor guarantees safe
+publication. Back up and migrate private data only through an explicitly reviewed
+private-storage workflow. Never force-add private material to public Git, rebuild
+Git directories, or commit/push merely because this document is being read.
